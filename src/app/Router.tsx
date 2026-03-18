@@ -21,7 +21,7 @@ const Analytics = lazy(async () => {
   return { default: AnalyticsPage }
 })
 const Settings = lazy(async () => {
-  const { SettingsPage } = await import('@/features/settings/SettingsPage')
+  const { SettingsPage } = await import('@/features/settings/SettingsPageSimple')
   return { default: SettingsPage }
 })
 const Calendar = lazy(async () => {
