@@ -12,6 +12,7 @@ import { TaskCard } from './TaskCard'
 import { TaskService } from '../services/taskService'
 import { taskStatusLabels, taskPriorityLabels } from '../utils/taskUtils'
 import type { Task } from '../types'
+import { TaskForm } from './TaskForm'
 
 interface TaskListProps {
   className?: string
@@ -56,6 +57,29 @@ export const TaskList: FC<TaskListProps> = ({ className }) => {
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task)
+    setShowCreateModal(true)
+  }
+
+  const handleCreateTask = async (taskData: any) => {
+    try {
+      await TaskService.createTask(taskData)
+      setShowCreateModal(false)
+      setEditingTask(null)
+    } catch (error) {
+      console.error('Failed to create task:', error)
+    }
+  }
+
+  const handleUpdateTaskSubmit = async (taskData: any) => {
+    try {
+      if (editingTask) {
+        await TaskService.updateTask(editingTask.id, taskData)
+        setShowCreateModal(false)
+        setEditingTask(null)
+      }
+    } catch (error) {
+      console.error('Failed to update task:', error)
+    }
   }
 
   if (isLoading) {
@@ -250,7 +274,15 @@ export const TaskList: FC<TaskListProps> = ({ className }) => {
       )}
 
       {/* Create/Edit Task Modal */}
-      {/* TaskForm component would go here */}
+      <TaskForm
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false)
+          setEditingTask(null)
+        }}
+        onSubmit={editingTask ? handleUpdateTaskSubmit : handleCreateTask}
+        task={editingTask}
+      />
     </div>
   )
 }

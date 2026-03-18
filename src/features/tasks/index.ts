@@ -1,6 +1,7 @@
 // Public API exports for tasks feature
 export { TaskCard } from './components/TaskCard'
 export { TaskList } from './components/TaskList'
+export { TaskForm } from './components/TaskForm'
 export { useTasks, useTaskById, useTasksByStatus, useTasksByPriority, useTasksDueToday, useOverdueTasks, useUpcomingTasks, useTaskStats, useAllTags } from './hooks/useTasks'
 export { TaskService } from './services/taskService'
 export { 
