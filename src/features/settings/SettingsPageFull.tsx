@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import { Settings, Bell, User, Palette, Globe, Shield, Database, Trash2, RefreshCw } from 'lucide-react'
 import { Button } from '@/shared/components/ui/Button'
 import { Badge } from '@/shared/components/ui/Badge'
@@ -20,33 +20,63 @@ const SettingsSection: FC<SettingsSection> = ({ title, icon, children }) => (
 )
 
 export const SettingsPage: FC = () => {
-  const [notifications, setNotifications] = useState({
-    habitReminders: true,
-    taskDueSoon: true,
-    taskOverdue: true,
-    dailySummary: false,
-    weeklyReport: true,
-    achievementUnlocked: true,
+  // Load settings from localStorage on mount
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('habitflow-notifications')
+    return saved ? JSON.parse(saved) : {
+      habitReminders: true,
+      taskDueSoon: true,
+      taskOverdue: true,
+      dailySummary: false,
+      weeklyReport: true,
+      achievementUnlocked: true,
+    }
   })
 
-  const [appearance, setAppearance] = useState({
-    theme: 'light',
-    language: 'en',
-    dateFormat: 'MM/DD/YYYY',
-    timeFormat: '12h',
+  const [appearance, setAppearance] = useState(() => {
+    const saved = localStorage.getItem('habitflow-appearance')
+    return saved ? JSON.parse(saved) : {
+      theme: 'light',
+      language: 'en',
+      dateFormat: 'MM/DD/YYYY',
+      timeFormat: '12h',
+    }
   })
 
-  const [privacy, setPrivacy] = useState({
-    shareProgress: false,
-    publicProfile: false,
-    dataCollection: 'minimal',
+  const [privacy, setPrivacy] = useState(() => {
+    const saved = localStorage.getItem('habitflow-privacy')
+    return saved ? JSON.parse(saved) : {
+      shareProgress: false,
+      publicProfile: false,
+      dataCollection: 'minimal',
+    }
   })
 
-  const [data, setData] = useState({
-    autoBackup: true,
-    exportFormat: 'json',
-    clearCache: false,
+  const [data, setData] = useState(() => {
+    const saved = localStorage.getItem('habitflow-data')
+    return saved ? JSON.parse(saved) : {
+      autoBackup: true,
+      exportFormat: 'json',
+      clearCache: false,
+    }
   })
+
+  // Save to localStorage whenever settings change
+  useEffect(() => {
+    localStorage.setItem('habitflow-notifications', JSON.stringify(notifications))
+  }, [notifications])
+
+  useEffect(() => {
+    localStorage.setItem('habitflow-appearance', JSON.stringify(appearance))
+  }, [appearance])
+
+  useEffect(() => {
+    localStorage.setItem('habitflow-privacy', JSON.stringify(privacy))
+  }, [privacy])
+
+  useEffect(() => {
+    localStorage.setItem('habitflow-data', JSON.stringify(data))
+  }, [data])
 
   const handleSaveSettings = () => {
     // Save all settings to localStorage or backend
