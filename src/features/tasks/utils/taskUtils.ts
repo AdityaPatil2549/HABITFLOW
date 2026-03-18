@@ -37,12 +37,13 @@ export const getTaskPriorityColor = (priority: TaskPriority): string => {
   return taskPriorityColors[priority]
 }
 
-export const getTaskDueDateDisplay = (dueDate?: Date | string): string => {
+export const getTaskDueDateDisplay = (dueDate?: Date | string, status?: TaskStatus): string => {
   if (!dueDate) return 'No due date'
   
   const date = typeof dueDate === 'string' ? new Date(dueDate) : dueDate
   
-  if (isPast(date) && !isToday(date)) {
+  // Only show overdue if the date is in the past AND task is not completed
+  if (isPast(date) && status !== 'completed' && status !== 'cancelled') {
     return `Overdue (${formatSmartDate(date)})`
   }
   
