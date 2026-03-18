@@ -107,8 +107,8 @@ export const HabitList: FC<HabitListProps> = ({ className }) => {
   return (
     <div className={cn('space-y-6', className)}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold text-text">Habits</h2>
           <p className="text-muted-foreground">
             {habits.length} {habits.length === 1 ? 'habit' : 'habits'} tracked

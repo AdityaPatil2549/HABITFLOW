@@ -6,6 +6,7 @@ import {
   CheckSquare, 
   BarChart3, 
   Settings,
+  Calendar as CalendarIcon,
   Menu,
   X
 } from 'lucide-react'
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Habits', href: '/habits', icon: Target },
   { name: 'Tasks', href: '/tasks', icon: CheckSquare },
+  { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]

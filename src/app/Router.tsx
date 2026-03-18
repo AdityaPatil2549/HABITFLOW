@@ -24,6 +24,10 @@ const Settings = lazy(async () => {
   const { SettingsPage } = await import('@/features/settings/SettingsPage')
   return { default: SettingsPage }
 })
+const Calendar = lazy(async () => {
+  const { CalendarPage } = await import('@/features/calendar/CalendarPage')
+  return { default: CalendarPage }
+})
 
 export const Router: React.FC = () => {
   return (
@@ -35,6 +39,7 @@ export const Router: React.FC = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/habits" element={<Habits />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/calendar" element={<Calendar />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>

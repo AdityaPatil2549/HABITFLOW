@@ -25,7 +25,7 @@ export const useAchievements = () => {
     achievements: achievements ?? [],
     userAchievements: userAchievements ?? [],
     unlockedAchievements: unlockedAchievements ?? [],
-    isLoading: achievements === undefined || userAchievements === undefined,
+    isLoading: achievements === undefined || userAchievements === undefined || unlockedAchievements === undefined,
   }
 }
 
@@ -82,16 +82,27 @@ export const useUserStats = () => {
 
 export const useLeaderboard = (timeframe: 'week' | 'month' | 'all' = 'all') => {
   const leaderboard = useLiveQuery(async () => {
-    // This would typically fetch from a backend
-    // For now, return mock data based on current user
-    const userStats = await useUserStats()
+    // Calculate user stats inline to avoid circular dependency
+    const habits = await db.habits.where('archived').equals(0).toArray()
+    const streaks = await db.streaks.toArray()
+    const entries = await db.habitEntries.toArray()
+    const tasks = await db.tasks.toArray()
+    const completedTasks = tasks.filter(t => t.status === 'completed')
+    
+    // Total points (simplified calculation)
+    const totalPoints = completedTasks.length * 10 + 
+                        entries.filter(e => e.value > 0).length * 5 +
+                        streaks.reduce((sum, streak) => sum + streak.current * 2, 0)
+    
+    // Current level (every 100 points = 1 level)
+    const level = Math.floor(totalPoints / 100) + 1
     
     return [
       {
         id: 'current-user',
         username: 'You',
-        points: userStats.totalPoints,
-        level: userStats.level,
+        points: totalPoints,
+        level: level,
         rank: 1,
         change: 0,
       },
@@ -99,16 +110,16 @@ export const useLeaderboard = (timeframe: 'week' | 'month' | 'all' = 'all') => {
       {
         id: 'user-1',
         username: 'Alex Champion',
-        points: Math.max(userStats.totalPoints + 50, 100),
-        level: Math.floor((userStats.totalPoints + 50) / 100) + 1,
+        points: Math.max(totalPoints + 50, 100),
+        level: Math.floor((totalPoints + 50) / 100) + 1,
         rank: 1,
         change: 1,
       },
       {
         id: 'user-2',
         username: 'Sam Achiever',
-        points: Math.max(userStats.totalPoints - 20, 0),
-        level: Math.floor(Math.max(userStats.totalPoints - 20, 0) / 100) + 1,
+        points: Math.max(totalPoints - 20, 0),
+        level: Math.floor(Math.max(totalPoints - 20, 0) / 100) + 1,
         rank: 3,
         change: -1,
       },
