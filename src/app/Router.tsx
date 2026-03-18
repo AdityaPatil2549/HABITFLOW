@@ -25,7 +25,7 @@ const Settings = lazy(async () => {
   return { default: SettingsPage }
 })
 const Calendar = lazy(async () => {
-  const { CalendarPage } = await import('@/features/calendar/CalendarPage')
+  const { CalendarPage } = await import('@/features/calendar/CalendarPageSimple')
   return { default: CalendarPage }
 })
 

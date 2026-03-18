@@ -1,10 +1,10 @@
 import { type FC, useState, useEffect } from 'react'
 import { Calendar } from '@/shared/components/Calendar'
-import { useHabits } from '../hooks/useHabits'
-import { useTasks } from '../hooks/useTasks'
-import { useHabitEntries } from '../hooks/useHabits'
-import type { Habit } from '../types'
-import type { Task } from '../../tasks/types'
+import { useHabits } from '@/features/habits/hooks/useHabits'
+import { useTasks } from '@/features/tasks/hooks/useTasks'
+import { useHabitEntries } from '@/features/habits/hooks/useHabits'
+import type { Habit } from '@/features/habits/types'
+import type { Task } from '@/features/tasks/types'
 
 export const CalendarPage: FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date())
