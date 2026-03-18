@@ -1,4 +1,4 @@
-import { type FC } from 'react'
+import { type FC, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { X, Plus } from 'lucide-react'
@@ -56,6 +56,17 @@ export const HabitForm: FC<HabitFormProps> = ({
       ...initialHabit,
     },
   })
+
+  // Sync form with initialHabit prop when it changes
+  useEffect(() => {
+    if (initialHabit) {
+      Object.entries(initialHabit).forEach(([key, value]) => {
+        if (value !== undefined) {
+          setValue(key as keyof CreateHabit, value)
+        }
+      })
+    }
+  }, [initialHabit, setValue])
 
   const habitType = watch('type')
   const frequencyType = watch('frequency.type')

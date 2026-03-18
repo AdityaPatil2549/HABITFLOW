@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/shared/components/ui/Button'
@@ -22,6 +22,18 @@ export const TaskForm: FC<TaskFormProps> = ({ isOpen, onClose, onSubmit, task })
   const [tags, setTags] = useState<string[]>(task?.tags || [])
   const [newTag, setNewTag] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Sync form with task prop when it changes
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title)
+      setDescription(task.description || '')
+      setStatus(task.status)
+      setPriority(task.priority)
+      setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '')
+      setTags(task.tags)
+    }
+  }, [task])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
