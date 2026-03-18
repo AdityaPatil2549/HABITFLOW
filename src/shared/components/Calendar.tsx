@@ -1,4 +1,4 @@
-import { type FC } from 'react'
+import { type FC, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
@@ -21,7 +21,7 @@ export const Calendar: FC<CalendarProps> = ({
   onDateSelect,
   events = []
 }) => {
-  const [currentMonth, setCurrentMonth] = new Date(selectedDate.getFullYear(), selectedDate.getMonth())
+  const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth()))
   
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
