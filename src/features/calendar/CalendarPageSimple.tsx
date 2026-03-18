@@ -13,10 +13,10 @@ export const CalendarPage: FC = () => {
   // Get tasks due on selected date
   const tasksDueOnSelectedDate = tasks.filter(task => {
     if (!task.dueDate) return false
-    const dueDate = new Date(task.dueDate)
-    const selectedDateStr = date.toISOString().split('T')[0]
-    const dueDateStr = dueDate.toISOString().split('T')[0]
-    return selectedDateStr === dueDateStr
+    const taskDueDate = new Date(task.dueDate)
+    const selectedDateStr = selectedDate.toISOString().split('T')[0]
+    const taskDueDateStr = TaskDueDate.toISOString().split('T')[0]
+    return selectedDateStr === TaskDueDateStr
   })
 
   return (
