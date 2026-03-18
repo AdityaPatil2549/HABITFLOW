@@ -90,7 +90,7 @@ export const TaskForm: FC<TaskFormProps> = ({ isOpen, onClose, onSubmit, task })
             exit={{ opacity: 0, scale: 0.95 }}
             className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none"
           >
-            <div className="bg-surface rounded-lg border border-border shadow-lg w-full max-w-lg pointer-events-auto max-h-[90vh] overflow-y-auto">
+            <div className="bg-surface rounded-lg border border-border shadow-xl w-full max-w-lg pointer-events-auto max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#0f172a' }}>
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h2 className="text-lg font-semibold text-text">
