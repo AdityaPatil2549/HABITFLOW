@@ -1,0 +1,2238 @@
+=== HabitFlow_App_Flow.docx ===
+HABITFLOW
+App Flow Document
+User Journeys  ┬╖  Screen Flows  ┬╖  Navigation  ┬╖  State Transitions  ┬╖  Edge Cases
+Version 1.0  ┬╖  2025  ┬╖  Aditya
+1. Document Purpose & Scope
+This document defines the complete user experience flow for HabitFlow ΓÇö every screen, every user action, every navigation path, and every state transition. It is the reference for developers implementing routes and UI behaviour, and for designers validating the interaction model.
+2. Global App Shell & Navigation
+2.1 App Shell Structure
+The App Shell is the persistent outer frame that wraps every screen. It renders once on load and never unmounts. Routes swap out the content area only.
+2.2 Navigation Map ΓÇö All Routes
+3. Flow 1 ΓÇö First-Run Onboarding
+The onboarding flow runs exactly once ΓÇö on the very first app launch when IndexedDB is empty and the 'hasOnboarded' flag is not set. It walks the user through 4 steps, then drops them at the Dashboard with their first habit already created.
+3.1 Onboarding Screen Specs
+4. Flow 2 ΓÇö Daily Habit Check-In (Core Loop)
+The check-in flow is the heart of HabitFlow. A user opens the app, sees all habits due today, taps to complete them, and the app updates streaks, XP, and the daily score in real time. This flow must be frictionless ΓÇö one tap per habit for boolean types.
+4.1 Dashboard Screen
+4.2 Habits Page ΓÇö Today View
+4.3 Check-In State Transitions
+4.4 Habit Detail Page
+5. Flow 3 ΓÇö Habit Management
+5.1 Create Habit Flow
+6. Flow 4 ΓÇö Task Management
+6.1 Task Views
+6.2 Task Detail Drawer
+6.3 Create Task ΓÇö Quick-Add Panel
+7. Flow 5 ΓÇö Analytics
+7.1 Analytics Overview Page
+7.2 Per-Habit Analytics Page
+8. Flow 6 ΓÇö Gamification & Rewards
+8.1 XP Award Flow
+8.2 Badge Earn Conditions
+9. Flow 7 ΓÇö Settings & Data Management
+9.1 Export Flow
+9.2 Import Flow
+10. Notification Flows
+10.1 Notification Permission Flow
+10.2 Notification Types & Behaviour
+11. Edge Cases & Error Flows
+12. Keyboard Shortcuts & Gesture Map
+12.1 Global Keyboard Shortcuts
+12.2 Mobile Gesture Map
+13. Loading, Transition & Empty States
+13.1 Loading State Inventory
+13.2 Transition Animation Map
+14. Complete Screen Inventory
+Appendix ΓÇö Flow Decision Trees
+A. Habit Check-In Decision Tree
+B. Recurring Task Decision Tree
+End of App Flow Document  ┬╖  HabitFlow v1.0  ┬╖  Aditya  ┬╖  ZCOER SE AIML
+5
+Core Flows | 18
+Screens | 32
+User Actions | 6
+Edge Cases | 100%
+Offline
+Property | Value
+Screens defined | 18 distinct screens across 5 sections
+Core user flows | 5 primary flows (Onboarding, Habit, Task, Analytics, Settings)
+Navigation model | Persistent sidebar (desktop) + bottom tabs (mobile)
+Entry point | App shell ΓåÆ checks first-run flag ΓåÆ Onboarding or Dashboard
+Auth required | None ΓÇö local-first, no login
+Offline behaviour | All flows fully functional offline; no degraded states
+State persistence | Zustand (UI state) + Dexie IndexedDB (data state)
+Shell Component | Description
+Sidebar (desktop lg:+) | Fixed left nav: logo, 5 nav links, quick-add button, user XP badge, settings gear
+Bottom Tab Bar (mobile) | Fixed bottom: Dashboard, Habits, Tasks, Analytics, Settings ΓÇö 5 icons with labels
+Top Bar (mobile only) | Page title + notification bell + quick-add FAB
+Content Area | 100% of remaining space. Route components render here via <Outlet />.
+Quick-Add Panel | Slide-over drawer: appears on FAB tap or Q key. Contains habit/task creation form tabs.
+Global Toast | Bottom-right notification for success/error feedback (3s auto-dismiss)
+Command Palette | / key ΓåÆ full-screen search overlay. Search habits, tasks, analytics.
+From Screen | To Screen | Trigger | Guard
+/ | /dashboard | App load ΓåÆ first-run check passes | Not first run
+/ | /onboarding | App load ΓåÆ first-run flag = true | First run
+Sidebar / Tab | /dashboard | Dashboard icon click/tap | ΓÇö
+Sidebar / Tab | /habits | Habits icon click/tap | ΓÇö
+Sidebar / Tab | /tasks | Tasks icon click/tap | ΓÇö
+Sidebar / Tab | /analytics | Analytics icon click/tap | ΓÇö
+Sidebar / Tab | /settings | Settings icon click/tap | ΓÇö
+/habits | /habits/:id | Habit card click | ΓÇö
+/analytics | /analytics/:id | Habit name in analytics list click | ΓÇö
+/tasks | Task detail drawer | Task row click | ΓÇö
+Any screen | Quick-Add panel | FAB tap or Q key | ΓÇö
+Any screen | Command palette | / key or search icon | ΓÇö
+/onboarding | /dashboard | Onboarding complete ΓåÆ Finish button | ΓÇö
+/settings | Export modal | Export Data button click | ΓÇö
+/settings | Import modal | Import Data button click | ΓÇö
+/settings | Reset confirm | Reset App button click | Confirm dialog
+≡ƒÜÇ  First-Run Onboarding Flow
+Triggered once when app has no data. Skippable at any step.
+1 | 2 | 3 | 4
+Welcome | Pick Habits | Set Reminders | Theme Pick
+Full-screen splash: app name, tagline, Get Started button | Pre-built habit templates grid. User taps to select ΓëÑ1 | Opt-in notification permission + default reminder time | Choose accent colour + dark/light mode preference
+Welcome Screen  /onboarding/welcome
+Hero splash with value proposition. User's first impression of HabitFlow.
+
+Habit Picker  /onboarding/habits
+Grid of 16 pre-built habit templates. User selects at least one to create. Each card shows icon, name, and category tag.
+
+Reminder Setup  /onboarding/reminders
+Requests notification permission and sets a default reminder time for all selected habits.
+
+Theme Picker  /onboarding/theme
+Personalise the visual experience. Choices are saved to localStorage immediately for live preview.
+
+≡ƒôî
+NOTE | If the user skips onboarding, they land on an empty Dashboard showing the empty state for habits. The empty state has a prominent 'Add your first habit' CTA button. Onboarding can never be re-triggered ΓÇö it is replaced by individual empty state CTAs.
+Γ£à  Daily Check-In Flow
+The primary daily interaction. Designed for < 60 second completion.
+1 | 2 | 3 | 4 | 5
+Open App | View Today | Check In | See Feedback | Continue
+App Shell loads. Dashboard is default route. | Scroll habit list. See due habits + completion state. | Tap habit ΓåÆ input value ΓåÆ log saves to DB. | Streak updates. XP pops. Ring animates. Toast appears. | All done ΓåÆ see 100% ring. Day complete badge.
+Dashboard  /dashboard
+The command centre. Shows today's habits, top tasks, streaks, and the daily completion ring at a glance.
+
+Habits ΓÇö Today  /habits
+Full list of all habits due today. The primary check-in surface for power users who want to see everything at once.
+
+From State | Trigger | To State | Side Effect
+unchecked | tap checkbox | checked | DB write: completed=1, value=1; XP +10; streak recalculated; ring animates
+checked | tap checkbox again | unchecked | DB write: completed=0, value=0; XP -10 (reversal); streak recalculated
+count:0 | tap + button | count:N | DB write on debounce 1s; auto-completes when value >= targetValue
+count:N | tap - button | count:N-1 | DB write on debounce; uncompletes if drops below target
+rating:0 | tap star N | rating:N | DB write immediately; completed=1 for any rating > 0
+any | Backdate entry | backdated | isBackdated=1 flag set; streak for that date recalculated
+any | Add note | noted | note field saved on blur; no completion state change
+Habit Detail  /habits/:id
+Full detail view for a single habit. Stats, recent history, quick check-in, and entry into analytics.
+
+≡ƒôï  Habit Management Flow
+Create, edit, configure, archive, and analyse habits.
+1 | 2 | 3 | 4 | 5 | 6
+Trigger | Basic Info | Type & Goal | Schedule | Reminder | Save
+FAB tap ΓåÆ Quick-Add ΓåÆ Habit tab OR '+' button on /habits | Name, icon (emoji picker), colour picker, category | Select type + optional target value and unit | Frequency: daily / weekly (pick days) / interval | Optional: enable + set time. Uses Notification API. | Validate ΓåÆ DB write ΓåÆ drawer closes ΓåÆ toast confirmation
+Create / Edit Habit Drawer  Slide-over from right
+Full habit configuration form. Opens as a drawer ΓÇö doesn't navigate away from the current page.
+
+ΓÜá∩╕Å
+WARN | Habit type cannot be changed after the first log entry exists for that habit. If the user tries, show an info dialog: 'Changing type would invalidate existing log data. Archive this habit and create a new one.' The Type selector is disabled (with tooltip) once logs exist.
+Γ£à  Task Management Flow
+Full to-do lifecycle: capture, organise, prioritise, complete.
+Tasks ΓÇö Inbox  /tasks
+Default task view. Shows all tasks not assigned to a project, not completed, sorted by priority then due date.
+
+Tasks ΓÇö Today  /tasks?view=today
+Only tasks with dueDate = today OR flagged as 'important'. Designed to answer: 'what do I do right now?'
+
+Tasks ΓÇö Upcoming  /tasks?view=upcoming
+Shows tasks due in the next 14 days, grouped by date. Gives a week-at-a-glance perspective.
+
+Tasks ΓÇö Projects  /tasks?view=projects
+Lists all projects. Each project shows progress bar (done / total tasks). Tap to drill into project.
+
+Task Detail  Slide-over drawer
+Full task editing surface. Opens without navigating away. Saves changes on every field blur (auto-save).
+
+1 | 2 | 3 | 4 | 5
+Trigger | Type Title | Quick Fields | Press Enter | Close
+Q key or FAB ΓåÆ panel slides up from bottom | Auto-focused title input. Natural language date parsed inline. | Priority chip, due date, project ΓÇö all one-tap | Task saved to DB. Panel stays open for next task. | ESC or tap outside. Return to current screen.
+≡ƒÆí
+TIP | Natural language date parsing: typing 'tomorrow', 'next monday', 'in 3 days', 'aug 15' in the title is parsed and stripped into the due date field automatically. Powered by chrono-node (Phase 5 feature).
+≡ƒôè  Analytics Flow
+Data-driven insight into habit patterns, streaks, and task throughput.
+Analytics Overview  /analytics
+The analytics hub. Aggregate stats across all habits and tasks. Entry point to per-habit deep dives.
+
+Habit Analytics  /analytics/:habitId
+Deep dive into a single habit. All chart types available. This is where the data-driven user lives.
+
+≡ƒÅå  Gamification Flow
+XP, levels, badges, and daily scores that reward consistent effort.
+1 | 2 | 3 | 4 | 5
+Action | XP Calc | DB Write | Level Check | Feedback
+User completes habit check-in or task | Service calculates XP: base + streak bonus + milestone bonus | userXP.totalXP incremented in same transaction as the log write | If new totalXP crosses threshold ΓåÆ level up | XP pop animation on screen, toast with amount earned
+From State | Trigger | To State | Side Effect
+Any screen | completeHabit() | XP toast shown | +10 XP base; +5 per streak day (cap 50); toast fades after 3s
+Any screen | completeTask(P0) | XP toast shown | +20 XP; toast fades; daily score updates
+Level N | XP crosses threshold | Level N+1 | Level-up modal: confetti animation, new title shown, dismiss to continue
+No badge | earn badge condition | Badge earned | Badge earned modal: badge icon, name, description; added to badgesEarned[]
+Daily score 0 | First check-in | Score > 0 | Ring starts animating; score label updates in real-time
+Daily score 100 | All habits done | Perfect day | 'Perfect Day!' celebration animation on dashboard ring
+Badge | Earn Condition | Category
+First Step | Complete first ever habit check-in | Milestone
+Week Warrior | 7-day streak on any habit | Streak
+21-Day Legend | 21-day streak on any habit | Streak
+Iron Will | 30-day streak on any habit | Streak
+Habit Master | 66-day streak on any habit | Streak
+Centurion | 100-day streak on any habit | Streak
+Multi-Tasker | Complete 5 tasks in one day | Tasks
+Week Sweep | Complete all habits every day for 7 consecutive days | Consistency
+Comeback Kid | Return after 7+ day absence and complete all habits | Resilience
+Night Owl | Log a habit after 10pm | Fun
+Early Bird | Log a habit before 7am | Fun
+Data Nerd | Export data for the first time | Engagement
+Streak Saver | Use grace day to preserve a streak | Feature
+Power Hour | Complete 10 habits in under 60 minutes | Speed
+Perfect Week | 100% habit completion for 7 consecutive days | Consistency
+ΓÜÖ∩╕Å  Settings Flow
+Preferences, data export/import, notifications, and account reset.
+Settings Hub  /settings
+Single settings page with logical sections. No sub-routes ΓÇö all interactions are in-page modals or drawers.
+
+1 | 2 | 3 | 4
+Tap Export | Choose Format | Confirm | Success
+Settings ΓåÆ Export All Data ΓåÆ Export modal opens | JSON (full backup) or CSV (habits log only) | Tap 'Download' ΓÇö browser downloads file | Toast: 'Data exported successfully'
+≡ƒôî
+NOTE | JSON export filename: habitflow_backup_YYYY-MM-DD.habitflow.json. CSV export filename: habitflow_logs_YYYY-MM-DD.csv. Both include all data from all collections for JSON; CSV exports only habitLogs joined with habit names.
+1 | 2 | 3 | 4 | 5
+Tap Import | Validate | Preview | Confirm | Import
+Settings ΓåÆ Import Data ΓåÆ file picker opens | File parsed, Zod-validated. Errors shown if invalid. | Modal shows: habits count, logs count, tasks count to be imported | 'This will REPLACE all current data.' ΓåÆ checkbox required | DB cleared ΓåÆ bulk insert ΓåÆ success toast
+ΓÜá∩╕Å
+WARN | Import is destructive. All existing local data is replaced. This is clearly communicated with red text, a required 'I understand' checkbox, and a 3-second delay before the Import button activates. There is no undo.
+1 | 2 | 3 | 4 | 5
+Permission Check | Request | Granted | Denied | Already Granted
+On first reminder enable: check Notification.permission | If 'default': call Notification.requestPermission() | Register Service Worker push; create reminder records | Show in-app banner: 'Enable in browser settings'. Reminders disabled. | Skip prompt; go directly to reminder creation
+Notification Type | Trigger Condition | Tap Action
+Habit Reminder | Scheduled time for habit (per reminders collection) | Opens app ΓåÆ Today view scrolled to that habit
+Streak At Risk | 6pm: habit not logged + streak > 5 days | Opens app ΓåÆ that habit's check-in widget focused
+Morning Briefing | 8am daily: habits due today + top 3 tasks | Opens app ΓåÆ Dashboard
+Task Due | Task dueDate = today, dueTime = now | Opens app ΓåÆ Task detail drawer for that task
+Level Up | totalXP crosses level threshold (may happen offline) | Opens app ΓåÆ XP level modal shown
+Weekly Review | Every Sunday 7pm | Opens app ΓåÆ Analytics page with week summary
+Flow / Screen | Error Condition | Recovery UX
+First Launch | DB is empty, no habits | Show onboarding flow. Never show empty dashboard without onboarding first.
+All Habits Done | All habits checked today | Dashboard ring shows 100%. 'Perfect Day!' animation plays. Confetti. Score = max.
+No Tasks | Task views have no tasks | Empty state illustration + 'Add your first task' CTA. No blank whitespace.
+Notification Denied | User denied browser push permission | Show persistent yellow banner in Settings: 'Notifications blocked ΓÇö enable in browser settings'. No reminder creation.
+Storage Full | IndexedDB quota exceeded (> ~500MB) | Show red warning banner on Dashboard: 'Storage almost full'. Prompt export + suggest clearing completed tasks.
+Backdate > 7 days | User tries to log entry older than 7 days | Date picker clamps to 7 days back. Show tooltip: 'You can only backdate up to 7 days'.
+Delete Habit With Streak | User deletes habit with active 30+ day streak | Extra-strong confirm dialog: 'This habit has a 32-day streak. This cannot be undone.' Requires typing habit name.
+Duplicate Habit Name | User creates habit with same name as existing | Inline warning (not a blocker): 'A habit with this name already exists. You can still create it.'
+Corrupted Import File | Import JSON fails Zod validation | Show per-field errors in modal. Never import partial data. Give 'Cancel' option.
+Habit With No Logs (Analytics) | User opens analytics for habit with 0 logs | Show empty state: 'No data yet. Complete your first check-in to see analytics.'
+PWA Offline ΓÇö In Progress | User is mid-flow when network drops | All flows continue normally. No network calls. Zero degradation. Sync (future) queues.
+Grace Day Exhausted | Weekly grace day limit reached, habit missed | Streak breaks. Show specific toast: 'Streak ended ΓÇö you had no grace days left for this week.' No silent failure.
+Shortcut | Action | Available In
+Q | Open Quick-Add panel (Habit tab active by default) | All screens
+T | Open Quick-Add panel with Task tab pre-selected | All screens
+D | Navigate to Dashboard | All screens
+H | Navigate to Habits (Today view) | All screens
+A | Navigate to Analytics | All screens
+S | Navigate to Settings | All screens
+/ | Open Command Palette (global search) | All screens
+Esc | Close active modal / drawer / panel | All screens
+Ctrl+Z | Undo last action (check-in or task complete) | All screens
+Ctrl+Enter | Submit active form (create habit, create task) | Forms
+Tab | Move focus to next interactive element | All screens
+Shift+Tab | Move focus to previous element | All screens
+Enter | Activate focused button / open focused item | All screens
+Space | Toggle focused checkbox | Habit Today, Tasks
+Arrow keys | Navigate within tab bars, date pickers, menus | Components
+1-4 | Switch tabs in Habit Analytics view | /analytics/:id
+Gesture | Component | Action
+Swipe left | Task row | Reveal delete button
+Swipe right | Task row | Reveal 'Today' shortcut (set due = today)
+Swipe left | Habit row | Reveal skip / archive quick actions
+Long press | Habit card (Dashboard) | Open habit context menu
+Long press | Task row | Multi-select mode (batch complete/delete)
+Pull down | Any scroll list | Refresh (re-query IndexedDB)
+Swipe down | Bottom drawer | Dismiss drawer
+Pinch | Heatmap chart | Zoom into date range
+Double tap | Habit check circle | Force-complete regardless of partial value
+Screen / Component | Loading Trigger | Loading UX
+App initial load | Dexie DB connection + version check | Full-page skeleton: sidebar grey bars + content area skeleton grid
+Dashboard | useLiveQuery initial resolve | Habit card skeletons (4 cards), ring skeleton (grey circle)
+Habit Detail | /habits/:id ΓÇö DB query | Header skeleton + 7-day calendar skeleton + log list skeleton
+Analytics ΓÇö Heatmap | 52-week data query (async) | Grey placeholder grid same dimensions as heatmap
+Analytics ΓÇö Charts | Chart data transform (may use Web Worker) | Recharts renders with grey bars / line; animates in when data ready
+Quick-Add form | Emoji picker lazy load | Skeleton grid in picker popover
+Import validation | Zod parsing large JSON | Spinner overlay on modal with 'ValidatingΓÇª' text
+Transition | Animation | Duration
+Page navigation (sidebar) | Fade in + slide up 8px | 200ms ease-out
+Drawer open (habit/task detail) | Slide in from right (desktop) / bottom (mobile) | 280ms ease-out
+Drawer close | Slide out reverse | 180ms ease-in
+Habit check-in (boolean) | Checkmark draw + row dims + slides down | 350ms spring
+XP counter increment | Number increments with pop scale animation | 400ms
+Level up modal | Scale in from 0.8 + confetti burst | 500ms
+Dashboard ring fill | Arc draws clockwise, eased | 600ms on mount
+Badge earn modal | Bounce in from top | 350ms spring
+Toast notification | Slide up from bottom-right | 200ms / 3s hold / 150ms fade
+Command palette open | Backdrop fade + panel scale from 0.95 | 150ms
+Tab switch (Analytics) | Cross-fade chart content | 200ms
+# | Screen | Route / Location | Primary Purpose
+1 | Welcome (Onboarding) | /onboarding/welcome | First impression, value prop, CTA to start
+2 | Habit Picker (Onboarding) | /onboarding/habits | Seed first habits from template grid
+3 | Reminder Setup (Onboarding) | /onboarding/reminders | Request notification permission
+4 | Theme Picker (Onboarding) | /onboarding/theme | Dark/light + accent colour selection
+5 | Dashboard | /dashboard | Daily completion ring, top habits, top tasks
+6 | Habits ΓÇö Today | /habits | Full today check-in list, all habit types
+7 | Habits ΓÇö All | /habits?tab=all | All non-archived habits, create/edit entry
+8 | Habit Detail | /habits/:id | Single habit stats, mini-calendar, log list
+9 | Create/Edit Habit Drawer | Overlay (any screen) | Full habit configuration form
+10 | Tasks ΓÇö Inbox | /tasks | Uncategorised tasks sorted by priority
+11 | Tasks ΓÇö Today | /tasks?view=today | Tasks due today + overdue
+12 | Tasks ΓÇö Upcoming | /tasks?view=upcoming | 14-day calendar-grouped task view
+13 | Tasks ΓÇö Projects | /tasks?view=projects | Project list with progress bars
+14 | Task Detail Drawer | Overlay (any screen) | Full task edit: subtasks, recurrence, notes
+15 | Analytics Overview | /analytics | Aggregate stats, performance table, charts
+16 | Habit Analytics Detail | /analytics/:habitId | Per-habit: heatmap, streaks, trends, journal
+17 | Settings | /settings | Preferences, data, notifications, gamification
+18 | Command Palette | Overlay (any screen) | Global search: habits, tasks, analytics jump
+Condition | Outcome
+Habit type = boolean + user taps ΓåÆ mark complete | completed=1, value=1, XP +10, streak++
+Habit type = count + value < target ΓåÆ partial | completed=0; partial bar shown; no XP until target met
+Habit type = count + value >= target ΓåÆ complete | completed=1; XP +10 + streak bonus; row dims
+Habit type = duration + any value > 0 ΓåÆ complete | completed=1; XP proportional to % of target
+Habit type = rating + any star selected ΓåÆ complete | completed=1; value = star count (1-5)
+Date = today ΓåÆ normal log | isBackdated=0
+Date < today (Γëñ7 days) ΓåÆ backdate | isBackdated=1; streak recalculated for that date
+Grace day applies ΓåÆ missed but grace available | Streak continues; graceDayUsed++ for that week
+Grace days exhausted ΓåÆ missed | Streak breaks; best streak updated if current > best
+Condition | Outcome
+Task has no recurrence rule ΓåÆ complete | Status = done; completedAt = now; no new task created
+Task has recurrence + next date exists | New task cloned; dueDate = nextDate; original = done
+Recurrence endDate reached ΓåÆ complete | Status = done; no new task created; info toast
+Recurrence endCount reached ΓåÆ complete | Status = done; no new task; info toast
+Recurring task deleted | Confirm: 'Delete this task only' or 'Delete all future'. Only affects unstarted tasks.
+
+=== HabitFlow_DB_Schema.docx ===
+HABITFLOW
+Database & Backend Schema
+Local-First  ┬╖  IndexedDB  ┬╖  Dexie.js  ┬╖  Zod  ┬╖  Service Layer
+Version 1.0  ┬╖  2025  ┬╖  Aditya
+1. Architecture Overview
+HabitFlow uses a 100% client-side, local-first data architecture. There is no traditional backend server. The database lives inside the user's browser via the IndexedDB Web API, managed through Dexie.js ΓÇö a battle-tested, typed IndexedDB wrapper. All business logic runs on the frontend in TypeScript service modules.
+2. Entity Relationship Map
+The six core collections and their relationships. IndexedDB does not enforce foreign keys natively ΓÇö referential integrity is enforced at the Dexie service layer.
+3. Collection Schemas
+Each collection is documented with: field name, TypeScript type, constraints, index status, and purpose. ≡ƒöæ = primary key, ≡ƒöù = foreign key.
+Embedded Sub-Schema: Frequency
+HabitType Enum
+Embedded Sub-Schema: Recurrence
+Priority & Status Enums
+XP Level Thresholds
+XP Earning Events
+4. Zod Validation Schemas
+Every collection has a Zod schema. All data passing into IndexedDB is parsed through these schemas. Parse failures are caught at the service layer ΓÇö invalid data never reaches the database.
+5. Dexie.js Implementation
+5.1 Database Class
+5.2 Index Strategy
+Indexes in Dexie are declared in the .stores() schema string. Only frequently-queried fields should be indexed ΓÇö over-indexing slows writes and increases storage.
+6. Service Layer
+Each collection has a dedicated service module that encapsulates all database operations. Components and hooks never call db directly ΓÇö they go through the service layer. This enforces validation, referential integrity, and business rules in one place.
+6.1 habitService
+6.2 habitLogService
+6.3 taskService
+7. Migration Strategy
+Dexie's built-in version system handles schema evolution. Every production schema change requires a new version number with an explicit upgrade function. Skipping a version is forbidden.
+8. Transaction Patterns
+Multi-table writes must always be wrapped in a Dexie transaction. A transaction is atomic ΓÇö if any step fails, all changes roll back. Never perform related writes outside a transaction.
+9. Data Export & Import Schema
+All user data can be exported as a single JSON file and re-imported on any device. The export schema is versioned independently of the database schema to allow cross-version restores.
+10. Analytics Query Patterns
+Analytics data is never stored pre-computed. Every chart is generated on demand by querying IndexedDB and transforming the results in application memory. For heavy computations, a Web Worker is used to avoid blocking the UI thread.
+10.1 Heatmap Data
+10.2 Streak Calculation Algorithm
+11. Data Lifecycle & Retention
+12. Future Cloud Sync Schema (Supabase)
+This section is post-MVP. When optional cloud sync is added, the following Supabase (Postgres) schema mirrors the IndexedDB schema with additional sync metadata fields.
+12.1 Sync Strategy (Last-Write-Wins)
+Appendix ΓÇö Quick Reference
+A. Dexie Query Cheat Sheet
+B. generateId() Utility
+C. Error Handling Pattern
+End of Database Schema Document  ┬╖  HabitFlow v1.0  ┬╖  Aditya  ┬╖  ZCOER SE AIML
+6
+Collections | 28
+Fields (avg) | 12
+Indexes | 5
+Migrations | 100%
+Offline
+≡ƒôî
+NOTE | This document covers the complete data layer: schema definitions, field specifications, indexes, relationships, Zod validation schemas, service layer patterns, migration strategy, query patterns, and future cloud sync schema. 'Backend' in HabitFlow means the service + database layer running in-browser.
+Property | Value
+Database engine | IndexedDB (browser-native, W3C standard)
+ORM / Wrapper | Dexie.js v4 (typed, reactive, migration-aware)
+Reactive queries | dexie-react-hooks: useLiveQuery()
+Schema validation | Zod v3 (runtime validation at all boundaries)
+Data persistence | Survives browser restarts; cleared only on explicit reset
+Storage quota | ~60% of available disk (Chrome); 1GB+ typical
+Transactions | Dexie transaction() ΓÇö atomic multi-table operations
+Offline capability | Full read/write with zero network dependency
+Collections (tables) | 6 core + metadata
+Estimated data size | < 10MB for 1 year of active use
+Parent Table | Relationship | Child Table | Foreign Key | On Delete
+habits | 1 ΓåÆ Many | habitLogs | habitLogs.habitId | CASCADE
+habits | 1 ΓåÆ Many | reminders | reminders.habitId | CASCADE
+projects | 1 ΓåÆ Many | tasks | tasks.projectId | SET NULL
+tasks | 1 ΓåÆ Many | tasks | tasks.parentId | CASCADE
+tasks | Many ΓåÆ Many | labels | taskLabels join table | CASCADE
+moods | 1 ΓåÆ 1 | habitLogs | habitLogs.moodId | SET NULL
+userXP | 1 ΓåÆ 1 | (singleton) | n/a | n/a
+≡ƒôî
+NOTE | IndexedDB stores all data as plain JavaScript objects. There are no SQL JOINs. Relationships are resolved by querying both tables and joining in application memory. Compound indexes (e.g., [habitId+date]) are used to optimise the most frequent joins.
+≡ƒôï  Collection: habits
+The master record for every habit the user tracks.
+Field Name | Type | Constraints | IndexedDB Index | Description
+id  ≡ƒöæ | string | UUID, PK, required | Primary | Auto-generated UUIDv4 on creation
+name | string | min:1, max:100, required | ΓÇö | Display name of the habit
+description | string | max:500, optional | ΓÇö | Optional longer description or motivation note
+icon | string | single emoji, required | ΓÇö | Emoji character used as the habit icon
+color | string | #RRGGBB hex, required | ΓÇö | Accent color for the habit card
+category | string | max:50, required | Yes | User-defined category (Health, Learning, WorkΓÇª)
+type | HabitType | enum, required | ΓÇö | boolean | count | duration | rating
+frequency | Frequency | object, required | ΓÇö | Embedded schedule object (see sub-schema below)
+targetValue | number | positive, optional | ΓÇö | Goal value per entry (e.g. 8 glasses, 30 min)
+targetUnit | string | max:20, optional | ΓÇö | Unit label for display (glasses, min, pagesΓÇª)
+startDate | string | ISO date, required | ΓÇö | Date the habit begins (YYYY-MM-DD)
+endDate | string | ISO date, optional | ΓÇö | Optional expiry date for challenge habits
+reminderTime | string | HH:MM, optional | ΓÇö | Default reminder time; overridden by reminders collection
+graceDays | number | 0-7, default: 0 | ΓÇö | Allowed misses per week without breaking streak
+archived | 0 | 1 | default: 0 | Yes | Soft-delete flag. 0 = active, 1 = archived
+sortOrder | number | integer, default: 0 | ΓÇö | Manual sort position in Today view
+createdAt | Date | required, auto-set | ΓÇö | Timestamp of creation
+updatedAt | Date | required, auto-set | ΓÇö | Timestamp of last modification
+TypeScript
+// TypeScript ΓÇö Frequency sub-object (stored inline in habits)
+type FrequencyType = 'daily' | 'weekly' | 'interval'
+
+interface Frequency {
+  type:     FrequencyType
+  days?:    number[]   // [0-6] ΓÇö 0=Sun, 1=Mon ΓÇª 6=Sat (weekly only)
+  interval?:number     // every N days (interval only)
+}
+
+// Examples:
+// Daily:    { type: 'daily' }
+// Mon/Wed:  { type: 'weekly', days: [1, 3] }
+// Every 3d: { type: 'interval', interval: 3 }
+HabitType Value | Behaviour
+boolean | Simple done / not done. Check-in UI: single checkbox.
+count | Numeric counter (reps, pages, glasses). UI: stepper input.
+duration | Time in minutes. UI: number input or timer widget.
+rating | 1ΓÇô5 quality score. UI: 5-star or emoji scale.
+≡ƒô¥  Collection: habitLogs
+One document per habit-per-day check-in. The highest-write collection.
+Field Name | Type | Constraints | IndexedDB Index | Description
+id  ≡ƒöæ | string | UUID, PK, required | Primary | Auto-generated UUIDv4
+habitId  ≡ƒöù | string | UUID ref, required | Yes | Foreign key ΓåÆ habits.id
+date | string | YYYY-MM-DD, required | Compound | Calendar date of the log entry
+value | number | ΓëÑ 0, required | ΓÇö | Logged value (1 for boolean, N for count/duration/rating)
+completed | 0 | 1 | default: 0 | ΓÇö | 1 = fully met target, 0 = partial or missed
+note | string | max:500, optional | ΓÇö | Free-text journal note for this entry
+moodId  ≡ƒöù | string | UUID ref, optional | ΓÇö | Foreign key ΓåÆ moods.id (same-day mood link)
+timeOfDay | string | HH:MM, optional | ΓÇö | Clock time when the entry was logged
+isBackdated | 0 | 1 | default: 0 | ΓÇö | 1 if entry was logged after the fact
+createdAt | Date | required, auto-set | ΓÇö | Actual timestamp the record was created
+≡ƒôî
+NOTE | The compound index [habitId+date] enforces one log per habit per day at the query layer. The service validateUniqueLog() checks for duplicates before insert. On backdated updates, the existing record is updated (not re-inserted).
+Query Name | Dexie Expression | Use Case
+Logs for habit | db.habitLogs.where('habitId').equals(id).toArray() | Habit detail view ΓÇö all history
+Log for date | db.habitLogs.where('[habitId+date]').equals([id, date]) | Today check-in ΓÇö get existing value
+Date range | db.habitLogs.where('date').between(start, end).toArray() | Analytics ΓÇö period filtering
+All logs today | db.habitLogs.where('date').equals(today).toArray() | Dashboard ΓÇö daily completion ring
+Completed logs | db.habitLogs.where('completed').equals(1).count() | Stats ΓÇö total completions badge
+Γ£à  Collection: tasks
+To-do items ΓÇö flat with self-referencing parentId for subtask nesting.
+Field Name | Type | Constraints | IndexedDB Index | Description
+id  ≡ƒöæ | string | UUID, PK, required | Primary | Auto-generated UUIDv4
+title | string | min:1, max:255, required | ΓÇö | Task title text
+description | string | max:2000, optional | ΓÇö | Rich text notes (markdown subset: bold, bullet, code)
+priority | Priority | enum, required | Yes | P0 | P1 | P2 | P3 ΓÇö P0 is highest
+status | TaskStatus | enum, required | Yes | todo | inprogress | done | cancelled
+dueDate | string | YYYY-MM-DD, optional | Yes | Target completion date
+dueTime | string | HH:MM, optional | ΓÇö | Specific time if time-sensitive
+projectId  ≡ƒöù | string | UUID ref, optional | Yes | Foreign key ΓåÆ projects.id (null = inbox)
+parentId  ≡ƒöù | string | UUID ref, optional | Yes | Self-ref FK ΓåÆ tasks.id (null = root task)
+labelIds  ≡ƒöù | string[] | array of UUID, optional | ΓÇö | Foreign keys ΓåÆ labels.id (stored as JSON array)
+recurring | Recurrence | object, optional | ΓÇö | Embedded recurrence rule (see sub-schema)
+completedAt | Date | optional | ΓÇö | Timestamp when status was set to 'done'
+sortOrder | number | integer, default: 0 | ΓÇö | Manual drag position within its section
+archived | 0 | 1 | default: 0 | ΓÇö | Soft-delete: 1 = removed from active views
+createdAt | Date | required, auto-set | ΓÇö | Creation timestamp
+updatedAt | Date | required, auto-set | ΓÇö | Last modification timestamp
+TypeScript
+// Recurrence object ΓÇö stored inline in tasks
+type RecurrenceFreq = 'daily' | 'weekly' | 'monthly' | 'custom'
+
+interface Recurrence {
+  freq:      RecurrenceFreq
+  interval:  number       // every N units (1 = every day/week/month)
+  days?:     number[]     // specific days for weekly (0=Sun...6=Sat)
+  endDate?:  string       // stop generating after this date
+  endCount?: number       // stop after N occurrences
+}
+
+// When a recurring task is completed:
+// 1. Mark current task done
+// 2. Create new task instance with next dueDate calculated from Recurrence rule
+// 3. New task inherits all fields except id, dueDate, completedAt, status
+Priority | Meaning + Display Color
+P0  (Urgent) | ≡ƒö┤ Red ΓÇö must do today
+P1  (High) | ≡ƒƒá Orange ΓÇö important this week
+P2  (Medium) | ≡ƒö╡ Blue ΓÇö normal backlog
+P3  (Low) | ΓÜ¬ Gray ΓÇö someday / optional
+Status | Meaning
+todo | Created, not started
+inprogress | Actively being worked on
+done | Completed ΓÇö completedAt is set
+cancelled | Abandoned ΓÇö stays in history
+Query Name | Dexie Expression | Use Case
+Tasks due today | db.tasks.where('dueDate').equals(today).filter(t => t.status !== 'done') | Today view
+Inbox (no project) | db.tasks.where('projectId').equals('').filter(t => !t.parentId) | Inbox view
+By project | db.tasks.where('projectId').equals(projectId).toArray() | Project view
+Subtasks | db.tasks.where('parentId').equals(taskId).toArray() | Task detail
+Overdue | db.tasks.where('dueDate').below(today).filter(t => t.status !== 'done') | Overdue badge
+By priority | db.tasks.where('priority').equals('P0').toArray() | Priority filter
+≡ƒôü  Collection: projects
+Groups tasks into logical work streams. Tasks can exist without a project (inbox).
+Field Name | Type | Constraints | IndexedDB Index | Description
+id  ≡ƒöæ | string | UUID, PK, required | Primary | Auto-generated UUIDv4
+name | string | min:1, max:100, required | ΓÇö | Project display name
+description | string | max:500, optional | ΓÇö | Optional project description
+color | string | #RRGGBB hex, required | ΓÇö | Color for project chip and sidebar dot
+icon | string | single emoji, required | ΓÇö | Emoji icon for the project
+archived | 0 | 1 | default: 0 | Yes | Soft-delete; hides project from active sidebar
+sortOrder | number | integer, default: 0 | ΓÇö | Order in sidebar list
+createdAt | Date | required, auto-set | ΓÇö | Creation timestamp
+updatedAt | Date | required, auto-set | ΓÇö | Last modification timestamp
+≡ƒôî
+NOTE | Project progress (e.g. '12 / 20 tasks done') is a derived value ΓÇö computed on the fly by querying tasks WHERE projectId = id. It is never stored in the projects collection to avoid sync drift.
+≡ƒÅ╖∩╕Å  Collection: labels
+Reusable color-coded tags. Tasks hold an array of label IDs.
+Field Name | Type | Constraints | IndexedDB Index | Description
+id  ≡ƒöæ | string | UUID, PK, required | Primary | Auto-generated UUIDv4
+name | string | min:1, max:50, required | Yes | Label text (e.g. 'urgent', 'study')
+color | string | #RRGGBB hex, required | ΓÇö | Chip background color
+createdAt | Date | required, auto-set | ΓÇö | Creation timestamp
+≡ƒôÉ
+RULE | Labels are stored as an array of IDs inside tasks.labelIds. There is no separate join table in IndexedDB. When a label is deleted, a service-layer cleanup function removes its ID from all task.labelIds arrays within a single Dexie transaction.
+≡ƒÿè  Collection: moods
+One mood entry per calendar day. Linked to habitLogs for correlation analytics.
+Field Name | Type | Constraints | IndexedDB Index | Description
+id  ≡ƒöæ | string | UUID, PK, required | Primary | Auto-generated UUIDv4
+date | string | YYYY-MM-DD, unique, req. | Yes | One mood per day ΓÇö enforced by service layer
+score | number | integer 1ΓÇô5, required | ΓÇö | 1=Terrible, 2=Bad, 3=Okay, 4=Good, 5=Excellent
+emoji | string | single emoji, optional | ΓÇö | Visual mood indicator (≡ƒÿ½ ≡ƒÿò ≡ƒÿÉ ≡ƒÖé ≡ƒÿä)
+note | string | max:300, optional | ΓÇö | Optional mood journal entry
+energy | number | integer 1ΓÇô5, optional | ΓÇö | Energy level tracked separately from mood
+createdAt | Date | required, auto-set | ΓÇö | Creation timestamp
+updatedAt | Date | required, auto-set | ΓÇö | Timestamp of last update (moods are editable)
+≡ƒÆí
+TIP | Mood + energy data is joined with habitLogs in application memory to produce the habit-mood correlation scatter plot. The join key is the shared date field (YYYY-MM-DD). This is always done at analytics calculation time, never stored pre-joined.
+≡ƒÅå  Collection: userXP
+Singleton gamification record. Always exactly one document in this collection.
+Field Name | Type | Constraints | IndexedDB Index | Description
+id  ≡ƒöæ | string | UUID, PK, required | Primary | Always 'singleton' ΓÇö hardcoded constant
+totalXP | number | ΓëÑ 0, default: 0 | ΓÇö | Cumulative XP earned across all time
+level | number | 1ΓÇô10, default: 1 | ΓÇö | Computed from totalXP thresholds (see table below)
+currentStreak | number | ΓëÑ 0, default: 0 | ΓÇö | Overall app streak ΓÇö any habit completed today
+longestStreak | number | ΓëÑ 0, default: 0 | ΓÇö | All-time longest overall app streak
+dailyScore | number | 0ΓÇô100, default: 0 | ΓÇö | Today's composite score (habits + tasks, resets daily)
+weeklyScore | number | 0ΓÇô700, default: 0 | ΓÇö | Rolling 7-day score total
+badgesEarned | string[] | array of badge IDs | ΓÇö | All badge IDs earned (stored as JSON array)
+lastScoreDate | string | YYYY-MM-DD, required | ΓÇö | Date dailyScore was last reset
+updatedAt | Date | required, auto-set | ΓÇö | Timestamp of last XP update
+Level | XP Required  |  Title
+Level 1 | 0 XP      |  Beginner
+Level 2 | 500 XP    |  Builder
+Level 3 | 1,500 XP  |  Achiever
+Level 4 | 3,500 XP  |  Champion
+Level 5 | 7,000 XP  |  Elite
+Level 6 | 12,000 XP |  Master
+Level 7 | 20,000 XP |  Grandmaster
+Level 8 | 35,000 XP |  Legend
+Level 9 | 55,000 XP |  Mythic
+Level 10 | 80,000 XP |  Immortal
+Event | XP Award
+Habit check-in (boolean) | +10 XP
+Habit check-in (count/duration) | +10 XP base + 1 XP per % of target met
+Streak bonus (each day in streak) | +5 XP per streak day (max +50)
+Task completed (P0) | +20 XP
+Task completed (P1) | +15 XP
+Task completed (P2/P3) | +10 XP
+7-day milestone | +50 XP badge bonus
+30-day milestone | +200 XP badge bonus
+All habits done today | +30 XP bonus
+≡ƒöö  Collection: reminders
+Per-habit push notification schedules. Stored separately from habits for flexibility.
+Field Name | Type | Constraints | IndexedDB Index | Description
+id  ≡ƒöæ | string | UUID, PK, required | Primary | Auto-generated UUIDv4
+habitId  ≡ƒöù | string | UUID ref, required | Yes | Foreign key ΓåÆ habits.id
+time | string | HH:MM, required | ΓÇö | Time of day for the reminder (24-hour format)
+days | number[] | array [0-6], required | ΓÇö | Days this reminder fires (0=SunΓÇª6=Sat)
+enabled | 0 | 1 | default: 1 | Yes | 0 = muted without deletion
+message | string | max:140, optional | ΓÇö | Custom push notification body text
+swRegistered | 0 | 1 | default: 0 | ΓÇö | 1 = successfully registered with Service Worker
+createdAt | Date | required, auto-set | ΓÇö | Creation timestamp
+TypeScript ΓÇö db/schemas.ts
+// db/schemas.ts ΓÇö Master Zod schema file
+import { z } from 'zod'
+
+// ΓöÇΓöÇΓöÇ Shared primitives ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+const UUID       = z.string().uuid()
+const ISODate    = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+const HHMMTime   = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+const HexColor   = z.string().regex(/^#[0-9A-Fa-f]{6}$/)
+const ZeroOrOne  = z.union([z.literal(0), z.literal(1)])
+
+// ΓöÇΓöÇΓöÇ Frequency (habit sub-schema) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+const FrequencySchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('daily') }),
+  z.object({ type: z.literal('weekly'), days: z.array(z.number().min(0).max(6)).min(1) }),
+  z.object({ type: z.literal('interval'), interval: z.number().int().positive() }),
+])
+
+// ΓöÇΓöÇΓöÇ Habit ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export const HabitSchema = z.object({
+  id:           UUID,
+  name:         z.string().min(1).max(100),
+  description:  z.string().max(500).optional(),
+  icon:         z.string().emoji().max(2),
+  color:        HexColor,
+  category:     z.string().min(1).max(50),
+  type:         z.enum(['boolean', 'count', 'duration', 'rating']),
+  frequency:    FrequencySchema,
+  targetValue:  z.number().positive().optional(),
+  targetUnit:   z.string().max(20).optional(),
+  startDate:    ISODate,
+  endDate:      ISODate.optional(),
+  reminderTime: HHMMTime.optional(),
+  graceDays:    z.number().int().min(0).max(7).default(0),
+  archived:     ZeroOrOne.default(0),
+  sortOrder:    z.number().int().default(0),
+  createdAt:    z.date(),
+  updatedAt:    z.date(),
+})
+export type Habit = z.infer<typeof HabitSchema>
+
+// ΓöÇΓöÇΓöÇ HabitLog ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export const HabitLogSchema = z.object({
+  id:          UUID,
+  habitId:     UUID,
+  date:        ISODate,
+  value:       z.number().min(0),
+  completed:   ZeroOrOne.default(0),
+  note:        z.string().max(500).optional(),
+  moodId:      UUID.optional(),
+  timeOfDay:   HHMMTime.optional(),
+  isBackdated: ZeroOrOne.default(0),
+  createdAt:   z.date(),
+})
+export type HabitLog = z.infer<typeof HabitLogSchema>
+
+// ΓöÇΓöÇΓöÇ Task ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+const RecurrenceSchema = z.object({
+  freq:      z.enum(['daily', 'weekly', 'monthly', 'custom']),
+  interval:  z.number().int().positive().default(1),
+  days:      z.array(z.number().min(0).max(6)).optional(),
+  endDate:   ISODate.optional(),
+  endCount:  z.number().int().positive().optional(),
+})
+
+export const TaskSchema = z.object({
+  id:          UUID,
+  title:       z.string().min(1).max(255),
+  description: z.string().max(2000).optional(),
+  priority:    z.enum(['P0', 'P1', 'P2', 'P3']).default('P2'),
+  status:      z.enum(['todo', 'inprogress', 'done', 'cancelled']).default('todo'),
+  dueDate:     ISODate.optional(),
+  dueTime:     HHMMTime.optional(),
+  projectId:   UUID.optional(),
+  parentId:    UUID.optional(),
+  labelIds:    z.array(UUID).default([]),
+  recurring:   RecurrenceSchema.optional(),
+  completedAt: z.date().optional(),
+  sortOrder:   z.number().int().default(0),
+  archived:    ZeroOrOne.default(0),
+  createdAt:   z.date(),
+  updatedAt:   z.date(),
+})
+export type Task = z.infer<typeof TaskSchema>
+TypeScript ΓÇö db/db.ts
+// db/db.ts ΓÇö Dexie database singleton
+import Dexie, { type EntityTable } from 'dexie'
+import type { Habit, HabitLog, Task, Project, Label, Mood, UserXP, Reminder } from './schemas'
+
+export class HabitFlowDB extends Dexie {
+  // Collections typed with EntityTable<Type, PrimaryKey>
+  habits!:    EntityTable<Habit,    'id'>
+  habitLogs!: EntityTable<HabitLog, 'id'>
+  tasks!:     EntityTable<Task,     'id'>
+  projects!:  EntityTable<Project,  'id'>
+  labels!:    EntityTable<Label,    'id'>
+  moods!:     EntityTable<Mood,     'id'>
+  userXP!:    EntityTable<UserXP,   'id'>
+  reminders!: EntityTable<Reminder, 'id'>
+
+  constructor() {
+    super('HabitFlowDB')
+
+    // Version 1 ΓÇö initial schema
+    this.version(1).stores({
+      // Syntax: '++id' = auto-increment, 'id' = manual PK, '&field' = unique
+      // Comma-separated = indexed fields, [a+b] = compound index
+      habits:    'id, category, archived, sortOrder',
+      habitLogs: 'id, habitId, date, [habitId+date], completed',
+      tasks:     'id, status, priority, dueDate, projectId, parentId, archived',
+      projects:  'id, archived, sortOrder',
+      labels:    'id, &name',
+      moods:     'id, &date',
+      userXP:    'id',
+      reminders: 'id, habitId, enabled',
+    })
+  }
+}
+
+// Export singleton ΓÇö import this everywhere, never re-instantiate
+export const db = new HabitFlowDB()
+
+// Initialise XP singleton on first run
+export const initDB = async () => {
+  const xp = await db.userXP.get('singleton')
+  if (!xp) {
+    await db.userXP.put({
+      id: 'singleton', totalXP: 0, level: 1,
+      currentStreak: 0, longestStreak: 0,
+      dailyScore: 0, weeklyScore: 0,
+      badgesEarned: [], lastScoreDate: todayISO(),
+      updatedAt: new Date()
+    })
+  }
+}
+Collection | Index | Type | Query Served
+habits | category | Single | Filter by category in settings + analytics
+habits | archived | Single | Exclude archived from Today view
+habitLogs | habitId | Single | All logs for a given habit (history view)
+habitLogs | date | Single | All logs for a given date (dashboard)
+habitLogs | [habitId+date] | Compound | Single log for habit+date (check-in lookup)
+habitLogs | completed | Single | Total completion count (stats card)
+tasks | status | Single | Filter active/done tasks
+tasks | priority | Single | Priority-filtered views
+tasks | dueDate | Single | Today/upcoming view, overdue detection
+tasks | projectId | Single | Project task list view
+tasks | parentId | Single | Subtask lookup for a parent task
+labels | &name | Unique | Prevent duplicate label names
+moods | &date | Unique | Enforce one mood per day
+reminders | habitId | Single | Load reminders for a habit in settings
+reminders | enabled | Single | Service Worker: load active reminders only
+≡ƒôÉ
+RULE | No component or hook may import 'db' directly. All reads and writes go through the service layer. This rule is enforced by ESLint no-restricted-imports.
+TypeScript ΓÇö habitService.ts (excerpt)
+// features/habits/services/habitService.ts
+import { db } from '@/db/db'
+import { HabitSchema, type Habit } from '@/db/schemas'
+import { generateId, todayISO } from '@/shared/utils'
+
+// ΓöÇΓöÇΓöÇ CREATE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export async function createHabit(input: Omit<Habit, 'id' | 'createdAt' | 'updatedAt'>): Promise<Habit> {
+  const now   = new Date()
+  const habit = HabitSchema.parse({
+    ...input,
+    id:        generateId(),   // crypto.randomUUID()
+    createdAt: now,
+    updatedAt: now,
+  })
+  await db.habits.add(habit)
+  return habit
+}
+
+// ΓöÇΓöÇΓöÇ UPDATE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export async function updateHabit(id: string, patch: Partial<Habit>): Promise<void> {
+  await db.habits.update(id, { ...patch, updatedAt: new Date() })
+}
+
+// ΓöÇΓöÇΓöÇ ARCHIVE (soft delete) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export async function archiveHabit(id: string): Promise<void> {
+  await db.transaction('rw', [db.habits, db.reminders], async () => {
+    await db.habits.update(id, { archived: 1, updatedAt: new Date() })
+    // Disable all reminders for this habit
+    await db.reminders.where('habitId').equals(id).modify({ enabled: 0 })
+  })
+}
+
+// ΓöÇΓöÇΓöÇ DELETE (hard ΓÇö only from settings) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export async function deleteHabit(id: string): Promise<void> {
+  await db.transaction('rw', [db.habits, db.habitLogs, db.reminders], async () => {
+    await db.habits.delete(id)
+    await db.habitLogs.where('habitId').equals(id).delete()  // cascade
+    await db.reminders.where('habitId').equals(id).delete()  // cascade
+  })
+}
+TypeScript ΓÇö habitLogService.ts (excerpt)
+// features/habits/services/habitLogService.ts
+
+// ΓöÇΓöÇΓöÇ CHECK-IN (upsert pattern) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export async function checkIn(
+  habitId: string,
+  date: string,      // YYYY-MM-DD
+  value: number,
+  note?: string
+): Promise<HabitLog> {
+  // Check for existing log (compound index lookup ΓÇö O(log n))
+  const existing = await db.habitLogs
+    .where('[habitId+date]').equals([habitId, date])
+    .first()
+
+  const habit = await db.habits.get(habitId)
+  if (!habit) throw new Error(`Habit ${habitId} not found`)
+
+  const completed = habit.targetValue
+    ? value >= habit.targetValue ? 1 : 0
+    : value > 0 ? 1 : 0
+
+  if (existing) {
+    // Update existing entry
+    await db.habitLogs.update(existing.id, {
+      value, completed, note, isBackdated: date !== todayISO() ? 1 : 0
+    })
+    return { ...existing, value, completed }
+  }
+
+  // Create new entry
+  const log = HabitLogSchema.parse({
+    id: generateId(), habitId, date, value, completed,
+    note, isBackdated: date !== todayISO() ? 1 : 0,
+    timeOfDay: currentTime(),  // HH:MM
+    createdAt: new Date(),
+  })
+  await db.habitLogs.add(log)
+
+  // Award XP in the same transaction
+  await awardXP(habitId, value, completed)
+  return log
+}
+
+// ΓöÇΓöÇΓöÇ STREAK CALCULATION ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export async function getStreak(habitId: string): Promise<{ current: number; best: number }> {
+  const habit = await db.habits.get(habitId)
+  if (!habit) return { current: 0, best: 0 }
+
+  const logs = await db.habitLogs
+    .where('habitId').equals(habitId)
+    .filter(l => l.completed === 1)
+    .toArray()
+
+  return calcStreakFromLogs(logs, habit.frequency, habit.graceDays)
+}
+TypeScript ΓÇö taskService.ts (excerpt)
+// features/tasks/services/taskService.ts
+
+// ΓöÇΓöÇΓöÇ COMPLETE TASK (handles recurring regeneration) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export async function completeTask(id: string): Promise<void> {
+  const task = await db.tasks.get(id)
+  if (!task) throw new Error(`Task ${id} not found`)
+
+  await db.transaction('rw', [db.tasks, db.userXP], async () => {
+    // Mark done
+    await db.tasks.update(id, {
+      status: 'done',
+      completedAt: new Date(),
+      updatedAt: new Date(),
+    })
+
+    // Award XP by priority
+    const xpMap = { P0: 20, P1: 15, P2: 10, P3: 10 }
+    await awardXP(xpMap[task.priority])
+
+    // Spawn next recurring instance if applicable
+    if (task.recurring) {
+      const nextDate = calcNextRecurrence(task.dueDate, task.recurring)
+      if (nextDate) {
+        const { id: _, completedAt: __, status: ___, createdAt: ____, ...rest } = task
+        await db.tasks.add({
+          ...rest,
+          id:        generateId(),
+          status:    'todo',
+          dueDate:   nextDate,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      }
+    }
+  })
+}
+
+// ΓöÇΓöÇΓöÇ DELETE WITH CASCADE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export async function deleteTask(id: string): Promise<void> {
+  // Recursively find all subtasks first
+  const subtaskIds = await getAllSubtaskIds(id)
+  await db.tasks.bulkDelete([id, ...subtaskIds])
+}
+
+async function getAllSubtaskIds(parentId: string): Promise<string[]> {
+  const children = await db.tasks.where('parentId').equals(parentId).toArray()
+  const nested   = await Promise.all(children.map(c => getAllSubtaskIds(c.id)))
+  return [...children.map(c => c.id), ...nested.flat()]
+}
+ΓÜá∩╕Å
+WARN | Never modify a previous version() block after it has shipped to users. Always add a new version() with an upgrade handler. Modifying existing versions corrupts IndexedDB for existing users.
+Version | Changes | Breaking? | Notes
+v1 | ΓÇó Initial schema: all 8 collections
+ΓÇó All indexes defined | No | MVP launch schema
+v2 | ΓÇó tasks.recurring recurrence rule field added
+ΓÇó habitLogs.energy field added | No | Additive ΓÇö upgrade copies existing, fills defaults
+v3 | ΓÇó userXP.level field added
+ΓÇó XP thresholds table hardcoded in service layer | No | level defaults to 1 for existing records
+v4 | ΓÇó habits.graceDays added (default 0)
+ΓÇó reminders collection added | No | Reminders migrate from reminderTime field in habits
+v5 | ΓÇó labels collection added
+ΓÇó tasks.labelIds array added | No | labels empty array default for existing tasks
+TypeScript ΓÇö Migration pattern
+// db/db.ts ΓÇö Migration example
+this.version(2).stores({
+  habits:    'id, category, archived, sortOrder',
+  habitLogs: 'id, habitId, date, [habitId+date], completed',
+  tasks:     'id, status, priority, dueDate, projectId, parentId, archived',
+  projects:  'id, archived, sortOrder',
+  labels:    'id, &name',
+  moods:     'id, &date',
+  userXP:    'id',
+  reminders: 'id, habitId, enabled',
+}).upgrade(async tx => {
+  // Migrate reminderTime from habits into separate reminders collection
+  const habits = await tx.table('habits').toArray()
+  const toMigrate = habits.filter(h => h.reminderTime)
+  await tx.table('reminders').bulkAdd(toMigrate.map(h => ({
+    id:       generateId(),
+    habitId:  h.id,
+    time:     h.reminderTime,
+    days:     [0, 1, 2, 3, 4, 5, 6],  // daily by default
+    enabled:  1,
+    createdAt: new Date(),
+  })))
+  // Clean up old field ΓÇö Dexie handles this automatically on schema change
+})
+Operation | Tables in Transaction
+Habit check-in | habitLogs + userXP (XP award)
+Delete habit | habits + habitLogs + reminders (cascade)
+Archive habit | habits + reminders (disable)
+Complete recurring task | tasks (done) + tasks (new instance) + userXP
+Delete task | tasks (self + all subtasks recursively)
+Delete label | labels + tasks (remove from labelIds arrays)
+Full data reset | All 8 tables ΓÇö cleared in single transaction
+Import from backup | All 8 tables ΓÇö bulk insert after full clear
+TypeScript ΓÇö Transaction pattern
+// Transaction template ΓÇö always use this pattern
+await db.transaction('rw', [db.tableA, db.tableB], async () => {
+  // All operations here are atomic
+  await db.tableA.update(id, patch)
+  await db.tableB.add(newRecord)
+  // If anything throws, BOTH changes roll back automatically
+})
+
+// 'rw' = read-write transaction
+// 'r'  = read-only transaction (use for complex multi-table reads)
+// Always list ALL tables accessed in the array ΓÇö missing a table causes error
+JSON ΓÇö Export format
+// Export format ΓÇö HabitFlow backup file (*.habitflow.json)
+{
+  "meta": {
+    "version":     "1.0",
+    "appVersion":  "1.0.0",
+    "exportedAt":  "2025-08-01T12:00:00.000Z",
+    "deviceId":    "uuid-of-exporting-device"
+  },
+  "data": {
+    "habits":    [ /* Habit[] */ ],
+    "habitLogs": [ /* HabitLog[] */ ],
+    "tasks":     [ /* Task[] */ ],
+    "projects":  [ /* Project[] */ ],
+    "labels":    [ /* Label[] */ ],
+    "moods":     [ /* Mood[] */ ],
+    "reminders": [ /* Reminder[] */ ],
+    "userXP":    { /* UserXP singleton */ }
+  }
+}
+
+// Import process:
+// 1. Validate meta.version ΓÇö warn if exporting newer version than app
+// 2. Parse each array through its Zod schema (throw on invalid data)
+// 3. Clear all existing data in a single transaction
+// 4. Bulk insert all collections in dependency order:
+//    projects ΓåÆ labels ΓåÆ habits ΓåÆ habitLogs ΓåÆ tasks ΓåÆ moods ΓåÆ reminders ΓåÆ userXP
+TypeScript ΓÇö Heatmap query
+// features/analytics/services/analyticsService.ts
+
+// Generate 52-week heatmap data for a habit
+export async function getHeatmapData(habitId: string): Promise<HeatmapCell[]> {
+  const start = subDays(new Date(), 364)   // 52 weeks back
+  const end   = new Date()
+
+  const logs = await db.habitLogs
+    .where('habitId').equals(habitId)
+    .filter(l => isAfter(parseISO(l.date), start))
+    .toArray()
+
+  const logMap = new Map(logs.map(l => [l.date, l]))
+  const habit  = await db.habits.get(habitId)
+
+  // Build cell for every day in range
+  return eachDayOfInterval({ start, end }).map(day => {
+    const dateStr = format(day, 'yyyy-MM-dd')
+    const log     = logMap.get(dateStr)
+    const pct     = log && habit?.targetValue
+      ? Math.min(100, Math.round((log.value / habit.targetValue) * 100))
+      : log?.completed ? 100 : 0
+    return { date: dateStr, value: pct, raw: log?.value ?? 0 }
+  })
+}
+TypeScript ΓÇö Streak algorithm
+// shared/utils/streakCalc.ts ΓÇö pure function, testable
+
+export function calcStreakFromLogs(
+  logs: Pick<HabitLog, 'date' | 'completed'>[],
+  frequency: Frequency,
+  graceDays: number
+): { current: number; best: number } {
+  const completedDates = new Set(logs.filter(l => l.completed).map(l => l.date))
+  const scheduledDays  = getScheduledDays(frequency)  // days habit should be done
+
+  let current = 0, best = 0, streak = 0, missesThisWeek = 0
+
+  // Walk backwards from yesterday (today is still in progress)
+  let cursor = subDays(new Date(), 1)
+  while (isAfter(cursor, subDays(new Date(), 365))) {
+    const dateStr   = format(cursor, 'yyyy-MM-dd')
+    const isScheduled = scheduledDays.has(cursor.getDay())
+
+    if (isScheduled) {
+      if (completedDates.has(dateStr)) {
+        streak++
+        missesThisWeek = 0
+      } else {
+        if (missesThisWeek < graceDays) {
+          missesThisWeek++   // grace day consumed ΓÇö streak continues
+        } else {
+          best = Math.max(best, streak)
+          if (current === 0) current = streak
+          streak = 0         // streak broken
+        }
+      }
+    }
+    cursor = subDays(cursor, 1)
+  }
+
+  best = Math.max(best, streak)
+  return { current: current || streak, best }
+}
+Entity | Lifecycle Policy
+habits | Soft-delete (archive) ΓåÆ available in settings ΓåÆ hard-delete only on explicit user action. Historical logs preserved.
+habitLogs | Permanent. Never auto-deleted. User can delete manually per-entry or clear all on reset.
+tasks | Completed tasks soft-archived after 30 days of completion (configurable). Hard-delete via UI.
+projects | Soft-archived. Tasks with this projectId retain the projectId but project hides from sidebar.
+labels | Hard-deleted immediately. Label ID removed from all task.labelIds in same transaction.
+moods | Permanent. User can edit or delete per-day entries.
+userXP | Singleton ΓÇö never deleted. Resets to zero on full app reset.
+reminders | Cascade-deleted with their habit. User can toggle enabled per reminder.
+ΓÜá∩╕Å
+WARN | Cloud sync is an additive enhancement ΓÇö the app must remain 100% functional without it. The local IndexedDB schema is the primary schema. Cloud is a backup/sync layer.
+SQL ΓÇö Supabase cloud schema (future)
+-- Supabase (PostgreSQL) ΓÇö future cloud sync schema
+-- All tables include sync metadata columns
+
+CREATE TABLE habits (
+  id           UUID PRIMARY KEY,
+  user_id      UUID REFERENCES auth.users NOT NULL,
+  name         VARCHAR(100) NOT NULL,
+  icon         VARCHAR(8) NOT NULL,
+  color        CHAR(7) NOT NULL,
+  category     VARCHAR(50) NOT NULL,
+  type         VARCHAR(20) NOT NULL CHECK (type IN ('boolean','count','duration','rating')),
+  frequency    JSONB NOT NULL,
+  target_value REAL,
+  target_unit  VARCHAR(20),
+  start_date   DATE NOT NULL,
+  end_date     DATE,
+  grace_days   SMALLINT DEFAULT 0,
+  archived     BOOLEAN DEFAULT FALSE,
+  sort_order   INTEGER DEFAULT 0,
+  created_at   TIMESTAMPTZ NOT NULL,
+  updated_at   TIMESTAMPTZ NOT NULL,
+  -- Sync metadata
+  synced_at    TIMESTAMPTZ,
+  device_id    UUID,
+  deleted_at   TIMESTAMPTZ   -- soft-delete for sync purposes
+);
+
+CREATE TABLE habit_logs (
+  id           UUID PRIMARY KEY,
+  user_id      UUID REFERENCES auth.users NOT NULL,
+  habit_id     UUID REFERENCES habits(id) ON DELETE CASCADE,
+  date         DATE NOT NULL,
+  value        REAL NOT NULL DEFAULT 0,
+  completed    BOOLEAN DEFAULT FALSE,
+  note         VARCHAR(500),
+  time_of_day  TIME,
+  is_backdated BOOLEAN DEFAULT FALSE,
+  created_at   TIMESTAMPTZ NOT NULL,
+  synced_at    TIMESTAMPTZ,
+  device_id    UUID,
+  UNIQUE(habit_id, date)
+);
+
+-- Row Level Security ΓÇö users can only read their own data
+ALTER TABLE habits    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE habit_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY user_owns_habits ON habits
+  USING (user_id = auth.uid());
+
+CREATE POLICY user_owns_logs ON habit_logs
+  USING (user_id = auth.uid());
+Property | Strategy
+Conflict resolution | Last-write-wins based on updated_at timestamp
+Sync direction | Bidirectional: device ΓåÆ cloud on change, cloud ΓåÆ device on login
+Offline handling | Changes queue in IndexedDB; push on reconnect
+Deletions | Soft-delete with deleted_at; propagated to all devices
+First sync | Full local dump uploaded; cloud state downloaded and merged
+Frequency | Real-time via Supabase Realtime subscriptions
+TypeScript ΓÇö Dexie cheat sheet
+// Read operations
+await db.habits.get(id)                          // by primary key
+await db.habits.toArray()                        // all records
+await db.habits.where('category').equals('Health').toArray()
+await db.habits.where('archived').equals(0).toArray()
+await db.habitLogs.where('[habitId+date]').equals([id, date]).first()
+await db.tasks.where('dueDate').below(today).toArray()
+await db.tasks.where('dueDate').between(start, end).toArray()
+
+// Write operations
+await db.habits.add(habit)                       // insert (fails if id exists)
+await db.habits.put(habit)                       // upsert
+await db.habits.update(id, patch)                // partial update
+await db.habits.delete(id)                       // hard delete
+await db.habits.where('archived').equals(1).delete()  // bulk delete
+await db.habits.where('category').equals('Health').modify({ color: '#FF0000' })
+
+// Counts
+await db.habits.count()
+await db.habits.where('archived').equals(0).count()
+
+// Bulk operations
+await db.habits.bulkAdd(habitArray)
+await db.habits.bulkPut(habitArray)              // bulk upsert
+await db.habits.bulkDelete(idArray)
+TypeScript
+// shared/utils/generateId.ts
+// Uses Web Crypto API ΓÇö available in all modern browsers and Node 15+
+
+export const generateId = (): string => crypto.randomUUID()
+
+// Always produces: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+// Cryptographically random ΓÇö collision probability negligible
+// No external dependency needed
+TypeScript ΓÇö Error handling
+// All service functions follow this error pattern
+
+export class HabitFlowError extends Error {
+  constructor(
+    message: string,
+    public code: 'NOT_FOUND' | 'VALIDATION' | 'DB_ERROR' | 'CONFLICT',
+    public cause?: unknown,
+  ) {
+    super(message)
+    this.name = 'HabitFlowError'
+  }
+}
+
+// Usage in service:
+const habit = await db.habits.get(id)
+if (!habit) throw new HabitFlowError(`Habit ${id} not found`, 'NOT_FOUND')
+
+// Usage in component (via React Query):
+const { data, error } = useQuery({ queryFn: () => habitService.get(id) })
+if (error instanceof HabitFlowError && error.code === 'NOT_FOUND') {
+  return <NotFound />
+}
+
+=== HabitFlow_Frontend_Guidelines.docx ===
+HABITFLOW
+Frontend Guidelines
+Design System  ┬╖  Component Architecture  ┬╖  Code Standards  ┬╖  Accessibility
+Version 1.0  ┬╖  2025
+The single source of truth for every UI decision made in HabitFlow.
+1. Purpose & Scope
+This document is the canonical frontend reference for HabitFlow. Every developer, designer, or contributor must read and follow these guidelines before writing a single line of UI code. Consistency is not a nice-to-have ΓÇö it is the foundation of a product that feels professional.
+2. Project Folder Structure
+Strict feature-first architecture. Every feature owns its own folder ΓÇö no global soup of files.
+3. Design System & Tokens
+All visual decisions are encoded as CSS custom properties and Tailwind tokens. Never hardcode hex values, pixel sizes, or font sizes directly in components.
+3.1 Color Palette
+Primary & Brand
+Semantic Colors
+Dark Mode Tokens (CSS Variables)
+3.2 Typography
+One font family. One scale. No exceptions.
+3.3 Spacing Scale
+All spacing uses Tailwind's 4px base grid. Never use arbitrary values unless absolutely necessary and documented with a comment.
+3.4 Border Radius
+3.5 Elevation & Shadows
+4. Component Architecture
+4.1 Component Classification
+Every component in HabitFlow belongs to exactly one of three tiers:
+4.2 Component File Structure
+Every component follows this exact file pattern ΓÇö no exceptions:
+4.3 Component Rules
+4.4 Shared Component Inventory
+These primitives must be built in Phase 1 before any feature work. All are based on shadcn/ui with HabitFlow design tokens applied.
+5. TypeScript Standards
+5.1 Strictness
+5.2 Type Conventions
+6. Tailwind CSS Conventions
+6.1 Class Ordering
+Classes must follow this order (enforced by Prettier + prettier-plugin-tailwindcss):
+Layout (display, position, z-index, flex/grid)
+Sizing (width, height, min/max)
+Spacing (margin, padding)
+Typography (font, text, leading)
+Visual (background, border, shadow, ring)
+Interactive (cursor, transition, hover/focus states)
+Dark mode variants
+Responsive variants (sm:, md:, lg:)
+6.2 The cn() Utility
+Always use the cn() utility (clsx + tailwind-merge) for conditional classes. Never use template literals or string concatenation for class names.
+6.3 Arbitrary Values ΓÇö When Allowed
+7. State Management
+7.1 State Taxonomy
+7.2 Zustand Store Pattern
+7.3 Data Fetching Pattern
+8. Animation & Motion
+8.1 Principles
+Animation must serve purpose: confirm action, guide attention, or show state change.
+Default duration: 150ΓÇô300ms. Never exceed 500ms for UI transitions.
+Use ease-out for elements entering, ease-in for elements leaving.
+Always respect prefers-reduced-motion. All Framer Motion variants must have a reduced fallback.
+Never animate layout properties (width/height) ΓÇö animate transform and opacity only.
+8.2 Motion Variants Library
+9. Accessibility (a11y)
+9.1 Semantic HTML First
+9.2 ARIA Requirements
+9.3 Keyboard Navigation
+10. Performance Guidelines
+10.1 Core Web Vitals Targets
+10.2 Code Splitting
+10.3 Rendering Optimization
+11. Charts & Data Visualization
+11.1 Library Assignment
+11.2 Chart Accessibility
+Every chart container must have role='img' and aria-label with a plain text summary.
+Provide a data table alternative accessible via a 'View as table' toggle.
+Never rely on color alone to convey meaning ΓÇö use pattern fills or labels.
+Tooltip must be keyboard accessible ΓÇö trigger on focus, not just hover.
+Recharts: always set isAnimationActive={!reducedMotion}.
+11.3 Recharts Base Config
+12. Testing Standards
+12.1 Testing Pyramid
+12.2 Component Test Template
+13. Naming Conventions & Code Style
+13.1 Comment Standards
+14. Git & Development Workflow
+14.1 Branch Naming
+14.2 Commit Message Format
+14.3 Pre-commit Checklist
+All TypeScript errors resolved (tsc --noEmit passes)
+ESLint passes with zero errors
+Prettier formatted (auto via husky pre-commit hook)
+New component has at least one test
+No console.log statements committed
+No hardcoded hex colors or pixel values outside design tokens
+Tested on mobile viewport (375px)
+15. Responsive Design
+15.1 Breakpoints
+15.2 Layout Rules
+Mobile-first always. Write base (mobile) styles first, add md: and lg: overrides.
+Sidebar: hidden on mobile (bottom tab bar instead), visible at lg: breakpoint.
+Cards: full-width on mobile, 2-col grid at md:, 3-col at lg:.
+Charts: 250px height mobile, 300px md:, 380px lg:.
+Modals: full-screen bottom sheet on mobile, centered dialog at md:.
+Touch targets: minimum 44├ù44px for all interactive elements on mobile.
+Typography: base text-sm on mobile, text-base at md:.
+16. Dark Mode Implementation
+17. Error Handling & Edge Cases
+17.1 Error Boundary Pattern
+17.2 Empty States
+Every data-driven view must have a designed empty state ΓÇö never a blank screen:
+Appendix ΓÇö Quick Reference
+A. ESLint Config Key Rules
+B. Vite Config Key Settings
+End of Frontend Guidelines ΓÇö Last updated 2025
+SCOPE | Covers: React component architecture, TypeScript conventions, design tokens, Tailwind usage, accessibility standards, performance budgets, animation rules, testing patterns, and folder structure. Does not cover: backend, database schema, or deployment specifics (see PRD).
+Attribute | Value
+Framework | React 18 + Vite
+Language | TypeScript 5.x (strict mode)
+Styling | Tailwind CSS v4 + shadcn/ui
+State | Zustand + React Query
+Charts | Recharts + D3.js
+Storage | Dexie.js (IndexedDB)
+Testing | Vitest + React Testing Library
+Animation | Framer Motion
+Icons | Lucide React
+Linting | ESLint (airbnb-typescript) + Prettier
+src/
+Γö£ΓöÇΓöÇ app/                    # App shell: Router, providers, global layout
+Γöé   Γö£ΓöÇΓöÇ App.tsx
+Γöé   Γö£ΓöÇΓöÇ Router.tsx
+Γöé   ΓööΓöÇΓöÇ providers/          # ThemeProvider, QueryProvider, etc.
+Γöé
+Γö£ΓöÇΓöÇ features/               # Feature modules (main code lives here)
+Γöé   Γö£ΓöÇΓöÇ habits/
+Γöé   Γöé   Γö£ΓöÇΓöÇ components/     # UI components scoped to habits
+Γöé   Γöé   Γö£ΓöÇΓöÇ hooks/          # useHabits, useHabitForm, etc.
+Γöé   Γöé   Γö£ΓöÇΓöÇ stores/         # Zustand slice for habits
+Γöé   Γöé   Γö£ΓöÇΓöÇ services/       # Dexie.js queries (habitService.ts)
+Γöé   Γöé   Γö£ΓöÇΓöÇ utils/          # Streak calc, schedule logic
+Γöé   Γöé   ΓööΓöÇΓöÇ types.ts        # Habit-specific TypeScript types
+Γöé   Γö£ΓöÇΓöÇ tasks/
+Γöé   Γö£ΓöÇΓöÇ analytics/
+Γöé   Γö£ΓöÇΓöÇ gamification/
+Γöé   ΓööΓöÇΓöÇ settings/
+Γöé
+Γö£ΓöÇΓöÇ shared/                 # Shared across ALL features
+Γöé   Γö£ΓöÇΓöÇ components/         # Button, Modal, Badge, Input, etc.
+Γöé   Γö£ΓöÇΓöÇ hooks/              # useLocalStorage, useDebounce, etc.
+Γöé   Γö£ΓöÇΓöÇ utils/              # formatDate, cn(), clamp(), etc.
+Γöé   ΓööΓöÇΓöÇ types/              # Global TS types & Zod schemas
+Γöé
+Γö£ΓöÇΓöÇ styles/
+Γöé   Γö£ΓöÇΓöÇ globals.css         # Tailwind base + CSS variables
+Γöé   ΓööΓöÇΓöÇ animations.css      # Keyframe definitions
+Γöé
+Γö£ΓöÇΓöÇ db/
+Γöé   Γö£ΓöÇΓöÇ db.ts               # Dexie instance + schema
+Γöé   ΓööΓöÇΓöÇ migrations/         # Version upgrade handlers
+Γöé
+ΓööΓöÇΓöÇ test/                   # Global test setup & mocks
+RULE | Never import from a sibling feature. features/tasks must not import from features/habits. Cross-feature communication goes through the shared/ layer or Zustand stores.
+Swatch | Name | Hex | Usage
+ | Brand 50 | #EEF2FF | Primary / Light backgrounds, hover states
+ | Brand 500 | #6366F1 | Primary / Default interactive elements
+ | Brand 600 | #4F46E5 | Primary / Hover on brand elements
+ | Brand 700 | #3730A3 | Primary / Active, pressed states
+ | Brand 900 | #1E1B4B | Primary / Dark mode text on brand
+Swatch | Name | Hex | Usage
+ | Success | #16A34A | Semantic / Completed habits, done tasks
+ | Warning | #D97706 | Semantic / Streak at risk, overdue tasks
+ | Danger | #DC2626 | Semantic / Missed habits, delete actions
+ | Info | #0D9488 | Semantic / Analytics callouts, tips
+ | Neutral 50 | #F8FAFC | Semantic / Card backgrounds, page bg
+ | Neutral 900 | #0F172A | Semantic / Primary text
+/* globals.css */
+:root {
+  --color-bg:          #F8FAFC;
+  --color-surface:     #FFFFFF;
+  --color-border:      #E2E8F0;
+  --color-text:        #0F172A;
+  --color-text-muted:  #64748B;
+  --color-brand:       #4F46E5;
+  --color-brand-lt:    #EEF2FF;
+}
+
+.dark {
+  --color-bg:          #0F172A;
+  --color-surface:     #1E293B;
+  --color-border:      #334155;
+  --color-text:        #F1F5F9;
+  --color-text-muted:  #94A3B8;
+  --color-brand:       #818CF8;
+  --color-brand-lt:    #1E1B4B;
+}
+Token | Value
+Font Family | Inter (with system-ui fallback)
+Base Size | 16px (1rem)
+Scale | 12, 14, 16, 18, 20, 24, 30, 36, 48, 60px
+Line Height | 1.5 body, 1.25 headings, 1.0 labels
+Letter Spacing | Normal body; -0.02em headings; 0.05em ALL CAPS labels
+Font Weights | 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
+Token | Usage | Tailwind Class
+Display | Hero stats, big numbers (streak count) | text-5xl font-bold tracking-tight
+H1 | Page titles | text-3xl font-bold
+H2 | Section headings | text-2xl font-semibold
+H3 | Card headings | text-lg font-semibold
+Body Large | Intro paragraphs, callouts | text-base leading-relaxed
+Body | Default text | text-sm leading-normal
+Label | Form labels, table headers | text-xs font-medium uppercase tracking-wide
+Caption | Helper text, timestamps | text-xs text-muted-foreground
+Code | Inline code, shortcuts | font-mono text-sm bg-muted px-1 rounded
+Token | Value | Common Usage
+space-1 | 4px | Icon gaps, tight padding
+space-2 | 8px | Button padding X, badge padding
+space-3 | 12px | Input padding, small card padding
+space-4 | 16px | Card padding, list item gap
+space-5 | 20px | Section padding (mobile)
+space-6 | 24px | Card gap, section padding
+space-8 | 32px | Page section spacing
+space-10 | 40px | Large section gap
+space-12 | 48px | Page top padding
+space-16 | 64px | Hero spacing
+Token | Value | Usage
+rounded-sm | 4px | Badges, chips, tags
+rounded | 6px | Buttons, inputs, small cards
+rounded-md | 8px | Standard cards, dropdowns
+rounded-lg | 12px | Modal panels, large cards
+rounded-xl | 16px | Hero cards, feature sections
+rounded-2xl | 24px | Bottom sheets, overlays
+rounded-full | 9999px | Avatars, circular buttons, pills
+Token | Usage
+shadow-sm | Subtle card lift, default resting state
+shadow | Interactive card hover state
+shadow-md | Dropdowns, context menus
+shadow-lg | Modals, sidebars, floating panels
+shadow-xl | Command palette, full-screen overlays
+shadow-none | Inline elements, table rows, flat UI sections
+RULE | Elevation must increase with Z-index. A modal (z-50, shadow-lg) must always visually sit above a dropdown (z-40, shadow-md). Never use shadow-xl on inline elements.
+Tier | Location | Rules
+Primitive | shared/components/ui/ | Zero domain knowledge. Fully generic. Reusable anywhere. E.g., Button, Input, Modal, Badge.
+Composite | shared/components/ | Combines Primitives. Still no domain logic. E.g., StatCard, DatePicker, ConfirmDialog.
+Feature | features/{name}/components/ | Contains domain logic. Uses Primitives + Composites + hooks. E.g., HabitCard, StreakBadge, TaskRow.
+// HabitCard.tsx ΓÇö Feature component example
+
+import { type FC } from 'react'
+import { cn } from '@/shared/utils/cn'
+import { Badge } from '@/shared/components/ui/Badge'
+import { useHabitStreak } from '../hooks/useHabitStreak'
+import type { Habit } from '../types'
+
+// ΓöÇΓöÇΓöÇ Types ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+interface HabitCardProps {
+  habit: Habit
+  onComplete: (id: string, value: number) => void
+  className?: string
+}
+
+// ΓöÇΓöÇΓöÇ Component ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+export const HabitCard: FC<HabitCardProps> = ({
+  habit,
+  onComplete,
+  className,
+}) => {
+  const { current, best } = useHabitStreak(habit.id)
+
+  return (
+    <div className={cn('rounded-lg border bg-surface p-4', className)}>
+      {/* ... */}
+    </div>
+  )
+}
+
+// Default export only for lazy-loaded route components
+// Named exports for everything else
+Γ£à  DO | Γ¥î  DON'T
+Use named exports for all components | Use default exports (except route-level lazy components)
+Keep components under 150 lines; extract if longer | Write 300+ line component files
+Accept className prop for style extension | Use inline styles except for dynamic values
+Co-locate test file: HabitCard.test.tsx | Put tests in a separate /tests folder
+Use composition over prop drilling (> 2 levels) | Drill props more than 2 levels deep ΓÇö use context or Zustand
+Memoize with React.memo only after profiling | Wrap everything in React.memo 'just in case'
+Declare prop types with interface, not type alias | Use anonymous type literals for props
+One component per file | Export multiple components from one file
+Component | Props Summary | Notes
+Button | variant, size, loading, icon, disabled | 4 variants: primary, secondary, ghost, danger
+Input | label, error, hint, prefix, suffix | Includes floating label animation
+Textarea | label, error, maxLength, showCount | Auto-resize on content growth
+Badge | variant, size, dot | 7 semantic variants matching color tokens
+Modal | isOpen, onClose, title, size | Focus trap + ESC key + backdrop click to close
+Drawer | isOpen, onClose, side, size | Slides from right (habit detail) or bottom (mobile)
+Tooltip | content, side, delay | Accessible ΓÇö tied to aria-describedby
+Progress | value, max, color, size, animated | Used in dashboard ring + project bars
+Skeleton | width, height, rounded | Loading state for every data-driven component
+EmptyState | icon, title, description, action | Standardized zero-state for all list views
+StatCard | label, value, delta, icon, trend | KPI card used throughout analytics
+ConfirmDialog | title, message, onConfirm, danger | Wraps Modal; used for destructive actions
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}
+Γ£à  DO | Γ¥î  DON'T
+Use interface for object shapes (Props, DB entities) | Use type alias for object shapes
+Use type alias for unions, intersections, primitives | Use interface for unions
+Use Zod for runtime validation at DB boundaries | Use 'as' casts to satisfy TypeScript
+Use unknown instead of any for external data | Use any ΓÇö ever
+Prefix event handlers: handleClick, handleSubmit | Name handlers onClick inline without extraction
+Use satisfies operator to validate config objects | Use as to bypass type checking
+// Γ£à Correct ΓÇö Zod schema + inferred type
+import { z } from 'zod'
+
+export const HabitSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(100),
+  type: z.enum(['boolean', 'count', 'duration', 'rating']),
+  frequency: z.object({
+    type: z.enum(['daily', 'weekly', 'interval']),
+    days: z.array(z.number().min(0).max(6)).optional(),
+    interval: z.number().positive().optional(),
+  }),
+  targetValue: z.number().positive().optional(),
+  createdAt: z.date(),
+})
+
+export type Habit = z.infer<typeof HabitSchema>
+// shared/utils/cn.ts
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs))
+
+// Usage:
+className={cn(
+  'base-classes rounded-md px-4 py-2',
+  isActive && 'bg-brand text-white',
+  isDisabled && 'opacity-50 cursor-not-allowed',
+  className   // always last: allow external override
+)}
+Γ£à  DO | Γ¥î  DON'T
+Use Tailwind scale: w-64, p-4, text-sm | Use w-[250px] when w-64 (256px) works fine
+Use arbitrary for chart dimensions: h-[340px] | Use arbitrary for standard spacing
+Comment WHY arbitrary is needed | Leave arbitrary values without explanation
+Use CSS variables for repeated arbitrary values | Repeat the same arbitrary value in 3+ places
+State Type | Solution
+Server/DB state (IndexedDB) | React Query (useLiveQuery wrapper for Dexie)
+Global UI state (theme, sidebar) | Zustand store
+Feature state (habit filters) | Zustand feature slice
+Form state | React Hook Form + Zod resolver
+Ephemeral UI (tooltip open, modal) | useState local to component
+URL state (active tab, filters) | React Router searchParams
+// features/habits/stores/habitStore.ts
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+interface HabitStore {
+  selectedDate: string          // ISO date string
+  filterCategory: string | null
+  viewMode: 'grid' | 'list'
+  setSelectedDate: (date: string) => void
+  setFilter: (category: string | null) => void
+  toggleViewMode: () => void
+}
+
+export const useHabitStore = create<HabitStore>()(persist(
+  (set, get) => ({
+    selectedDate: new Date().toISOString().split('T')[0],
+    filterCategory: null,
+    viewMode: 'grid',
+
+    setSelectedDate: (date) => set({ selectedDate: date }),
+    setFilter: (category) => set({ filterCategory: category }),
+    toggleViewMode: () =>
+      set({ viewMode: get().viewMode === 'grid' ? 'list' : 'grid' }),
+  }),
+  { name: 'habit-ui-state' }
+))
+// features/habits/hooks/useHabits.ts
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '@/db/db'
+import { useHabitStore } from '../stores/habitStore'
+
+export const useHabits = () => {
+  const { filterCategory } = useHabitStore()
+
+  const habits = useLiveQuery(
+    () => filterCategory
+      ? db.habits.where('category').equals(filterCategory).toArray()
+      : db.habits.where('archived').equals(0).toArray(),
+    [filterCategory]  // deps array ΓÇö re-queries on change
+  )
+
+  return {
+    habits: habits ?? [],
+    isLoading: habits === undefined,
+  }
+}
+// shared/utils/motionVariants.ts
+import { Variants } from 'framer-motion'
+
+export const fadeIn: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+}
+
+export const slideUp: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
+  exit:   { opacity: 0, y: 8,  transition: { duration: 0.15, ease: 'easeIn'  } },
+}
+
+export const scaleIn: Variants = {
+  hidden:  { opacity: 0, scale: 0.92 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.2, ease: 'easeOut' } },
+}
+
+// Habit check-in completion burst
+export const checkmarkBounce: Variants = {
+  unchecked: { scale: 1 },
+  checked:   { scale: [1, 1.3, 0.95, 1.05, 1], transition: { duration: 0.4 } },
+}
+
+// Streak counter increment
+export const counterPop: Variants = {
+  rest:  { scale: 1 },
+  pop:   { scale: [1, 1.2, 1], transition: { duration: 0.3 } },
+}
+REDUCED MOTION | Always wrap all animation with: import { useReducedMotion } from 'framer-motion' ΓÇö if reducedMotion is true, pass duration: 0 to all transitions.
+TARGET | WCAG 2.1 Level AA compliance is non-negotiable. HabitFlow must be fully operable via keyboard and compatible with screen readers.
+Γ£à  DO | Γ¥î  DON'T
+Use <button> for click actions | Use <div onClick={...}>
+Use <nav>, <main>, <section>, <aside> landmarks | Use <div> for every container
+Use <ul> + <li> for habit and task lists | Render lists as <div>s
+Use <label> associated with every input | Use placeholder as the only label
+Use <h1>ΓåÆ<h6> in logical order | Skip heading levels for visual sizing
+Component | Required ARIA
+Modal / Drawer | role='dialog', aria-modal='true', aria-labelledby, focus trap
+Icon-only buttons | aria-label describing the action
+Progress rings | role='progressbar', aria-valuenow, aria-valuemin, aria-valuemax
+Habit check checkbox | aria-checked, aria-label='Mark [habit name] complete'
+Chart containers | role='img', aria-label with text summary of data shown
+Loading skeletons | aria-busy='true' on parent container
+Streak badge | aria-label='Current streak: 14 days'
+Tabs navigation | role='tablist', role='tab', aria-selected, aria-controls
+Dropdown menus | role='menu', role='menuitem', aria-expanded, aria-haspopup
+Key | Action | Scope
+Tab / Shift+Tab | Move focus between interactive elements | Global
+Enter / Space | Activate buttons, checkboxes | Global
+Esc | Close modal, drawer, dropdown | Overlays
+Arrow keys | Navigate within tab lists, menus, date picker | Components
+Q | Open quick add panel (habit or task) | Global shortcut
+T | Jump to Today view | Global shortcut
+A | Jump to Analytics | Global shortcut
+/ | Focus search | Global shortcut
+Metric | Target
+LCP (Largest Contentful Paint) | < 1.5s on fast 4G
+FID / INP (Interaction to Next Paint) | < 100ms
+CLS (Cumulative Layout Shift) | < 0.05
+FCP (First Contentful Paint) | < 0.8s
+TTI (Time to Interactive) | < 3.0s
+JS Bundle (initial, gzipped) | < 200KB
+Route chunk size (gzipped) | < 80KB per lazy route
+// app/Router.tsx ΓÇö All routes are lazy loaded
+import { lazy, Suspense } from 'react'
+import { PageSkeleton } from '@/shared/components/PageSkeleton'
+
+const Dashboard  = lazy(() => import('@/features/dashboard/DashboardPage'))
+const Habits     = lazy(() => import('@/features/habits/HabitsPage'))
+const Tasks      = lazy(() => import('@/features/tasks/TasksPage'))
+const Analytics  = lazy(() => import('@/features/analytics/AnalyticsPage'))
+const Settings   = lazy(() => import('@/features/settings/SettingsPage'))
+
+// Wrap all routes in <Suspense fallback={<PageSkeleton />}>
+Technique | When to Apply
+React.memo | Only after measuring with Profiler. Not by default.
+useMemo | Expensive computations (streak calculations, chart data transforms)
+useCallback | Callbacks passed to memoized child components
+Virtual list (react-window) | Lists > 50 items (completed tasks archive, habit log)
+Web Worker | Heavy analytics calc (year heatmap, correlation matrix)
+Debounce | Search inputs (300ms), chart resize handlers (150ms)
+Skeleton screens | Every async data boundary ΓÇö never blank + spinner
+Optimistic updates | Habit check-in, task complete ΓÇö update UI before DB confirms
+Chart Type | Library
+Heatmap (GitHub-style) | D3.js (custom ΓÇö no library does this well)
+Line / Area chart (trends) | Recharts LineChart
+Bar chart (task throughput, streak history) | Recharts BarChart
+Radar chart (weekly overview) | Recharts RadarChart
+Pie / Donut (category breakdown) | Recharts PieChart
+Scatter plot (habit-mood correlation) | Recharts ScatterChart
+Progress ring (daily completion) | SVG + CSS animation (no library)
+Histogram (time-of-day) | Recharts BarChart with custom tick
+// Mandatory props on every Recharts chart
+<ResponsiveContainer width='100%' height={300}>
+  <LineChart
+    data={chartData}
+    margin={{ top: 8, right: 16, left: -16, bottom: 0 }}
+  >
+    <CartesianGrid strokeDasharray='3 3' stroke='var(--color-border)' />
+    <XAxis
+      dataKey='date'
+      tick={{ fill: 'var(--color-text-muted)', fontSize: 12 }}
+      axisLine={{ stroke: 'var(--color-border)' }}
+      tickLine={false}
+    />
+    <YAxis
+      tick={{ fill: 'var(--color-text-muted)', fontSize: 12 }}
+      axisLine={false}
+      tickLine={false}
+    />
+    <Tooltip
+      contentStyle={{
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: '8px',
+        fontSize: '13px',
+      }}
+    />
+    <Line
+      type='monotone'
+      dataKey='value'
+      stroke='var(--color-brand)'
+      strokeWidth={2}
+      dot={false}
+      isAnimationActive={!reducedMotion}
+    />
+  </LineChart>
+</ResponsiveContainer>
+Layer | Coverage Target
+Unit (utils, hooks, stores) | > 90% ΓÇö logic must be fully tested
+Component (RTL render tests) | > 70% ΓÇö all states + interactions
+Integration (user flows) | > 50% ΓÇö critical paths end-to-end
+E2E (Playwright) | Core flows only: check-in, task complete, analytics load
+// HabitCard.test.tsx
+import { render, screen, userEvent } from '@testing-library/react'
+import { HabitCard } from './HabitCard'
+import { mockHabit } from '@/test/fixtures'
+
+describe('HabitCard', () => {
+  it('renders habit name and current streak', () => {
+    render(<HabitCard habit={mockHabit} onComplete={vi.fn()} />)
+    expect(screen.getByText(mockHabit.name)).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /streak/i })).toBeInTheDocument()
+  })
+
+  it('calls onComplete with correct value on check', async () => {
+    const onComplete = vi.fn()
+    render(<HabitCard habit={mockHabit} onComplete={onComplete} />)
+    await userEvent.click(screen.getByRole('checkbox'))
+    expect(onComplete).toHaveBeenCalledWith(mockHabit.id, 1)
+  })
+
+  it('is keyboard operable', async () => {
+    render(<HabitCard habit={mockHabit} onComplete={vi.fn()} />)
+    await userEvent.tab()
+    expect(screen.getByRole('checkbox')).toHaveFocus()
+  })
+})
+Pattern | Convention
+Component files | PascalCase ΓÇö HabitCard.tsx
+Hook files | camelCase ΓÇö useHabitStreak.ts
+Utility files | camelCase ΓÇö formatDate.ts
+Constant files | SCREAMING_SNAKE (values), camelCase (file) ΓÇö appConfig.ts
+Type/interface names | PascalCase ΓÇö Habit, HabitCardProps
+Zustand stores | useXxxStore ΓÇö useHabitStore
+Event handlers | handleXxx ΓÇö handleComplete, handleDelete
+Boolean props | isXxx / hasXxx ΓÇö isLoading, hasError
+Enum values | SCREAMING_SNAKE ΓÇö HabitType.BOOLEAN
+CSS class names | Tailwind only ΓÇö no custom class names except BEM for complex SVG
+Test files | Component.test.tsx colocated with component
+Barrel files | index.ts per feature ΓÇö export public API only
+Γ£à  DO | Γ¥î  DON'T
+Comment WHY, not WHAT (code shows what) | // increments i by 1 ΓåÉ obvious
+Use TODO: FIXME: HACK: prefixes with context | Leave stale or undated TODOs
+Document non-obvious business logic (streak grace) | Comment every line of code
+Use JSDoc on shared utility functions | Skip docs on internal helpers
+Type | Pattern
+Feature | feat/habit-heatmap-chart
+Bug fix | fix/streak-calculation-off-by-one
+UI/Style | ui/dashboard-layout-mobile
+Refactor | refactor/habit-service-extract
+Docs | docs/update-component-readme
+Chore | chore/upgrade-recharts-v3
+FORMAT | type(scope): short description [max 72 chars]
+
+Types: feat, fix, ui, refactor, test, docs, chore, perf
+Scope: habits, tasks, analytics, shared, db, app
+# Good commits:
+feat(habits): add grace day toggle per habit
+fix(streak): correct weekly schedule off-by-one error
+perf(analytics): move heatmap calc to web worker
+ui(dashboard): fix completion ring animation on mobile
+test(habits): add HabitCard keyboard interaction tests
+
+# Bad commits:
+fix stuff
+WIP
+updated things
+Breakpoint | Tailwind Prefix / Width
+Mobile (default) | No prefix / 0ΓÇô767px
+Tablet | md: / 768px+
+Desktop | lg: / 1024px+
+Wide | xl: / 1280px+
+TEST RULE | Every component must be tested at 375px (iPhone SE), 768px (iPad), and 1280px (desktop) before merging. Broken mobile = blocked PR.
+// app/providers/ThemeProvider.tsx
+import { createContext, useContext, useEffect, useState } from 'react'
+
+type Theme = 'light' | 'dark' | 'system'
+
+export const ThemeProvider = ({ children }) => {
+  const [theme, setTheme] = useState<Theme>('system')
+
+  useEffect(() => {
+    const root = document.documentElement
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isDark = theme === 'dark' || (theme === 'system' && systemDark)
+    root.classList.toggle('dark', isDark)
+  }, [theme])
+
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  )
+}
+RULE | Never use hardcoded dark: classes for colors. Always use CSS variable tokens (text-[var(--color-text)], bg-[var(--color-surface)]). CSS variables flip automatically on .dark class toggle.
+// shared/components/ErrorBoundary.tsx
+// Wrap every route and every chart in an ErrorBoundary.
+// A broken chart must never crash the whole app.
+
+<ErrorBoundary fallback={<ChartError />}>
+  <HabitHeatmap habitId={id} />
+</ErrorBoundary>
+View | Empty State Message
+Today / Habit list | 'No habits yet ΓÇö add your first one!' + CTA button
+Task inbox | 'Your inbox is clear. ≡ƒÄë Add a task to get started.'
+Analytics ΓÇö no data | 'Check in for at least 7 days to see trends.'
+Completed tasks | 'Nothing completed yet today. Check off a task above.'
+Search results | 'No results for "[query]". Try a different search.'
+Archived habits | 'No archived habits. Archived habits appear here.'
+// .eslintrc.cjs ΓÇö key custom rules
+{
+  "rules": {
+    "no-console": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "react/self-closing-comp": "error",
+    "react-hooks/exhaustive-deps": "error",
+    "import/order": ["error", { "groups": ["builtin","external","internal"] }],
+    "no-restricted-imports": ["error", {
+      "patterns": ["features/*/!(index)"]  // force barrel imports
+    }]
+  }
+}
+// vite.config.ts
+export default defineConfig({
+  resolve: {
+    alias: { '@': path.resolve(__dirname, 'src') },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react':   ['react', 'react-dom', 'react-router-dom'],
+          'vendor-charts':  ['recharts', 'd3'],
+          'vendor-motion':  ['framer-motion'],
+          'vendor-db':      ['dexie', 'dexie-react-hooks'],
+        },
+      },
+    },
+  },
+})
+
+=== HabitFlow_Implementation_Plan.docx ===
+HABITFLOW
+Implementation Plan
+From zero to deployed PWA  ┬╖  10 Weeks  ┬╖  5 Phases  ┬╖  3 Sprints per Phase
+Version 1.0  ┬╖  2025  ┬╖  Aditya
+1. Plan Overview
+This document is the single execution reference for building HabitFlow from a blank repository to a deployed, production-ready PWA. It translates the PRD, Frontend Guidelines, Tech Stack, Database Schema, and App Flow documents into a concrete, week-by-week build plan with prioritised tasks, sprint milestones, risk mitigations, and quality gates.
+2. Master Timeline (Gantt)
+A 10-week visual timeline. Each row represents one work stream. Filled cells (Γûê) indicate active weeks for that stream.
+3. Phase 1 ΓÇö Foundation (Weeks 1ΓÇô2)
+Phase 1 produces a fully running skeleton ΓÇö no features yet, but every architectural decision is locked in. The end of Phase 1 means: the app loads, routes work, IndexedDB is initialised, all shared components exist as skeletons, and linting + TypeScript are at zero errors.
+3.1 Sprint 1A ΓÇö Project Scaffold & Toolchain (Days 1ΓÇô3)
+3.2 Sprint 1B ΓÇö Database Layer (Days 4ΓÇô7)
+3.3 Sprint 1C ΓÇö Routing, Shell & Shared Components (Days 8ΓÇô14)
+3.4 Phase 1 ΓÇö Definition of Done
+4. Phase 2 ΓÇö Core Features (Weeks 3ΓÇô4)
+Phase 2 delivers the core habit check-in loop and full task management. By the end of Phase 2, a user can create habits, check them off daily, build streaks, create tasks, and see a working dashboard. This is the minimum loveable version.
+4.1 Sprint 2A ΓÇö Habit Module (Days 15ΓÇô20)
+4.2 Sprint 2B ΓÇö Task Module (Days 21ΓÇô26)
+4.3 Sprint 2C ΓÇö Dashboard (Days 27ΓÇô28)
+4.4 Phase 2 ΓÇö Definition of Done
+5. Phase 3 ΓÇö Analytics & Gamification (Weeks 5ΓÇô6)
+Phase 3 is where HabitFlow earns its differentiation. The analytics suite and gamification layer are built in full. By the end of Phase 3, the app has a fully functional data visualisation layer and a working XP/badge/level system.
+5.1 Sprint 3A ΓÇö Analytics Module (Days 29ΓÇô36)
+5.2 Sprint 3B ΓÇö Gamification (Days 37ΓÇô40)
+5.3 Sprint 3C ΓÇö Notifications (Days 41ΓÇô42)
+5.4 Phase 3 ΓÇö Definition of Done
+6. Phase 4 ΓÇö Polish, PWA & Deploy (Weeks 7ΓÇô9)
+Phase 4 takes the working feature set and makes it production-ready. Onboarding flow, full settings, data export/import, PWA manifest, Service Worker, accessibility audit, and deployment to Antigravity.
+6.1 Sprint 4A ΓÇö Onboarding & Settings (Days 43ΓÇô49)
+6.2 Sprint 4B ΓÇö PWA & Performance (Days 50ΓÇô56)
+6.3 Sprint 4C ΓÇö Accessibility, Testing & Deploy (Days 57ΓÇô63)
+6.4 Phase 4 ΓÇö Definition of Done (Launch Criteria)
+7. Phase 5 ΓÇö Post-MVP Features (Weeks 9ΓÇô10+)
+Phase 5 begins after the v1.0 deploy to Antigravity. These features are sequenced by user value and implementation complexity. Each can be built and deployed independently as patch releases.
+8. Sprint Structure & Ceremonies
+Each phase is divided into sprints of 7 working days. Given solo development, ceremonies are lightweight ΓÇö the goal is structure without overhead.
+9. Risk Register
+Pre-identified risks with impact, probability, and mitigation strategy. Review this list at the start of each phase.
+10. Quality Gates & Success Metrics
+10.1 Per-Phase Technical Gates
+10.2 Progressive Quality Metrics (by Phase)
+11. Daily Development Workflow
+11.1 File Creation Order (Per Feature)
+Types: add to features/{name}/types.ts
+Zod schema: update db/schemas.ts if new DB entity
+Service: write features/{name}/services/{name}Service.ts with unit tests
+Hook: write features/{name}/hooks/use{Name}.ts
+Store: update features/{name}/stores/{name}Store.ts
+Component: write features/{name}/components/{Name}.tsx with colocated test
+Route page: update features/{name}/{Name}Page.tsx
+Router: add route to app/Router.tsx
+11.2 Commit Message Quick Reference
+12. First-Day Setup Checklist
+Run this checklist exactly once, in order, before writing any feature code.
+13. Document Cross-Reference
+Every implementation decision in this plan references a specific section of the 5 HabitFlow documents. Use this table when you need more detail on any task.
+14. The Golden Rule
+End of Implementation Plan  ┬╖  HabitFlow v1.0  ┬╖  Aditya  ┬╖  ZCOER SE AIML
+5
+Phases | 10
+Weeks | 48
+Tasks | 12
+Milestones | 1
+Deployment
+Property | Value
+Total build time | 10 weeks (solo developer pace)
+Phases | 5 phases ΓÇö each ends with a deployable milestone
+Task count | 48 implementation tasks across all phases
+Priority system | P0 = must ship, P1 = should ship, P2 = nice-to-have, P3 = post-MVP
+Effort unit | Days of focused work (1 day = ~4 productive hours for a student)
+Quality gate | Every phase requires passing Definition of Done before Phase N+1 begins
+Deployment | Antigravity ΓÇö static PWA deploy at end of Phase 4
+Post-MVP | Phase 5 defines features for v1.1 and beyond
+Stack reference | React 18 + Vite + Tailwind + Dexie + Zustand + Recharts + D3
+≡ƒôî
+NOTE | This plan assumes a single developer working part-time (student schedule). All timeline estimates include buffer. If working full-time, compress phases by 40%. Each phase is independently deployable ΓÇö you can stop at any phase and have a working product.
+Phase | Focus Area | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10
+Phase 1 | Project Setup & Scaffold | Γûê | Γûê |  |  |  |  |  |  |  | 
+Phase 1 | DB Layer + Zod Schemas | Γûê | Γûê |  |  |  |  |  |  |  | 
+Phase 1 | Routing + App Shell |  | Γûê |  |  |  |  |  |  |  | 
+Phase 2 | Habit Module (full) |  |  | Γûê | Γûê |  |  |  |  |  | 
+Phase 2 | Task Module (full) |  |  | Γûê | Γûê |  |  |  |  |  | 
+Phase 2 | Dashboard + Today View |  |  |  | Γûê |  |  |  |  |  | 
+Phase 3 | Analytics (Recharts + D3) |  |  |  |  | Γûê | Γûê |  |  |  | 
+Phase 3 | Gamification (XP + Badges) |  |  |  |  | Γûê | Γûê |  |  |  | 
+Phase 3 | Notifications + Reminders |  |  |  |  |  | Γûê |  |  |  | 
+Phase 4 | Onboarding Flow |  |  |  |  |  |  | Γûê |  |  | 
+Phase 4 | PWA + Service Worker |  |  |  |  |  |  | Γûê | Γûê |  | 
+Phase 4 | Settings + Data Export/Import |  |  |  |  |  |  | Γûê | Γûê |  | 
+Phase 4 | Testing + Accessibility |  |  |  |  |  |  |  | Γûê |  | 
+Phase 4 | Deploy to Antigravity |  |  |  |  |  |  |  |  | Γûê | 
+Phase 5 | Post-MVP Features |  |  |  |  |  |  |  |  | Γûê | Γûê
+≡ƒôî
+NOTE | Phases 1ΓÇô4 are sequential ΓÇö each must complete before the next begins. Phase 5 is open-ended and can begin whenever the team has capacity after the v1.0 deploy.
+≡ƒÅù∩╕Å  Phase 1: Foundation
+Project scaffold, toolchain, database layer, routing, and app shell.
+ID | Task | Pri | Effort | Depends On | Phase
+1-01 | Initialise Vite + React 18 + TypeScript project with pnpm | P0 | 0.5d | ΓÇö | Sprint 1A
+1-02 | Configure Tailwind CSS v4 + PostCSS + prettier-plugin-tailwindcss | P0 | 0.5d | 1-01 | Sprint 1A
+1-03 | Set up ESLint (airbnb-typescript) + Prettier with enforced rules | P0 | 0.5d | 1-01 | Sprint 1A
+1-04 | Configure Husky pre-commit hooks (lint + type-check + format) | P0 | 0.5d | 1-03 | Sprint 1A
+1-05 | Set up Vitest + React Testing Library + jsdom environment | P0 | 0.5d | 1-01 | Sprint 1A
+1-06 | Configure path aliases (@/...) in tsconfig.json + vite.config.ts | P0 | 0.5d | 1-01 | Sprint 1A
+1-07 | Install and configure all production dependencies (see Tech Stack doc) | P0 | 1d | 1-01 | Sprint 1A
+1-08 | Create folder structure per Frontend Guidelines Section 2 | P0 | 0.5d | 1-01 | Sprint 1A
+1-09 | Set up Git repository + initial commit + branch strategy | P0 | 0.5d | ΓÇö | Sprint 1A
+ID | Task | Pri | Effort | Depends On | Phase
+1-10 | Write all Zod schemas (HabitSchema, TaskSchema, etc.) per DB Schema doc | P0 | 1d | 1-08 | Sprint 1B
+1-11 | Implement Dexie DB class (HabitFlowDB) with v1 schema + all indexes | P0 | 1d | 1-10 | Sprint 1B
+1-12 | Write initDB() singleton initialiser + userXP seed function | P0 | 0.5d | 1-11 | Sprint 1B
+1-13 | Write habitService (CRUD: create, update, archive, delete) | P0 | 1d | 1-11 | Sprint 1B
+1-14 | Write habitLogService (checkIn upsert, streak calc algorithm) | P0 | 1.5d | 1-13 | Sprint 1B
+1-15 | Write taskService (create, complete, delete with subtask cascade) | P0 | 1d | 1-11 | Sprint 1B
+1-16 | Write unit tests for streak calculation algorithm (>90% coverage) | P0 | 1d | 1-14 | Sprint 1B
+1-17 | Write unit tests for all Zod schemas (valid + invalid inputs) | P0 | 0.5d | 1-10 | Sprint 1B
+ID | Task | Pri | Effort | Depends On | Phase
+1-18 | Implement React Router v6 with all 18 routes + lazy loading | P0 | 1d | 1-08 | Sprint 1C
+1-19 | Build AppShell layout: Sidebar (desktop) + Bottom Tab Bar (mobile) | P0 | 1.5d | 1-18 | Sprint 1C
+1-20 | Build ThemeProvider: light/dark/system + CSS variable injection | P0 | 0.5d | 1-02 | Sprint 1C
+1-21 | Build shared Button component (4 variants, loading state, icon support) | P0 | 0.5d | 1-02 | Sprint 1C
+1-22 | Build shared Input, Textarea, Badge, Skeleton components | P0 | 1d | 1-21 | Sprint 1C
+1-23 | Build Modal + Drawer (focus trap, ESC close, backdrop) | P0 | 1d | 1-21 | Sprint 1C
+1-24 | Build StatCard, EmptyState, ConfirmDialog shared components | P0 | 0.5d | 1-21 | Sprint 1C
+1-25 | Build global Toast system (Zustand store + auto-dismiss) | P0 | 0.5d | 1-21 | Sprint 1C
+1-26 | Build Progress ring (SVG) and Progress bar components | P0 | 0.5d | 1-21 | Sprint 1C
+1-27 | Set up Zustand stores: useHabitStore, useTaskStore, useUIStore | P0 | 0.5d | 1-08 | Sprint 1C
+ΓÿÉ | Definition of Done ΓÇö Every Task Must Meet All These Before Marking Complete
+ΓÿÉ | pnpm dev starts with zero TypeScript errors and zero ESLint warnings
+ΓÿÉ | All 18 routes render their placeholder screens without crashing
+ΓÿÉ | AppShell sidebar and bottom tab bar render correctly at 375px, 768px, 1280px
+ΓÿÉ | Dexie DB initialises on first load (confirmed in browser DevTools ΓåÆ Application ΓåÆ IndexedDB)
+ΓÿÉ | initDB() creates the userXP singleton record
+ΓÿÉ | All Zod schemas pass their unit test suites (>90% coverage)
+ΓÿÉ | Streak algorithm unit tests pass with 100% branch coverage
+ΓÿÉ | Husky pre-commit hook blocks commits with TypeScript errors
+ΓÿÉ | Dark mode toggle works and CSS variables update globally
+ΓÿÉ | All shared components (Button, Input, Modal, Drawer, Toast) render and are keyboard accessible
+ΓÿÉ | pnpm build produces zero errors and output is < 400KB gzipped total
+ΓÜÖ∩╕Å  Phase 2: Core Features
+Habit tracking loop + task management + dashboard. The app becomes usable.
+ID | Task | Pri | Effort | Depends On | Phase
+2-01 | Build HabitCard component (all 4 check-in widget types) | P0 | 1.5d | 1-22 | Sprint 2A
+2-02 | Build Create/Edit Habit drawer with all conditional fields | P0 | 1.5d | 1-23 | Sprint 2A
+2-03 | Build emoji picker integration (emoji-mart) in habit form | P1 | 0.5d | 2-02 | Sprint 2A
+2-04 | Build Habits Today view (sortable, filterable, by-category) | P0 | 1d | 2-01 | Sprint 2A
+2-05 | Implement check-in logic: optimistic update + DB write + XP award | P0 | 1d | 1-14 | Sprint 2A
+2-06 | Build Habit Detail page: stats row, mini 7-day calendar, log list | P0 | 1.5d | 2-01 | Sprint 2A
+2-07 | Build streak display (current + best) with flame icon animation | P0 | 0.5d | 1-16 | Sprint 2A
+2-08 | Build log entry edit modal (backdate value + note) | P1 | 0.5d | 2-06 | Sprint 2A
+2-09 | Implement archive + hard-delete habit flows with confirmation | P0 | 0.5d | 1-13 | Sprint 2A
+2-10 | Write component tests for HabitCard (all 4 types, keyboard nav) | P0 | 1d | 2-01 | Sprint 2A
+ID | Task | Pri | Effort | Depends On | Phase
+2-11 | Build TaskRow component (priority dot, checkbox, due date chip) | P0 | 1d | 1-22 | Sprint 2B
+2-12 | Build Task Detail drawer (auto-save, subtasks, status chips) | P0 | 2d | 1-23 | Sprint 2B
+2-13 | Build Tasks Inbox view with sort + filter + group-by | P0 | 1d | 2-11 | Sprint 2B
+2-14 | Build Tasks Today view with overdue section | P0 | 0.5d | 2-13 | Sprint 2B
+2-15 | Build Tasks Upcoming view (14-day grouped + mini calendar strip) | P1 | 1d | 2-13 | Sprint 2B
+2-16 | Build Projects view + Create Project drawer | P1 | 1d | 1-23 | Sprint 2B
+2-17 | Implement recurring task spawn logic in taskService | P0 | 1d | 1-15 | Sprint 2B
+2-18 | Implement subtask cascade delete (recursive) | P0 | 0.5d | 1-15 | Sprint 2B
+2-19 | Implement label CRUD + label cleanup transaction | P1 | 0.5d | 1-11 | Sprint 2B
+2-20 | Build dnd-kit drag-and-drop for task reordering | P1 | 1d | 2-11 | Sprint 2B
+ID | Task | Pri | Effort | Depends On | Phase
+2-21 | Build Dashboard layout: completion ring, habit grid, task strip | P0 | 1.5d | 2-01 | Sprint 2C
+2-22 | Build animated SVG completion ring (daily progress) | P0 | 1d | 2-21 | Sprint 2C
+2-23 | Build Quick-Add panel (slide-over: habit tab + task tab) | P0 | 1d | 1-23 | Sprint 2C
+2-24 | Implement global Q/T keyboard shortcut for Quick-Add | P1 | 0.5d | 2-23 | Sprint 2C
+ΓÿÉ | Definition of Done ΓÇö Every Task Must Meet All These Before Marking Complete
+ΓÿÉ | User can create a habit, check it in today, and see streak increment to 1
+ΓÿÉ | All 4 habit types (boolean, count, duration, rating) work correctly with correct DB writes
+ΓÿÉ | Backdating a habit entry recalculates streak correctly
+ΓÿÉ | User can create a task, set priority and due date, and mark it complete
+ΓÿÉ | Completing a recurring task spawns the next instance with correct dueDate
+ΓÿÉ | Subtask deletion cascades to all children recursively
+ΓÿÉ | Dashboard completion ring animates on load and updates live on check-in
+ΓÿÉ | Quick-Add panel opens on Q key and closes on ESC
+ΓÿÉ | Drag-and-drop task reorder persists sortOrder to DB
+ΓÿÉ | All screens pass mobile layout check at 375px viewport
+ΓÿÉ | No console errors or warnings in production build
+ΓÿÉ | HabitCard and TaskRow component tests pass
+≡ƒôè  Phase 3: Analytics & Gamification
+Heatmaps, charts, XP system, badges, and push notifications.
+ID | Task | Pri | Effort | Depends On | Phase
+3-01 | Build Analytics Overview page layout + period selector | P0 | 1d | 1-18 | Sprint 3A
+3-02 | Build D3.js GitHub-style 52-week heatmap component | P0 | 2d | 1-07 | Sprint 3A
+3-03 | Build Recharts line chart (7-day rolling trend per habit) | P0 | 1d | 1-07 | Sprint 3A
+3-04 | Build Recharts bar chart (streak history ΓÇö each bar = 1 streak) | P0 | 1d | 1-07 | Sprint 3A
+3-05 | Build Recharts radar chart (weekly habit overview MonΓÇôSun) | P0 | 1d | 1-07 | Sprint 3A
+3-06 | Build Recharts scatter chart (habit-mood correlation) | P1 | 1d | 1-07 | Sprint 3A
+3-07 | Build time-of-day histogram (check-in distribution 0ΓÇô23h) | P1 | 0.5d | 1-07 | Sprint 3A
+3-08 | Build Habit Analytics detail page (5-tab layout) | P0 | 1.5d | 3-02 | Sprint 3A
+3-09 | Build analytics stats cards (totals, averages, completion %) | P0 | 0.5d | 1-24 | Sprint 3A
+3-10 | Build period comparison view (two date range pickers + side-by-side chart) | P2 | 1d | 3-03 | Sprint 3A
+3-11 | Implement CSV export (Papa Parse) for habit logs | P1 | 0.5d | 1-11 | Sprint 3A
+3-12 | Move heavy analytics calculations to Web Worker | P2 | 1d | 3-02 | Sprint 3A
+ID | Task | Pri | Effort | Depends On | Phase
+3-13 | Build XP award service (base + streak bonus + milestone bonus) | P1 | 1d | 1-16 | Sprint 3B
+3-14 | Build level-up detection + level-up modal (confetti animation) | P1 | 1d | 3-13 | Sprint 3B
+3-15 | Build XP counter animation (number roll on award) | P1 | 0.5d | 3-13 | Sprint 3B
+3-16 | Implement all 15 badge earn conditions + badge earned modal | P1 | 1.5d | 3-13 | Sprint 3B
+3-17 | Build daily score composite calculation (habits + tasks) | P1 | 0.5d | 3-13 | Sprint 3B
+3-18 | Build badge grid in Settings (earned / locked states) | P1 | 0.5d | 3-16 | Sprint 3B
+ID | Task | Pri | Effort | Depends On | Phase
+3-19 | Implement Notification.requestPermission() flow with UI states | P0 | 0.5d | 1-11 | Sprint 3C
+3-20 | Register Service Worker + schedule per-habit push notifications | P0 | 1d | 3-19 | Sprint 3C
+3-21 | Implement streak-at-risk alert (6pm check for unlogged habits) | P1 | 0.5d | 3-20 | Sprint 3C
+3-22 | Implement morning briefing notification (8am daily digest) | P1 | 0.5d | 3-20 | Sprint 3C
+ΓÿÉ | Definition of Done ΓÇö Every Task Must Meet All These Before Marking Complete
+ΓÿÉ | Heatmap renders correctly for 52 weeks with colour scale matching completion %
+ΓÿÉ | Heatmap cells are keyboard accessible (Tab to navigate, Enter to open log entry)
+ΓÿÉ | All 5 Recharts chart types render with correct data and CSS variable colours
+ΓÿÉ | Charts respect prefers-reduced-motion (isAnimationActive=false when reduced)
+ΓÿÉ | Completing a habit awards correct XP and updates the userXP singleton in DB
+ΓÿÉ | Level-up modal triggers when XP crosses level threshold
+ΓÿÉ | All 15 badge conditions are tested and trigger correctly
+ΓÿÉ | Browser push notification appears at scheduled reminder time
+ΓÿÉ | Notification permission denied state shows correct fallback UI in Settings
+ΓÿÉ | Analytics period selector updates all charts simultaneously
+ΓÿÉ | CSV export downloads a valid file with correct habit log data
+ΓÿÉ | All chart containers have role='img' and aria-label with text summary
+≡ƒÜÇ  Phase 4: Polish, PWA & Deploy
+Onboarding, settings, accessibility, testing, and Antigravity deployment.
+ID | Task | Pri | Effort | Depends On | Phase
+4-01 | Build Onboarding Welcome screen (hero, value prop, Get Started CTA) | P0 | 0.5d | 1-18 | Sprint 4A
+4-02 | Build Onboarding Habit Picker (template grid, multi-select, search) | P0 | 1d | 4-01 | Sprint 4A
+4-03 | Build Onboarding Reminder Setup (permission flow + time picker) | P0 | 0.5d | 3-19 | Sprint 4A
+4-04 | Build Onboarding Theme Picker (live preview, dark/light/system) | P0 | 0.5d | 1-20 | Sprint 4A
+4-05 | Implement first-run flag check + onboarding routing guard | P0 | 0.5d | 1-18 | Sprint 4A
+4-06 | Build Settings hub page (all 6 sections per App Flow doc) | P0 | 1.5d | 1-18 | Sprint 4A
+4-07 | Implement JSON full-data export (all 8 collections) | P0 | 1d | 1-11 | Sprint 4A
+4-08 | Implement JSON import (Zod validate ΓåÆ confirm modal ΓåÆ bulk insert) | P0 | 1d | 4-07 | Sprint 4A
+4-09 | Implement Reset All Data flow (typed confirmation + transaction clear) | P0 | 0.5d | 1-11 | Sprint 4A
+4-10 | Build storage usage estimation display in Settings | P1 | 0.5d | 1-11 | Sprint 4A
+ID | Task | Pri | Effort | Depends On | Phase
+4-11 | Configure vite-plugin-pwa: manifest, icons (192 + 512px), theme colour | P0 | 0.5d | 1-01 | Sprint 4B
+4-12 | Configure Workbox for asset precaching + runtime caching strategy | P0 | 1d | 4-11 | Sprint 4B
+4-13 | Generate VAPID keys and configure Web Push integration | P1 | 0.5d | 3-20 | Sprint 4B
+4-14 | Test PWA install flow on Chrome (desktop) + Safari (iOS) + Chrome (Android) | P0 | 0.5d | 4-11 | Sprint 4B
+4-15 | Run Lighthouse audit ΓÇö hit all Core Web Vitals targets (LCP<1.5s, CLS<0.05) | P0 | 1d | 4-12 | Sprint 4B
+4-16 | Implement route-level code splitting (verify chunks in pnpm analyze) | P0 | 0.5d | 1-18 | Sprint 4B
+4-17 | Add React Error Boundaries around every route and every chart | P0 | 0.5d | 1-18 | Sprint 4B
+4-18 | Build all empty states (habits, tasks, analytics) per App Flow doc | P0 | 1d | 1-24 | Sprint 4B
+4-19 | Build Command Palette (/ shortcut, fuzzy search habits + tasks) | P2 | 1d | 1-25 | Sprint 4B
+ID | Task | Pri | Effort | Depends On | Phase
+4-20 | Full keyboard navigation audit ΓÇö all interactive elements reachable by Tab | P0 | 1d | All Phase 4 | Sprint 4C
+4-21 | Add ARIA labels to all icon buttons, progress rings, chart containers | P0 | 1d | 4-20 | Sprint 4C
+4-22 | Test with VoiceOver (macOS) + NVDA (Windows) ΓÇö fix critical a11y issues | P0 | 1d | 4-21 | Sprint 4C
+4-23 | Write Playwright E2E tests for 3 critical flows: check-in, task-complete, analytics-load | P0 | 1.5d | 4-17 | Sprint 4C
+4-24 | Fix all bugs found during E2E and accessibility testing | P0 | 1d | 4-23 | Sprint 4C
+4-25 | Configure Antigravity deployment (SPA redirect rule + env vars) | P0 | 0.5d | 4-12 | Sprint 4C
+4-26 | First production deploy to Antigravity ΓÇö smoke test all flows | P0 | 0.5d | 4-25 | Sprint 4C
+4-27 | Post-deploy: run Lighthouse on live URL, verify PWA install works | P0 | 0.5d | 4-26 | Sprint 4C
+ΓÿÉ | Definition of Done ΓÇö Every Task Must Meet All These Before Marking Complete
+ΓÿÉ | Onboarding flow runs on first load, seeds selected habits, sets hasOnboarded flag
+ΓÿÉ | JSON export produces a valid .habitflow.json file restoreable via Import
+ΓÿÉ | Import correctly validates, previews, and bulk-inserts data into all 8 collections
+ΓÿÉ | Reset All Data clears all 8 collections in a single transaction and reloads to onboarding
+ΓÿÉ | PWA installs on Chrome desktop and appears in Applications list
+ΓÿÉ | Service Worker precaches all static assets ΓÇö confirmed via Workbox devtools panel
+ΓÿÉ | Lighthouse PWA score > 90 on live Antigravity URL
+ΓÿÉ | All Core Web Vitals pass: LCP < 1.5s, CLS < 0.05, INP < 100ms
+ΓÿÉ | Initial JS bundle < 200KB gzipped (verified via pnpm analyze)
+ΓÿÉ | All screens pass WCAG 2.1 AA colour contrast (>4.5:1 for body text)
+ΓÿÉ | All 3 Playwright E2E tests pass on Chromium, Firefox, and WebKit
+ΓÿÉ | App is fully functional with Chrome DevTools ΓåÆ Network ΓåÆ Offline checked
+ΓÿÉ | Zero console errors on the live deployed URL
+ΓÿÉ | App URL shared, tested on a real mobile device
+≡ƒö«  Phase 5: Post-MVP
+Features that enhance v1.0 after launch. Sequenced by value.
+ID | Task | Pri | Effort | Depends On | Phase
+5-01 | Natural language date parsing (chrono-node) in Quick-Add title field | P1 | 1d | 4-08 | Phase 5
+5-02 | Eisenhower Matrix view for tasks (2├ù2 urgent/important quadrant) | P2 | 1d | 2-13 | Phase 5
+5-03 | Task dependency graph (blocked-by relationships between tasks) | P2 | 2d | 2-12 | Phase 5
+5-04 | Habit correlation viewer (side-by-side heatmap comparison) | P2 | 1d | 3-02 | Phase 5
+5-05 | Mood log UI improvements (energy slider, richer emotion picker) | P2 | 1d | 1-11 | Phase 5
+5-06 | Weekly review auto-generated summary (Sunday 7pm) | P2 | 1d | 3-09 | Phase 5
+5-07 | Streak freeze tokens (limited per month, prevents streak break) | P2 | 1d | 1-16 | Phase 5
+5-08 | Habit templates library (30+ pre-built habit packs by category) | P2 | 1d | 2-02 | Phase 5
+5-09 | Optional Supabase cloud sync (auth + realtime + last-write-wins) | P3 | 5d | 4-07 | Phase 5
+5-10 | Ollama local LLM habit suggestions (based on goal text input) | P3 | 3d | All Phase 5 | Phase 5
+5-11 | Capacitor wrapper for native iOS/Android PWA deployment | P3 | 3d | 4-11 | Phase 5
+Sprint | Duration | Deliverables | Exit Criteria
+Day 1 | Sprint kickoff | ΓÇó Review tasks for the sprint
+ΓÇó Re-read relevant doc sections
+ΓÇó Set up feature branches | All tasks understood, branches created
+Days 2-6 | Build | ΓÇó One task per half-day minimum
+ΓÇó Commit at end of each session
+ΓÇó Zero WIP tasks by Day 5 | Every task has a commit. Feature branches merged to main.
+Day 7 | Sprint close | ΓÇó Code review (self)
+ΓÇó Lighthouse audit if applicable
+ΓÇó DoD checklist
+ΓÇó Update this doc with actuals | DoD checklist passes. Milestone deployed to preview.
+≡ƒôÉ
+RULE | Never carry unfinished tasks from one sprint to the next without explicitly demoting their priority. A task that can't fit in the sprint is either descoped to Phase 5 or split into smaller subtasks.
+# | Risk | Impact | Prob. | Mitigation
+R1 | D3.js heatmap takes longer than 2 days ΓÇö complex SVG geometry + React integration | High | Medium | Timebox to 2 days. If blocked: ship Recharts CalendarChart as temporary fallback. Heatmap is P0 but a basic version is acceptable for v1.0.
+R2 | IndexedDB storage cleared by browser (Safari ITP, private mode) | High | Low | Call navigator.storage.persist() on first load. Show warning banner if denied. Prompt weekly JSON export as a habit.
+R3 | Notification permission rejected by user ΓÇö core reminder feature unusable | Medium | Medium | Design full in-app fallback: visual reminders on dashboard if push unavailable. Remind users to re-enable in onboarding.
+R4 | Antigravity SPA routing issue ΓÇö 404 on direct URL access | Medium | Low | Add catch-all redirect rule in Antigravity config on Day 1 of deploy sprint. Test all 18 routes directly.
+R5 | framer-motion bundle size exceeds performance budget | Medium | Low | Import only used exports. If budget exceeded: replace with CSS transitions for non-critical animations. Monitor with pnpm analyze after every phase.
+R6 | Dexie migration breaks existing data during development | High | Medium | Follow the strict migration rule: never edit previous version() blocks. Test migrations with a seeded DB before deploying each phase.
+R7 | Playwright E2E tests flake on CI due to timing issues | Low | Medium | Add explicit waitFor assertions. Never rely on arbitrary timeouts. Use data-testid attributes consistently.
+R8 | Scope creep ΓÇö temptation to add Phase 5 features before Phase 4 is complete | Medium | High | Hard rule: no new features until DoD checklist passes for current phase. Use this document as the authority.
+R9 | dnd-kit drag-and-drop breaks on mobile touch ΓÇö gesture conflicts | Medium | Medium | Test dnd-kit on real iOS/Android device at end of Sprint 2B. If broken: use long-press delay setting in dnd-kit config.
+R10 | Web Worker for analytics fails in some browsers (Safari 15) | Low | Low | Wrap in try/catch with graceful fallback to main thread calculation. Heavy calcs only: heatmap + correlation chart.
+Gate | Measurement | Tool
+TypeScript strict | Zero tsc --noEmit errors | tsc
+Lint clean | Zero ESLint errors, zero warnings | eslint --max-warnings 0
+Test coverage | >80% statements, >70% branches | vitest --coverage
+Bundle budget | Initial JS < 200KB gzipped | vite-bundle-visualizer
+Lighthouse PWA | >90 PWA score on deployed URL | Lighthouse CI
+Core Web Vitals | LCP<1.5s, CLS<0.05, INP<100ms | Lighthouse / CrUX
+A11y contrast | >4.5:1 ratio for all body text | axe-core / Colour Contrast Analyser
+E2E tests | All 3 critical flows pass on 3 browsers | Playwright
+Offline test | Full feature parity with Network: Offline | Chrome DevTools
+Metric | Phase 1 Target | Phase 2 Target | Phase 3 Target | Tool
+TypeScript errors | 0 | 0 | 0 | tsc
+ESLint warnings | 0 | 0 | 0 | eslint
+Unit test coverage | >80% | >82% | >85% | vitest
+Lighthouse performance | ΓÇö | >70 | >85 | Lighthouse
+Bundle size (initial) | <300KB | <250KB | <200KB | rollup-visualizer
+Streak calc accuracy | 100% unit | 100% unit | 100%+E2E | vitest + playwright
+Screens with a11y | 50% | 80% | 100% | axe-core
+Mobile viewport pass | Phase 1 | All screens | All+E2E | manual + playwright
+DB migration tests | v1 tested | v2 tested | v1-v5 all | vitest
+1 | 2 | 3 | 4 | 5 | 6
+Plan | Branch | Build | Commit | Review | Merge
+Review today's tasks from this doc. Read relevant code from yesterday. | git checkout -b feat/task-id-short-description | Write tests first if logic-heavy. Build feature. Run tests. | Conventional commit message. Husky checks pass. | Self-review diff. Check mobile at 375px. Run pnpm build. | Merge to main. Delete branch. Update task status.
+Shell
+# Format: type(scope): description
+
+feat(habits):    add grace day toggle to habit form
+feat(tasks):     implement recurring task spawn on complete
+feat(analytics): build D3 heatmap component
+feat(gamification): add level-up modal with confetti
+fix(streak):     correct off-by-one in weekly schedule calc
+fix(tasks):      prevent subtask cascade from missing nested children
+ui(dashboard):   fix completion ring gap on Safari
+ui(mobile):      correct bottom tab z-index on iOS
+perf(analytics): move heatmap calculation to Web Worker
+test(habits):    add HabitCard keyboard interaction tests
+a11y(tasks):     add aria-label to priority dot buttons
+chore(deps):     upgrade dexie to 4.1.0
+docs:            update implementation plan with Phase 2 actuals
+ΓÿÉ | Definition of Done ΓÇö Every Task Must Meet All These Before Marking Complete
+ΓÿÉ | Node.js 22 LTS installed (verify: node --version shows v22.x.x)
+ΓÿÉ | pnpm 9 installed globally (verify: pnpm --version shows 9.x.x)
+ΓÿÉ | VS Code installed with all 7 recommended extensions (see Tech Stack doc ┬º15.2)
+ΓÿÉ | pnpm create vite@latest habitflow -- --template react-ts executed
+ΓÿÉ | cd habitflow && pnpm install executed
+ΓÿÉ | All production + dev dependencies from Tech Stack doc ┬º13 installed
+ΓÿÉ | Tailwind CSS v4 + PostCSS configured and producing output (verify a class renders)
+ΓÿÉ | Folder structure from Frontend Guidelines ┬º2 created (all 20+ folders)
+ΓÿÉ | tsconfig.json strict mode enabled with all required options
+ΓÿÉ | ESLint configured (airbnb-typescript) ΓÇö pnpm lint passes on empty project
+ΓÿÉ | Prettier + prettier-plugin-tailwindcss configured ΓÇö pnpm format runs
+ΓÿÉ | Husky installed ΓÇö git commit triggers pre-commit hook
+ΓÿÉ | Vitest configured ΓÇö pnpm test finds and runs a placeholder test
+ΓÿÉ | Dexie installed ΓÇö db.ts skeleton created and DB initialises in browser DevTools
+ΓÿÉ | React Router configured ΓÇö pnpm dev shows placeholder text at / without errors
+ΓÿÉ | Git repo initialised ΓÇö first commit pushed to remote
+If you need... | Read this document | Specific section
+Feature requirements | PRD | Section 4 ΓÇö Core Feature Set
+Component structure | Frontend Guidelines | Section 4 ΓÇö Component Architecture
+TypeScript patterns | Frontend Guidelines | Section 5 ΓÇö TypeScript Standards
+Tailwind class order | Frontend Guidelines | Section 6 ΓÇö Tailwind Conventions
+State management pattern | Frontend Guidelines | Section 7 ΓÇö State Management
+Animation specs | Frontend Guidelines | Section 8 ΓÇö Animation & Motion
+Accessibility requirements | Frontend Guidelines | Section 9 ΓÇö Accessibility
+Performance budgets | Frontend Guidelines | Section 10 ΓÇö Performance
+Chart library assignment | Tech Stack | Section 5 ΓÇö Charts & Visualisation
+NPM package versions | Tech Stack | Section 13 ΓÇö Dependency Map
+Architecture decisions | Tech Stack | Section 14 ΓÇö Decision Log
+DB schema / field specs | DB Schema | Section 3 ΓÇö Collection Schemas
+Zod schema code | DB Schema | Section 4 ΓÇö Zod Validation Schemas
+Dexie implementation | DB Schema | Section 5 ΓÇö Dexie.js Implementation
+Service layer patterns | DB Schema | Section 6 ΓÇö Service Layer
+Migration strategy | DB Schema | Section 7 ΓÇö Migration Strategy
+Screen specs / UI elements | App Flow | Section 3ΓÇô9 ΓÇö Individual Flow Sections
+Navigation routes | App Flow | Section 2.2 ΓÇö Navigation Map
+Edge cases | App Flow | Section 11 ΓÇö Edge Cases & Error Flows
+Keyboard shortcuts | App Flow | Section 12 ΓÇö Keyboard & Gesture Map
+Loading states | App Flow | Section 13 ΓÇö Loading & Transition States
+Ship a working version at the end of every phase.
+A deployed, working Phase 1 is worth more than a perfect, un-deployed Phase 4.
+When in doubt: descope, simplify, ship.
+≡ƒôï
+Start with this doc
+Read Section 1 + your current Phase section before every session | ΓÜí
+When stuck > 1 hour
+Descope the hard part. Ship the 80%. Revisit in Phase 5. | ≡ƒôè
+Before every commit
+Run: pnpm build && pnpm test. If it fails, don't commit.
+

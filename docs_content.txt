@@ -1,0 +1,370 @@
+=== HabitFlow_PRD.docx ===
+HABITFLOW
+Habit Tracker + To-Do List
+Product Requirements Document
+Version 1.0  ╖  2025
+A local-first, analytics-rich productivity app for building lasting habits
+1. Executive Summary
+HabitFlow is a local-first, web-based productivity application combining a powerful habit tracking engine with a rich to-do list manager. It is designed for individuals who want to build consistent routines, eliminate decision fatigue, and gain data-driven insight into their own behavior ù without compromising data privacy.
+The application runs entirely in the browser using IndexedDB for local persistence. No backend or account is required to start. An optional cloud-sync layer can be enabled at any time without data loss.
+2. Product Vision & Goals
+2.1 Vision Statement
+To be the single pane of glass where intention meets execution ù where habits are tracked with scientific rigor, tasks are managed with clarity, and progress is made visible through compelling analytics.
+2.2 Problem Statement
+Most habit trackers are too simple: binary check-ins with no context, goals, or insights.
+To-do apps and habit apps are siloed, forcing users to context-switch.
+Existing apps require cloud accounts before value is delivered, creating friction.
+Analytics in most apps are shallow vanity metrics with no prescriptive insight.
+There is no unified view of 'What should I do right now?' for both habits and tasks.
+2.3 Strategic Goals
+3. Target Users & Personas
+3.1 Persona A ù The Disciplined Student
+Tracks: study sessions, coding practice, exercise, sleep, reading
+Needs: streak visualization, deadline reminders, weekly review reports
+Pain: current tools don't give insight into which habits are slipping before it's too late
+3.2 Persona B ù The Busy Professional
+Tracks: exercise, hydration, meditation, work deliverables
+Needs: priority flags, time-blocking, recurring tasks, habit-to-project linkage
+Pain: habit relapses after travel or disruption, no easy 'get back on track' flow
+3.3 Persona C ù The Self-Optimizer
+Tracks: 10-20 habits simultaneously, mood, energy levels, custom metrics
+Needs: export to CSV, custom chart views, period comparisons, statistical summaries
+Pain: no app gives rich enough analytics without a subscription or cloud lock-in
+4. Core Feature Set
+4.1 Habit Tracking Module
+4.1.1 Habit Creation & Configuration
+4.1.2 Daily Check-In
+4.1.3 Streak Engine
+4.2 To-Do List Module
+4.3 Analytics & Visualization Module
+This is the crown jewel of HabitFlow. Every data point is tracked and surfaced in actionable charts.
+4.4 Gamification & Motivation
+4.5 Notifications & Reminders
+4.6 Settings & Data Management
+5. Key User Stories
+5.1 Habit Tracking
+As a user, I want to create a habit in under 30 seconds so that friction to start is minimal.
+As a user, I want to check off today's habits from a single screen so that I don't have to navigate per-habit.
+As a user, I want to see my current streak so that I feel motivated to maintain it.
+As a user, I want to view a year-view heatmap so that I can see patterns in my consistency.
+As a user, I want to receive a reminder at a specific time so that I don't forget a habit.
+As a user, I want to backdate a missed completion so that travel doesn't destroy my data.
+5.2 To-Do List
+As a user, I want to capture a task instantly with a keyboard shortcut so that I never lose an idea.
+As a user, I want to see all tasks due today in one view so that I know my priorities.
+As a user, I want to create subtasks so that I can break large projects into manageable steps.
+As a user, I want tasks to recur automatically so that weekly reviews auto-appear.
+As a user, I want to drag tasks into priority order so that my list reflects reality.
+5.3 Analytics
+As a user, I want a dashboard that shows my day at a glance so that I can make instant decisions.
+As a user, I want to compare this month vs. last month so that I can see if I'm improving.
+As a user, I want to see which day of the week I'm weakest so that I can plan proactively.
+As a user, I want to export my data to CSV so that I can run my own analysis.
+6. Technical Architecture
+6.1 Technology Stack
+6.2 Data Architecture
+IndexedDB Schema
+7. UI/UX Specifications
+7.1 Navigation Architecture
+The app uses a persistent left sidebar on desktop and a bottom tab bar on mobile. Five primary sections:
+7.2 Design System
+Primary font: Inter (fallback: system-ui)
+Color palette: Indigo as primary brand; semantic tokens for success/warning/danger
+Spacing scale: 4px base unit (8, 12, 16, 24, 32, 48, 64)
+Border radius: 8px default, 12px for cards, 999px for badges/chips
+Shadows: 3-tier elevation system (sm, md, lg)
+Icons: Lucide React (consistent, MIT licensed)
+Motion: Framer Motion for micro-animations (< 300ms, reduced-motion aware)
+7.3 Key Screens
+Dashboard
+Hero: Large circular completion ring for today (animated fill)
+Habit grid: horizontal scrollable cards with streak badge
+Top 3 tasks due today with priority color and checkbox
+Streak leaderboard: your top 3 longest streaks
+Daily score meter (0-100) updated in real time
+Today View (Habit Check-In)
+Sortable list of habits due today
+Each row: icon, name, current streak flame, input widget (checkbox/stepper/slider/stars)
+Progress bar at top: X / Y habits done
+Completed habits slide to bottom with green checkmark
+Tap habit name for detail drawer: 7-day mini-calendar + journal note
+Analytics ù Per Habit
+Tab 1: Heatmap (GitHub-style, 52-week view, color by completion %)
+Tab 2: Streak history (horizontal bar chart, each bar = a streak run)
+Tab 3: Trends (line chart: rolling 7-day avg vs. target)
+Tab 4: Stats (cards: total completions, avg value, best streak, worst week)
+Tab 5: Journal log (chronological list of all entries with notes)
+8. Non-Functional Requirements
+9. Development Roadmap
+10. Success Metrics & KPIs
+10.1 Engagement Metrics
+10.2 Behavioral Metrics
+11. Risks & Mitigations
+12. Open Questions & Decisions
+Cloud Sync: Offer optional Supabase sync in Phase 5, or keep purely local? Recommend: local-first always, sync as optional enhancement.
+Collaboration: Should habits or tasks be shareable (accountability partner)? Recommend: post-MVP ù adds backend complexity.
+AI Suggestions: Use on-device LLM (Ollama) to suggest habits based on goals entered at onboarding? Recommend: Phase 5 experiment given AIML background.
+Monetization: Free forever, or premium tier with advanced analytics? Recommend: free MVP; revisit after usage data.
+Antigravity Deploy: Static SPA deploy or SSR? Recommend: Pure static (Vite build) for simplicity and performance.
+13. Appendix
+13.1 Inspiration & References
+Streaks (iOS) ù minimalist habit UI pattern
+Habitica ù gamification depth reference
+Linear ù task management UX benchmark
+RescueTime ù analytics depth reference
+GitHub contribution graph ù heatmap visual inspiration
+13.2 Recommended NPM Packages
+13.3 Competitor Analysis
+End of Document
+Attribute | Detail
+Product Name | HabitFlow
+Version | 1.0 (MVP)
+Platform | Web (PWA) ù deployable on Antigravity
+Author | Aditya
+Department | Personal / AIML Project ù ZCOER
+Status | Pre-development ù PRD Draft
+Document Version | 1.0
+Goal | Metric
+Retention | Day-7 return rate > 60%
+Engagement | Daily active use > 5 min/session
+Habit completion | Avg. completion rate > 70% by week 4
+Task throughput | Tasks created-to-done ratio > 80%
+Performance | First paint < 1.5s on 4G
+Profile | Engineering student (2nd year, B.Tech AIML). Manages coursework, project deadlines, daily study habits, and personal goals. Works from a mid-range laptop. Values performance and offline capability over cloud features.
+Profile | Working adult balancing career growth, health routines, and side projects. Heavy task-list user who wants to merge habits into the same daily planning workflow.
+Profile | Data-driven individual who journals, experiments with sleep and nutrition, and wants deep analytics ù heatmaps, trend lines, correlation discovery between habits.
+ | Feature | Description | Priority
+H-01 | Create Habit | Name, description, icon (emoji picker), color tag, category/tag assignment | P0
+H-02 | Frequency Rules | Daily / Weekly (specific days) / Custom interval (every N days) | P0
+H-03 | Habit Types | Boolean (done/not done), Count (reps, pages), Duration (minutes), Rating (1-5) | P0
+H-04 | Goals per Habit | Target value per entry (e.g., 8 glasses water, 30 min run) | P0
+H-05 | Habit Categories | User-defined categories: Health, Learning, Work, Personal, Finance, etc. | P1
+H-06 | Start & End Date | Optional habit expiry or challenge mode (30-day habit challenge) | P1
+H-07 | Habit Archiving | Soft-delete: archive without losing historical data | P1
+H-08 | Templates | Pre-built habit bundles (Morning Routine, Study Plan, Fitness Starter) | P2
+ | Feature | Description | Priority
+C-01 | Today View | Single scrollable view of all habits due today with one-tap check-in | P0
+C-02 | Partial Check-In | Log partial completion with actual value vs. target | P0
+C-03 | Backdating | Log past entries (up to 7 days back) with a note | P0
+C-04 | Journal Note | Optional free-text note per habit entry | P1
+C-05 | Mood Log | Daily mood tag (5 states) stored alongside habit data for correlation | P1
+C-06 | Time Stamp | Auto-record check-in time for time-of-day analytics | P1
+C-07 | Quick Add | Floating action button: add habit or task from anywhere in app | P1
+ | Feature | Description | Priority
+S-01 | Current Streak | Consecutive successful days calculated per habit schedule | P0
+S-02 | Best Streak | All-time personal best streak per habit | P0
+S-03 | Grace Day | 1 free miss per week that doesn't break streak (configurable per habit) | P1
+S-04 | Streak Freeze | Manually freeze streak during travel/illness (limited tokens) | P2
+S-05 | Milestone Badges | Auto-earned badges: 7, 21, 30, 66, 100-day streaks | P1
+ | Feature | Description | Priority
+T-01 | Task Creation | Title, description, due date, due time, priority (P0-P3), label | P0
+T-02 | Subtasks | Unlimited subtask nesting under a parent task | P0
+T-03 | Priority Flags | 4 priority levels with color coding (red, orange, blue, none) | P0
+T-04 | Due Date & Time | Calendar picker + optional time for time-sensitive tasks | P0
+T-05 | Recurring Tasks | Daily / Weekly / Monthly / Custom recurrence rules | P0
+T-06 | Labels & Tags | Color-coded labels, multi-label support per task | P1
+T-07 | Projects | Group tasks under projects with progress bars | P1
+T-08 | Task Notes | Rich text notes per task (bold, bullet, inline code) | P1
+T-09 | Drag & Drop | Reorder tasks within and across sections | P1
+T-10 | Quick Capture | Global keyboard shortcut (Q) to add task instantly | P1
+T-11 | Natural Language Date | Parse 'tomorrow 3pm', 'next Monday' into due date | P2
+T-12 | Task Dependencies | Mark task as blocked by another task | P2
+T-13 | Eisenhower Matrix | View tasks in 2x2 urgent/important quadrant layout | P2
+ | Feature | Description | Priority
+A-01 | GitHub-style Heatmap | Full-year habit completion heatmap per habit (color intensity = completion %) | P0
+A-02 | Streak Timeline | Bar chart of streak history: each bar = a streak, length = duration | P0
+A-03 | Weekly Overview | Radar chart showing habit completion across 7 days this week | P0
+A-04 | Monthly Trends | Line chart of completion % over last 12 months per habit | P0
+A-05 | Daily Completion Ring | Circular progress ring on dashboard: X of Y habits done today | P0
+A-06 | Task Throughput Chart | Tasks created vs. completed per week as grouped bar chart | P1
+A-07 | Best Day / Worst Day | Identify which day of week has highest / lowest completion rate | P1
+A-08 | Habit Correlation | Scatter plot: mood score vs. habit completion to surface correlations | P1
+A-09 | Time-of-Day Chart | When during the day are habits completed? (distribution histogram) | P1
+A-10 | Period Comparison | Compare any two date ranges side-by-side for a habit | P2
+A-11 | Stats Cards | Total completions, avg. completion %, longest streak, current streak cards | P0
+A-12 | Export CSV | Export full habit log as CSV for external analysis | P1
+ | Feature | Description | Priority
+G-01 | XP System | Earn XP per completion: +10 base, +5 streak bonus, +20 milestone | P1
+G-02 | Level System | 5 levels: Beginner > Builder > Achiever > Champion > Grandmaster | P1
+G-03 | Badge Library | 30+ badges for streaks, categories, consistency patterns | P2
+G-04 | Daily Score | Composite daily score (0-100) = habit completion + task throughput | P1
+G-05 | Weekly Review | Auto-generated Sunday summary: wins, losses, next week focus | P1
+ | Feature | Description | Priority
+N-01 | Per-habit Reminders | Custom time per habit, configurable days of week | P0
+N-02 | Smart Nudge | If by 8pm habit not done, push browser notification | P1
+N-03 | Morning Briefing | Daily 8am digest: habits due today + top 3 tasks | P1
+N-04 | Streak Alert | Alert when a long streak is at risk (not done by evening) | P1
+N-05 | Task Due Alerts | Browser notification at task due time | P0
+ | Feature | Description | Priority
+D-01 | Full Data Export | Export all data (habits, tasks, logs) as JSON backup | P0
+D-02 | Data Import | Restore from JSON backup | P0
+D-03 | Reset Options | Reset specific habit log or full app reset | P1
+Traceback (most recent call last):
+D-04 | Dark Mode | System-aware dark/light mode with manual override | P1
+D-05 | Theme Colors | 5 accent color themes (indigo, violet, emerald, rose, amber) | P2
+D-06 | Start of Week | Monday or Sunday as week start (affects all charts) | P1
+D-07 | Keyboard Shortcuts | Full keyboard nav: Q=quick add, T=today, A=analytics, Esc=close | P2
+Layer | Technology
+Frontend Framework | React 18 + Vite (fast dev, optimized builds)
+Language | TypeScript (strict mode)
+State Management | Zustand (lightweight, no boilerplate)
+Local Storage | IndexedDB via Dexie.js (fast, queryable, offline-first)
+Charts & Graphs | Recharts + D3.js (custom heatmap)
+Styling | Tailwind CSS v4 + shadcn/ui component library
+Notifications | Web Push API + Service Worker (PWA)
+Date Handling | date-fns v3 (tree-shakable, no moment.js)
+Drag & Drop | dnd-kit (accessible, performant)
+Deployment | Antigravity (static build deploy)
+Build | Vite with code-splitting per route
+PWA | vite-plugin-pwa (offline support, installable)
+Testing | Vitest + React Testing Library
+habits | id, name, icon, color, category, type (boolean|count|duration|rating), frequency, targetValue, startDate, endDate, archived, createdAt
+habitLogs | id, habitId, date (YYYY-MM-DD), value, note, mood, timeStamp, createdAt
+tasks | id, title, description, priority, dueDate, dueTime, labels[], projectId, parentId, subtasks[], recurring (rule), completed, completedAt, createdAt
+projects | id, name, color, icon, description, taskIds[], archived, createdAt
+moods | id, date, score (1-5), note, createdAt
+userXP | id, total, level, badgesEarned[], weeklyScore, lastUpdated
+View | Description
+Dashboard (Home) | Today's habits ring + top tasks + streak highlights + quick stats
+Habits | Habit list, today check-in grid, per-habit detail & log
+Tasks | Inbox, Today, Upcoming, Projects, Completed views
+Analytics | All charts, comparisons, exports, badges
+Settings | Profile, notifications, themes, data management
+Requirement | Specification
+Performance | First Contentful Paint < 1.5s; Time to Interactive < 3s on 4G
+Offline Support | Full read/write functionality offline via Service Worker + IndexedDB
+PWA | Installable on desktop and mobile; home-screen icon; full-screen mode
+Accessibility | WCAG 2.1 AA compliance; keyboard navigable; screen reader friendly
+Browser Support | Chrome 100+, Firefox 100+, Safari 15+, Edge 100+
+Data Privacy | Zero telemetry by default; all data stays on-device; explicit opt-in for sync
+Storage Limit | Graceful warning when IndexedDB usage exceeds 500MB
+Responsiveness | Fully functional at 320px to 2560px viewport widths
+Bundle Size | Initial JS bundle < 200KB gzipped (code-split by route)
+Security | No XSS vectors; sanitize all rich text input; CSP headers on deploy
+Phase | Duration | Deliverables | Success Criteria
+Phase 1 | 2 weeks | ò Project scaffold + Vite + Tailwind setup
+ò Dexie.js schema + CRUD services
+ò Habit creation + today check-in flow
+ò Basic task list (add, complete, delete)
+ò Static dashboard layout | Core loop works end-to-end locally
+Phase 2 | 2 weeks | ò Streak engine + grace day logic
+ò Heatmap chart (D3.js)
+ò Weekly radar chart (Recharts)
+ò Task priorities + due dates + labels
+ò Notifications via Web Push API | Analytics v1 live; reminders functional
+Phase 3 | 2 weeks | ò Subtasks + projects + recurring tasks
+ò Full analytics suite (all P0+P1 charts)
+ò Mood log + habit-mood correlation chart
+ò XP + level + badge system
+ò Dark mode + theme colors | Feature-complete MVP; gamification live
+Phase 4 | 1 week | ò PWA manifest + Service Worker
+ò Full JSON export/import
+ò Keyboard shortcuts
+ò Accessibility audit + fixes
+ò Deploy to Antigravity + performance audit | Production-ready; deployable
+Phase 5 | Future | ò Natural language date parsing
+ò Eisenhower matrix view
+ò Task dependency graph
+ò Optional cloud sync (Supabase)
+ò CSV export + period comparison | Post-MVP enhancements
+Metric | Target
+  File "<string>", line 22, in <module>
+    print(' | '.join(cells))
+    ~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 32: character maps to <undefined>
+Day-1 habit creation rate | > 80% of sessions
+Day-7 retention | > 60%
+Day-30 retention | > 35%
+Avg habits tracked per user | > 5 active habits
+Avg daily session duration | > 4 minutes
+Analytics tab visit rate | > 50% of weekly sessions
+Metric | Target
+Week-4 habit completion rate | > 70%
+Streak length at Day-30 | > 10 days avg
+Task throughput (done/created) | > 80%
+Backdate usage rate | < 15% (proxy for honesty)
+Export feature usage | > 20% of 30-day users
+Risk | Mitigation
+IndexedDB storage cleared by browser | Prompt for persistent storage; warn before quota; weekly export prompt
+Notification permission denied | Graceful fallback to in-app banners + visual reminders on dashboard
+Habit tracking fatigue | Limit visible habits in today-view to 10; allow snooze; weekly review prompts
+Complex analytics slowing UI | Virtual rendering for large datasets; debounced chart updates; web worker for heavy calcs
+Mobile usability gaps | Mobile-first design from sprint 1; weekly device testing on real hardware
+Data model migration | Version the Dexie.js schema from Day 1; write upgrade handlers for each version
+Package | Purpose
+dexie | IndexedDB abstraction with reactive queries
+recharts | Composable chart library (bar, line, radar, pie)
+d3 | Custom heatmap rendering
+zustand | Global state management
+date-fns | Date arithmetic without Moment.js overhead
+dnd-kit | Accessible drag-and-drop
+framer-motion | Micro-animations and transitions
+lucide-react | Icon system
+vite-plugin-pwa | PWA manifest and service worker generation
+zod | Runtime schema validation for imports
+App | Gap HabitFlow Fills
+Habitica | No real analytics; gamification dominates UX; no task depth
+Streaks (iOS) | iOS only; no analytics; no tasks; no export
+Todoist | Tasks only; no habit loop or streak engine; subscription for analytics
+Notion | No purpose-built habit tracking; requires heavy manual setup
+Loop Habit Tracker | Android only; no tasks; no gamification; UI is dated
+
+=== HabitFlow_Tech_Stack.docx ===
+HABITFLOW
+Tech Stack Document
+Every technology choice, the reason it was made, and how it fits together.
+Version 1.0  ╖  2025  ╖  Aditya
+1. Technology Overview
+HabitFlow is built on a deliberately lean, local-first stack. Every technology was chosen with three criteria: performance on mid-range hardware (no discrete GPU required), zero mandatory backend, and zero lock-in to any paid service. The result is a stack that compiles to a static PWA, deployable to Antigravity with a single command.
+2. Core Runtime Stack
+2.1 Language & Framework
+2.2 Routing
+2.3 State Management
+3. Data Layer
+3.1 Local Database
+3.2 Data Validation
+4. UI Layer & Styling
+4.1 CSS Framework
+4.2 Component Library
+4.3 Animation
+5. Charts & Data Visualisation
+6. Date & Time
+7. Drag & Drop
+8. PWA & Offline Support
+9. Forms & User Input
+10. Testing Stack
+11. Developer Tooling
+12. Deployment ù Antigravity
+HabitFlow compiles to a pure static bundle (HTML + JS + CSS + assets). There is no server, no Node.js runtime, no database server. The entire app ships as files served from Antigravity's CDN.
+13. Complete Dependency Map
+13.1 Production Dependencies
+13.2 Development Dependencies
+14. Architecture Decision Log
+Every major technology decision is documented here with the rejected alternatives and rationale.
+15. Development Environment Setup
+15.1 Prerequisites
+15.2 Recommended VS Code Extensions
+ESLint ù real-time lint feedback
+Prettier ù auto-format on save
+Tailwind CSS IntelliSense ù class autocomplete + hover docs
+TypeScript Error Lens ù inline TypeScript errors
+GitLens ù enhanced git blame and history
+Vitest ù run tests inline from editor
+Playwright ù test runner integration
+15.3 First-Time Setup Commands
+16. Future Stack Considerations (Post-MVP)
+Appendix ù Version Lock File Reference
+Pin these exact major versions. Patch updates are safe; major bumps require team review.
+End of Tech Stack Document  ╖  HabitFlow v1.0  ╖  Aditya  ╖  ZCOER SE AIML
+32
+NPM Packages | 4
+Dev Tools | 100%
+Local-First | PWA
+Installable
+Attribute | Value
+Architecture | Static SPA (Single Page Application)
+Rendering | Client-side rendering (CSR) via React 18
+Data storage | IndexedDB (browser-native, no server needed)

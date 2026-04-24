@@ -1,0 +1,859 @@
+  box-shadow: 0 0 0 2px #6366F1, 0 0 0 4px rgba(99,102,241,0.3);
+}
+/* Quick Add button */
+.quick-add-btn {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  box-shadow: 0 4px 14px rgba(79,70,229,0.4), 0 0 0 1px rgba(99,102,241,0.3);
+  border-radius: var(--r-lg);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: all 0.2s var(--ease-spring);
+}
+.quick-add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(79,70,229,0.5), 0 0 0 1px rgba(99,102,241,0.4);
+}
+.quick-add-btn:active { transform: translateY(0); }
+≡ƒôè  Fix #3: Dashboard Stat Cards
+Each card needs a gradient identity, large icon, glow, and hover lift.
+Γ¥î  BEFORE ΓÇö Current (Dead)
+Γ£à  AFTER ΓÇö Redesigned (Alive)
+ΓÇó  Plain white rectangle with tiny grey icon
+ΓÇó  Number font size same as label text ΓÇö no hierarchy
+ΓÇó  All three cards look identical ΓÇö interchangeable
+ΓÇó  Zero hover state ΓÇö completely static
+ΓÇó  Gradient top-bar accent per card (indigo, amber, green)
+ΓÇó  Massive stat number: 48px bold ΓÇö instantly readable
+ΓÇó  Coloured icon in gradient circle background
+ΓÇó  Card lifts 4px on hover with glow shadow
+CSS
+/* Stat card base */
+.stat-card {
+  background: var(--bg-surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.8);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s var(--ease-spring);
+  cursor: default;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+/* Gradient accent bar on top */
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--card-gradient);  /* set per card */
+}
+/* Decorative background circle */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: var(--card-gradient);
+  opacity: 0.06;
+}
+/* Per-card gradient themes */
+.stat-card.habits  { --card-gradient: linear-gradient(135deg, #4F46E5, #7C3AED); }
+.stat-card.tasks   { --card-gradient: linear-gradient(135deg, #F59E0B, #F97316); }
+.stat-card.streak  { --card-gradient: linear-gradient(135deg, #10B981, #06B6D4); }
+/* Stat number */
+.stat-number {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  background: var(--card-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+/* Icon wrapper */
+.stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--card-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 12px rgba(79,70,229,0.25);
+}
+/* Label */
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+≡ƒöÑ  Fix #4: Habit Cards
+The most important UI surface. Needs colour, streak fire, and completion drama.
+Γ¥î  BEFORE ΓÇö Current (Dead)
+Γ£à  AFTER ΓÇö Redesigned (Alive)
+ΓÇó  Plain white card with green circle checkmark
+ΓÇó  'Read' text and '≡ƒöÑ 1d' streak in tiny text
+ΓÇó  No visual distinction between habits
+ΓÇó  Checking off feels like clicking a button in a form
+ΓÇó  Card left-border = habit's signature gradient colour
+ΓÇó  Large emoji icon + bold habit name + XL streak number
+ΓÇó  Checking off: checkmark animates in, card dims beautifully, confetti pop
+ΓÇó  Habit colour bleeds into card background at 4% opacity ΓÇö subtle warmth
+CSS
+/* Habit card */
+.habit-card {
+  background: var(--bg-surface);
+  border-radius: var(--r-lg);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-left: 4px solid var(--habit-color);  /* signature colour */
+  transition: all 0.2s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+.habit-card::before {  /* colour wash bg */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--habit-color);
+  opacity: 0.03;
+  pointer-events: none;
+}
+.habit-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+/* Habit icon circle */
+.habit-icon {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--habit-color-start), var(--habit-color-end));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(var(--habit-color-rgb), 0.35);
+}
+/* Streak badge */
+.streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #F97316;
+  background: rgba(249,115,22,0.1);
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+/* Check button */
+.habit-check {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  border: 2px solid var(--habit-color);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-spring);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.habit-check:hover {
+  background: rgba(var(--habit-color-rgb), 0.12);
+  transform: scale(1.1);
+}
+.habit-check.checked {
+  background: linear-gradient(135deg, var(--habit-color-start), var(--habit-color-end));
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(var(--habit-color-rgb), 0.4);
+  animation: check-pop 0.4s var(--ease-spring);
+}
+@keyframes check-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+/* Completed card state */
+.habit-card.completed {
+  opacity: 0.6;
+  background: linear-gradient(135deg, rgba(16,185,129,0.05), rgba(6,182,212,0.05));
+}
+.habit-card.completed .habit-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+≡ƒÿè  Fix #5: Mood Selector
+Transform grey emoji dots into a joyful, animated colour picker.
+Γ¥î  BEFORE ΓÇö Current (Dead)
+Γ£à  AFTER ΓÇö Redesigned (Alive)
+ΓÇó  5 grey circles with emoji ΓÇö looks like a broken form
+ΓÇó  Same size as supporting UI ΓÇö gets lost
+ΓÇó  No hover state, no selection animation
+ΓÇó  No colour to distinguish moods ΓÇö all grey
+ΓÇó  5 large emoji in their own coloured glow rings
+ΓÇó  Selected: scale up 1.3 + ring glow animates + bounce
+ΓÇó  Unselected: normal scale with subtle hover scale 1.1
+ΓÇó  Each mood has its own background hue: red, orange, yellow, teal, violet
+CSS
+/* Mood selector container */
+.mood-selector {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  border-radius: var(--r-xl);
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: var(--shadow-sm);
+}
+/* Mood button */
+.mood-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--mood-bg);
+  font-size: 26px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-spring);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.mood-btn:hover { transform: scale(1.15); }
+/* Selected state */
+.mood-btn.selected {
+  transform: scale(1.3);
+  border-color: var(--mood-color);
+  box-shadow: 0 0 0 4px rgba(var(--mood-color-rgb), 0.2),
+              0 8px 20px rgba(var(--mood-color-rgb), 0.3);
+  animation: mood-bounce 0.4s var(--ease-spring);
+}
+@keyframes mood-bounce {
+  0%   { transform: scale(1); }
+  60%  { transform: scale(1.4); }
+  100% { transform: scale(1.3); }
+}
+/* Per-mood colours */
+.mood-btn[data-mood='1'] { --mood-bg:#FEF2F2; --mood-color:#EF4444; --mood-color-rgb:239,68,68; }
+.mood-btn[data-mood='2'] { --mood-bg:#FFF7ED; --mood-color:#F97316; --mood-color-rgb:249,115,22; }
+.mood-btn[data-mood='3'] { --mood-bg:#FEFCE8; --mood-color:#EAB308; --mood-color-rgb:234,179,8; }
+.mood-btn[data-mood='4'] { --mood-bg:#F0FDFA; --mood-color:#14B8A6; --mood-color-rgb:20,184,166; }
+.mood-btn[data-mood='5'] { --mood-bg:#FAF5FF; --mood-color:#A855F7; --mood-color-rgb:168,85,247; }
+Γ¡ò  Fix #6: Completion Ring
+Make the daily progress ring the hero element it deserves to be.
+Γ¥î  BEFORE ΓÇö Current (Dead)
+Γ£à  AFTER ΓÇö Redesigned (Alive)
+ΓÇó  Small ring, generic green colour
+ΓÇó  Ring does not animate on load
+ΓÇó  Number inside ring is the same size as body text
+ΓÇó  No celebratory state when ring hits 100%
+ΓÇó  Large gradient ring: indigoΓåÆvioletΓåÆrose
+ΓÇó  Animates on mount: arc draws clockwise with ease-out
+ΓÇó  Center: huge bold number + '/ total' in muted
+ΓÇó  At 100%: ring pulses with glow + confetti fires from ring
+CSS
+/* Completion ring SVG wrapper */
+.completion-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+/* The SVG ring ΓÇö use stroke-dashoffset animation */
+.ring-svg {
+  transform: rotate(-90deg);  /* start from top */
+}
+.ring-track {
+  fill: none;
+  stroke: rgba(79,70,229,0.08);
+  stroke-width: 10;
+}
+.ring-fill {
+  fill: none;
+  stroke: url(#ringGradient);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 0 8px rgba(99,102,241,0.5));
+}
+/* Inside the ring */
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ring-number {
+  font-size: 52px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.ring-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+/* Perfect day state */
+.ring-fill.perfect {
+  animation: ring-pulse 2s ease-in-out infinite;
+}
+@keyframes ring-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(99,102,241,0.5)); }
+  50%       { filter: drop-shadow(0 0 20px rgba(99,102,241,0.9)); }
+}
+/* SVG gradient definition */
+/* Inside your <svg>: */
+/* <defs>
+     <linearGradient id='ringGradient' x1='0%' y1='0%' x2='100%' y2='0%'>
+       <stop offset='0%'   stop-color='#4F46E5'/>
+       <stop offset='50%'  stop-color='#7C3AED'/>
+       <stop offset='100%' stop-color='#EC4899'/>
+     </linearGradient>
+   </defs> */
+≡ƒÅå  Fix #7: Badge Cards in Settings
+Earned badges should feel like trophies. Locked should feel tantalisingly close.
+Γ¥î  BEFORE ΓÇö Current (Dead)
+Γ£à  AFTER ΓÇö Redesigned (Alive)
+ΓÇó  All badges are identical grey locked boxes
+ΓÇó  No visual difference between earned and locked
+ΓÇó  Badge icon is a tiny padlock ΓÇö uninspiring
+ΓÇó  No sense of progress or achievement
+ΓÇó  Earned badges: full gradient card with colour glow + golden shimmer
+ΓÇó  Locked badges: greyscale with 40% opacity + crisp padlock overlay
+ΓÇó  Each badge icon is large (40px) with its own identity colour
+ΓÇó  Hover on locked: tooltip shows 'X more days to earn'
+CSS
+/* Badge grid */
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+/* Badge card base */
+.badge-card {
+  border-radius: var(--r-lg);
+  padding: 20px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s var(--ease-spring);
+  position: relative;
+  overflow: hidden;
+}
+/* EARNED badge */
+.badge-card.earned {
+  background: linear-gradient(135deg, var(--badge-color-start), var(--badge-color-end));
+  box-shadow: 0 8px 24px rgba(var(--badge-rgb), 0.35), 0 0 0 1px rgba(255,255,255,0.2);
+}
+.badge-card.earned::after {  /* shimmer on earned */
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+  animation: badge-shimmer 3s ease-in-out infinite;
+}
+@keyframes badge-shimmer {
+  0%   { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(200%) rotate(45deg); }
+}
+.badge-card.earned:hover { transform: translateY(-4px) scale(1.02); }
+.badge-card.earned .badge-name  { color: rgba(255,255,255,0.95); font-weight:700; }
+.badge-card.earned .badge-desc  { color: rgba(255,255,255,0.7); }
+/* LOCKED badge */
+.badge-card.locked {
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,0,0,0.06);
+  filter: grayscale(0.8);
+  opacity: 0.6;
+}
+.badge-card.locked:hover { opacity: 0.8; filter: grayscale(0.4); transform: scale(1.02); }
+/* Lock icon overlay */
+.badge-lock-overlay {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 20px; height: 20px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+}
+/* Badge icon */
+.badge-icon {
+  font-size: 40px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+}
+/* Sample badge colour themes */
+.badge-card[data-type='streak'] {
+  --badge-color-start: #F97316;
+  --badge-color-end:   #EF4444;
+  --badge-rgb: 249,115,22;
+}
+.badge-card[data-type='consistency'] {
+  --badge-color-start: #6366F1;
+  --badge-color-end:   #8B5CF6;
+  --badge-rgb: 99,102,241;
+}
+.badge-card[data-type='tasks'] {
+  --badge-color-start: #10B981;
+  --badge-color-end:   #06B6D4;
+  --badge-rgb: 16,185,129;
+}
+4. Typography Overhaul
+The current app uses one font weight (400) and one text size for nearly everything. Typography is free contrast ΓÇö use it.
+CSS
+/* Install Inter from Google Fonts ΓÇö add to index.html <head> */
+/* <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap' rel='stylesheet'> */
+/* Typography utility classes */
+.text-display {  /* Hero numbers: streak count, XP, stat numbers */
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.text-h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+.text-h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.text-h3 { font-size: 18px; font-weight: 600; }
+.text-body { font-size: 15px; font-weight: 400; line-height: 1.6; }
+.text-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.text-caption { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.text-mono { font-family: var(--font-mono); font-size: 13px; }
+/* Gradient text ΓÇö use sparingly for hero moments */
+.text-gradient {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+/* Dashboard greeting */
+.greeting-text {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.greeting-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+5. Micro-Interactions ΓÇö The Details That Make It Feel Alive
+Micro-interactions are what separate an app people revisit from one they abandon after 3 days. Every action needs a response.
+Element
+Duration
+CSS / Framer
+Trigger
+Habit check-in
+350ms
+scale: [1,1.3,0.95,1] + glow
+Checkbox click
+Streak number bump
+400ms
+translateY: [0,-8,0] + scale
+After successful check-in
+Card hover lift
+200ms
+translateY(-4px) + shadow-lg
+Mouse enter card
+Nav item activate
+200ms
+opacity 0ΓåÆ1 + translateX(-4ΓåÆ0)
+Route change
+XP bar fill
+600ms
+width transition + shimmer sweep
+XP awarded
+Level up modal
+500ms
+scale(0.8ΓåÆ1) + confetti burst
+Level threshold crossed
+Badge earned
+400ms
+rotateY(0ΓåÆ360) + glow appear
+Badge condition met
+Mood select
+350ms
+scale(1ΓåÆ1.4ΓåÆ1.3) + ring glow
+Mood button click
+Task complete
+300ms
+opacity(1ΓåÆ0.5) + strikethrough
+Checkbox tick
+Completion ring draw
+800ms
+stroke-dashoffset ease-spring
+Page mount
+Stat card count-up
+1200ms
+counter: 0ΓåÆN (requestAnimFrame)
+Dashboard load
+Toast slide in
+250ms
+translateY(100%ΓåÆ0) + fade
+Action confirmed
+Quick-Add open
+300ms
+translateY(100%ΓåÆ0) + blur-in
+FAB tap / Q key
+Page transition
+200ms
+opacity(0ΓåÆ1) + translateY(8ΓåÆ0)
+Route change
+Button press
+100ms
+scale(0.97) + shadow reduction
+Mouse down
+TypeScript / CSS
+/* Count-up animation for stat numbers */
+function animateCounter(el, target, duration=1200) {
+  const start = performance.now()
+  const update = (time) => {
+    const progress = Math.min((time - start) / duration, 1)
+    const ease = 1 - Math.pow(1 - progress, 3)  /* ease-out-cubic */
+    el.textContent = Math.floor(ease * target)
+    if (progress < 1) requestAnimationFrame(update)
+    else el.textContent = target
+  }
+  requestAnimationFrame(update)
+}
+/* Framer Motion habit check-in variants */
+export const checkVariants = {
+  unchecked: { scale: 1, rotate: 0 },
+  checked: {
+    scale: [1, 1.35, 0.92, 1.05, 1],
+    rotate: [0, -10, 10, -5, 0],
+    transition: { duration: 0.45, times: [0, 0.3, 0.6, 0.8, 1] }
+  }
+}
+/* Framer Motion card hover */
+export const cardHover = {
+  rest:  { y: 0, boxShadow: 'var(--shadow-sm)' },
+  hover: { y: -4, boxShadow: 'var(--shadow-lg)', transition: { duration:0.2 } },
+}
+/* Page transition */
+export const pageVariants = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.2, ease:'easeOut' } },
+  exit:    { opacity: 0, y: -6, transition: { duration: 0.15 } },
+}
+6. Glassmorphism ΓÇö For Modals, Drawers & Overlays
+Modals and the Quick-Add panel should float above the page with glass clarity ΓÇö not look like a white popup from 2010.
+CSS
+/* Glass panel ΓÇö use for modals, drawers, Quick-Add */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255,255,255,0.5) inset;
+  border-radius: var(--r-xl);
+}
+/* Dark mode glass */
+.dark .glass-panel {
+  background: rgba(30, 27, 75, 0.8);
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(99,102,241,0.15) inset;
+}
+/* Frosted card variant (softer) */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--r-lg);
+}
+/* Quick-Add panel specific */
+.quick-add-panel {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(32px);
+  border-top: 1px solid rgba(255,255,255,0.9);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;  /* only top corners */
+  box-shadow: 0 -12px 48px rgba(0,0,0,0.12), 0 -2px 0 rgba(99,102,241,0.3);
+}
+7. What to Fix First ΓÇö Priority Order
+You can't implement all of this in one session. Here's the exact order that gives maximum visual impact per hour of work.
+Priority
+What to Fix
+Visual Impact
+≡ƒöÑ Fix TODAY
+Page background + CSS variables
+Everything instantly looks less sterile ΓÇö 30 min work
+≡ƒöÑ Fix TODAY
+Sidebar dark gradient
+App gains a professional backbone ΓÇö 45 min work
+≡ƒöÑ Fix TODAY
+Stat cards gradient + hover lift
+Dashboard transforms from spreadsheet to product ΓÇö 1h
+ΓÜí Fix This Week
+Habit cards colour identity
+Core loop feels rewarding to use ΓÇö 2h
+ΓÜí Fix This Week
+Mood selector animated
+Delightful daily interaction ΓÇö 1h
+ΓÜí Fix This Week
+Typography scale
+Hierarchy makes content scannable instantly ΓÇö 45 min
+ΓÜí Fix This Week
+XP bar shimmer
+Gamification feels real ΓÇö 30 min
+≡ƒôà Next Sprint
+Completion ring gradient
+Hero moment on dashboard ΓÇö 2h
+≡ƒôà Next Sprint
+Badge cards earned/locked
+Settings page becomes a destination ΓÇö 2h
+≡ƒôà Next Sprint
+Glassmorphism overlays
+Modals feel premium ΓÇö 1h
+≡ƒôà Next Sprint
+Micro-interactions (Framer)
+App feels alive and rewarding ΓÇö 3h
+≡ƒö« Polish Pass
+Page transitions
+Cinematic navigation ΓÇö 1h
+≡ƒö« Polish Pass
+Confetti on completions
+Emotional reward moment ΓÇö 1h
+≡ƒö« Polish Pass
+Dark mode token verification
+Night-mode users fully served ΓÇö 2h
+8. Dark Mode ΓÇö Make It Actually Dark
+The dark mode toggle exists but likely applies only partial theming. Here's the complete dark mode token override that makes the dark experience feel intentional, not accidental.
+CSS
+/* globals.css ΓÇö add this dark mode block */
+.dark {
+  /* Backgrounds */
+  --bg-base:     #0A0A14;
+  --bg-surface:  #13131F;
+  --bg-elevated: #1A1A2E;
+  --bg-mesh:
+    radial-gradient(ellipse at 10% 10%, rgba(79,70,229,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 90%, rgba(124,58,237,0.08) 0%, transparent 50%),
+    #0A0A14;
+  /* Text */
+  --text-primary: #F1F5F9;
+  --text-muted:   #475569;
+  /* Borders */
+  --border:       rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  /* Stat cards ΓÇö darker background, keep gradients */
+  --card-surface: rgba(255,255,255,0.04);
+  --card-border:  rgba(255,255,255,0.08);
+  /* Shadow with colour ΓÇö not grey */
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.1);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.15);
+}
+/* Sidebar stays dark in both modes (only bg-mesh changes) */
+.sidebar {
+  background: linear-gradient(180deg, #1E1B4B 0%, #0F172A 100%) !important;
+}
+/* Dark mode stat card */
+.dark .stat-card {
+  background: var(--card-surface);
+  border-color: var(--card-border);
+}
+/* Dark mode habit card */
+.dark .habit-card {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.07);
+}
+.dark .habit-card::before { opacity: 0.06; }
+9. Screen-by-Screen Transformation Summary
+Screen
+Current State
+Target State
+Dashboard
+White page, grey cards, dead emoji row
+Mesh bg, gradient stat cards, animated mood, gradient ring
+Sidebar
+White panel, black text links
+Dark gradient, glowing active state, shimmer XP bar
+Habit Today
+White list, green checkboxes
+Colour-coded cards, animated check, streak flame
+Task Inbox
+Flat list, grey priority dots
+Coloured priority pills, smooth drag, completion animation
+Analytics
+Basic Recharts default colours
+Custom colour palette, grid lines, branded tooltips
+Habit Detail
+White cards, tiny mini calendar
+Gradient header, colour-filled calendar cells
+Settings
+Grey badge boxes, thin toggles
+Rich badge grid, large toggles, coloured sections
+Quick-Add
+Plain white modal
+Frosted glass panel, blurred backdrop
+Onboarding
+Not shown ΓÇö likely basic
+Full gradient backgrounds per step, animated illustrations
+10. Recharts Custom Styling
+The default Recharts charts use grey/blue and look like stock analytics. Override them completely.
+TypeScript
+// shared/utils/chartConfig.ts ΓÇö apply to ALL charts
+export const CHART_COLORS = {
+  primary:   '#4F46E5',
+  secondary: '#7C3AED',
+  accent:    '#06B6D4',
+  success:   '#10B981',
+  warning:   '#F59E0B',
+  gradient:  ['#4F46E5', '#7C3AED', '#EC4899'],
+}
+export const CHART_THEME = {
+  // Grid lines ΓÇö very subtle
+  cartesianGrid: {
+    strokeDasharray: '3 3',
+    stroke: 'rgba(99,102,241,0.08)',
+    vertical: false,  // horizontal only looks cleaner
+  },
+  // Axis text
+  axis: {
+    tick: { fill: '#94A3B8', fontSize: 12, fontWeight: 500 },
+    axisLine: { stroke: 'transparent' },
+    tickLine: { stroke: 'transparent' },
+  },
+  // Tooltip
+  tooltip: {
+    contentStyle: {
+      background: 'rgba(15, 23, 42, 0.95)',
+      border: '1px solid rgba(99,102,241,0.3)',
+      borderRadius: '12px',
+      boxShadow: '0 16px 40px rgba(0,0,0,0.4)',
+      color: '#F1F5F9',
+      fontSize: '13px',
+      fontWeight: '500',
+      padding: '10px 14px',
+      backdropFilter: 'blur(12px)',
+    },
+    labelStyle: { color: '#94A3B8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' },
+    cursor: { fill: 'rgba(99,102,241,0.06)' },
+  },
+  // Line chart
+  line: {
+    stroke: '#4F46E5',
+    strokeWidth: 3,
+    dot: false,
+    activeDot: { r: 6, fill: '#4F46E5', stroke: '#fff', strokeWidth: 2 },
+  },
+  // Bar chart
+  bar: {
+    fill: 'url(#barGradient)',
+    radius: [6, 6, 0, 0],
+    maxBarSize: 40,
+  },
+}
+// Gradient definition component ΓÇö include once per chart SVG
+export const ChartGradients = () => (
+  <defs>
+    <linearGradient id='barGradient' x1='0' y1='0' x2='0' y2='1'>
+      <stop offset='0%'   stopColor='#4F46E5' stopOpacity={1} />
+      <stop offset='100%' stopColor='#7C3AED' stopOpacity={0.6} />
+    </linearGradient>
+    <linearGradient id='areaGradient' x1='0' y1='0' x2='0' y2='1'>
+      <stop offset='0%'   stopColor='#4F46E5' stopOpacity={0.2} />
+      <stop offset='100%' stopColor='#4F46E5' stopOpacity={0} />
+    </linearGradient>
+  </defs>
+)
+11. Quick Wins ΓÇö Copy-Paste and Instantly See Results
+These are the highest-impact, lowest-effort changes. Do all of these first. You will see a visible transformation in under 2 hours.
+≡ƒöÑ
+MUST
+Do all 6 of these before touching any component-level code. They affect the entire app with a few lines of CSS.
+Add Inter font to index.html + update body font-family to 'Inter'
+Replace body background-color: white with background: var(--bg-mesh)
+Add box-shadow: var(--shadow-md) to every card (.rounded-lg)
+Change sidebar background from white to dark gradient
+Add hover:translate-y-[-4px] hover:shadow-lg transition-all to all stat cards
+Replace the small grey emoji circles with larger emoji using the coloured ring CSS above
+CSS
+/* Quick win: apply to index.html <head> */
+<link rel='preconnect' href='https://fonts.googleapis.com'>
+<link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap' rel='stylesheet'>
+/* Quick win: globals.css body override */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg-mesh);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* Quick win: global card shadow ΓÇö add to existing card class */
+.rounded-lg, [class*='card'] {
+  box-shadow: var(--shadow-md);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.rounded-lg:hover, [class*='card']:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+/* Quick win: all primary buttons get gradient */
+button[class*='primary'], .btn-primary, button.bg-indigo-600 {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%) !important;
+  box-shadow: 0 4px 14px rgba(79,70,229,0.4);
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+button[class*='primary']:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,70,229,0.5); }
+12. The Standard to Hit
+These are the apps HabitFlow's redesign should feel as good as. Study their specific choices:
+App
+What to steal
+Why it works
+Linear.app
+Dark sidebar, gradient active states, speed
+Makes productivity feel premium and fast
+Superhuman
+Typographic hierarchy, white space, keyboard-first
+Every pixel earns its place
+Duolingo
+Streak fire, XP bars, animated completions, colour
+Makes repetitive tasks feel rewarding
+Craft.do
+Glassmorphism, smooth transitions, gradient accents
+Documents feel alive and beautiful
+Raycast
+Command palette design, dark theme, clean cards
+Utility without sacrificing aesthetics
+Vercel dashboard
+Stat cards, gradient badges, dark mode done right
+Data presentation that feels like art
+Your app is functionally complete.
+Now make it feel inevitable ΓÇö like it couldn't possibly look any other way.
+Start with Section 11. Two hours. Ship the visual layer.
+End of UI/UX Redesign Spec  ┬╖  HabitFlow v1.0  ┬╖  Aditya  ┬╖  ZCOER SE AIML
