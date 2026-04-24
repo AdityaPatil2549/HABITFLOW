@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HabitFlow Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "text-muted-light": "#64748B",
+                        "warning": "#D97706",
+                        "on-secondary-fixed-variant": "#005049",
+                        "outline": "#767586",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "surface-container": "#efecf8",
+                        "primary-container": "#6063ee",
+                        "tertiary-fixed": "#ffdcc5",
+                        "surface-container-lowest": "#ffffff",
+                        "border-dark": "#334155",
+                        "on-secondary-container": "#006f66",
+                        "on-primary-container": "#fffbff",
+                        "secondary-container": "#86f2e4",
+                        "outline-variant": "#c7c4d7",
+                        "on-primary-fixed": "#07006c",
+                        "on-tertiary-container": "#fffbff",
+                        "on-tertiary-fixed": "#301400",
+                        "on-surface-variant": "#464554",
+                        "inverse-primary": "#c0c1ff",
+                        "surface-dark": "#1E293B",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b23",
+                        "primary": "#4648d4",
+                        "surface": "#fcf8ff",
+                        "text-muted-dark": "#94A3B8",
+                        "on-primary": "#ffffff",
+                        "background": "#fcf8ff",
+                        "surface-dim": "#dbd8e4",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "bg-dark": "#0F172A",
+                        "text-dark": "#F1F5F9",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "info": "#0D9488",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-error": "#ffffff",
+                        "tertiary": "#904900",
+                        "brand-500": "#6366F1",
+                        "on-surface": "#1b1b23",
+                        "error": "#ba1a1a",
+                        "danger": "#DC2626",
+                        "border-light": "#E2E8F0",
+                        "neutral-900": "#0F172A",
+                        "neutral-50": "#F8FAFC",
+                        "brand-600": "#4F46E5",
+                        "surface-tint": "#494bd6",
+                        "surface-container-highest": "#e4e1ed",
+                        "primary-fixed": "#e1e0ff",
+                        "tertiary-container": "#b55d00",
+                        "brand-700": "#3730A3",
+                        "inverse-on-surface": "#f2effb",
+                        "surface-bright": "#fcf8ff",
+                        "inverse-surface": "#303038",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "brand-900": "#1E1B4B",
+                        "secondary": "#006a61",
+                        "surface-variant": "#e4e1ed",
+                        "bg-light": "#F8FAFC",
+                        "success": "#16A34A",
+                        "surface-container-high": "#e9e6f3",
+                        "on-secondary": "#ffffff",
+                        "surface-light": "#FFFFFF",
+                        "brand-50": "#EEF2FF",
+                        "secondary-fixed": "#89f5e7",
+                        "surface-container-low": "#f5f2fe",
+                        "on-secondary-fixed": "#00201d",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "space-5": "20px",
+                        "space-2": "8px",
+                        "space-3": "12px",
+                        "space-8": "32px",
+                        "space-12": "48px",
+                        "space-10": "40px",
+                        "space-16": "64px",
+                        "space-6": "24px",
+                        "space-4": "16px",
+                        "space-1": "4px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "caption": ["Inter"],
+                        "label": ["Inter"],
+                        "h3": ["Inter"],
+                        "display": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["24px", { "lineHeight": "1.25", "fontWeight": "600" }],
+                        "h1": ["30px", { "lineHeight": "1.25", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "h3": ["18px", { "lineHeight": "1.25", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .circular-chart {
+            display: block;
+            margin: 0 auto;
+            max-width: 80%;
+            max-height: 250px;
+        }
+        .circle-bg {
+            fill: none;
+            stroke: #EEF2FF;
+            stroke-width: 3.8;
+        }
+        .circle {
+            fill: none;
+            stroke-width: 2.8;
+            stroke-linecap: round;
+        }
+        .percentage {
+            fill: #4F46E5;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.5em;
+            text-anchor: middle;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 sticky z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flat no shadows flex justify-between items-center px-4 md:px-8 py-3 w-full lg:pl-72">
+<div class="flex items-center gap-space-4">
+<span class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 font-h2 text-h2 lg:hidden">HabitFlow</span>
+</div>
+<div class="flex items-center gap-space-2">
+<button class="hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 focus:outline-none text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 focus:outline-none text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-container overflow-hidden ml-space-2 ring-2 ring-primary/20">
+<img alt="User Settings" class="w-full h-full object-cover" data-alt="Close-up portrait of a young professional woman with natural light against a soft grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCREOS3k8k3jhDBqOECzUWU9VGRoc9AMmBNHLbBmR_vqg-MMFtj7YutWCeBopkyGmHrFJjPNudyor8icMp6rIcoUmT-AnXoJoQfotD_HB1FR97OqcqQBuD5gUYcB_T1vVdGQHbmZbOXWxKh343UUBC44PkyFp_5FpEPAoe3QAFn-AlwaHvTKDstAb4QCVgXoQHVE_njk1Mv0d_2-kWEwQwg1atIAFHOmQ8F8JhXwHd2G-vb73f19rY55T1okX9SqzrX6kUqYSbREAcj"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="hidden lg:flex flex-col h-screen w-64 border-r border-slate-200 dark:border-slate-800 shadow-sm fixed left-0 top-0 bottom-0 z-40 p-4 bg-white dark:bg-slate-900">
+<div class="flex items-center gap-space-3 mb-space-8 px-space-2">
+<div class="h-10 w-10 rounded-lg bg-brand-500 flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="water_drop" data-weight="fill" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</div>
+<div>
+<h1 class="text-2xl font-black tracking-tight text-indigo-600 dark:text-indigo-400 font-h2 text-h2">HabitFlow</h1>
+<p class="font-caption text-caption text-text-muted-light">Stay consistent</p>
+</div>
+</div>
+<div class="flex-1 space-y-space-2">
+<a class="flex items-center gap-3 px-4 py-3 text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/30 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all active:scale-95 duration-200 font-['Inter'] text-sm antialiased" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-all active:scale-95 duration-200 font-['Inter'] text-sm antialiased" href="#">
+<span class="material-symbols-outlined" data-icon="cached">cached</span>
+<span>Habits</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-all active:scale-95 duration-200 font-['Inter'] text-sm antialiased" href="#">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+<span>Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-all active:scale-95 duration-200 font-['Inter'] text-sm antialiased" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-all active:scale-95 duration-200 font-['Inter'] text-sm antialiased" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Community</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-all active:scale-95 duration-200 font-['Inter'] text-sm antialiased" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<button class="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-body-lg text-body-lg transition-colors shadow-sm">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+            New Habit
+        </button>
+</nav>
+<!-- Main Content Area -->
+<main class="lg:pl-64 min-h-screen pb-24 lg:pb-8">
+<div class="max-w-7xl mx-auto p-space-4 md:p-space-8 space-y-space-8">
+<!-- Dashboard Header & Top Stats Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-4">
+<!-- Main Circular Progress -->
+<div class="col-span-1 md:col-span-2 bg-surface-light rounded-xl shadow-sm border border-border-light p-space-6 flex flex-col md:flex-row items-center gap-space-8">
+<div class="w-48 h-48 relative flex-shrink-0">
+<svg class="circular-chart w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="circle-bg" d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+<path class="circle stroke-brand-500" d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="75, 100"></path>
+<text class="percentage transform rotate-90 origin-center text-on-surface" x="18" y="20.5">75%</text>
+</svg>
+</div>
+<div class="flex-1 text-center md:text-left space-y-space-2">
+<h2 class="font-h1 text-h1 text-on-surface">Daily Progress</h2>
+<p class="font-body-lg text-body-lg text-text-muted-light">You've completed 6 of 8 habits today. Keep the momentum going!</p>
+<div class="flex flex-wrap gap-space-2 justify-center md:justify-start mt-space-4">
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-50 text-brand-700 font-label text-label">
+<span class="material-symbols-outlined text-[14px]" data-icon="local_fire_department">local_fire_department</span>
+                                12 Day Streak
+                            </span>
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success font-label text-label">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                                +5% vs Yesterday
+                            </span>
+</div>
+</div>
+</div>
+<!-- Daily Score Meter -->
+<div class="col-span-1 bg-surface-light rounded-xl shadow-sm border border-border-light p-space-6 flex flex-col justify-between">
+<div>
+<h3 class="font-h3 text-h3 text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-brand-500" data-icon="military_tech">military_tech</span>
+                            Daily Score
+                        </h3>
+<p class="font-caption text-caption text-text-muted-light mt-1">Based on task difficulty and timing</p>
+</div>
+<div class="mt-space-6 text-center">
+<div class="text-display font-display text-brand-600">840</div>
+<div class="font-label text-label text-text-muted-light uppercase tracking-wider mt-1">Points Today</div>
+</div>
+<div class="mt-space-4 w-full bg-surface-container rounded-full h-2">
+<div class="bg-gradient-to-r from-brand-400 to-brand-600 h-2 rounded-full" style="width: 84%"></div>
+</div>
+</div>
+</div>
+<!-- Horizontal Scrollable Habit Cards -->
+<section class="space-y-space-4">
+<div class="flex justify-between items-end px-space-2">
+<h2 class="font-h2 text-h2 text-on-surface">Today's Habits</h2>
+<a class="font-label text-label text-brand-600 hover:text-brand-700" href="#">View All</a>
+</div>
+<div class="flex overflow-x-auto gap-space-4 pb-space-4 hide-scrollbar snap-x px-space-2">
+<!-- Habit Card 1 (Completed) -->
+<div class="snap-start shrink-0 w-64 bg-surface-light rounded-xl border border-border-light p-space-4 shadow-sm flex flex-col relative overflow-hidden group hover:shadow transition-shadow">
+<div class="absolute top-0 left-0 w-1 h-full bg-success"></div>
+<div class="flex justify-between items-start mb-space-4 pl-2">
+<div class="h-10 w-10 rounded-lg bg-success/10 flex items-center justify-center text-success">
+<span class="material-symbols-outlined" data-icon="meditation">mindfulness</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-text-muted-light font-label text-[10px]">
+<span class="material-symbols-outlined text-[12px]" data-icon="local_fire_department">local_fire_department</span>
+                                5
+                            </span>
+</div>
+<h4 class="font-h3 text-h3 text-on-surface pl-2 line-through text-text-muted-light">Morning Meditation</h4>
+<p class="font-caption text-caption text-text-muted-light pl-2 mt-1">10 minutes</p>
+<div class="mt-auto pt-space-4 flex justify-end pl-2">
+<div class="h-8 w-8 rounded-full bg-success text-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" data-icon="check">check</span>
+</div>
+</div>
+</div>
+<!-- Habit Card 2 (Active) -->
+<div class="snap-start shrink-0 w-64 bg-surface-light rounded-xl border border-brand-200 p-space-4 shadow-sm flex flex-col relative overflow-hidden group hover:shadow transition-shadow ring-1 ring-brand-100">
+<div class="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
+<div class="flex justify-between items-start mb-space-4 pl-2">
+<div class="h-10 w-10 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600">
+<span class="material-symbols-outlined" data-icon="water_drop">water_drop</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-text-muted-light font-label text-[10px]">
+<span class="material-symbols-outlined text-[12px]" data-icon="local_fire_department">local_fire_department</span>
+                                12
+                            </span>
+</div>
+<h4 class="font-h3 text-h3 text-on-surface pl-2">Drink Water</h4>
+<p class="font-caption text-caption text-text-muted-light pl-2 mt-1">2/3 Liters</p>
+<div class="mt-auto pt-space-4 flex justify-between items-center pl-2">
+<div class="flex-1 mr-4 bg-surface-container rounded-full h-1.5">
+<div class="bg-brand-500 h-1.5 rounded-full" style="width: 66%"></div>
+</div>
+<button class="h-8 w-8 rounded-full border-2 border-border-light hover:border-brand-500 flex items-center justify-center text-text-muted-light hover:text-brand-500 transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+</button>
+</div>
+</div>
+<!-- Habit Card 3 (Pending) -->
+<div class="snap-start shrink-0 w-64 bg-surface-light rounded-xl border border-border-light p-space-4 shadow-sm flex flex-col relative overflow-hidden group hover:shadow transition-shadow">
+<div class="absolute top-0 left-0 w-1 h-full bg-warning"></div>
+<div class="flex justify-between items-start mb-space-4 pl-2">
+<div class="h-10 w-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-text-muted-light font-label text-[10px]">
+<span class="material-symbols-outlined text-[12px]" data-icon="local_fire_department">local_fire_department</span>
+                                3
+                            </span>
+</div>
+<h4 class="font-h3 text-h3 text-on-surface pl-2">Read 20 Pages</h4>
+<p class="font-caption text-caption text-text-muted-light pl-2 mt-1">Evening routine</p>
+<div class="mt-auto pt-space-4 flex justify-end pl-2">
+<button class="h-8 w-8 rounded-full border-2 border-border-light hover:bg-brand-50 hover:border-brand-500 flex items-center justify-center text-border-light hover:text-brand-500 transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="check">check</span>
+</button>
+</div>
+</div>
+<!-- Habit Card 4 (Pending) -->
+<div class="snap-start shrink-0 w-64 bg-surface-light rounded-xl border border-border-light p-space-4 shadow-sm flex flex-col relative overflow-hidden group hover:shadow transition-shadow">
+<div class="absolute top-0 left-0 w-1 h-full bg-info"></div>
+<div class="flex justify-between items-start mb-space-4 pl-2">
+<div class="h-10 w-10 rounded-lg bg-info/10 flex items-center justify-center text-info">
+<span class="material-symbols-outlined" data-icon="directions_run">directions_run</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-text-muted-light font-label text-[10px]">
+<span class="material-symbols-outlined text-[12px]" data-icon="local_fire_department">local_fire_department</span>
+                                0
+                            </span>
+</div>
+<h4 class="font-h3 text-h3 text-on-surface pl-2">Evening Jog</h4>
+<p class="font-caption text-caption text-text-muted-light pl-2 mt-1">30 minutes</p>
+<div class="mt-auto pt-space-4 flex justify-end pl-2">
+<button class="h-8 w-8 rounded-full border-2 border-border-light hover:bg-brand-50 hover:border-brand-500 flex items-center justify-center text-border-light hover:text-brand-500 transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="check">check</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Top 3 Tasks List -->
+<section class="bg-surface-light rounded-xl border border-border-light shadow-sm overflow-hidden">
+<div class="p-space-4 border-b border-border-light flex justify-between items-center bg-neutral-50">
+<h2 class="font-h3 text-h3 text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-brand-600" data-icon="format_list_bulleted">format_list_bulleted</span>
+                        Top 3 Tasks
+                    </h2>
+<span class="font-label text-label text-text-muted-light">Prioritized</span>
+</div>
+<div class="divide-y divide-border-light">
+<!-- Task 1 (High Priority) -->
+<div class="p-space-4 flex items-center gap-space-4 hover:bg-surface-container/50 transition-colors group cursor-pointer">
+<button class="h-6 w-6 rounded-md border-2 border-danger flex items-center justify-center text-transparent hover:bg-danger/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="check">check</span>
+</button>
+<div class="flex-1">
+<h4 class="font-body-lg text-body-lg text-on-surface font-medium group-hover:text-brand-600 transition-colors">Finish Quarterly Report</h4>
+<p class="font-caption text-caption text-text-muted-light flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-danger" data-icon="flag">flag</span>
+                                Due Today, 5:00 PM
+                            </p>
+</div>
+<div class="h-8 w-8 rounded-full bg-surface-container flex items-center justify-center text-text-muted-light opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_vert">more_vert</span>
+</div>
+</div>
+<!-- Task 2 (Medium Priority) -->
+<div class="p-space-4 flex items-center gap-space-4 hover:bg-surface-container/50 transition-colors group cursor-pointer">
+<button class="h-6 w-6 rounded-md border-2 border-warning flex items-center justify-center text-transparent hover:bg-warning/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="check">check</span>
+</button>
+<div class="flex-1">
+<h4 class="font-body-lg text-body-lg text-on-surface font-medium group-hover:text-brand-600 transition-colors">Review Code PRs</h4>
+<p class="font-caption text-caption text-text-muted-light flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-warning" data-icon="flag">flag</span>
+                                Project Alpha
+                            </p>
+</div>
+<div class="h-8 w-8 rounded-full bg-surface-container flex items-center justify-center text-text-muted-light opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_vert">more_vert</span>
+</div>
+</div>
+<!-- Task 3 (Low Priority) -->
+<div class="p-space-4 flex items-center gap-space-4 hover:bg-surface-container/50 transition-colors group cursor-pointer">
+<button class="h-6 w-6 rounded-md border-2 border-info flex items-center justify-center text-transparent hover:bg-info/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="check">check</span>
+</button>
+<div class="flex-1">
+<h4 class="font-body-lg text-body-lg text-on-surface font-medium group-hover:text-brand-600 transition-colors">Schedule Dentist Appt</h4>
+<p class="font-caption text-caption text-text-muted-light flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-info" data-icon="flag">flag</span>
+                                Personal
+                            </p>
+</div>
+<div class="h-8 w-8 rounded-full bg-surface-container flex items-center justify-center text-text-muted-light opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_vert">more_vert</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full border-t border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-slate-950 z-50 flex justify-around items-center px-2 py-3 pb-safe">
+<a class="flex flex-col items-center justify-center text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl px-3 py-1.5 active:bg-slate-50 dark:active:bg-slate-900 tap-highlight-transparent" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="font-['Inter'] text-[10px] font-medium mt-1">Today</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 active:bg-slate-50 dark:active:bg-slate-900 tap-highlight-transparent px-3 py-1.5" href="#">
+<span class="material-symbols-outlined" data-icon="cached">cached</span>
+<span class="font-['Inter'] text-[10px] font-medium mt-1">Habits</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 active:bg-slate-50 dark:active:bg-slate-900 tap-highlight-transparent px-3 py-1.5" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-['Inter'] text-[10px] font-medium mt-1">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 active:bg-slate-50 dark:active:bg-slate-900 tap-highlight-transparent px-3 py-1.5" href="#">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+<span class="font-['Inter'] text-[10px] font-medium mt-1">Menu</span>
+</a>
+</nav>
+</body></html>

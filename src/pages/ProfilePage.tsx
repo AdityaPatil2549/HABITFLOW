@@ -1,0 +1,280 @@
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Camera, Save, Award, Flame, CheckCircle2, TrendingUp, Star, Edit2, X } from 'lucide-react';
+import { useHabitStore } from '../store/habitStore';
+import { useTaskStore } from '../store/taskStore';
+
+const BADGES = [
+  { icon: '🔥', label: '7-Day Streak', desc: 'Completed habits 7 days in a row', earned: true },
+  { icon: '💪', label: 'Iron Will', desc: '30-day streak on any habit', earned: true },
+  { icon: '🏆', label: 'Overachiever', desc: '100% completion for a full week', earned: false },
+  { icon: '⚡', label: 'Speed Demon', desc: 'Complete all tasks before noon', earned: false },
+  { icon: '🌙', label: 'Night Owl', desc: 'Log a habit after 10 PM for 5 days', earned: true },
+  { icon: '📚', label: 'Scholar', desc: 'Read habit completed 30 times', earned: false },
+];
+
+const PROFILE_KEY = 'habitflow_profile';
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { name: 'Alex', bio: 'Building better habits one day at a time. Fitness enthusiast & lifelong learner.', avatar: null };
+}
+
+function saveProfile(data: { name: string; bio: string; avatar: string | null }) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
+}
+
+export function ProfilePage() {
+  const navigate = useNavigate();
+  const { habits } = useHabitStore();
+  const { tasks } = useTaskStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load persisted profile
+  const [name, setName] = useState('');
+  const [bio, setBio] = useState('');
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Draft state (only committed on Save)
+  const [draftName, setDraftName] = useState('');
+  const [draftBio, setDraftBio] = useState('');
+  const [draftAvatar, setDraftAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    const p = loadProfile();
+    setName(p.name);
+    setBio(p.bio);
+    setAvatar(p.avatar);
+  }, []);
+
+  function startEdit() {
+    setDraftName(name);
+    setDraftBio(bio);
+    setDraftAvatar(avatar);
+    setEditing(true);
+    setSaved(false);
+  }
+
+  function cancelEdit() {
+    setEditing(false);
+  }
+
+  function handleSave() {
+    const updated = { name: draftName.trim() || 'Alex', bio: draftBio.trim(), avatar: draftAvatar };
+    setName(updated.name);
+    setBio(updated.bio);
+    setAvatar(updated.avatar);
+    saveProfile(updated);
+    // Dispatch event for Layout to sync immediately
+    window.dispatchEvent(new Event('profile-updated'));
+    setEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  }
+
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { alert('Image must be under 10MB'); return; }
+    const reader = new FileReader();
+    reader.onload = () => setDraftAvatar(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  // Stats
+  const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.best)) : 0;
+  const totalDone = tasks.filter(t => t.completed).length;
+  const avgCompletion = habits.length
+    ? Math.round((habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100)
+    : 0;
+  const earnedBadges = BADGES.filter(b => b.earned).length;
+
+  return (
+    <div className="space-y-6 max-w-3xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Account</p>
+          <h1 className="text-3xl font-bold text-white">My Profile</h1>
+        </div>
+        {saved && (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-semibold">
+            <CheckCircle2 size={15} /> Changes saved!
+          </div>
+        )}
+      </div>
+
+      {/* Profile card */}
+      <div className="glass-card rounded-2xl p-6">
+        <div className="flex flex-col sm:flex-row items-start gap-6">
+          {/* Avatar */}
+          <div className={`relative flex-shrink-0 ${!editing ? 'cursor-pointer group' : ''}`} onClick={() => !editing && startEdit()}>
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/30 transition-transform group-hover:scale-105">
+              {editing && draftAvatar ? (
+                <img src={draftAvatar} alt="avatar" className="w-full h-full object-cover" />
+              ) : avatar ? (
+                <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl font-black text-white">{name[0]?.toUpperCase() ?? 'A'}</span>
+              )}
+              {!editing && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   <Edit2 size={20} className="text-white" />
+                </div>
+              )}
+            </div>
+            {editing && (
+              <>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 w-24 h-24 rounded-2xl bg-black/50 flex flex-col items-center justify-center gap-1 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Camera size={18} className="text-white" />
+                  <span className="text-[10px] text-white font-semibold">Upload</span>
+                </button>
+                {draftAvatar && (
+                  <button
+                    onClick={() => setDraftAvatar(null)}
+                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow"
+                  >
+                    <X size={11} className="text-white" />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Name / Bio */}
+          <div className="flex-1 min-w-0">
+            {editing ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">Display Name</label>
+                  <input
+                    className="w-full bg-white/5 border border-brand-500/40 rounded-xl px-4 py-2.5 text-white text-lg font-bold outline-none focus:border-brand-400 transition-all"
+                    value={draftName}
+                    onChange={e => setDraftName(e.target.value)}
+                    placeholder="Your name"
+                    maxLength={32}
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">Bio</label>
+                  <textarea
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-slate-300 text-sm outline-none focus:border-brand-500/50 transition-all resize-none leading-relaxed"
+                    value={draftBio}
+                    onChange={e => setDraftBio(e.target.value)}
+                    placeholder="Tell us about yourself…"
+                    rows={3}
+                    maxLength={160}
+                  />
+                  <p className="text-[10px] text-slate-600 text-right mt-1">{draftBio.length}/160</p>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-xl font-bold text-white">{name}</h2>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-bold text-brand-400 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Star size={9} /> Peak Performer
+                  </span>
+                  <span className="text-xs text-slate-500">Member since Apr 2026</span>
+                </div>
+                <p className="text-slate-400 text-sm leading-relaxed">{bio || 'No bio set yet.'}</p>
+              </div>
+            )}
+
+            {/* Edit / Save / Cancel buttons */}
+            <div className="flex gap-2 mt-4">
+              {editing ? (
+                <>
+                  <button
+                    onClick={handleSave}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95"
+                    style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 6px 20px rgba(var(--brand-500-rgb),0.3)' }}
+                  >
+                    <Save size={14} /> Save Changes
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                  >
+                    <X size={14} /> Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={startEdit}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                >
+                  <Edit2 size={13} /> Edit Profile
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {[
+          { icon: <Flame size={18} />, label: 'Best Streak', value: `${bestStreak}d`, color: '#f97316' },
+          { icon: <CheckCircle2 size={18} />, label: 'Tasks Done', value: totalDone, color: '#10b981' },
+          { icon: <TrendingUp size={18} />, label: '30d Avg', value: `${avgCompletion}%`, color: '#818cf8' },
+          { icon: <Award size={18} />, label: 'Badges', value: `${earnedBadges}/${BADGES.length}`, color: '#f59e0b' },
+        ].map(s => (
+          <div key={s.label} className="glass-card rounded-2xl p-4 text-center">
+            <div className="w-9 h-9 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: `${s.color}18`, color: s.color }}>
+              {s.icon}
+            </div>
+            <p className="text-xl font-bold text-white">{s.value}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Badges */}
+      <div className="glass-card rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-base font-bold text-white">Badges & Achievements</h2>
+          <span className="text-xs text-slate-500">{earnedBadges} of {BADGES.length} earned</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {BADGES.map(b => (
+            <div key={b.label}
+              className={`rounded-xl p-4 border transition-all ${b.earned ? 'border-brand-500/20 bg-brand-500/5' : 'border-white/5 bg-white/[0.02] opacity-50'}`}>
+              <span className={`text-2xl block mb-2 ${!b.earned && 'grayscale opacity-50'}`}>{b.icon}</span>
+              <p className="text-sm font-semibold text-white mb-1">{b.label}</p>
+              <p className="text-xs text-slate-500 leading-relaxed">{b.desc}</p>
+              {b.earned && <span className="mt-2 inline-block text-[10px] font-bold text-emerald-400">✓ Earned</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick links */}
+      <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row gap-3">
+        <button onClick={() => navigate('/settings')}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">
+          <span className="material-symbols-outlined text-base">settings</span> Go to Settings
+        </button>
+        <button
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white transition-all active:scale-95"
+          style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
+          onClick={() => { navigator.clipboard.writeText(window.location.origin + '/profile'); alert('Profile link copied!'); }}
+        >
+          <span className="material-symbols-outlined text-base">share</span> Share Profile
+        </button>
+      </div>
+    </div>
+  );
+}
