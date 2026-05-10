@@ -34,9 +34,9 @@ export function WeeklyReviewPage() {
   
   const tasksDoneThisWeek = tasks.filter(t => t.completed && t.completedAt && new Date(t.completedAt) >= weekStart).length;
   
-  const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.current)) : 0;
+  const bestStreak = habits.length ? Math.max(0, ...habits.map(h => h.streak.current)) : 0;
   const bestHabit = habits.length ? [...habits].sort((a, b) => b.completionRate30Days - a.completionRate30Days)[0] : null;
-  const strugglingHabit = habits.length ? [...habits].sort((a, b) => a.completionRate30Days - b.completionRate30Days)[0] : null;
+  const strugglingHabit = habits.length ? [...habits].filter(h => h.completionRate30Days < 0.5).sort((a, b) => a.completionRate30Days - b.completionRate30Days)[0] ?? null : null;
 
   const shareMilestone = async () => {
     if (!cardRef.current) return;

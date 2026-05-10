@@ -34,11 +34,28 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
       setLoading(true);
       const today = new Date();
       const yearAgo = subYears(today, 1);
+      const yearAgoStr = format(yearAgo, 'yyyy-MM-dd');
+      const todayStr = format(today, 'yyyy-MM-dd');
       const days = eachDayOfInterval({ start: yearAgo, end: today });
+
+      // ── Single bulk query for the entire year ──────────────────
+      const allLogs = await db.habitLogs
+        .where('date')
+        .between(yearAgoStr, todayStr, true, true)
+        .toArray();
+
+      // Group logs by date for O(1) lookup
+      const logsByDate = new Map<string, typeof allLogs>();
+      for (const log of allLogs) {
+        if (!logsByDate.has(log.date)) logsByDate.set(log.date, []);
+        logsByDate.get(log.date)!.push(log);
+      }
+      // ──────────────────────────────────────────────────────────
+
       const map: Record<string, number> = {};
       for (const day of days) {
         const ds = format(day, 'yyyy-MM-dd');
-        const logs = await db.habitLogs.where('date').equals(ds).toArray();
+        const logs = logsByDate.get(ds) ?? [];
         const scheduled = habits.filter(h =>
           h.frequency === 'daily' ||
           (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(day.getDay()))

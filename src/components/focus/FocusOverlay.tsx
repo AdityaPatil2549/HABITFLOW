@@ -16,15 +16,14 @@ export function FocusOverlay() {
     return () => clearInterval(interval);
   }, [isRunning, tick]);
 
-  // Watch for focus session completion (timer reaches 0 in focus mode)
-  const prevTimeLeft = useFocusStore.getState().timeLeft;
+  // Award XP when the timer naturally runs to zero
   useEffect(() => {
     if (isActive && timeLeft === 0 && mode === 'focus' && !xpAwarded) {
       setXpAwarded(true);
       addXP(50);
       soundService.playLevelUp();
     }
-    if (timeLeft > 0) setXpAwarded(false);
+    if (!isActive || timeLeft > 0) setXpAwarded(false);
   }, [timeLeft, isActive, mode, addXP, xpAwarded]);
 
   if (!isActive) return null;
@@ -125,7 +124,9 @@ export function FocusOverlay() {
           {/* Complete early */}
           <button
             onClick={() => {
-              if (isFocus) {
+              // Award XP for focus sessions completed early (same as natural completion)
+              if (isFocus && !xpAwarded) {
+                setXpAwarded(true);
                 addXP(50);
                 soundService.playLevelUp();
               }

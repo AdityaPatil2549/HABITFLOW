@@ -11,13 +11,16 @@ import { ShareCard } from '../components/gamification/ShareCard';
 import { getOrCreateSettings } from '../db';
 import { soundService } from '../services/soundService';
 
-const BADGES = [
-  { icon: '🔥', label: '7-Day Streak', desc: 'Completed habits 7 days in a row', earned: true },
-  { icon: '💪', label: 'Iron Will', desc: '30-day streak on any habit', earned: true },
-  { icon: '🏆', label: 'Overachiever', desc: '100% completion for a full week', earned: false },
-  { icon: '⚡', label: 'Speed Demon', desc: 'Complete all tasks before noon', earned: false },
-  { icon: '🌙', label: 'Night Owl', desc: 'Log a habit after 10 PM for 5 days', earned: true },
-  { icon: '📚', label: 'Scholar', desc: 'Read habit completed 30 times', earned: false },
+// All achievable badges (catalogue) — icon + label must match what gamificationService awards
+const BADGE_CATALOGUE = [
+  { id: 'streak_3',  icon: '🔥', label: '3-Day Streak',   desc: 'Kept a habit for 3 days in a row' },
+  { id: 'streak_7',  icon: '🌟', label: '7-Day Streak',   desc: 'Completed habits 7 days in a row' },
+  { id: 'streak_30', icon: '💪', label: 'Iron Will',      desc: '30-day streak on any habit' },
+  { id: 'streak_100',icon: '🏆', label: 'Legend',         desc: '100-day streak — extraordinary!' },
+  { id: 'xp_100',   icon: '⚡', label: 'XP Starter',    desc: 'Earn your first 100 XP' },
+  { id: 'xp_500',   icon: '🚀', label: 'Rising Star',   desc: 'Accumulate 500 XP' },
+  { id: 'xp_1000',  icon: '💎', label: 'Diamond',       desc: 'Accumulate 1,000 XP' },
+  { id: 'tasks_10', icon: '✅', label: 'Task Crusher',  desc: 'Complete 10 tasks' },
 ];
 
 export function ProfilePage() {
@@ -81,7 +84,7 @@ export function ProfilePage() {
   const avgCompletion = habits.length
     ? Math.round((habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100)
     : 0;
-  const earnedBadges = BADGES.filter(b => b.earned).length;
+  const earnedBadges = userXP?.badgesEarned?.length ?? 0;
 
   const shareProfile = async () => {
     if (!cardRef.current) return;
@@ -237,7 +240,7 @@ export function ProfilePage() {
           { icon: <Flame size={18} />, label: 'Best Streak', value: `${bestStreak}d`, color: '#f97316' },
           { icon: <CheckCircle2 size={18} />, label: 'Tasks Done', value: totalDone, color: '#10b981' },
           { icon: <TrendingUp size={18} />, label: '30d Avg', value: `${avgCompletion}%`, color: '#818cf8' },
-          { icon: <Award size={18} />, label: 'Badges', value: `${earnedBadges}/${BADGES.length}`, color: '#f59e0b' },
+          { icon: <Award size={18} />, label: 'Badges', value: `${earnedBadges}/${BADGE_CATALOGUE.length}`, color: '#f59e0b' },
         ].map(s => (
           <div key={s.label} className="glass-card rounded-2xl p-4 text-center">
             <div className="w-9 h-9 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: `${s.color}18`, color: s.color }}>
@@ -344,22 +347,29 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* Badges */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-white">Badges & Achievements</h2>
-          <span className="text-xs text-slate-500">{earnedBadges} of {BADGES.length} earned</span>
+          <span className="text-xs text-slate-500">{userXP?.badgesEarned?.length ?? 0} of {BADGE_CATALOGUE.length} earned</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {BADGES.map(b => (
-            <div key={b.label}
-              className={`rounded-xl p-4 border transition-all ${b.earned ? 'border-brand-500/20 bg-brand-500/5' : 'border-white/5 bg-white/[0.02] opacity-50'}`}>
-              <span className={`text-2xl block mb-2 ${!b.earned && 'grayscale opacity-50'}`}>{b.icon}</span>
-              <p className="text-sm font-semibold text-white mb-1">{b.label}</p>
-              <p className="text-xs text-slate-500 leading-relaxed">{b.desc}</p>
-              {b.earned && <span className="mt-2 inline-block text-[10px] font-bold text-emerald-400">✓ Earned</span>}
-            </div>
-          ))}
+          {BADGE_CATALOGUE.map(b => {
+            const earnedBadge = userXP?.badgesEarned?.find(e => e.id === b.id || e.name === b.label);
+            const isEarned = !!earnedBadge;
+            return (
+              <div key={b.id}
+                className={`rounded-xl p-4 border transition-all ${isEarned ? 'border-brand-500/20 bg-brand-500/5' : 'border-white/5 bg-white/[0.02] opacity-50'}`}>
+                <span className={`text-2xl block mb-2 ${!isEarned && 'grayscale opacity-50'}`}>{b.icon}</span>
+                <p className="text-sm font-semibold text-white mb-1">{b.label}</p>
+                <p className="text-xs text-slate-500 leading-relaxed">{b.desc}</p>
+                {isEarned && (
+                  <span className="mt-2 inline-block text-[10px] font-bold text-emerald-400">
+                    ✓ Earned{earnedBadge?.earnedAt ? ` · ${new Date(earnedBadge.earnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

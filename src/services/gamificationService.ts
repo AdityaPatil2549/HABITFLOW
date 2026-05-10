@@ -1,6 +1,7 @@
 import { db, getOrCreateUserXP } from '@/db';
 import type { UserXP, Badge, Level } from '@/types';
 import { nanoid } from 'nanoid';
+import { format } from 'date-fns';
 
 // --- Gamification Logic & Constants ---
 export const XP_PER_HABIT = 10;
@@ -44,6 +45,30 @@ export const gamificationService = {
 
   async addXP(amount: number): Promise<UserXP> {
     const userXP = await getOrCreateUserXP();
+
+    // ── Auto-reset daily / weekly scores ────────────────────────
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const thisMonday = format(
+      (() => {
+        const d = new Date();
+        const day = d.getDay(); // 0=Sun
+        const diff = (day === 0 ? -6 : 1 - day);
+        d.setDate(d.getDate() + diff);
+        return d;
+      })(),
+      'yyyy-MM-dd'
+    );
+
+    if ((userXP as any).lastDailyReset !== todayStr) {
+      userXP.dailyScore = 0;
+      (userXP as any).lastDailyReset = todayStr;
+    }
+    if ((userXP as any).lastWeeklyReset !== thisMonday) {
+      userXP.weeklyScore = 0;
+      (userXP as any).lastWeeklyReset = thisMonday;
+    }
+    // ─────────────────────────────────────────────────────────────
+
     userXP.total += amount;
     userXP.dailyScore += amount;
     userXP.weeklyScore += amount;

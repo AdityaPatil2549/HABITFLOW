@@ -82,8 +82,8 @@ class NotificationService {
   private sendNotification(habitName: string, icon: string) {
     new Notification(`Time for your habit: ${habitName}`, {
       body: `Don't forget to ${habitName.toLowerCase()} to keep your streak!`,
-      icon: '/vite.svg', // generic icon fallback
-      badge: '/vite.svg',
+      icon: '/pwa-192x192.png',
+      badge: '/pwa-192x192.png',
       silent: false,
     });
   }
