@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
+import { useMoodStore } from '../store/moodStore';
 import { format, subDays } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Flame, CheckCircle2, Trophy, ArrowRight, Plus, Activity, TrendingUp, TrendingDown, Zap, Target } from 'lucide-react';
+import { Flame, CheckCircle2, Trophy, ArrowRight, Plus, Activity, TrendingUp, TrendingDown, Zap, Target, Smile } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconRenderer } from '../components/common/IconRenderer';
 import { db } from '../db';
 import { habitService } from '../services/habitService';
 import { useGamificationStore } from '../store/gamificationStore';
 import { calculateStats } from '../services/gamificationService';
+import type { MoodScore } from '../types';
 
 const PROFILE_KEY = 'habitflow_profile';
 
@@ -36,15 +38,18 @@ export function Dashboard() {
   const { habits, loadHabits, logHabit, unlogHabit } = useHabitStore();
   const { tasks, loadTasks, completeTask } = useTaskStore();
   const { userXP, loadXP } = useGamificationStore();
+  const { todayMood, loadMoods, logMood } = useMoodStore();
   const [userName, setUserName] = useState('Alex');
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [weekChart, setWeekChart] = useState<{ day: string; pct: number; date: string }[]>([]);
   const [chartLoading, setChartLoading] = useState(true);
+  const [savingMood, setSavingMood] = useState(false);
 
   useEffect(() => {
     loadHabits();
     loadTasks();
     loadXP();
+    loadMoods();
     const sync = () => {
       try {
         const raw = localStorage.getItem(PROFILE_KEY);
@@ -432,6 +437,52 @@ export function Dashboard() {
           )}
         </motion.div>
       </div>
+
+      {/* ── Daily Mood Check-in ── */}
+      <motion.div variants={item} className="glass-card rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Smile size={18} className="text-brand-400" />
+            <h2 className="text-sm font-bold text-white">How are you feeling today?</h2>
+          </div>
+          {todayMood && (
+            <span className="text-xs text-slate-500 font-medium">
+              Logged ✔
+            </span>
+          )}
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          {([
+            { score: 1, emoji: '😞', label: 'Rough' },
+            { score: 2, emoji: '😕', label: 'Meh' },
+            { score: 3, emoji: '😐', label: 'Okay' },
+            { score: 4, emoji: '😊', label: 'Good' },
+            { score: 5, emoji: '😄', label: 'Great' },
+          ] as { score: MoodScore; emoji: string; label: string }[]).map(({ score, emoji, label }) => {
+            const isSelected = todayMood?.score === score;
+            return (
+              <button
+                key={score}
+                disabled={savingMood}
+                onClick={async () => {
+                  setSavingMood(true);
+                  await logMood(score);
+                  setSavingMood(false);
+                }}
+                className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border transition-all active:scale-95 ${
+                  isSelected
+                    ? 'border-brand-500/40 bg-brand-500/10 scale-105'
+                    : 'border-white/5 bg-white/[0.02] hover:border-brand-500/20 hover:bg-brand-500/5'
+                }`}
+              >
+                <span className={`text-2xl transition-all ${isSelected ? '' : 'grayscale opacity-60 hover:grayscale-0 hover:opacity-100'}`}>{emoji}</span>
+                <span className={`text-[10px] font-bold ${isSelected ? 'text-brand-400' : 'text-slate-500'}`}>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+
     </motion.div>
   );
 }

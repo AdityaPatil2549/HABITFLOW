@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical, Timer } from 'lucide-react';
+import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical, Timer, Bell } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useHabitStore } from '../store/habitStore';
 import { useGamificationStore } from '../store/gamificationStore';
@@ -36,6 +36,7 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
   const [freqDays, setFreqDays] = useState<number[]>(initialHabit?.frequencyDays ?? [1, 2, 3, 4, 5]);
   const [target, setTarget] = useState(initialHabit?.targetValue ?? 1);
   const [grace, setGrace] = useState(initialHabit?.graceDayEnabled ?? false);
+  const [reminderTime, setReminderTime] = useState(initialHabit?.reminderTime ?? '');
   const [error, setError] = useState<string | null>(null);
 
   const toggleDay = (d: number) => setFreqDays(ds => ds.includes(d) ? ds.filter(x => x !== d) : [...ds, d]);
@@ -43,7 +44,7 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    const parsed = habitSchema.safeParse({ name: name.trim(), icon, color, category, type, frequency: freq, frequencyDays: freq === 'weekly' ? freqDays : undefined, targetValue: target, startDate: initialHabit?.startDate ?? format(new Date(), 'yyyy-MM-dd'), graceDayEnabled: grace, archived: initialHabit?.archived ?? false });
+    const parsed = habitSchema.safeParse({ name: name.trim(), icon, color, category, type, frequency: freq, frequencyDays: freq === 'weekly' ? freqDays : undefined, targetValue: target, startDate: initialHabit?.startDate ?? format(new Date(), 'yyyy-MM-dd'), graceDayEnabled: grace, archived: initialHabit?.archived ?? false, reminderTime: reminderTime || undefined });
     if (!parsed.success) { setError(parsed.error.issues[0].message); return; }
     if (initialHabit) await updateHabit(initialHabit.id, parsed.data);
     else await addHabit(parsed.data);
@@ -163,6 +164,23 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
         </div>
         <span className="text-sm text-slate-300">Enable grace day <span className="text-slate-500">(1 free miss/week)</span></span>
       </label>
+
+      {/* Reminder time */}
+      <div className="flex items-center gap-3 py-1 rounded-xl bg-white/3 border border-white/5 px-4">
+        <Bell size={16} className="text-brand-400 flex-shrink-0" />
+        <span className="text-sm text-slate-300 flex-1">Daily reminder</span>
+        <input
+          type="time"
+          value={reminderTime}
+          onChange={e => setReminderTime(e.target.value)}
+          className="bg-transparent text-sm text-white outline-none cursor-pointer [color-scheme:dark]"
+        />
+        {reminderTime && (
+          <button type="button" onClick={() => setReminderTime('')} className="text-slate-500 hover:text-white transition-colors text-xs">
+            ✕
+          </button>
+        )}
+      </div>
 
       <div className="flex gap-3 pt-1">
         <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">

@@ -5,11 +5,12 @@ import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
 import { useGamificationStore } from '../../store/gamificationStore';
+import { useFocusStore } from '../../store/focusStore';
 import { calculateStats } from '../../services/gamificationService';
 import { IconRenderer } from '../common/IconRenderer';
 import {
   Search, Bell, Settings, User, LayoutDashboard,
-  Target, CheckSquare, BarChart2, Plus, LogOut, HelpCircle, X, Zap, CheckCircle2
+  Target, CheckSquare, BarChart2, Plus, LogOut, HelpCircle, X, Zap, CheckCircle2, Timer
 } from 'lucide-react';
 
 // ── Notification panel ─────────────────────────────────────────
@@ -241,6 +242,7 @@ export function Layout() {
   const [showAccount, setShowAccount] = useState(false);
   const { profile } = useProfileStore();
   const { userXP, loadXP } = useGamificationStore();
+  const { isActive: focusActive, startFocus, stopFocus } = useFocusStore();
   const notifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -319,6 +321,32 @@ export function Layout() {
           })}
         </nav>
 
+        {/* ── Focus Mode Button ── */}
+        <div className="px-5 mb-3">
+          <button
+            onClick={() => {
+              if (focusActive) { stopFocus(); }
+              else { startFocus({ id: 'quick', title: 'Quick Focus Session', type: 'habit' }); }
+            }}
+            className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 relative overflow-hidden ${
+              focusActive
+                ? 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'
+                : 'border border-brand-500/30 text-brand-300 hover:bg-brand-500/10'
+            }`}
+            style={!focusActive ? { background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08))' } : {}}
+          >
+            {!focusActive && (
+              <span className="absolute inset-0 rounded-xl" style={{
+                boxShadow: 'inset 0 0 20px rgba(99,102,241,0.08)',
+                background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%)'
+              }} />
+            )}
+            <Timer size={16} className={focusActive ? 'animate-pulse' : ''} />
+            <span className="relative">{focusActive ? '⏹ End Focus' : '⏱ Focus Mode'}</span>
+            {focusActive && <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />}
+          </button>
+        </div>
+
         <div className="px-5 mb-6">
           <button onClick={() => setQuickAdd(true)}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2">
@@ -391,7 +419,7 @@ export function Layout() {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-950/90 backdrop-blur-2xl border-t border-white/8 px-6 pb-safe h-16 flex items-center justify-between z-50">
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-950/90 backdrop-blur-2xl border-t border-white/8 px-4 pb-safe h-16 flex items-center justify-between z-50">
         {[
           { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
           { to: '/habits', icon: Target, label: 'Habits' },
@@ -408,6 +436,19 @@ export function Layout() {
           className="-mt-8 w-14 h-14 cursor-pointer bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-xl shadow-brand-500/40 border-4 border-slate-950 active:scale-95 transition-transform">
           <Plus size={24} className="text-white" />
         </div>
+        {/* Focus button - mobile */}
+        <button
+          onClick={() => {
+            if (focusActive) stopFocus();
+            else startFocus({ id: 'quick', title: 'Quick Focus Session', type: 'habit' });
+          }}
+          className={`flex flex-col items-center gap-1 transition-colors ${
+            focusActive ? 'text-red-400' : 'text-slate-500 hover:text-brand-400'
+          }`}
+        >
+          <Timer size={20} className={focusActive ? 'animate-pulse' : ''} />
+          <span className="text-[10px] font-bold">{focusActive ? 'End' : 'Focus'}</span>
+        </button>
         {[
           { to: '/analytics', icon: BarChart2, label: 'Stats' },
           { to: '/profile', icon: User, label: 'Profile' },
