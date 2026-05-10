@@ -26,10 +26,10 @@ const BADGE_CATALOGUE = [
 
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { habits } = useHabitStore();
-  const { tasks } = useTaskStore();
+  const { habits, loadHabits } = useHabitStore();
+  const { tasks, loadTasks } = useTaskStore();
   const { profile, saveProfile } = useProfileStore();
-  const { userXP, buyFreeze } = useGamificationStore();
+  const { userXP, loadXP, buyFreeze } = useGamificationStore();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,8 +40,11 @@ export function ProfilePage() {
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    loadHabits();
+    loadTasks();
+    loadXP();
     getOrCreateSettings().then(s => setTheme(s.theme || 'indigo'));
-  }, []);
+  }, [loadHabits, loadTasks, loadXP]);
 
   // Draft state (only committed on Save)
   const [draftName, setDraftName] = useState('');

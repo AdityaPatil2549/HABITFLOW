@@ -246,7 +246,10 @@ export function Layout() {
   const { userXP, loadXP } = useGamificationStore();
   const { isActive: focusActive, startFocus, stopFocus } = useFocusStore();
   const toast = useToast();
-  const [isDark, setIsDark] = useState(!document.documentElement.classList.contains('light'));
+  // Read persisted darkMode preference — avoid DOM-read race with App.tsx's useEffect
+  const [isDark, setIsDark] = useState(() => {
+    try { const s = localStorage.getItem('hf_darkmode'); return s !== 'light'; } catch { return true; }
+  });
   const notifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -256,9 +259,11 @@ export function Layout() {
     const nowDark = !root.classList.contains('light');
     root.classList.toggle('light', nowDark);
     setIsDark(!nowDark);
+    const newMode = nowDark ? 'light' : 'dark';
+    try { localStorage.setItem('hf_darkmode', newMode); } catch {}
     import('../../db').then(({ db }) =>
       db.settings.toCollection().first().then(s =>
-        s && db.settings.update(s.id!, { darkMode: nowDark ? 'light' : 'dark' })
+        s && db.settings.update(s.id!, { darkMode: newMode })
       )
     );
   }
@@ -268,6 +273,7 @@ export function Layout() {
     onToggleFocus: () => focusActive ? stopFocus() : startFocus({ id: 'quick', title: 'Quick Focus Session', type: 'habit' }),
     onNewHabit: () => { navigate('/habits'); setQuickAdd(true); },
     onNewTask: () => navigate('/tasks'),
+    onEscape: () => { setShowSearch(false); setShowNotifications(false); setShowAccount(false); },
   });
 
   useEffect(() => { loadXP(); }, [loadXP]);
@@ -285,15 +291,6 @@ export function Layout() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Keyboard shortcut: Cmd/Ctrl+K for search
-  useEffect(() => {
-    function handler(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setShowSearch(true); }
-      if (e.key === 'Escape') { setShowSearch(false); setShowNotifications(false); setShowAccount(false); }
-    }
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, []);
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive

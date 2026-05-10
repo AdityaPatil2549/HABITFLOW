@@ -118,7 +118,11 @@ export function SettingsPage() {
     toast.confirm(
       'This will permanently delete ALL your HabitFlow data. Are you sure?',
       async () => {
-        await Promise.all([db.habits.clear(), db.habitLogs.clear(), db.tasks.clear(), db.projects.clear(), db.moods.clear(), db.userXP.clear(), localStorage.clear()]);
+        await Promise.all([
+          db.habits.clear(), db.habitLogs.clear(), db.tasks.clear(),
+          db.projects.clear(), db.moods.clear(), db.userXP.clear(),
+        ]);
+        localStorage.clear();
         toast.success('All data cleared.');
         setTimeout(() => window.location.reload(), 1000);
       },

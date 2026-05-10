@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { useHabitStore } from '../store/habitStore';
 import { useGamificationStore } from '../store/gamificationStore';
 import type { HabitWithStreak, HabitType, HabitFrequency } from '../types';
-import { format, subDays, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth } from 'date-fns';
+import { format, subDays, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { habitSchema } from '../lib/validations';
 import { LogHabitModal } from '../components/habits/LogHabitModal';
 import { cn } from '../lib/utils';
@@ -402,6 +402,23 @@ export function HabitsPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showView, setShowView] = useState<'list' | 'calendar'>('list');
   const [calMonth, setCalMonth] = useState(new Date());
+  // Map of date -> Set of habitIds completed that day (for calendar dots)
+  const [calLogs, setCalLogs] = useState<Record<string, Set<string>>>({});
+
+  async function loadCalendarLogs(month: Date) {
+    const start = format(startOfMonth(month), 'yyyy-MM-dd');
+    const end = format(endOfMonth(month), 'yyyy-MM-dd');
+    const logs = await db.habitLogs
+      .where('date').between(start, end, true, true)
+      .filter(l => l.value >= 1 || !!l.isFrozen)
+      .toArray();
+    const map: Record<string, Set<string>> = {};
+    logs.forEach(l => {
+      if (!map[l.date]) map[l.date] = new Set();
+      map[l.date].add(l.habitId);
+    });
+    setCalLogs(map);
+  }
   const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(null);
   const [selectedLog, setSelectedLog] = useState<HabitWithStreak | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -531,7 +548,7 @@ export function HabitsPage() {
               <BarChart2 size={12} /> List
             </button>
             <button
-              onClick={() => { setShowView('calendar'); setCalMonth(new Date()); }}
+              onClick={() => { setShowView('calendar'); const m = new Date(); setCalMonth(m); loadCalendarLogs(m); }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 showView === 'calendar' ? 'bg-brand-500/20 text-brand-300' : 'text-slate-500 hover:text-slate-300'
               }`}
@@ -759,11 +776,11 @@ export function HabitsPage() {
           >
             {/* Month nav */}
             <div className="flex items-center justify-between mb-4">
-              <button onClick={() => setCalMonth(m => subMonths(m, 1))} className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => { const m = subMonths(calMonth, 1); setCalMonth(m); loadCalendarLogs(m); }} className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
                 <ChevronLeft size={16} />
               </button>
               <h2 className="text-base font-bold text-white">{format(calMonth, 'MMMM yyyy')}</h2>
-              <button onClick={() => setCalMonth(m => addMonths(m, 1))} className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => { const m = addMonths(calMonth, 1); setCalMonth(m); loadCalendarLogs(m); }} className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -789,11 +806,8 @@ export function HabitsPage() {
                   {days.map(day => {
                     const ds = format(day, 'yyyy-MM-dd');
                     const dayHabits = habits.filter(h => !h.archived && habitService.isScheduledForDate(h, ds));
-                    const dayDone = dayHabits.filter(h => {
-                      // Check if there's a log for this date — use todayLog if same as today
-                      if (ds === selectedDate) return !!h.todayLog && h.todayLog.value >= 1;
-                      return false; // simplified: real log check needs separate query
-                    }).length;
+                    const donIds = calLogs[ds] ?? new Set<string>();
+                    const dayDone = dayHabits.filter(h => donIds.has(h.id)).length;
                     const isSelected = ds === selectedDate;
                     const isTodayDay = ds === todayStr;
                     const isFuture = ds > todayStr;
