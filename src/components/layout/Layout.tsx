@@ -95,8 +95,26 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: a
         })}
       </div>
       <div className="border-t border-white/5 py-2">
-        <button onClick={() => { onClose(); localStorage.clear(); window.location.reload(); }}
-          className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+        <button
+          onClick={async () => {
+            if (!confirm('Log out will clear your local session. Your data will remain on this device. Continue?')) return;
+            onClose();
+            // Clear all IndexedDB tables via Dexie
+            const { db } = await import('../../db');
+            await Promise.all([
+              db.habits.clear(),
+              db.habitLogs.clear(),
+              db.tasks.clear(),
+              db.projects.clear(),
+              db.moods.clear(),
+              db.userXP.clear(),
+              db.settings.clear(),
+            ]);
+            localStorage.clear();
+            window.location.reload();
+          }}
+          className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+        >
           <LogOut size={18} className="text-red-500/70" />
           Log Out
         </button>
