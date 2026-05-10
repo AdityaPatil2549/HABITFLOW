@@ -258,6 +258,27 @@ body {
   --brand-500-rgb: 245, 158, 11;
 }
 
+:root[data-theme="neon"] {
+  --brand-400: #f472b6;
+  --brand-500: #ec4899;
+  --brand-600: #db2777;
+  --brand-500-rgb: 236, 72, 153;
+}
+
+:root[data-theme="cyberpunk"] {
+  --brand-400: #fde047;
+  --brand-500: #eab308;
+  --brand-600: #ca8a04;
+  --brand-500-rgb: 234, 179, 8;
+}
+
+:root[data-theme="sunset"] {
+  --brand-400: #fb923c;
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+  --brand-500-rgb: 249, 115, 22;
+}
+
 :root.light {
   --color-background: #f8fafc;
   --color-surface: #ffffff;

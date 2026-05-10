@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Save, Award, Flame, CheckCircle2, TrendingUp, Star, Edit2, X, Settings, Share2, Snowflake } from 'lucide-react';
+import { Camera, Save, Award, Flame, CheckCircle2, TrendingUp, Star, Edit2, X, Settings, Share2, Snowflake, Palette } from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
 import { useProfileStore } from '../store/profileStore';
@@ -244,7 +244,9 @@ export function ProfilePage() {
               }
               if (confirm('Buy 1 Streak Freeze for 500 XP?')) {
                 buyFreeze(500).then(success => {
-                  if (success) alert('Streak Freeze purchased!');
+                  if (success) {
+                    import('../services/soundService').then(m => m.soundService.playLevelUp());
+                  }
                 });
               }
             }}
@@ -253,6 +255,62 @@ export function ProfilePage() {
           >
             Buy for 500 XP
           </button>
+        </div>
+      </div>
+
+      {/* Theme Shop */}
+      <div className="glass-card rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <Palette size={18} className="text-brand-400" /> Premium Themes
+          </h2>
+          <span className="text-xs font-bold text-brand-400 bg-brand-500/10 px-2 py-1 rounded-md">
+            {userXP?.total ?? 0} XP
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { id: 'neon', label: 'Neon Pink', cost: 1000, color: '#ec4899' },
+            { id: 'cyberpunk', label: 'Cyberpunk', cost: 1500, color: '#eab308' },
+            { id: 'sunset', label: 'Sunset Glow', cost: 2000, color: '#f97316' },
+          ].map(t => {
+            const unlocked = userXP?.unlockedThemes?.includes(t.id);
+            return (
+              <div key={t.id} className="rounded-xl p-4 border border-white/5 bg-white/[0.02] flex flex-col gap-3 transition-all hover:bg-white/[0.04]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full shadow" style={{ background: t.color }} />
+                    <p className="text-sm font-bold text-white">{t.label}</p>
+                  </div>
+                </div>
+                {unlocked ? (
+                  <button disabled className="w-full py-2 rounded-lg bg-white/5 text-slate-500 text-xs font-bold cursor-default">
+                    Unlocked
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if ((userXP?.total ?? 0) < t.cost) {
+                        alert(`You need ${t.cost} XP to unlock this theme!`);
+                        return;
+                      }
+                      if (confirm(`Unlock ${t.label} theme for ${t.cost} XP?`)) {
+                        useGamificationStore.getState().unlockTheme(t.id, t.cost).then(success => {
+                          if (success) {
+                            import('../services/soundService').then(m => m.soundService.playLevelUp());
+                            alert('Theme unlocked! Go to Settings to equip it.');
+                          }
+                        });
+                      }
+                    }}
+                    className="w-full py-2 rounded-lg bg-brand-500/10 text-brand-400 text-xs font-bold hover:bg-brand-500/20 transition-all active:scale-95 border border-brand-500/20"
+                  >
+                    Unlock {t.cost} XP
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

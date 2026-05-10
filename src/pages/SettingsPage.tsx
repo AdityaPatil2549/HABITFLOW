@@ -5,6 +5,7 @@ import type { Settings, Theme } from '../types';
 import { format } from 'date-fns';
 import { notificationService } from '../services/notificationService';
 import { motion } from 'framer-motion';
+import { useGamificationStore } from '../store/gamificationStore';
 
 const THEMES: { value: Theme; label: string; color: string }[] = [
   { value: 'indigo', label: 'Indigo', color: '#6366f1' },
@@ -12,6 +13,9 @@ const THEMES: { value: Theme; label: string; color: string }[] = [
   { value: 'emerald', label: 'Emerald', color: '#10b981' },
   { value: 'rose', label: 'Rose', color: '#f43f5e' },
   { value: 'amber', label: 'Amber', color: '#f59e0b' },
+  { value: 'neon', label: 'Neon Pink', color: '#ec4899' },
+  { value: 'cyberpunk', label: 'Cyberpunk', color: '#eab308' },
+  { value: 'sunset', label: 'Sunset Glow', color: '#f97316' },
 ];
 
 export function SettingsPage() {
@@ -19,9 +23,12 @@ export function SettingsPage() {
   const [exported, setExported] = useState(false);
   const [csvExported, setCsvExported] = useState(false);
 
+  const { userXP, loadXP } = useGamificationStore();
+
   useEffect(() => {
     getOrCreateSettings().then(setSettings);
-  }, []);
+    loadXP();
+  }, [loadXP]);
 
   async function saveSetting(update: Partial<Settings>) {
     if (!settings) return;
@@ -165,9 +172,12 @@ export function SettingsPage() {
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block">Accent Color</label>
-          <div className="flex gap-3">
-            {THEMES.map(t => (
+          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block flex items-center justify-between">
+            <span>Accent Color</span>
+            <a href="/profile" className="text-[10px] text-brand-400 hover:underline flex items-center gap-1"><Palette size={10} /> Get more themes</a>
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {THEMES.filter(t => userXP?.unlockedThemes?.includes(t.value)).map(t => (
               <button
                 key={t.value}
                 onClick={() => saveSetting({ theme: t.value })}

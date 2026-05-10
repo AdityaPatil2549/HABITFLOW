@@ -108,4 +108,21 @@ export const gamificationService = {
     await db.userXP.put(userXP);
     return true;
   },
+
+  async buyTheme(themeId: string, cost: number): Promise<boolean> {
+    const userXP = await getOrCreateUserXP();
+    if (userXP.total < cost) return false;
+    if (userXP.unlockedThemes?.includes(themeId)) return false;
+
+    userXP.total -= cost;
+    if (!userXP.unlockedThemes) userXP.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
+    userXP.unlockedThemes.push(themeId);
+    
+    const { level, levelProgress } = calculateStats(userXP.total);
+    userXP.level = level;
+    userXP.levelProgress = levelProgress;
+    
+    await db.userXP.put(userXP);
+    return true;
+  },
 };

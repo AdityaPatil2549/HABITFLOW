@@ -31,7 +31,14 @@ export const db = new HabitFlowDB();
 // ─── Singleton helpers ───────────────────────────────────────
 export async function getOrCreateUserXP(): Promise<UserXP> {
   const existing = await db.userXP.toArray();
-  if (existing.length > 0) return existing[0];
+  if (existing.length > 0) {
+    const user = existing[0];
+    if (!user.unlockedThemes) {
+      user.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
+      await db.userXP.update(user.id, { unlockedThemes: user.unlockedThemes });
+    }
+    return user;
+  }
   const newXP: UserXP = {
     id: 'singleton',
     total: 0,
@@ -41,6 +48,7 @@ export async function getOrCreateUserXP(): Promise<UserXP> {
     weeklyScore: 0,
     dailyScore: 0,
     streakFreezes: 3,
+    unlockedThemes: ['indigo', 'violet', 'emerald', 'rose', 'amber'],
     lastUpdated: new Date().toISOString(),
   };
   await db.userXP.add(newXP);

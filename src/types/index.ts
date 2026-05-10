@@ -6,7 +6,7 @@ export type HabitType = 'boolean' | 'count' | 'duration' | 'rating';
 export type HabitFrequency = 'daily' | 'weekly' | 'custom';
 export type Priority = 0 | 1 | 2 | 3;
 export type MoodScore = 1 | 2 | 3 | 4 | 5;
-export type Theme = 'indigo' | 'violet' | 'emerald' | 'rose' | 'amber';
+export type Theme = 'indigo' | 'violet' | 'emerald' | 'rose' | 'amber' | 'neon' | 'cyberpunk' | 'sunset';
 export type Level = 'Beginner' | 'Builder' | 'Achiever' | 'Champion' | 'Grandmaster';
 
 // ─── Habit ───────────────────────────────────────────────────
@@ -105,6 +105,7 @@ export interface UserXP {
   weeklyScore: number;
   dailyScore: number;
   streakFreezes: number;
+  unlockedThemes: string[];
   lastUpdated: string;
 }
 
