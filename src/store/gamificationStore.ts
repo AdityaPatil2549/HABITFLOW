@@ -9,6 +9,7 @@ interface GamificationState {
   addXP: (amount: number) => Promise<void>;
   awardStreakBadge: (streak: number) => Promise<void>;
   buyFreeze: (cost: number) => Promise<boolean>;
+  useFreeze: () => Promise<boolean>;
   unlockTheme: (themeId: string, cost: number) => Promise<boolean>;
 }
 

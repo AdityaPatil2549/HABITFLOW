@@ -5,6 +5,7 @@ import { notificationService } from './services/notificationService';
 import { soundService } from './services/soundService';
 import { Dashboard } from './pages/Dashboard';
 import { ReloadPrompt } from './components/layout/ReloadPrompt';
+import { FocusOverlay } from './components/focus/FocusOverlay';
 import { getOrCreateSettings } from './db';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
@@ -71,6 +72,7 @@ function App() {
         </Routes>
       </Suspense>
       <ReloadPrompt />
+      <FocusOverlay />
     </BrowserRouter>
   );
 }

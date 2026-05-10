@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, CheckCircle2, Circle, Trash2, ChevronDown, ChevronRight, Edit2, Calendar, RotateCcw, Tag, Zap, Clock, Target } from 'lucide-react';
+import { Plus, CheckCircle2, Circle, Trash2, ChevronDown, ChevronRight, Edit2, Calendar, RotateCcw, Tag, Zap, Clock, Target, Timer } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
+import { useFocusStore } from '../store/focusStore';
 import type { Task, Priority } from '../types';
 import { format, isToday, isPast } from 'date-fns';
 import { taskSchema } from '../lib/validations';
@@ -125,6 +126,7 @@ function TaskSkeleton() {
 
 function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
   const { tasks, updateTask, deleteTask } = useTaskStore();
+  const { startFocus } = useFocusStore();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const subtasks = tasks.filter(t => t.parentId === task.id);
@@ -200,6 +202,15 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
 
         {/* Actions */}
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {!task.completed && (
+            <button 
+              onClick={() => startFocus({ id: task.id, title: task.title, type: 'task' })} 
+              className="p-1.5 rounded-lg hover:bg-brand-500/10 text-slate-400 hover:text-brand-400 transition-colors"
+              title="Start Focus Mode"
+            >
+              <Timer size={13} />
+            </button>
+          )}
           {subtasks.length > 0 && (
             <button onClick={() => setExpanded(v => !v)} className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400">
               {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}

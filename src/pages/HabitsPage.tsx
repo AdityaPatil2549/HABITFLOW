@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical } from 'lucide-react';
+import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical, Timer } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useHabitStore } from '../store/habitStore';
 import { useGamificationStore } from '../store/gamificationStore';
@@ -12,6 +12,7 @@ import { cn } from '../lib/utils';
 import { IconRenderer, HABIT_ICONS } from '../components/common/IconRenderer';
 import { habitService } from '../services/habitService';
 import { soundService } from '../services/soundService';
+import { useFocusStore } from '../store/focusStore';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const CATEGORIES = [
@@ -178,6 +179,7 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
 
 function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }: { habit: HabitWithStreak; onLogClick: (h: HabitWithStreak) => void; onEdit: (h: HabitWithStreak) => void; onDelete: (id: string) => void; canFreeze?: boolean; onFreeze?: (h: HabitWithStreak) => void }) {
   const { archiveHabit } = useHabitStore();
+  const { startFocus } = useFocusStore();
   const [showDetails, setShowDetails] = useState(false);
   const done = !!habit.todayLog && (habit.todayLog.isFrozen || habit.todayLog.value >= (habit.type === 'boolean' ? 1 : habit.targetValue));
   const pct = habit.type !== 'boolean' && habit.todayLog ? Math.min((habit.todayLog.value / habit.targetValue) * 100, 100) : done ? 100 : 0;
@@ -267,6 +269,9 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
                   ))}
                 </div>
                 <div className="flex gap-2">
+                  <button onClick={() => startFocus({ id: habit.id, title: habit.name, type: 'habit' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors">
+                    <Timer size={11} /> Focus
+                  </button>
                   <button onClick={() => onEdit(habit)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
                     <Edit2 size={11} /> Edit
                   </button>
@@ -312,7 +317,7 @@ function HabitSkeleton() {
 
 export function HabitsPage() {
   const { habits, loading, loadHabits, logHabit, applyFreeze, deleteHabit, selectedDate, setSelectedDate, reorderHabits } = useHabitStore();
-  const { userXP, useFreeze } = useGamificationStore();
+  const { userXP, buyFreeze, useFreeze } = useGamificationStore();
   const [showAdd, setShowAdd] = useState(false);
   const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(null);
   const [selectedLog, setSelectedLog] = useState<HabitWithStreak | null>(null);

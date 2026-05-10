@@ -8,10 +8,10 @@ import {
   Tooltip, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   BarChart, Bar, Cell, ComposedChart, Legend, Area, AreaChart,
 } from 'recharts';
-import { format, subDays, subWeeks, startOfWeek, eachDayOfInterval, getDay } from 'date-fns';
+import { format, subDays, subWeeks, startOfWeek, eachDayOfInterval, getDay, subYears } from 'date-fns';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks'] as const;
+const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap'] as const;
 type TabType = (typeof TABS)[number];
 
 const TOOLTIP_STYLE = {
@@ -22,7 +22,143 @@ const TOOLTIP_STYLE = {
   fontSize: 13,
 };
 
-// ─── Heatmap ──────────────────────────────────────────────────
+// ─── 365-Day Yearly Heatmap ────────────────────────────────────
+function YearlyHeatmap({ habits }: { habits: any[] }) {
+  const [data, setData] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  useEffect(() => {
+    if (!habits.length) { setLoading(false); return; }
+    (async () => {
+      setLoading(true);
+      const today = new Date();
+      const yearAgo = subYears(today, 1);
+      const days = eachDayOfInterval({ start: yearAgo, end: today });
+      const map: Record<string, number> = {};
+      for (const day of days) {
+        const ds = format(day, 'yyyy-MM-dd');
+        const logs = await db.habitLogs.where('date').equals(ds).toArray();
+        const scheduled = habits.filter(h =>
+          h.frequency === 'daily' ||
+          (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(day.getDay()))
+        );
+        map[ds] = scheduled.length ? logs.filter(l => l.value >= 1).length / scheduled.length : 0;
+      }
+      setData(map);
+      setLoading(false);
+    })();
+  }, [habits]);
+
+  function colorFor(val: number) {
+    if (val === 0) return 'rgba(255,255,255,0.04)';
+    if (val < 0.25) return '#166534';
+    if (val < 0.5) return '#16a34a';
+    if (val < 0.75) return '#22c55e';
+    return '#4ade80';
+  }
+
+  const today = new Date();
+  const yearAgo = subYears(today, 1);
+  const days = eachDayOfInterval({ start: yearAgo, end: today });
+
+  // Build weeks grid
+  const weeks: { date: string; value: number; dow: number }[][] = [];
+  let week: { date: string; value: number; dow: number }[] = [];
+  days.forEach((d, i) => {
+    const ds = format(d, 'yyyy-MM-dd');
+    week.push({ date: ds, value: data[ds] ?? 0, dow: d.getDay() });
+    if (d.getDay() === 6 || i === days.length - 1) { weeks.push(week); week = []; }
+  });
+
+  // Month labels: find week index where month changes
+  const monthLabels: { label: string; col: number }[] = [];
+  weeks.forEach((wk, wi) => {
+    const firstDay = wk[0];
+    if (firstDay) {
+      const d = new Date(firstDay.date + 'T00:00:00');
+      if (wi === 0 || d.getDate() <= 7) {
+        monthLabels.push({ label: MONTHS[d.getMonth()], col: wi });
+      }
+    }
+  });
+
+  if (loading) return <div className="h-40 flex items-center justify-center text-slate-500 text-sm animate-pulse">Loading year of data…</div>;
+
+  const CELL = 13;
+  const GAP = 2;
+  const STEP = CELL + GAP;
+
+  return (
+    <div className="space-y-4">
+      <div className="overflow-x-auto pb-2 -mx-1">
+        <svg
+          width={weeks.length * STEP + 30}
+          height={7 * STEP + 24}
+          className="block"
+        >
+          {/* Month labels */}
+          {monthLabels.map(({ label, col }) => (
+            <text key={`${label}-${col}`} x={col * STEP + 30} y={10} fill="#475569" fontSize={10} fontFamily="Inter, sans-serif">
+              {label}
+            </text>
+          ))}
+          {/* Day-of-week labels */}
+          {['M','W','F'].map((l, i) => (
+            <text key={l} x={4} y={12 + (i * 2 + 1) * STEP} fill="#475569" fontSize={9} fontFamily="Inter, sans-serif" alignmentBaseline="middle">
+              {l}
+            </text>
+          ))}
+          {/* Cells */}
+          {weeks.map((wk, wi) =>
+            wk.map((day) => (
+              <rect
+                key={day.date}
+                x={wi * STEP + 30}
+                y={12 + day.dow * STEP}
+                width={CELL}
+                height={CELL}
+                rx={3}
+                fill={colorFor(day.value)}
+                style={{ transition: 'fill 0.3s' }}
+              >
+                <title>{day.date}: {Math.round(day.value * 100)}% completion</title>
+              </rect>
+            ))
+          )}
+        </svg>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-2 text-xs text-slate-500">
+        <span>Less</span>
+        {[0, 0.25, 0.5, 0.75, 1].map(v => (
+          <div key={v} className="w-3 h-3 rounded-sm" style={{ background: colorFor(v) }} />
+        ))}
+        <span>More</span>
+        <span className="ml-auto text-slate-600">Showing {days.length} days</span>
+      </div>
+
+      {/* Summary stats */}
+      {Object.keys(data).length > 0 && (
+        <div className="grid grid-cols-3 gap-3 pt-2">
+          {[
+            { label: 'Active Days', value: Object.values(data).filter(v => v > 0).length },
+            { label: 'Perfect Days', value: Object.values(data).filter(v => v === 1).length },
+            { label: 'Avg Rate', value: `${Math.round((Object.values(data).reduce((a, b) => a + b, 0) / Object.values(data).length) * 100)}%` },
+          ].map(s => (
+            <div key={s.label} className="rounded-xl p-3 text-center bg-white/3 border border-white/5">
+              <p className="text-xl font-bold text-white">{s.value}</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Per-Habit Heatmap (26 weeks) ─────────────────────────────
 function Heatmap({ logs }: { logs: Record<string, number> }) {
   const weeks = 26;
   const today = new Date();
@@ -518,6 +654,19 @@ export function AnalyticsPage() {
           <ChartCard title="Task Throughput" subtitle="Created vs. completed per week (last 8 weeks)">
             {tasks.length > 0 ? <TaskThroughput tasks={tasks} /> : <EmptyChart />}
           </ChartCard>
+        </div>
+      )}
+
+      {/* ── Heatmap ── */}
+      {tab === 'Heatmap' && (
+        <div className="space-y-6">
+          <div className="glass-card rounded-2xl p-6">
+            <div className="mb-5">
+              <h3 className="text-base font-semibold text-white flex items-center gap-2">🟩 365-Day Activity Heatmap</h3>
+              <p className="text-xs text-slate-400 mt-1">Your overall habit completion across the entire last year, just like GitHub.</p>
+            </div>
+            {habits.length > 0 ? <YearlyHeatmap habits={habits} /> : <EmptyChart />}
+          </div>
         </div>
       )}
     </div>

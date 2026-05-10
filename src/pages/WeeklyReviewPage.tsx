@@ -14,7 +14,7 @@ import { soundService } from '../services/soundService';
 export function WeeklyReviewPage() {
   const { habits, loadHabits } = useHabitStore();
   const { tasks, loadTasks } = useTaskStore();
-  const { profile, loadProfile } = useProfileStore();
+  const { profile } = useProfileStore();
   const navigate = useNavigate();
   const [xpData, setXpData] = useState<any>(null);
   const [theme, setTheme] = useState('indigo');
@@ -24,10 +24,9 @@ export function WeeklyReviewPage() {
   useEffect(() => {
     loadHabits();
     loadTasks();
-    loadProfile();
     gamificationService.getUserXP().then(setXpData);
     getOrCreateSettings().then(s => setTheme(s.theme || 'indigo'));
-  }, [loadHabits, loadTasks, loadProfile]);
+  }, [loadHabits, loadTasks]);
 
   // Compute stats for the past 7 days
   const today = new Date();
