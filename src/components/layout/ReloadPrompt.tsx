@@ -24,7 +24,7 @@ export function ReloadPrompt() {
     <AnimatePresence>
       {(offlineReady || needRefresh) && (
         <motion.div
-          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 card-raised p-4 max-w-sm border border-brand-500/30"
+          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[100] card-raised p-4 w-[calc(100vw-2rem)] sm:w-80 border border-brand-500/30"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
