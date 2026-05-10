@@ -1,22 +1,33 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
+import { useProfileStore } from '../store/profileStore';
 import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Trophy, CheckCircle2, Flame, ArrowRight, Target } from 'lucide-react';
+import { Trophy, CheckCircle2, Flame, ArrowRight, Target, Share2, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { gamificationService } from '../services/gamificationService';
+import { toPng } from 'html-to-image';
+import { ShareCard } from '../components/gamification/ShareCard';
+import { getOrCreateSettings } from '../db';
+import { soundService } from '../services/soundService';
 
 export function WeeklyReviewPage() {
   const { habits, loadHabits } = useHabitStore();
   const { tasks, loadTasks } = useTaskStore();
+  const { profile, loadProfile } = useProfileStore();
   const navigate = useNavigate();
   const [xpData, setXpData] = useState<any>(null);
+  const [theme, setTheme] = useState('indigo');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadHabits();
     loadTasks();
+    loadProfile();
     gamificationService.getUserXP().then(setXpData);
-  }, [loadHabits, loadTasks]);
+    getOrCreateSettings().then(s => setTheme(s.theme || 'indigo'));
+  }, [loadHabits, loadTasks, loadProfile]);
 
   // Compute stats for the past 7 days
   const today = new Date();
@@ -27,6 +38,24 @@ export function WeeklyReviewPage() {
   const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.current)) : 0;
   const bestHabit = habits.length ? [...habits].sort((a, b) => b.completionRate30Days - a.completionRate30Days)[0] : null;
   const strugglingHabit = habits.length ? [...habits].sort((a, b) => a.completionRate30Days - b.completionRate30Days)[0] : null;
+
+  const shareMilestone = async () => {
+    if (!cardRef.current) return;
+    setIsGenerating(true);
+    try {
+      const dataUrl = await toPng(cardRef.current, { quality: 1, pixelRatio: 2 });
+      soundService.playLevelUp();
+      const link = document.createElement('a');
+      link.download = `habitflow-weekly-review-${format(new Date(), 'yyyy-MM-dd')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to generate image', err);
+      alert('Failed to generate image. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
@@ -92,13 +121,43 @@ export function WeeklyReviewPage() {
         <div className="glass-card rounded-2xl p-6 text-center mt-6">
           <Trophy size={32} className="mx-auto text-brand-400 mb-3" />
           <h2 className="text-lg font-bold text-white mb-1">Level {xpData.numericLevel} — {xpData.level}</h2>
-          <p className="text-sm text-slate-400 mb-4">You earned {xpData.weeklyScore} XP this week!</p>
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white transition-all active:scale-95"
-            style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}>
-            Continue to Dashboard <ArrowRight size={16} />
-          </button>
+          <p className="text-sm text-slate-400 mb-6">You earned {xpData.weeklyScore} XP this week!</p>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <button 
+              onClick={shareMilestone}
+              disabled={isGenerating}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 transition-all border border-white/10 disabled:opacity-50"
+            >
+              {isGenerating ? 'Generating...' : <><Share2 size={18} /> Share Milestone</>}
+            </button>
+
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white transition-all active:scale-95"
+              style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}>
+              Continue to Dashboard <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden element for Image Generation */}
+      {xpData && (
+        <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}>
+          <ShareCard
+            ref={cardRef}
+            theme={theme}
+            title="Weekly Review"
+            subtitle="I crushed it this week!"
+            userName={profile?.name || 'HabitFlow User'}
+            userAvatar={profile?.avatar}
+            userXP={xpData}
+            stats={[
+              { label: 'Tasks Done', value: tasksDoneThisWeek, icon: 'check' },
+              { label: 'Best Streak', value: `${bestStreak}d`, icon: 'flame' },
+            ]}
+          />
         </div>
       )}
     </div>

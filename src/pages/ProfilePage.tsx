@@ -1,10 +1,15 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Save, Award, Flame, CheckCircle2, TrendingUp, Star, Edit2, X, Settings, Share2, Snowflake, Palette } from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
 import { useProfileStore } from '../store/profileStore';
 import { useGamificationStore } from '../store/gamificationStore';
+import { toPng } from 'html-to-image';
+import { format } from 'date-fns';
+import { ShareCard } from '../components/gamification/ShareCard';
+import { getOrCreateSettings } from '../db';
+import { soundService } from '../services/soundService';
 
 const BADGES = [
   { icon: '🔥', label: '7-Day Streak', desc: 'Completed habits 7 days in a row', earned: true },
@@ -25,6 +30,13 @@ export function ProfilePage() {
 
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [theme, setTheme] = useState('indigo');
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getOrCreateSettings().then(s => setTheme(s.theme || 'indigo'));
+  }, []);
 
   // Draft state (only committed on Save)
   const [draftName, setDraftName] = useState('');
@@ -71,9 +83,27 @@ export function ProfilePage() {
     : 0;
   const earnedBadges = BADGES.filter(b => b.earned).length;
 
+  const shareProfile = async () => {
+    if (!cardRef.current) return;
+    setIsGenerating(true);
+    try {
+      const dataUrl = await toPng(cardRef.current, { quality: 1, pixelRatio: 2 });
+      soundService.playLevelUp();
+      const link = document.createElement('a');
+      link.download = `habitflow-player-card-${format(new Date(), 'yyyy-MM-dd')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to generate image', err);
+      alert('Failed to generate image. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
-      {/* Header */}
+    <div className="max-w-3xl mx-auto space-y-6 pb-24 relative">
+      {/* Settings / Edit Header */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Account</p>
@@ -340,13 +370,35 @@ export function ProfilePage() {
           <Settings size={16} /> Go to Settings
         </button>
         <button
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white transition-all active:scale-95"
+          disabled={isGenerating}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white transition-all active:scale-95 disabled:opacity-50"
           style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
-          onClick={() => { navigator.clipboard.writeText(window.location.origin + '/profile'); alert('Profile link copied!'); }}
+          onClick={shareProfile}
         >
-          <Share2 size={16} /> Share Profile
+          {isGenerating ? 'Generating...' : <><Share2 size={16} /> Download Player Card</>}
         </button>
       </div>
+
+      {/* Hidden element for Image Generation */}
+      {userXP && (
+        <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}>
+          <ShareCard
+            ref={cardRef}
+            theme={theme}
+            title={`${userXP.total} XP`}
+            subtitle="Official HabitFlow Player"
+            userName={name || 'HabitFlow User'}
+            userAvatar={avatar}
+            userXP={userXP}
+            stats={[
+              { label: 'Best Streak', value: `${bestStreak}d`, icon: 'flame' },
+              { label: 'Tasks Done', value: totalDone, icon: 'check' },
+              { label: 'Avg. Rate', value: `${avgCompletion}%`, icon: 'trending' },
+              { label: 'Badges', value: earnedBadges, icon: 'award' },
+            ]}
+          />
+        </div>
+      )}
     </div>
   );
 }
