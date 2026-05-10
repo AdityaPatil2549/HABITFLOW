@@ -4,7 +4,7 @@ import { useTaskStore } from '../store/taskStore';
 import { useMoodStore } from '../store/moodStore';
 import { format, subDays } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Flame, CheckCircle2, Trophy, ArrowRight, Plus, Activity, TrendingUp, TrendingDown, Zap, Target, Smile } from 'lucide-react';
+import { Flame, CheckCircle2, Trophy, ArrowRight, Plus, Activity, TrendingUp, TrendingDown, Zap, Target, Smile, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconRenderer } from '../components/common/IconRenderer';
 import { db } from '../db';
@@ -97,6 +97,12 @@ export function Dashboard() {
   // Tasks due today
   const todayTasks = tasks.filter(t => !t.parentId && !t.completed && t.dueDate && t.dueDate <= today);
 
+  // Streak at-risk: habits not done today that have a live streak, after 6 PM
+  const hour = new Date().getHours();
+  const atRiskHabits = hour >= 18
+    ? scheduled.filter(h => !h.todayLog && h.streak.current > 0)
+    : [];
+
   // Week trend: compare last 3 days vs prev 4 days
   const recentAvg = weekChart.slice(4).reduce((s, d) => s + d.pct, 0) / 3;
   const prevAvg = weekChart.slice(0, 4).reduce((s, d) => s + d.pct, 0) / 4;
@@ -105,7 +111,6 @@ export function Dashboard() {
   // XP stats
   const xpStats = userXP ? calculateStats(userXP.total) : null;
 
-  const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
 
   const container = {
@@ -181,6 +186,34 @@ export function Dashboard() {
           </button>
         </div>
       </motion.div>
+
+      {/* ── Streak At-Risk Warning ── */}
+      {atRiskHabits.length > 0 && (
+        <motion.div variants={item}
+          className="flex items-center gap-4 px-5 py-4 rounded-2xl border border-amber-500/25 bg-amber-500/8"
+          style={{ boxShadow: '0 0 24px rgba(245,158,11,0.08)' }}
+        >
+          <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle size={20} className="text-amber-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-amber-300">
+              {atRiskHabits.length === 1
+                ? `⚠️ "${atRiskHabits[0].name}" streak is at risk tonight!`
+                : `⚠️ ${atRiskHabits.length} streaks at risk — complete them before midnight!`}
+            </p>
+            <p className="text-xs text-amber-500/80 mt-0.5">
+              {atRiskHabits.map(h => `${h.name} (${h.streak.current}d)`).join(' · ')}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/habits')}
+            className="flex-shrink-0 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap"
+          >
+            Go log →
+          </button>
+        </motion.div>
+      )}
 
       {/* ── Bento Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

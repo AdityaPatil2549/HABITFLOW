@@ -9,6 +9,7 @@ import { toPng } from 'html-to-image';
 import { format } from 'date-fns';
 import { ShareCard } from '../components/gamification/ShareCard';
 import { getOrCreateSettings } from '../db';
+import { useToast } from '../components/common/Toast';
 import { soundService } from '../services/soundService';
 
 // All achievable badges (catalogue) — icon + label must match what gamificationService awards
@@ -29,6 +30,7 @@ export function ProfilePage() {
   const { tasks } = useTaskStore();
   const { profile, saveProfile } = useProfileStore();
   const { userXP, buyFreeze } = useGamificationStore();
+  const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [editing, setEditing] = useState(false);
@@ -72,7 +74,7 @@ export function ProfilePage() {
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { alert('Image must be under 10MB'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error('Image must be under 10MB'); return; }
     const reader = new FileReader();
     reader.onload = () => setDraftAvatar(reader.result as string);
     reader.readAsDataURL(file);
@@ -98,7 +100,7 @@ export function ProfilePage() {
       link.click();
     } catch (err) {
       console.error('Failed to generate image', err);
-      alert('Failed to generate image. Please try again.');
+      toast.error('Failed to generate image. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -272,16 +274,17 @@ export function ProfilePage() {
           <button
             onClick={() => {
               if ((userXP?.total ?? 0) < 500) {
-                alert('Not enough XP! You need 500 XP to buy a Streak Freeze.');
+                toast.error('Not enough XP! You need 500 XP to buy a Streak Freeze.');
                 return;
               }
-              if (confirm('Buy 1 Streak Freeze for 500 XP?')) {
+              toast.confirm('Buy 1 Streak Freeze for 500 XP?', () => {
                 buyFreeze(500).then(success => {
                   if (success) {
-                    import('../services/soundService').then(m => m.soundService.playLevelUp());
+                    soundService.playLevelUp();
+                    toast.success('Streak Freeze purchased! ❄️');
                   }
                 });
-              }
+              });
             }}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-blue-100 transition-all active:scale-95"
             style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 8px 24px rgba(59,130,246,0.3)' }}
@@ -324,17 +327,17 @@ export function ProfilePage() {
                   <button
                     onClick={() => {
                       if ((userXP?.total ?? 0) < t.cost) {
-                        alert(`You need ${t.cost} XP to unlock this theme!`);
+                        toast.error(`You need ${t.cost} XP to unlock this theme!`);
                         return;
                       }
-                      if (confirm(`Unlock ${t.label} theme for ${t.cost} XP?`)) {
+                      toast.confirm(`Unlock ${t.label} theme for ${t.cost} XP?`, () => {
                         useGamificationStore.getState().unlockTheme(t.id, t.cost).then(success => {
                           if (success) {
-                            import('../services/soundService').then(m => m.soundService.playLevelUp());
-                            alert('Theme unlocked! Go to Settings to equip it.');
+                            soundService.playLevelUp();
+                            toast.success('Theme unlocked! Go to Settings to equip it. 🎨');
                           }
                         });
-                      }
+                      });
                     }}
                     className="w-full py-2 rounded-lg bg-brand-500/10 text-brand-400 text-xs font-bold hover:bg-brand-500/20 transition-all active:scale-95 border border-brand-500/20"
                   >

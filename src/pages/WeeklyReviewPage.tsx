@@ -10,6 +10,7 @@ import { toPng } from 'html-to-image';
 import { ShareCard } from '../components/gamification/ShareCard';
 import { getOrCreateSettings } from '../db';
 import { soundService } from '../services/soundService';
+import { useToast } from '../components/common/Toast';
 
 export function WeeklyReviewPage() {
   const { habits, loadHabits } = useHabitStore();
@@ -20,6 +21,7 @@ export function WeeklyReviewPage() {
   const [theme, setTheme] = useState('indigo');
   const [isGenerating, setIsGenerating] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const toast = useToast();
 
   useEffect(() => {
     loadHabits();
@@ -50,7 +52,7 @@ export function WeeklyReviewPage() {
       link.click();
     } catch (err) {
       console.error('Failed to generate image', err);
-      alert('Failed to generate image. Please try again.');
+      toast.error('Failed to generate image. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -60,7 +62,24 @@ export function WeeklyReviewPage() {
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
       <div className="text-center py-8">
         <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Weekly Review</p>
-        <h1 className="text-4xl font-bold text-white mb-3">You're doing great!</h1>
+        {(() => {
+          const pct = habits.length
+            ? Math.round((habits.filter(h => h.completionRate30Days >= 0.7).length / habits.length) * 100)
+            : 0;
+          const { headline, emoji, color } = pct >= 70
+            ? { headline: "You crushed it this week!", emoji: "🔥", color: "text-emerald-400" }
+            : pct >= 40
+            ? { headline: "Building momentum!", emoji: "💪", color: "text-brand-400" }
+            : habits.length === 0
+            ? { headline: "Let's get started!", emoji: "🌱", color: "text-amber-400" }
+            : { headline: "Tough week — let's reset.", emoji: "🌧️", color: "text-slate-300" };
+          return (
+            <>
+              <div className="text-5xl mb-3">{emoji}</div>
+              <h1 className={`text-4xl font-bold mb-3 ${color}`}>{headline}</h1>
+            </>
+          );
+        })()}
         <p className="text-slate-400">Here's a look at what you accomplished over the last 7 days.</p>
       </div>
 

@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { ReloadPrompt } from './components/layout/ReloadPrompt';
 import { FocusOverlay } from './components/focus/FocusOverlay';
 import { OnboardingWizard, useOnboarding } from './components/onboarding/OnboardingWizard';
+import { ToastProvider } from './components/common/Toast';
 import { getOrCreateSettings } from './db';
 import { gamificationService } from './services/gamificationService';
 
@@ -80,6 +81,7 @@ function App() {
       </Suspense>
       <ReloadPrompt />
       <FocusOverlay />
+      <ToastProvider />
       {showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
     </BrowserRouter>
   );

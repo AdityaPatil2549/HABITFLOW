@@ -152,11 +152,19 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
         layout
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
         className="group relative rounded-2xl transition-all"
-        style={{ background: task.completed ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)', border: `1px solid ${task.completed ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}` }}
-        whileHover={!task.completed ? { y: -1 } : {}}
+        style={{
+          background: task.completed
+            ? 'rgba(255,255,255,0.02)'
+            : `linear-gradient(135deg, ${pc.bg}, rgba(255,255,255,0.02))`,
+          border: task.completed
+            ? '1px solid rgba(255,255,255,0.04)'
+            : `1px solid ${pc.border}`,
+          boxShadow: task.completed ? 'none' : `0 2px 12px ${pc.color}10`,
+        }}
+        whileHover={!task.completed ? { y: -1, boxShadow: `0 8px 24px ${pc.color}20` } : {}}
       >
-        {/* Priority accent */}
-        <div className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full" style={{ background: task.completed ? 'transparent' : pc.color, marginLeft: 12 }} />
+        {/* Priority accent — left bar */}
+        <div className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full" style={{ background: task.completed ? 'transparent' : pc.color, marginLeft: 12, boxShadow: task.completed ? 'none' : `0 0 8px ${pc.color}` }} />
 
       <div className="flex items-center gap-3 px-4 py-3 pl-6">
         {/* Check */}

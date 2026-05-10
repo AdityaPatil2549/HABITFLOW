@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical, Timer, Bell } from 'lucide-react';
+import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical, Timer, Bell, BarChart2, X, ChevronLeft } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useHabitStore } from '../store/habitStore';
 import { useGamificationStore } from '../store/gamificationStore';
 import type { HabitWithStreak, HabitType, HabitFrequency } from '../types';
-import { format, subDays } from 'date-fns';
+import { format, subDays, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth } from 'date-fns';
 import { habitSchema } from '../lib/validations';
 import { LogHabitModal } from '../components/habits/LogHabitModal';
 import { cn } from '../lib/utils';
@@ -14,6 +14,8 @@ import { habitService } from '../services/habitService';
 import { soundService } from '../services/soundService';
 import { useFocusStore } from '../store/focusStore';
 import { TemplatesLibrary } from '../components/habits/TemplatesLibrary';
+import { useToast } from '../components/common/Toast';
+import { db } from '../db';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const CATEGORIES = [
@@ -199,10 +201,23 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
 function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }: { habit: HabitWithStreak; onLogClick: (h: HabitWithStreak) => void; onEdit: (h: HabitWithStreak) => void; onDelete: (id: string) => void; canFreeze?: boolean; onFreeze?: (h: HabitWithStreak) => void }) {
   const { archiveHabit } = useHabitStore();
   const { startFocus } = useFocusStore();
+  const toast = useToast();
   const [showDetails, setShowDetails] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<Record<string, boolean>>({});
   const done = !!habit.todayLog && (habit.todayLog.isFrozen || habit.todayLog.value >= (habit.type === 'boolean' ? 1 : habit.targetValue));
   const pct = habit.type !== 'boolean' && habit.todayLog ? Math.min((habit.todayLog.value / habit.targetValue) * 100, 100) : done ? 100 : 0;
   const c = habit.color || '#6366f1';
+
+  async function loadHistory() {
+    const logs = await db.habitLogs
+      .where('habitId').equals(habit.id)
+      .filter(l => l.value >= 1 || !!l.isFrozen)
+      .toArray();
+    const map: Record<string, boolean> = {};
+    logs.forEach(l => { map[l.date] = true; });
+    setHistory(map);
+  }
 
   return (
     <motion.div
@@ -233,7 +248,18 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <p className={cn('font-semibold text-sm truncate', done ? 'line-through text-slate-500' : 'text-white')}>{habit.name}</p>
+            <button
+              className={cn('font-semibold text-sm truncate w-full text-left hover:underline transition-all', done ? 'line-through text-slate-500' : 'text-white')}
+              onClick={() => {
+                setShowHistory(v => {
+                  if (!v) loadHistory();
+                  return !v;
+                });
+              }}
+              title="View 30-day history"
+            >
+              {habit.name}
+            </button>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${c}15`, color: c }}>{habit.category}</span>
               {habit.streak.current > 0 && (
@@ -270,7 +296,36 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
           </div>
         )}
 
-        {/* Expanded details */}
+        {/* 30-day streak history drawer */}
+        <AnimatePresence>
+          {showHistory && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3 mt-3 border-t border-white/5">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5"><BarChart2 size={10} /> 30-Day History</p>
+                  <span className="text-[10px] text-slate-600">{Object.keys(history).length} days completed</span>
+                </div>
+                <div className="grid gap-[3px]" style={{ gridTemplateColumns: 'repeat(15, minmax(0, 1fr))' }}>
+                  {Array.from({ length: 30 }, (_, i) => {
+                    const d = format(subDays(new Date(), 29 - i), 'yyyy-MM-dd');
+                    const done = !!history[d];
+                    return (
+                      <div key={d} title={d}
+                        className="aspect-square rounded-[3px] transition-all"
+                        style={{ background: done ? c : 'rgba(255,255,255,0.05)', boxShadow: done ? `0 0 4px ${c}60` : 'none', opacity: done ? 1 : 0.4 }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Expanded action details */}
         <AnimatePresence>
           {showDetails && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
@@ -303,7 +358,13 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
                       <Archive size={11} /> Archive
                     </button>
                   )}
-                  <button onClick={() => { if (confirm('Delete this habit and all its history?')) onDelete(habit.id); }}
+                  <button onClick={() => {
+                    toast.confirm(
+                      `Delete "${habit.name}" and all its history? This cannot be undone.`,
+                      () => onDelete(habit.id),
+                      { confirmLabel: 'Delete', danger: true }
+                    );
+                  }}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-red-400 bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-colors">
                     <Trash2 size={11} /> Delete
                   </button>
@@ -339,23 +400,32 @@ export function HabitsPage() {
   const { userXP, buyFreeze, useFreeze } = useGamificationStore();
   const [showAdd, setShowAdd] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showView, setShowView] = useState<'list' | 'calendar'>('list');
+  const [calMonth, setCalMonth] = useState(new Date());
   const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(null);
   const [selectedLog, setSelectedLog] = useState<HabitWithStreak | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [showCelebration, setShowCelebration] = useState(false);
   const prevDoneRef = useRef(0);
 
+  const toast = useToast();
+
   const handleUseFreeze = async (habit: HabitWithStreak) => {
     if ((userXP?.streakFreezes ?? 0) <= 0) {
-      alert("You don't have any Streak Freezes! Buy them from your Profile.");
+      toast.error("You don't have any Streak Freezes! Buy them from your Profile.");
       return;
     }
-    if (confirm(`Use 1 Streak Freeze to protect your streak for "${habit.name}" on this day?`)) {
-      const success = await useFreeze();
-      if (success) {
-        await applyFreeze(habit.id);
-      }
-    }
+    toast.confirm(
+      `Use 1 Streak Freeze to protect "${habit.name}" today?`,
+      async () => {
+        const success = await useFreeze();
+        if (success) {
+          await applyFreeze(habit.id);
+          toast.success('Streak Freeze applied! ❄️');
+        }
+      },
+      { confirmLabel: 'Use Freeze' }
+    );
   };
 
   // Build last-7-days date strip
@@ -450,6 +520,25 @@ export function HabitsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* View toggle */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/8">
+            <button
+              onClick={() => setShowView('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                showView === 'list' ? 'bg-brand-500/20 text-brand-300' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <BarChart2 size={12} /> List
+            </button>
+            <button
+              onClick={() => { setShowView('calendar'); setCalMonth(new Date()); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                showView === 'calendar' ? 'bg-brand-500/20 text-brand-300' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <CalendarDays size={12} /> Calendar
+            </button>
+          </div>
           <motion.button
             onClick={() => setShowTemplates(true)}
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
@@ -659,6 +748,96 @@ export function HabitsPage() {
 
       {selectedLog && <LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />}
       {showTemplates && <TemplatesLibrary onClose={() => setShowTemplates(false)} />}
+
+      {/* ── Calendar Month View ── */}
+      <AnimatePresence mode="wait">
+        {showView === 'calendar' && (
+          <motion.div
+            key="calendar"
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="glass-card rounded-2xl p-5 mt-2"
+          >
+            {/* Month nav */}
+            <div className="flex items-center justify-between mb-4">
+              <button onClick={() => setCalMonth(m => subMonths(m, 1))} className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                <ChevronLeft size={16} />
+              </button>
+              <h2 className="text-base font-bold text-white">{format(calMonth, 'MMMM yyyy')}</h2>
+              <button onClick={() => setCalMonth(m => addMonths(m, 1))} className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+
+            {/* Weekday headers */}
+            <div className="grid grid-cols-7 mb-2">
+              {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
+                <div key={d} className="text-center text-[10px] font-bold text-slate-600 uppercase tracking-wider py-1">{d}</div>
+              ))}
+            </div>
+
+            {/* Days grid */}
+            {(() => {
+              const start = startOfMonth(calMonth);
+              const end = endOfMonth(calMonth);
+              const days = eachDayOfInterval({ start, end });
+              const startPad = getDay(start);
+              const todayStr = format(new Date(), 'yyyy-MM-dd');
+              return (
+                <div className="grid grid-cols-7 gap-1">
+                  {/* leading padding */}
+                  {Array.from({ length: startPad }).map((_, i) => <div key={`p${i}`} />)}
+                  {days.map(day => {
+                    const ds = format(day, 'yyyy-MM-dd');
+                    const dayHabits = habits.filter(h => !h.archived && habitService.isScheduledForDate(h, ds));
+                    const dayDone = dayHabits.filter(h => {
+                      // Check if there's a log for this date — use todayLog if same as today
+                      if (ds === selectedDate) return !!h.todayLog && h.todayLog.value >= 1;
+                      return false; // simplified: real log check needs separate query
+                    }).length;
+                    const isSelected = ds === selectedDate;
+                    const isTodayDay = ds === todayStr;
+                    const isFuture = ds > todayStr;
+                    const allDone = dayHabits.length > 0 && dayDone === dayHabits.length;
+                    return (
+                      <button
+                        key={ds}
+                        onClick={() => { setSelectedDate(ds); setShowView('list'); }}
+                        className={`relative flex flex-col items-center justify-center rounded-xl p-1.5 min-h-[44px] transition-all ${
+                          isSelected ? 'ring-2 ring-brand-500 bg-brand-500/15' :
+                          isTodayDay ? 'bg-white/8 font-bold' :
+                          isFuture ? 'opacity-40 cursor-default' :
+                          'hover:bg-white/5'
+                        }`}
+                        disabled={isFuture}
+                      >
+                        <span className={`text-xs font-semibold ${
+                          isSelected ? 'text-brand-300' :
+                          isTodayDay ? 'text-white' :
+                          isFuture ? 'text-slate-700' : 'text-slate-400'
+                        }`}>
+                          {format(day, 'd')}
+                        </span>
+                        {dayHabits.length > 0 && !isFuture && (
+                          <div className="flex gap-[2px] mt-0.5 flex-wrap justify-center max-w-[28px]">
+                            {dayHabits.slice(0, 4).map((h, i) => (
+                              <div key={i}
+                                className="w-1.5 h-1.5 rounded-full"
+                                style={{ background: allDone ? '#10b981' : (h.color || 'var(--brand-500)'), opacity: isTodayDay ? 1 : 0.7 }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            <p className="text-center text-xs text-slate-600 mt-3">Tap any past day to view &amp; log habits for that date</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

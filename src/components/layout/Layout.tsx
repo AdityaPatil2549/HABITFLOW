@@ -7,10 +7,12 @@ import { useProfileStore } from '../../store/profileStore';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { useFocusStore } from '../../store/focusStore';
 import { calculateStats } from '../../services/gamificationService';
+import { useToast } from '../common/Toast';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { IconRenderer } from '../common/IconRenderer';
 import {
   Search, Bell, Settings, User, LayoutDashboard,
-  Target, CheckSquare, BarChart2, Plus, LogOut, HelpCircle, X, Zap, CheckCircle2, Timer
+  Target, CheckSquare, BarChart2, Plus, LogOut, HelpCircle, X, Zap, CheckCircle2, Timer, Sun, Moon
 } from 'lucide-react';
 
 // ── Notification panel ─────────────────────────────────────────
@@ -61,6 +63,7 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
 // ── Account dropdown ───────────────────────────────────────────
 function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: any }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const go = (path: string) => { navigate(path); onClose(); };
   return (
     <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-56 rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden"
@@ -97,22 +100,21 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: a
       </div>
       <div className="border-t border-white/5 py-2">
         <button
-          onClick={async () => {
-            if (!confirm('Log out will clear your local session. Your data will remain on this device. Continue?')) return;
-            onClose();
-            // Clear all IndexedDB tables via Dexie
-            const { db } = await import('../../db');
-            await Promise.all([
-              db.habits.clear(),
-              db.habitLogs.clear(),
-              db.tasks.clear(),
-              db.projects.clear(),
-              db.moods.clear(),
-              db.userXP.clear(),
-              db.settings.clear(),
-            ]);
-            localStorage.clear();
-            window.location.reload();
+          onClick={() => {
+            toast.confirm(
+              'Log out will clear your local session. Your data will remain on this device. Continue?',
+              async () => {
+                onClose();
+                const { db } = await import('../../db');
+                await Promise.all([
+                  db.habits.clear(), db.habitLogs.clear(), db.tasks.clear(),
+                  db.projects.clear(), db.moods.clear(), db.userXP.clear(), db.settings.clear(),
+                ]);
+                localStorage.clear();
+                window.location.reload();
+              },
+              { confirmLabel: 'Log Out', cancelLabel: 'Stay', danger: true }
+            );
           }}
           className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
         >
@@ -243,9 +245,30 @@ export function Layout() {
   const { profile } = useProfileStore();
   const { userXP, loadXP } = useGamificationStore();
   const { isActive: focusActive, startFocus, stopFocus } = useFocusStore();
+  const toast = useToast();
+  const [isDark, setIsDark] = useState(!document.documentElement.classList.contains('light'));
   const notifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  function toggleDark() {
+    const root = document.documentElement;
+    const nowDark = !root.classList.contains('light');
+    root.classList.toggle('light', nowDark);
+    setIsDark(!nowDark);
+    import('../../db').then(({ db }) =>
+      db.settings.toCollection().first().then(s =>
+        s && db.settings.update(s.id!, { darkMode: nowDark ? 'light' : 'dark' })
+      )
+    );
+  }
+
+  useKeyboardShortcuts({
+    onSearch: () => setShowSearch(true),
+    onToggleFocus: () => focusActive ? stopFocus() : startFocus({ id: 'quick', title: 'Quick Focus Session', type: 'habit' }),
+    onNewHabit: () => { navigate('/habits'); setQuickAdd(true); },
+    onNewTask: () => navigate('/tasks'),
+  });
 
   useEffect(() => { loadXP(); }, [loadXP]);
 
@@ -362,6 +385,16 @@ export function Layout() {
             <Search size={18} />
             <span className="flex-1">Search</span>
             <kbd className="text-[10px] border border-white/10 rounded px-1.5 py-0.5 text-slate-500 group-hover:text-slate-400 transition-colors">⌘K</kbd>
+          </button>
+
+          {/* Dark / Light toggle */}
+          <button onClick={toggleDark}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left">
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            <span className="flex-1">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+            <div className={`w-8 h-4 rounded-full transition-colors flex items-center px-0.5 ${isDark ? 'bg-slate-700' : 'bg-brand-500'}`}>
+              <div className={`w-3 h-3 rounded-full bg-white shadow transition-transform ${isDark ? 'translate-x-0' : 'translate-x-4'}`} />
+            </div>
           </button>
           
           <div className="relative" ref={notifRef}>

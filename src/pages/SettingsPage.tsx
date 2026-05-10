@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { notificationService } from '../services/notificationService';
 import { motion } from 'framer-motion';
 import { useGamificationStore } from '../store/gamificationStore';
+import { useToast } from '../components/common/Toast';
 
 const THEMES: { value: Theme; label: string; color: string }[] = [
   { value: 'indigo', label: 'Indigo', color: '#6366f1' },
@@ -22,6 +23,7 @@ export function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [exported, setExported] = useState(false);
   const [csvExported, setCsvExported] = useState(false);
+  const toast = useToast();
 
   const { userXP, loadXP } = useGamificationStore();
 
@@ -105,28 +107,34 @@ export function SettingsPage() {
         if (data.moods) { await db.moods.clear(); await db.moods.bulkAdd(data.moods); }
         if (data.userXP) { await db.userXP.clear(); await db.userXP.bulkAdd(data.userXP); }
       });
-      alert('Import successful! Refresh to see your data.');
-      window.location.reload();
+      toast.success('Import successful! Reloading…');
+      setTimeout(() => window.location.reload(), 1200);
     } catch (err) {
-      alert('Import failed: invalid file format.');
+      toast.error('Import failed: invalid file format.');
     }
   }
 
   async function handleReset() {
-    if (!confirm('This will permanently delete ALL your HabitFlow data. Are you sure?')) return;
-    await Promise.all([db.habits.clear(), db.habitLogs.clear(), db.tasks.clear(), db.projects.clear(), db.moods.clear(), db.userXP.clear(), localStorage.clear()]);
-    alert('All data cleared.');
-    window.location.reload();
+    toast.confirm(
+      'This will permanently delete ALL your HabitFlow data. Are you sure?',
+      async () => {
+        await Promise.all([db.habits.clear(), db.habitLogs.clear(), db.tasks.clear(), db.projects.clear(), db.moods.clear(), db.userXP.clear(), localStorage.clear()]);
+        toast.success('All data cleared.');
+        setTimeout(() => window.location.reload(), 1000);
+      },
+      { confirmLabel: 'Delete Everything', danger: true }
+    );
   }
 
   async function requestNotificationPermission() {
-    if (!('Notification' in window)) { alert('Browser does not support notifications'); return; }
+    if (!('Notification' in window)) { toast.error('Browser does not support notifications'); return; }
     const perm = await Notification.requestPermission();
     if (perm === 'granted') {
       await saveSetting({ notificationsEnabled: true });
       notificationService.sendTestNotification();
+      toast.success('Notifications enabled! Test sent.');
     } else {
-      alert('Notification permission denied. Please enable in browser settings.');
+      toast.warning('Notification permission denied. Please enable in browser settings.');
     }
   }
 
