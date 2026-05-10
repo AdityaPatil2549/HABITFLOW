@@ -109,14 +109,19 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: a
 function SearchOverlay({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const { habits } = useHabitStore();
-  const { tasks } = useTaskStore();
+  const { habits, loadHabits } = useHabitStore();
+  const { tasks, loadTasks } = useTaskStore();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => { 
+    inputRef.current?.focus();
+    // Ensure data is loaded when the search modal opens
+    loadHabits();
+    loadTasks();
+  }, [loadHabits, loadTasks]);
 
   const q = query.toLowerCase().trim();
-  const habitResults = q ? habits.filter(h => h.name.toLowerCase().includes(q)).slice(0, 4) : [];
+  const habitResults = q ? habits.filter(h => !h.archived && h.name.toLowerCase().includes(q)).slice(0, 4) : [];
   const taskResults = q ? tasks.filter(t => t.title.toLowerCase().includes(q) && !t.completed).slice(0, 4) : [];
   const hasResults = habitResults.length > 0 || taskResults.length > 0;
 
