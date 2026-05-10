@@ -560,7 +560,7 @@ export function HabitsPage() {
         <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-20 text-center">
           <span className="text-5xl mb-4">🌱</span>
           <h3 className="text-lg font-semibold text-white mb-2">No habits yet</h3>
-          <p className="text-slate-400 text-sm max-w-xs mb-5">Add your first habit and start building a powerful daily routine.</p>
+          <p className="text-slate-400 text-sm w-full max-w-xs px-4 mb-5 leading-relaxed">Add your first habit and start building a powerful daily routine.</p>
           <button onClick={() => setShowAdd(true)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-white"
             style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}>
             + Add your first habit
