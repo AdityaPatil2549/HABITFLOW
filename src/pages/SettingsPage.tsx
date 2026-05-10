@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sun, Monitor, Download, Upload, Trash2, Bell, Shield, Palette, Database, Info } from 'lucide-react';
+import { Moon, Sun, Monitor, Download, Upload, Trash2, Bell, Shield, Palette, Database, Info, CheckCircle2 } from 'lucide-react';
 import { db, getOrCreateSettings } from '../db';
 import type { Settings, Theme } from '../types';
 import { format } from 'date-fns';
@@ -195,6 +195,42 @@ export function SettingsPage() {
               className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
               animate={{ x: settings.weekStartsOnMonday ? 20 : 0 }}
             />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between pt-2">
+          <div>
+            <p className="text-sm font-semibold text-white">Sound Effects</p>
+            <p className="text-xs text-slate-500">Audible feedback when completing habits and leveling up.</p>
+          </div>
+          <button
+            onClick={() => {
+              const next = !settings.soundEnabled;
+              saveSetting({ soundEnabled: next });
+              import('../services/soundService').then(m => m.soundService.setEnabled(next, settings.hapticEnabled !== false));
+            }}
+            className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.soundEnabled !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
+          >
+            <motion.div layout className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
+              animate={{ x: settings.soundEnabled !== false ? 20 : 0 }} />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between pt-2">
+          <div>
+            <p className="text-sm font-semibold text-white">Haptic Feedback</p>
+            <p className="text-xs text-slate-500">Vibration on habit completion (mobile only).</p>
+          </div>
+          <button
+            onClick={() => {
+              const next = !settings.hapticEnabled;
+              saveSetting({ hapticEnabled: next });
+              import('../services/soundService').then(m => m.soundService.setEnabled(settings.soundEnabled !== false, next));
+            }}
+            className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.hapticEnabled !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
+          >
+            <motion.div layout className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
+              animate={{ x: settings.hapticEnabled !== false ? 20 : 0 }} />
           </button>
         </div>
       </section>

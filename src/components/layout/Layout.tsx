@@ -3,17 +3,14 @@ import { useState, useEffect, useRef } from 'react';
 import { QuickAddModal } from '../habits/QuickAddModal';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
+import { useProfileStore } from '../../store/profileStore';
+import { useGamificationStore } from '../../store/gamificationStore';
+import { calculateStats } from '../../services/gamificationService';
 import { IconRenderer } from '../common/IconRenderer';
-
-// ── Profile storage helpers ──
-const PROFILE_KEY = 'habitflow_profile';
-const loadProfile = () => {
-  try {
-    const raw = localStorage.getItem(PROFILE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return { name: 'Alex', bio: '', avatar: null };
-};
+import {
+  Search, Bell, Settings, User, LayoutDashboard,
+  Target, CheckSquare, BarChart2, Plus, LogOut, HelpCircle, X, Zap, CheckCircle2
+} from 'lucide-react';
 
 // ── Notification panel ─────────────────────────────────────────
 const DEMO_NOTIFICATIONS = [
@@ -25,7 +22,7 @@ const DEMO_NOTIFICATIONS = [
 function NotificationPanel({ onClose }: { onClose: () => void }) {
   const [notes, setNotes] = useState(DEMO_NOTIFICATIONS);
   return (
-    <div className="absolute right-0 top-full mt-2 w-80 rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden"
+    <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-80 rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden"
       style={{ background: 'rgba(10,15,30,0.97)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(24px)' }}>
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
         <h3 className="text-sm font-bold text-white">Notifications</h3>
@@ -34,7 +31,7 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
             className="text-[10px] font-semibold text-brand-400 hover:text-brand-300 transition-colors">
             Mark all read
           </button>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors ml-2">✕</button>
+          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors ml-2"><X size={14}/></button>
         </div>
       </div>
       <div className="max-h-72 overflow-y-auto divide-y divide-white/5">
@@ -65,7 +62,7 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: a
   const navigate = useNavigate();
   const go = (path: string) => { navigate(path); onClose(); };
   return (
-    <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden"
+    <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-56 rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden"
       style={{ background: 'rgba(10,15,30,0.97)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(24px)' }}>
       {/* Profile header */}
       <div className="px-5 py-4 border-b border-white/5">
@@ -82,22 +79,25 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: a
       {/* Menu items */}
       <div className="py-2">
         {[
-          { icon: 'person', label: 'Profile', path: '/profile' },
-          { icon: 'settings', label: 'Settings', path: '/settings' },
-          { icon: 'insights', label: 'Analytics', path: '/analytics' },
-          { icon: 'help', label: 'Help & Support', path: '/dashboard' },
-        ].map(item => (
-          <button key={item.label} onClick={() => go(item.path)}
-            className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
-            <span className="material-symbols-outlined text-slate-500" style={{ fontSize: 18 }}>{item.icon}</span>
-            {item.label}
-          </button>
-        ))}
+          { icon: User, label: 'Profile', path: '/profile' },
+          { icon: Settings, label: 'Settings', path: '/settings' },
+          { icon: BarChart2, label: 'Analytics', path: '/analytics' },
+          { icon: HelpCircle, label: 'Help & Support', path: '/dashboard' },
+        ].map(item => {
+          const Icon = item.icon;
+          return (
+            <button key={item.label} onClick={() => go(item.path)}
+              className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+              <Icon size={18} className="text-slate-500" />
+              {item.label}
+            </button>
+          )
+        })}
       </div>
       <div className="border-t border-white/5 py-2">
         <button onClick={() => { onClose(); localStorage.clear(); window.location.reload(); }}
           className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors">
-          <span className="material-symbols-outlined text-red-500/70" style={{ fontSize: 18 }}>logout</span>
+          <LogOut size={18} className="text-red-500/70" />
           Log Out
         </button>
       </div>
@@ -121,11 +121,12 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
   const hasResults = habitResults.length > 0 || taskResults.length > 0;
 
   const QUICK_LINKS = [
-    { icon: 'grid_view', label: 'Dashboard', path: '/dashboard' },
-    { icon: 'cached', label: 'Habits', path: '/habits' },
-    { icon: 'check_circle', label: 'Tasks', path: '/tasks' },
-    { icon: 'insights', label: 'Analytics', path: '/analytics' },
-    { icon: 'settings', label: 'Settings', path: '/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: Target, label: 'Habits', path: '/habits' },
+    { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
+    { icon: BarChart2, label: 'Analytics', path: '/analytics' },
+    { icon: CheckCircle2, label: 'Weekly Review', path: '/review' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
   function go(path: string) { navigate(path); onClose(); }
@@ -135,11 +136,11 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       {/* Panel */}
-      <div className="relative w-full max-w-lg mx-4 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden"
+      <div className="relative w-[calc(100%-2rem)] max-w-[500px] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden"
         style={{ background: 'rgba(10,15,30,0.98)', border: '1px solid rgba(255,255,255,0.12)' }}>
         {/* Input */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
-          <span className="material-symbols-outlined text-slate-400 text-xl">search</span>
+          <Search size={20} className="text-slate-400" />
           <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)}
             placeholder="Search habits, tasks, pages…"
             className="flex-1 bg-transparent text-white placeholder-slate-500 text-base outline-none"
@@ -153,20 +154,23 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
             <div className="px-5 py-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3">Quick navigation</p>
               <div className="space-y-1">
-                {QUICK_LINKS.map(l => (
-                  <button key={l.path} onClick={() => go(l.path)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors text-left">
-                    <span className="material-symbols-outlined text-slate-500" style={{ fontSize: 18 }}>{l.icon}</span>
-                    {l.label}
-                  </button>
-                ))}
+                {QUICK_LINKS.map(l => {
+                  const Icon = l.icon;
+                  return (
+                    <button key={l.path} onClick={() => go(l.path)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors text-left">
+                      <Icon size={18} className="text-slate-500" />
+                      {l.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
 
           {q && !hasResults && (
             <div className="text-center py-12 text-slate-500">
-              <span className="text-3xl block mb-2">🔍</span>
+              <Search size={32} className="mx-auto mb-2 opacity-50" />
               <p className="text-sm">No results for "<span className="text-slate-300">{query}</span>"</p>
             </div>
           )}
@@ -193,7 +197,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
               {taskResults.map(t => (
                 <button key={t.id} onClick={() => go('/tasks')}
                   className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors text-left">
-                  <span className="material-symbols-outlined text-slate-500" style={{ fontSize: 16 }}>check_circle</span>
+                  <CheckSquare size={16} className="text-slate-500" />
                   <span className="truncate">{t.title}</span>
                   {t.dueDate && <span className="ml-auto text-[10px] text-slate-500 flex-shrink-0">{t.dueDate}</span>}
                 </button>
@@ -212,25 +216,16 @@ export function Layout() {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
-  const [profile, setProfile] = useState(loadProfile());
+  const { profile } = useProfileStore();
+  const { userXP, loadXP } = useGamificationStore();
   const notifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const unreadCount = DEMO_NOTIFICATIONS.filter(n => n.unread).length;
+  useEffect(() => { loadXP(); }, [loadXP]);
 
-  // Sync profile data
-  useEffect(() => {
-    const sync = () => setProfile(loadProfile());
-    window.addEventListener('storage', sync);
-    window.addEventListener('profile-updated', sync);
-    // Also re-read when dropdown opens to be sure
-    if (showAccount) sync();
-    return () => {
-      window.removeEventListener('storage', sync);
-      window.removeEventListener('profile-updated', sync);
-    };
-  }, [showAccount]);
+  const unreadCount = DEMO_NOTIFICATIONS.filter(n => n.unread).length;
+  const xpStats = userXP ? calculateStats(userXP.total) : null;
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -258,152 +253,155 @@ export function Layout() {
       : 'text-slate-400 px-6 py-3 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
 
   return (
-    <>
-      {/* ── Top nav ── */}
-      <nav className="sticky top-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/8 flex items-center justify-between px-6 h-16">
-        {/* Left: Logo + nav links */}
-        <div className="flex items-center gap-8">
-          <NavLink to="/dashboard" className="text-xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity">HabitFlow</NavLink>
-          <div className="hidden md:flex items-center gap-1">
-            {[
-              { to: '/dashboard', label: 'Dashboard' },
-              { to: '/habits', label: 'Habits' },
-              { to: '/tasks', label: 'Tasks' },
-              { to: '/analytics', label: 'Analytics' },
-            ].map(l => (
-              <NavLink key={l.to} to={l.to}
-                className={({ isActive }) => `px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-brand-500/15 text-brand-400' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
-                {l.label}
-              </NavLink>
-            ))}
-          </div>
-        </div>
-
-        {/* Right: Search + icons */}
-        <div className="flex items-center gap-2">
-          {/* Search trigger */}
-          <button onClick={() => setShowSearch(true)}
-            className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-slate-400 text-sm hover:bg-white/8 hover:text-slate-200 transition-all w-48 justify-between">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-base">search</span>
-              <span className="text-slate-500">Search…</span>
-            </div>
-            <kbd className="text-[10px] border border-white/10 rounded px-1 py-0.5 text-slate-600">⌘K</kbd>
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-slate-950 to-slate-950 flex">
+      
+      {/* ── Mobile Top Header (Hidden on Desktop) ── */}
+      <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950/80 backdrop-blur-xl border-b border-white/8 flex items-center justify-between px-6 h-16">
+        <NavLink to="/dashboard" className="text-xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity">HabitFlow</NavLink>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setShowSearch(true)} className="text-slate-400 hover:text-white transition-colors">
+            <Search size={22} />
           </button>
-
-          {/* Notifications */}
           <div className="relative" ref={notifRef}>
-            <button onClick={() => { setShowNotifications(v => !v); setShowAccount(false); }}
-              className="relative w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/8 transition-all">
-              <span className="material-symbols-outlined text-xl">notifications</span>
-              {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-400 ring-2 ring-slate-950" />
-              )}
+            <button onClick={() => { setShowNotifications(v => !v); setShowAccount(false); }} className="relative text-slate-400 hover:text-white transition-colors">
+              <Bell size={22} />
+              {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-brand-400 ring-2 ring-slate-950" />}
             </button>
             {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}
-          </div>
-
-          {/* Settings */}
-          <button onClick={() => navigate('/settings')}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/8 transition-all">
-            <span className="material-symbols-outlined text-xl">settings</span>
-          </button>
-
-          {/* Account avatar */}
-          <div className="relative" ref={accountRef}>
-            <button onClick={() => { setShowAccount(v => !v); setShowNotifications(false); }}
-              className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold text-sm ring-2 ring-transparent hover:ring-brand-400/40 transition-all">
-              {profile.avatar ? <img src={profile.avatar} className="w-full h-full object-cover" /> : profile.name[0]}
-            </button>
-            {showAccount && <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />}
           </div>
         </div>
       </nav>
 
-      {/* ── Sidebar ── */}
-      <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-white/8 bg-slate-900/40 backdrop-blur-2xl flex flex-col py-6 z-40 hidden lg:flex">
-        <div className="px-6 mb-8">
-          <NavLink to="/dashboard" className="flex items-center gap-3 p-2 -m-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group">
-            <div className="w-9 h-9 rounded-xl bg-brand-500 flex items-center justify-center text-white font-bold overflow-hidden shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
-              {profile.avatar ? <img src={profile.avatar} className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-lg">fluid</span>}
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-base font-bold text-white leading-none truncate group-hover:text-brand-400 transition-colors">{profile.name}</h1>
-              <p className="text-[10px] text-brand-400 uppercase tracking-[0.2em] font-bold mt-0.5">Peak Performer</p>
-            </div>
-          </NavLink>
+      {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
+      <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900/40 backdrop-blur-2xl flex-col py-6 z-40 hidden lg:flex">
+        <div className="px-6 mb-8 flex items-center justify-between">
+          <NavLink to="/dashboard" className="text-2xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity">HabitFlow</NavLink>
         </div>
 
         <nav className="flex-1 space-y-0.5 px-3">
           {[
-            { to: '/dashboard', icon: 'grid_view', label: 'Dashboard' },
-            { to: '/habits', icon: 'cached', label: 'Habits' },
-            { to: '/tasks', icon: 'check_circle', label: 'Tasks' },
-            { to: '/analytics', icon: 'insights', label: 'Analytics' },
-          ].map(l => (
-            <NavLink key={l.to} to={l.to} className={navLinkClass}>
-              <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>{l.icon}</span>
-              <span>{l.label}</span>
-            </NavLink>
-          ))}
+            { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+            { to: '/habits', icon: Target, label: 'Habits' },
+            { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
+            { to: '/analytics', icon: BarChart2, label: 'Analytics' },
+            { to: '/review', icon: CheckCircle2, label: 'Weekly Review' },
+          ].map(l => {
+            const Icon = l.icon;
+            return (
+              <NavLink key={l.to} to={l.to} className={navLinkClass}>
+                <Icon size={18} />
+                <span>{l.label}</span>
+              </NavLink>
+            )
+          })}
         </nav>
 
         <div className="px-5 mb-6">
           <button onClick={() => setQuickAdd(true)}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined text-base">add</span>
+            <Plus size={18} />
             New Entry
           </button>
         </div>
 
-        <div className="mt-auto px-3 space-y-0.5">
-          {[
-            { to: '/profile', icon: 'person', label: 'Profile' },
-            { to: '/settings', icon: 'settings', label: 'Settings' },
-          ].map(l => (
-            <NavLink key={l.to} to={l.to}
-              className={navLinkClass}>
-              <span className="material-symbols-outlined text-lg">{l.icon}</span>
-              <span>{l.label}</span>
-            </NavLink>
-          ))}
+        {/* Sidebar Footer Controls */}
+        <div className="mt-auto px-5 space-y-2 pb-2">
+          <button onClick={() => setShowSearch(true)}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left group">
+            <Search size={18} />
+            <span className="flex-1">Search</span>
+            <kbd className="text-[10px] border border-white/10 rounded px-1.5 py-0.5 text-slate-500 group-hover:text-slate-400 transition-colors">⌘K</kbd>
+          </button>
+          
+          <div className="relative" ref={notifRef}>
+            <button onClick={() => { setShowNotifications(v => !v); setShowAccount(false); }}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left">
+              <div className="relative">
+                <Bell size={18} />
+                {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-brand-400 ring-2 ring-slate-900" />}
+              </div>
+              <span>Notifications</span>
+            </button>
+            {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}
+          </div>
+        </div>
+
+        <div className="px-5 pt-4 border-t border-white/5 mx-3 mt-2">
+          <div className="relative" ref={accountRef}>
+            <button onClick={() => { setShowAccount(v => !v); setShowNotifications(false); }}
+              className="w-full flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group text-left">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold overflow-hidden shadow-lg shadow-brand-500/20 flex-shrink-0">
+                {profile.avatar ? <img src={profile.avatar} className="w-full h-full object-cover" /> : <User size={16} />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-1">
+                  <h1 className="text-sm font-bold text-white leading-none truncate group-hover:text-brand-400 transition-colors">{profile.name}</h1>
+                  {xpStats && (
+                    <span className="text-[10px] text-amber-400 font-bold flex items-center gap-0.5 flex-shrink-0">
+                      <Zap size={9} />Lv.{xpStats.numericLevel}
+                    </span>
+                  )}
+                </div>
+                {xpStats ? (
+                  <div className="mt-1.5 w-full h-1 rounded-full bg-white/10 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
+                      style={{ width: `${xpStats.levelProgress}%` }}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Peak Performer</p>
+                )}
+              </div>
+            </button>
+            {showAccount && <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />}
+          </div>
         </div>
       </aside>
 
       {/* ── Main content ── */}
-      <main className="lg:ml-64 p-8 min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-slate-950 to-slate-950">
-        <Outlet />
+      <main className="flex-1 lg:ml-64 w-full max-w-full">
+        {/* On mobile, add padding to clear the top nav. On all screens, add bottom padding to clear mobile nav if visible. */}
+        <div className="pt-20 lg:pt-8 pb-24 lg:pb-8 px-4 md:px-8 max-w-7xl mx-auto">
+          <Outlet />
+        </div>
       </main>
 
-      {/* ── Mobile bottom nav ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-slate-950/90 backdrop-blur-2xl border-t border-white/8 px-8 h-16 flex items-center justify-between z-50">
+      {/* ── Mobile Bottom Nav ── */}
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-950/90 backdrop-blur-2xl border-t border-white/8 px-6 pb-safe h-16 flex items-center justify-between z-50">
         {[
-          { to: '/dashboard', icon: 'grid_view', label: 'Flow' },
-          { to: '/habits', icon: 'cached', label: 'Habits' },
-        ].map(l => (
-          <NavLink key={l.to} to={l.to} className={({ isActive }) => `flex flex-col items-center gap-1 ${isActive ? 'text-brand-400' : 'text-slate-500'}`}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{l.icon}</span>
-            <span className="text-[10px] font-bold">{l.label}</span>
-          </NavLink>
-        ))}
+          { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
+          { to: '/habits', icon: Target, label: 'Habits' },
+        ].map(l => {
+          const Icon = l.icon;
+          return (
+            <NavLink key={l.to} to={l.to} className={({ isActive }) => `flex flex-col items-center gap-1 ${isActive ? 'text-brand-400' : 'text-slate-500'}`}>
+              <Icon size={20} />
+              <span className="text-[10px] font-bold">{l.label}</span>
+            </NavLink>
+          )
+        })}
         <div onClick={() => setQuickAdd(true)}
-          className="-mt-12 w-14 h-14 cursor-pointer bg-gradient-to-tr from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-xl shadow-brand-500/40 border-4 border-slate-950">
-          <span className="material-symbols-outlined text-white">add</span>
+          className="-mt-8 w-14 h-14 cursor-pointer bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-xl shadow-brand-500/40 border-4 border-slate-950 active:scale-95 transition-transform">
+          <Plus size={24} className="text-white" />
         </div>
         {[
-          { to: '/analytics', icon: 'insights', label: 'Stats' },
-          { to: '/profile', icon: 'person', label: 'Profile' },
-        ].map(l => (
-          <NavLink key={l.to} to={l.to} className={({ isActive }) => `flex flex-col items-center gap-1 ${isActive ? 'text-brand-400' : 'text-slate-500'}`}>
-            <span className="material-symbols-outlined">{l.icon}</span>
-            <span className="text-[10px] font-bold">{l.label}</span>
-          </NavLink>
-        ))}
+          { to: '/analytics', icon: BarChart2, label: 'Stats' },
+          { to: '/profile', icon: User, label: 'Profile' },
+        ].map(l => {
+          const Icon = l.icon;
+          return (
+            <NavLink key={l.to} to={l.to} className={({ isActive }) => `flex flex-col items-center gap-1 ${isActive ? 'text-brand-400' : 'text-slate-500'}`}>
+              <Icon size={20} />
+              <span className="text-[10px] font-bold">{l.label}</span>
+            </NavLink>
+          )
+        })}
       </nav>
 
       {/* ── Overlays ── */}
       {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} />}
       {quickAdd && <QuickAddModal onClose={() => setQuickAdd(false)} />}
-    </>
+    </div>
   );
 }

@@ -76,7 +76,8 @@ export const habitService = {
     habitId: string,
     date: string,
     value: number,
-    note?: string
+    note?: string,
+    isFrozen?: boolean
   ): Promise<HabitLog> {
     // Upsert: delete existing log for this day first
     await db.habitLogs
@@ -91,6 +92,7 @@ export const habitService = {
       date,
       value,
       note,
+      isFrozen,
       timeStamp: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     };
@@ -129,6 +131,7 @@ export const habitService = {
       const dateStr = format(date, 'yyyy-MM-dd');
       const log = logMap.get(dateStr);
       if (!log) return false;
+      if (log.isFrozen) return true; // Freeze token maintains the streak
       if (habit.type === 'boolean') return log.value >= 1;
       return log.value >= habit.targetValue;
     }
@@ -192,12 +195,19 @@ export const habitService = {
       habits.map(async h => {
         const streak = await habitService.getStreakInfo(h);
         const todayLog = await habitService.getLogForDate(h.id, date);
-        const logs30 = await habitService.getLogsForHabit(
-          h.id,
-          format(subDays(new Date(), 30), 'yyyy-MM-dd'),
-          date
-        );
-        const completionRate30Days = logs30.filter(l => l.value >= 1).length / 30;
+        const from = format(subDays(new Date(), 29), 'yyyy-MM-dd');
+        const logs30 = await habitService.getLogsForHabit(h.id, from, date);
+
+        // Count only days the habit was actually scheduled in the window
+        const scheduledDays = Array.from({ length: 30 }, (_, i) => {
+          const d = subDays(new Date(), 29 - i);
+          return habitService.isScheduledForDate(h, format(d, 'yyyy-MM-dd'));
+        }).filter(Boolean).length;
+
+        const completionRate30Days = scheduledDays > 0
+          ? logs30.filter(l => l.value >= (h.type === 'boolean' ? 1 : h.targetValue)).length / scheduledDays
+          : 0;
+
         return { ...h, streak, todayLog, completionRate30Days };
       })
     );

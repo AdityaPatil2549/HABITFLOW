@@ -3,6 +3,7 @@ import { habitService } from '../services/habitService';
 import type { Habit, HabitWithStreak } from '../types';
 import { format } from 'date-fns';
 import { useGamificationStore } from './gamificationStore';
+import { soundService } from '../services/soundService';
 
 interface HabitStore {
   habits: HabitWithStreak[];
@@ -16,7 +17,9 @@ interface HabitStore {
   archiveHabit: (id: string) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
   logHabit: (habitId: string, value: number, note?: string) => Promise<void>;
+  applyFreeze: (habitId: string) => Promise<void>;
   unlogHabit: (habitId: string) => Promise<void>;
+  reorderHabits: (orderedIds: string[]) => Promise<void>;
 }
 
 export const useHabitStore = create<HabitStore>((set, get) => ({
@@ -58,12 +61,14 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
 
   logHabit: async (habitId, value, note) => {
     await habitService.logCompletion(habitId, get().selectedDate, value, note);
+    soundService.playTick();
+    soundService.haptic([30]);
     await get().loadHabits();
 
-    // Check if we just completed it to award XP
+    // Award XP
     await useGamificationStore.getState().addXP(10);
 
-    // We could check streaks here
+    // Check streaks for badges
     const updatedHabits = get().habits;
     const h = updatedHabits.find(x => x.id === habitId);
     if (h && h.streak.current > 0) {
@@ -71,8 +76,28 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
+  applyFreeze: async (habitId) => {
+    await habitService.logCompletion(habitId, get().selectedDate, -1, 'Used Streak Freeze', true);
+    await get().loadHabits();
+  },
+
   unlogHabit: async habitId => {
     await habitService.removeLog(habitId, get().selectedDate);
     await get().loadHabits();
+  },
+
+  reorderHabits: async (orderedIds) => {
+    // Optimistic update
+    const current = get().habits;
+    const reordered = orderedIds
+      .map((id, idx) => {
+        const h = current.find(x => x.id === id);
+        return h ? { ...h, order: idx } : null;
+      })
+      .filter(Boolean) as typeof current;
+    set({ habits: reordered });
+
+    // Persist to DB
+    await habitService.reorder(orderedIds);
   },
 }));

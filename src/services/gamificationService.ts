@@ -87,4 +87,25 @@ export const gamificationService = {
     if (streak === 30) return this.awardBadge('Unstoppable', 'Hit a 30-day streak', '🚀');
     return null;
   },
+
+  async buyStreakFreeze(cost: number): Promise<boolean> {
+    const userXP = await getOrCreateUserXP();
+    if (userXP.total < cost) return false;
+    // Deducting XP could lower numeric level, but we keep the title simple
+    userXP.total -= cost;
+    userXP.streakFreezes = (userXP.streakFreezes || 0) + 1;
+    const { level, levelProgress } = calculateStats(userXP.total);
+    userXP.level = level;
+    userXP.levelProgress = levelProgress;
+    await db.userXP.put(userXP);
+    return true;
+  },
+
+  async useStreakFreeze(): Promise<boolean> {
+    const userXP = await getOrCreateUserXP();
+    if ((userXP.streakFreezes || 0) <= 0) return false;
+    userXP.streakFreezes -= 1;
+    await db.userXP.put(userXP);
+    return true;
+  },
 };

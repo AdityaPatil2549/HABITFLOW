@@ -20,7 +20,7 @@ const ICON_COMPONENTS: Record<string, any> = {
   CheckCircle: Lucide.CheckCircle,
   Activity: Lucide.Activity,
   Stethoscope: Lucide.Stethoscope,
-  Bicycle: Lucide.Bicycle,
+  Bike: Lucide.Bike,
   DollarSign: Lucide.DollarSign,
   Hammer: Lucide.Hammer,
   HelpCircle: Lucide.HelpCircle
@@ -44,7 +44,7 @@ export const HABIT_ICONS = [
   { name: 'CheckCircle', icon: Lucide.CheckCircle || Lucide.HelpCircle },
   { name: 'Activity', icon: Lucide.Activity || Lucide.HelpCircle },
   { name: 'Stethoscope', icon: Lucide.Stethoscope || Lucide.HelpCircle },
-  { name: 'Bicycle', icon: Lucide.Bicycle || Lucide.HelpCircle },
+  { name: 'Bike', icon: Lucide.Bike || Lucide.HelpCircle },
   { name: 'DollarSign', icon: Lucide.DollarSign || Lucide.HelpCircle },
   { name: 'Hammer', icon: Lucide.Hammer || Lucide.HelpCircle },
 ];

@@ -8,9 +8,11 @@ interface GamificationState {
   loadXP: () => Promise<void>;
   addXP: (amount: number) => Promise<void>;
   awardStreakBadge: (streak: number) => Promise<void>;
+  buyFreeze: (cost: number) => Promise<boolean>;
+  useFreeze: () => Promise<boolean>;
 }
 
-export const useGamificationStore = create<GamificationState>(set => ({
+export const useGamificationStore = create<GamificationState>((set, get) => ({
   userXP: null,
   isLoading: false,
 
@@ -28,5 +30,17 @@ export const useGamificationStore = create<GamificationState>(set => ({
   awardStreakBadge: async (streak: number) => {
     const xp = await gamificationService.checkStreakBadges(streak);
     if (xp) set({ userXP: { ...xp } });
+  },
+
+  buyFreeze: async (cost: number) => {
+    const success = await gamificationService.buyStreakFreeze(cost);
+    if (success) await get().loadXP();
+    return success;
+  },
+
+  useFreeze: async () => {
+    const success = await gamificationService.useStreakFreeze();
+    if (success) await get().loadXP();
+    return success;
   },
 }));

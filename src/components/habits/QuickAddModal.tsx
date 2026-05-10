@@ -91,13 +91,7 @@ export function QuickAddModal({ onClose }: Props) {
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.2 }}
       >
-        <motion.div
-          className="mx-4 overflow-hidden relative rounded-3xl glass-card shadow-2xl border border-white/10"
-          variants={scaleIn}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-        >
+        <div className="mx-4 overflow-hidden relative rounded-3xl bg-slate-900 shadow-2xl border border-white/10">
           {/* Decorative Glow */}
           <div
             className="absolute -right-24 -top-24 w-64 h-64 rounded-full pointer-events-none"
@@ -285,7 +279,7 @@ export function QuickAddModal({ onClose }: Props) {
               </button>
             </form>
           )}
-        </motion.div>
+        </div>
       </motion.div>
     </>
   );

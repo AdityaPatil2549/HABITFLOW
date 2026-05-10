@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 import { Layout } from './components/layout/Layout';
 import { notificationService } from './services/notificationService';
+import { soundService } from './services/soundService';
 import { Dashboard } from './pages/Dashboard';
 import { ReloadPrompt } from './components/layout/ReloadPrompt';
 import { getOrCreateSettings } from './db';
@@ -17,6 +18,9 @@ const SettingsPage = lazy(() =>
 const ProfilePage = lazy(() =>
   import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage }))
 );
+const WeeklyReviewPage = lazy(() =>
+  import('./pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage }))
+);
 import './index.css';
 
 function App() {
@@ -30,6 +34,11 @@ function App() {
         if (settings.theme === 'indigo') root.removeAttribute('data-theme');
         else root.setAttribute('data-theme', settings.theme);
       }
+      // Initialize sound service from persisted preferences
+      soundService.setEnabled(
+        settings.soundEnabled !== false,
+        settings.hapticEnabled !== false
+      );
     });
   }, []);
 
@@ -57,6 +66,7 @@ function App() {
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="review" element={<WeeklyReviewPage />} />
           </Route>
         </Routes>
       </Suspense>

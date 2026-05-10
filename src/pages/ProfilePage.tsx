@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Save, Award, Flame, CheckCircle2, TrendingUp, Star, Edit2, X } from 'lucide-react';
+import { Camera, Save, Award, Flame, CheckCircle2, TrendingUp, Star, Edit2, X, Settings, Share2, Snowflake } from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
+import { useProfileStore } from '../store/profileStore';
+import { useGamificationStore } from '../store/gamificationStore';
 
 const BADGES = [
   { icon: '🔥', label: '7-Day Streak', desc: 'Completed habits 7 days in a row', earned: true },
@@ -13,30 +15,14 @@ const BADGES = [
   { icon: '📚', label: 'Scholar', desc: 'Read habit completed 30 times', earned: false },
 ];
 
-const PROFILE_KEY = 'habitflow_profile';
-
-function loadProfile() {
-  try {
-    const raw = localStorage.getItem(PROFILE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return { name: 'Alex', bio: 'Building better habits one day at a time. Fitness enthusiast & lifelong learner.', avatar: null };
-}
-
-function saveProfile(data: { name: string; bio: string; avatar: string | null }) {
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
-}
-
 export function ProfilePage() {
   const navigate = useNavigate();
   const { habits } = useHabitStore();
   const { tasks } = useTaskStore();
+  const { profile, saveProfile } = useProfileStore();
+  const { userXP, buyFreeze } = useGamificationStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load persisted profile
-  const [name, setName] = useState('');
-  const [bio, setBio] = useState('');
-  const [avatar, setAvatar] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -45,12 +31,9 @@ export function ProfilePage() {
   const [draftBio, setDraftBio] = useState('');
   const [draftAvatar, setDraftAvatar] = useState<string | null>(null);
 
-  useEffect(() => {
-    const p = loadProfile();
-    setName(p.name);
-    setBio(p.bio);
-    setAvatar(p.avatar);
-  }, []);
+  const name = profile.name;
+  const bio = profile.bio;
+  const avatar = profile.avatar;
 
   function startEdit() {
     setDraftName(name);
@@ -65,13 +48,7 @@ export function ProfilePage() {
   }
 
   function handleSave() {
-    const updated = { name: draftName.trim() || 'Alex', bio: draftBio.trim(), avatar: draftAvatar };
-    setName(updated.name);
-    setBio(updated.bio);
-    setAvatar(updated.avatar);
-    saveProfile(updated);
-    // Dispatch event for Layout to sync immediately
-    window.dispatchEvent(new Event('profile-updated'));
+    saveProfile({ name: draftName.trim() || 'Alex', bio: draftBio.trim(), avatar: draftAvatar });
     setEditing(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -242,6 +219,43 @@ export function ProfilePage() {
         ))}
       </div>
 
+      {/* Streak Freezes */}
+      <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+          <Snowflake size={120} />
+        </div>
+        <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border-2 border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Snowflake size={28} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white mb-1">
+                Streak Freezes: <span className="text-blue-400">{userXP?.streakFreezes ?? 0}</span>
+              </h2>
+              <p className="text-sm text-slate-400">Protects your streak if you miss a day. (Auto-applied)</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              if ((userXP?.total ?? 0) < 500) {
+                alert('Not enough XP! You need 500 XP to buy a Streak Freeze.');
+                return;
+              }
+              if (confirm('Buy 1 Streak Freeze for 500 XP?')) {
+                buyFreeze(500).then(success => {
+                  if (success) alert('Streak Freeze purchased!');
+                });
+              }
+            }}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-blue-100 transition-all active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 8px 24px rgba(59,130,246,0.3)' }}
+          >
+            Buy for 500 XP
+          </button>
+        </div>
+      </div>
+
       {/* Badges */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
@@ -265,14 +279,14 @@ export function ProfilePage() {
       <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row gap-3">
         <button onClick={() => navigate('/settings')}
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">
-          <span className="material-symbols-outlined text-base">settings</span> Go to Settings
+          <Settings size={16} /> Go to Settings
         </button>
         <button
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white transition-all active:scale-95"
           style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
           onClick={() => { navigator.clipboard.writeText(window.location.origin + '/profile'); alert('Profile link copied!'); }}
         >
-          <span className="material-symbols-outlined text-base">share</span> Share Profile
+          <Share2 size={16} /> Share Profile
         </button>
       </div>
     </div>

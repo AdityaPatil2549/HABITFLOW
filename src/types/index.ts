@@ -40,6 +40,7 @@ export interface HabitLog {
   value: number; // 1 for boolean, actual count/duration/rating
   note?: string;
   mood?: MoodScore;
+  isFrozen?: boolean;
   timeStamp: string; // ISO
   createdAt: string; // ISO
 }
@@ -103,6 +104,7 @@ export interface UserXP {
   badgesEarned: Badge[];
   weeklyScore: number;
   dailyScore: number;
+  streakFreezes: number;
   lastUpdated: string;
 }
 
@@ -113,6 +115,8 @@ export interface Settings {
   darkMode: 'system' | 'dark' | 'light';
   weekStartsOnMonday: boolean;
   notificationsEnabled: boolean;
+  soundEnabled: boolean;
+  hapticEnabled: boolean;
   morningBriefingTime?: string; // HH:MM
   language: string;
 }

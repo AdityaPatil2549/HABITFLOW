@@ -46,7 +46,7 @@ export function LogHabitModal({ habit, onClose }: Props) {
           onClick={onClose}
         />
         <motion.div
-          className="relative bg-[var(--bg-raised)] border border-[var(--border-subtle)] rounded-2xl p-6 w-full max-w-xs shadow-2xl"
+          className="relative bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-xs shadow-2xl"
           initial={{ scale: 0.95, opacity: 0, y: 10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 10 }}

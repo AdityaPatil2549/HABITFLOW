@@ -107,6 +107,22 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
   );
 }
 
+// ── Skeleton shimmer ───────────────────────────────────────────
+function TaskSkeleton() {
+  return (
+    <div className="rounded-2xl p-4 animate-pulse" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="flex items-center gap-3">
+        <div className="w-5 h-5 rounded-full bg-white/8 flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3.5 bg-white/8 rounded-full w-2/3" />
+          <div className="h-2.5 bg-white/5 rounded-full w-1/3" />
+        </div>
+        <div className="w-14 h-6 bg-white/5 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
 function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
   const { tasks, updateTask, deleteTask } = useTaskStore();
   const [expanded, setExpanded] = useState(false);
@@ -116,21 +132,29 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
   const isOverdue = !task.completed && task.dueDate && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate));
 
   if (editing) return (
-    <motion.div layout className={cn('rounded-2xl p-4 glass-card', depth > 0 && 'ml-6')} style={{ borderLeft: `3px solid ${pc.color}` }}>
+    <motion.div layout className={cn('rounded-2xl p-4 glass-card')} style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : 0, borderLeft: `3px solid ${pc.color}` }}>
       <TaskForm initialTask={task} onClose={() => setEditing(false)} />
     </motion.div>
   );
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
-      className={cn('group relative rounded-2xl transition-all', depth > 0 && 'ml-6')}
-      style={{ background: task.completed ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)', border: `1px solid ${task.completed ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}` }}
-      whileHover={!task.completed ? { y: -1 } : {}}
-    >
-      {/* Priority accent */}
-      <div className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full" style={{ background: task.completed ? 'transparent' : pc.color, marginLeft: 12 }} />
+    <div className={cn('relative')} style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : 0 }}>
+      {/* Subtask connector line */}
+      {depth > 0 && (
+        <div className="absolute -left-4 top-0 bottom-0 flex items-center" style={{ width: '1px' }}>
+          <div className="w-px h-full bg-white/10" />
+          <div className="absolute top-1/2 -translate-y-1/2 w-3 h-px bg-white/10" />
+        </div>
+      )}
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
+        className="group relative rounded-2xl transition-all"
+        style={{ background: task.completed ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)', border: `1px solid ${task.completed ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}` }}
+        whileHover={!task.completed ? { y: -1 } : {}}
+      >
+        {/* Priority accent */}
+        <div className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full" style={{ background: task.completed ? 'transparent' : pc.color, marginLeft: 12 }} />
 
       <div className="flex items-center gap-3 px-4 py-3 pl-6">
         {/* Check */}
@@ -194,6 +218,7 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
         {expanded && subtasks.map(st => <TaskItem key={st.id} task={st} depth={depth + 1} />)}
       </AnimatePresence>
     </motion.div>
+    </div>
   );
 }
 
@@ -293,7 +318,9 @@ export function TasksPage() {
 
       {/* Task list */}
       {loading ? (
-        <div className="text-center py-16 text-slate-500">Loading…</div>
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5].map(i => <TaskSkeleton key={i} />)}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="glass-card rounded-2xl py-20 flex flex-col items-center justify-center text-center px-8">
           <span className="text-5xl mb-4">{view === 'Completed' ? '🎉' : '📋'}</span>

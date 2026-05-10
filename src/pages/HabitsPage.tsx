@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useHabitStore } from '../store/habitStore';
+import { useGamificationStore } from '../store/gamificationStore';
 import type { HabitWithStreak, HabitType, HabitFrequency } from '../types';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { habitSchema } from '../lib/validations';
 import { LogHabitModal } from '../components/habits/LogHabitModal';
 import { cn } from '../lib/utils';
 import { IconRenderer, HABIT_ICONS } from '../components/common/IconRenderer';
+import { habitService } from '../services/habitService';
+import { soundService } from '../services/soundService';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const CATEGORIES = [
@@ -172,10 +176,10 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
   );
 }
 
-function HabitCard({ habit, onLogClick, onEdit, onDelete }: { habit: HabitWithStreak; onLogClick: (h: HabitWithStreak) => void; onEdit: (h: HabitWithStreak) => void; onDelete: (id: string) => void }) {
+function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }: { habit: HabitWithStreak; onLogClick: (h: HabitWithStreak) => void; onEdit: (h: HabitWithStreak) => void; onDelete: (id: string) => void; canFreeze?: boolean; onFreeze?: (h: HabitWithStreak) => void }) {
   const { archiveHabit } = useHabitStore();
   const [showDetails, setShowDetails] = useState(false);
-  const done = !!habit.todayLog && habit.todayLog.value >= (habit.type === 'boolean' ? 1 : habit.targetValue);
+  const done = !!habit.todayLog && (habit.todayLog.isFrozen || habit.todayLog.value >= (habit.type === 'boolean' ? 1 : habit.targetValue));
   const pct = habit.type !== 'boolean' && habit.todayLog ? Math.min((habit.todayLog.value / habit.targetValue) * 100, 100) : done ? 100 : 0;
   const c = habit.color || '#6366f1';
 
@@ -199,10 +203,10 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete }: { habit: HabitWithSt
             whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
             className="w-12 h-12 rounded-2xl border-2 flex items-center justify-center text-xl flex-shrink-0 transition-all"
             style={done
-              ? { background: 'linear-gradient(135deg, #10b981, #06b6d4)', borderColor: 'transparent', boxShadow: '0 4px 16px rgba(16,185,129,0.3)' }
+              ? { background: habit.todayLog?.isFrozen ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #06b6d4)', borderColor: 'transparent', boxShadow: habit.todayLog?.isFrozen ? '0 4px 16px rgba(59,130,246,0.3)' : '0 4px 16px rgba(16,185,129,0.3)' }
               : { borderColor: `${c}60`, background: `${c}10` }}>
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center">
-              {done ? '✓' : <IconRenderer name={habit.icon} size={20} color={done ? '#fff' : c} />}
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center text-white">
+              {done ? (habit.todayLog?.isFrozen ? <Snowflake size={20} /> : '✓') : <IconRenderer name={habit.icon} size={20} color={c} />}
             </div>
           </motion.button>
 
@@ -266,9 +270,15 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete }: { habit: HabitWithSt
                   <button onClick={() => onEdit(habit)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
                     <Edit2 size={11} /> Edit
                   </button>
-                  <button onClick={() => archiveHabit(habit.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
-                    <Archive size={11} /> Archive
-                  </button>
+                  {canFreeze && onFreeze ? (
+                    <button onClick={() => onFreeze(habit)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-bold text-blue-400 hover:bg-blue-500/20 transition-colors">
+                      <Snowflake size={11} /> Use Freeze
+                    </button>
+                  ) : (
+                    <button onClick={() => archiveHabit(habit.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
+                      <Archive size={11} /> Archive
+                    </button>
+                  )}
                   <button onClick={() => { if (confirm('Delete this habit and all its history?')) onDelete(habit.id); }}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-red-400 bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-colors">
                     <Trash2 size={11} /> Delete
@@ -283,34 +293,135 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete }: { habit: HabitWithSt
   );
 }
 
+// ── Skeleton shimmer card ───────────────────────────────────────
+function HabitSkeleton() {
+  return (
+    <div className="glass-card rounded-2xl overflow-hidden animate-pulse">
+      <div className="h-0.5 w-full bg-white/5" />
+      <div className="p-5 flex items-center gap-3">
+        <div className="w-12 h-12 rounded-2xl bg-white/5 flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3.5 bg-white/8 rounded-full w-3/4" />
+          <div className="h-2.5 bg-white/5 rounded-full w-1/3" />
+        </div>
+        <div className="w-16 h-8 bg-white/5 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
 export function HabitsPage() {
-  const { habits, loading, loadHabits, logHabit, deleteHabit } = useHabitStore();
+  const { habits, loading, loadHabits, logHabit, applyFreeze, deleteHabit, selectedDate, setSelectedDate, reorderHabits } = useHabitStore();
+  const { userXP, useFreeze } = useGamificationStore();
   const [showAdd, setShowAdd] = useState(false);
   const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(null);
   const [selectedLog, setSelectedLog] = useState<HabitWithStreak | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [showCelebration, setShowCelebration] = useState(false);
+  const prevDoneRef = useRef(0);
 
-  useEffect(() => { loadHabits(); }, [loadHabits]);
+  const handleUseFreeze = async (habit: HabitWithStreak) => {
+    if ((userXP?.streakFreezes ?? 0) <= 0) {
+      alert("You don't have any Streak Freezes! Buy them from your Profile.");
+      return;
+    }
+    if (confirm(`Use 1 Streak Freeze to protect your streak for "${habit.name}" on this day?`)) {
+      const success = await useFreeze();
+      if (success) {
+        await applyFreeze(habit.id);
+      }
+    }
+  };
 
+  // Build last-7-days date strip
+  const dateStrip = Array.from({ length: 7 }, (_, i) => {
+    const d = subDays(new Date(), 6 - i);
+    return { date: format(d, 'yyyy-MM-dd'), day: format(d, 'EEE'), num: format(d, 'd') };
+  });
+
+  // Load habits whenever selected date changes
+  useEffect(() => { loadHabits(); }, [loadHabits, selectedDate]);
+
+  // Scheduled for selected date
   const scheduled = habits.filter(h => {
     if (h.archived) return false;
-    if (h.frequency === 'daily') return true;
-    if (h.frequency === 'weekly') return (h.frequencyDays ?? []).includes(new Date().getDay());
-    return true;
+    return habitService.isScheduledForDate(h, selectedDate);
   });
-  const done = scheduled.filter(h => !!h.todayLog && h.todayLog.value >= 1).length;
+
+  // Category list from real habits
+  const categories = ['All', ...Array.from(new Set(habits.filter(h => !h.archived).map(h => h.category))).sort()];
+
+  // Apply category filter
+  const visible = activeCategory === 'All'
+    ? scheduled
+    : scheduled.filter(h => h.category === activeCategory);
+
+  const done = scheduled.filter(h => !!h.todayLog && (h.todayLog.isFrozen || h.todayLog.value >= 1)).length;
   const pct = scheduled.length ? Math.round((done / scheduled.length) * 100) : 0;
   const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.best)) : 0;
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const isToday = selectedDate === today;
+
+  // Fire celebration when all habits for today are completed
+  useEffect(() => {
+    if (isToday && scheduled.length > 0 && done === scheduled.length && prevDoneRef.current < scheduled.length) {
+      soundService.playCelebration();
+      soundService.haptic([40, 30, 40, 30, 80]);
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 3000);
+    }
+    prevDoneRef.current = done;
+  }, [done, scheduled.length, isToday]);
+
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const sourceIdx = result.source.index;
+    const destIdx = result.destination.index;
+    if (sourceIdx === destIdx) return;
+    // Get the current visible list, reorder it
+    const newVisible = Array.from(visible);
+    const [removed] = newVisible.splice(sourceIdx, 1);
+    newVisible.splice(destIdx, 0, removed);
+    // Build the full ordered ID list (keep habits not in visible unchanged)
+    const visibleIds = new Set(visible.map(h => h.id));
+    const otherHabits = habits.filter(h => !visibleIds.has(h.id));
+    const orderedIds = [...newVisible.map(h => h.id), ...otherHabits.map(h => h.id)];
+    reorderHabits(orderedIds);
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 relative">
+      {/* ── All Done Celebration Overlay ── */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -20 }}
+            className="fixed inset-x-4 top-24 z-[999] flex justify-center pointer-events-none"
+          >
+            <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-2xl shadow-emerald-500/40 flex items-center gap-3">
+              <span className="text-2xl">🎉</span>
+              All habits done! You're amazing!
+              <span className="text-2xl">🔥</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Habit Tracker</p>
           <h1 className="text-3xl font-bold text-white">My Habits</h1>
           <p className="text-slate-400 text-sm mt-1">
-            {done}/{scheduled.length} habits done today
-            {pct >= 80 ? ' \u2014 You\u2019re on fire! \uD83D\uDD25' : pct >= 50 ? ' \u2014 Keep pushing! \uD83D\uDCAA' : ' \u2014 Let\u2019s get started! \uD83C\uDF31'}
+            {isToday ? (
+              <>
+                {done}/{scheduled.length} done today
+                {pct >= 80 ? ' — You\'re on fire! 🔥' : pct >= 50 ? ' — Keep pushing! 💪' : ' — Let\'s get started! 🌱'}
+              </>
+            ) : (
+              <>Viewing {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, MMM d')}</>
+            )}
           </p>
         </div>
         <motion.button onClick={() => setShowAdd(v => !v)}
@@ -321,12 +432,43 @@ export function HabitsPage() {
         </motion.button>
       </div>
 
+      {/* ── Retroactive Date Picker Strip ── */}
+      <div className="glass-card rounded-2xl p-3">
+        <div className="flex items-center gap-2 mb-2 px-1">
+          <CalendarDays size={13} className="text-brand-400" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Log for date</span>
+        </div>
+        <div className="flex gap-1.5">
+          {dateStrip.map(({ date, day, num }) => {
+            const isSelected = date === selectedDate;
+            const isCurrentDay = date === today;
+            return (
+              <button
+                key={date}
+                onClick={() => setSelectedDate(date)}
+                className={cn(
+                  'flex-1 flex flex-col items-center py-2.5 rounded-xl transition-all text-center border',
+                  isSelected
+                    ? 'text-white border-brand-500/50'
+                    : 'border-white/5 text-slate-500 hover:text-slate-300 hover:border-white/10'
+                )}
+                style={isSelected ? { background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 4px 12px rgba(var(--brand-500-rgb),0.4)' } : {}}
+              >
+                <span className="text-[10px] font-bold uppercase">{day}</span>
+                <span className={cn('text-base font-black mt-0.5', isSelected ? 'text-white' : isCurrentDay ? 'text-brand-400' : '')}>{num}</span>
+                {isCurrentDay && !isSelected && <span className="w-1 h-1 rounded-full bg-brand-400 mt-0.5" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Today', value: `${done}/${scheduled.length}`, sub: 'habits done', color: '#818cf8', icon: '✅' },
-          { label: 'Best Streak', value: `${bestStreak}d`, sub: 'all time', color: '#f59e0b', icon: '🏆' },
-          { label: 'Completion', value: `${pct}%`, sub: 'today', color: '#10b981', icon: '📈' },
+          { label: 'Today', value: `${done}/${scheduled.length}`, sub: 'habits done', icon: '✅' },
+          { label: 'Best Streak', value: `${bestStreak}d`, sub: 'all time', icon: '🏆' },
+          { label: 'Completion', value: `${pct}%`, sub: isToday ? 'today' : 'that day', icon: '📈' },
         ].map(k => (
           <div key={k.label} className="glass-card rounded-2xl p-4 text-center">
             <span className="text-2xl">{k.icon}</span>
@@ -351,7 +493,7 @@ export function HabitsPage() {
         </div>
       )}
 
-      {/* Add form */}
+      {/* Add / Edit forms */}
       <AnimatePresence>
         {showAdd && (
           <motion.div className="glass-card rounded-2xl p-6"
@@ -383,9 +525,32 @@ export function HabitsPage() {
         )}
       </AnimatePresence>
 
+      {/* ── Category Filter Tabs ── */}
+      {!loading && habits.length > 0 && (
+        <div className="flex gap-1.5 flex-wrap">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-xs font-bold border transition-all',
+                activeCategory === cat
+                  ? 'border-brand-500/50 text-brand-300'
+                  : 'border-white/8 text-slate-500 hover:text-slate-300 hover:border-white/15'
+              )}
+              style={activeCategory === cat ? { background: 'rgba(var(--brand-500-rgb),0.15)' } : {}}
+            >
+              {CATEGORIES.find(c => c.name === cat)?.icon ?? '🔖'} {cat}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Habit grid */}
       {loading ? (
-        <div className="text-center py-16 text-slate-500">Loading habits…</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map(i => <HabitSkeleton key={i} />)}
+        </div>
       ) : habits.length === 0 ? (
         <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-20 text-center">
           <span className="text-5xl mb-4">🌱</span>
@@ -396,19 +561,60 @@ export function HabitsPage() {
             + Add your first habit
           </button>
         </div>
+      ) : visible.length === 0 ? (
+        <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-14 text-center">
+          <span className="text-4xl mb-3">🎉</span>
+          <h3 className="text-base font-semibold text-white mb-1">
+            {activeCategory !== 'All' ? `No ${activeCategory} habits scheduled` : 'No habits scheduled'}
+          </h3>
+          <p className="text-slate-500 text-sm">
+            {activeCategory !== 'All' ? (
+              <button onClick={() => setActiveCategory('All')} className="text-brand-400 hover:text-brand-300 transition-colors">Show all categories</button>
+            ) : 'Nothing scheduled for this day.'}
+          </p>
+        </div>
       ) : (
-        <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.05 } } }}>
-          <AnimatePresence mode="popLayout">
-            {scheduled.map(h => (
-              <HabitCard key={h.id} habit={h}
-                onLogClick={hab => hab.type === 'boolean' ? logHabit(hab.id, 1) : setSelectedLog(hab)}
-                onEdit={setEditingHabit}
-                onDelete={deleteHabit}
-              />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="habits-list" direction="vertical">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="grid grid-cols-1 gap-4"
+              >
+                {visible.map((h, index) => (
+                  <Draggable key={h.id} draggableId={h.id} index={index}>
+                    {(dragProvided, snapshot) => (
+                      <div
+                        ref={dragProvided.innerRef}
+                        {...dragProvided.draggableProps}
+                        className={cn('relative', snapshot.isDragging && 'z-50 opacity-90 scale-[1.02]')}
+                      >
+                        {/* Drag handle */}
+                        <div
+                          {...dragProvided.dragHandleProps}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-lg text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing transition-colors"
+                        >
+                          <GripVertical size={14} />
+                        </div>
+                        <div className="pl-6">
+                          <HabitCard habit={h}
+                            onLogClick={hab => hab.type === 'boolean' ? logHabit(hab.id, 1) : setSelectedLog(hab)}
+                            onEdit={setEditingHabit}
+                            onDelete={deleteHabit}
+                            canFreeze={!isToday && selectedDate < today && (!h.todayLog || h.todayLog.value === 0) && (userXP?.streakFreezes ?? 0) > 0}
+                            onFreeze={handleUseFreeze}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       )}
 
       {selectedLog && <LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />}

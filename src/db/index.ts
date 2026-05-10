@@ -40,6 +40,7 @@ export async function getOrCreateUserXP(): Promise<UserXP> {
     badgesEarned: [],
     weeklyScore: 0,
     dailyScore: 0,
+    streakFreezes: 3,
     lastUpdated: new Date().toISOString(),
   };
   await db.userXP.add(newXP);
@@ -55,6 +56,8 @@ export async function getOrCreateSettings(): Promise<Settings> {
     darkMode: 'system',
     weekStartsOnMonday: true,
     notificationsEnabled: false,
+    soundEnabled: true,
+    hapticEnabled: true,
     language: 'en',
   };
   await db.settings.add(defaults);
