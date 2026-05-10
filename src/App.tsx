@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { Layout } from './components/layout/Layout';
 import { notificationService } from './services/notificationService';
 import { soundService } from './services/soundService';
@@ -82,7 +83,10 @@ function App() {
       <ReloadPrompt />
       <FocusOverlay />
       <ToastProvider />
-      {showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
+      {showOnboarding && createPortal(
+        <OnboardingWizard onComplete={handleOnboardingComplete} />,
+        document.body
+      )}
     </BrowserRouter>
   );
 }
