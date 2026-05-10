@@ -6,7 +6,9 @@ import { soundService } from './services/soundService';
 import { Dashboard } from './pages/Dashboard';
 import { ReloadPrompt } from './components/layout/ReloadPrompt';
 import { FocusOverlay } from './components/focus/FocusOverlay';
+import { OnboardingWizard, useOnboarding } from './components/onboarding/OnboardingWizard';
 import { getOrCreateSettings } from './db';
+import { gamificationService } from './services/gamificationService';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })));
@@ -25,6 +27,8 @@ const WeeklyReviewPage = lazy(() =>
 import './index.css';
 
 function App() {
+  const { show: showOnboarding, complete: completeOnboarding } = useOnboarding();
+
   useEffect(() => {
     getOrCreateSettings().then(settings => {
       const root = document.documentElement;
@@ -35,7 +39,6 @@ function App() {
         if (settings.theme === 'indigo') root.removeAttribute('data-theme');
         else root.setAttribute('data-theme', settings.theme);
       }
-      // Initialize sound service from persisted preferences
       soundService.setEnabled(
         settings.soundEnabled !== false,
         settings.hapticEnabled !== false
@@ -43,11 +46,15 @@ function App() {
     });
   }, []);
 
-  // Start the notification service daemon
   useEffect(() => {
     notificationService.start();
     return () => notificationService.stop();
   }, []);
+
+  async function handleOnboardingComplete() {
+    await gamificationService.addXP(10);
+    completeOnboarding();
+  }
 
   return (
     <BrowserRouter>
@@ -73,6 +80,7 @@ function App() {
       </Suspense>
       <ReloadPrompt />
       <FocusOverlay />
+      {showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
     </BrowserRouter>
   );
 }

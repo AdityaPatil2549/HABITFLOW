@@ -13,6 +13,7 @@ import { IconRenderer, HABIT_ICONS } from '../components/common/IconRenderer';
 import { habitService } from '../services/habitService';
 import { soundService } from '../services/soundService';
 import { useFocusStore } from '../store/focusStore';
+import { TemplatesLibrary } from '../components/habits/TemplatesLibrary';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const CATEGORIES = [
@@ -337,6 +338,7 @@ export function HabitsPage() {
   const { habits, loading, loadHabits, logHabit, applyFreeze, deleteHabit, selectedDate, setSelectedDate, reorderHabits } = useHabitStore();
   const { userXP, buyFreeze, useFreeze } = useGamificationStore();
   const [showAdd, setShowAdd] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(null);
   const [selectedLog, setSelectedLog] = useState<HabitWithStreak | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -447,12 +449,21 @@ export function HabitsPage() {
             )}
           </p>
         </div>
-        <motion.button onClick={() => setShowAdd(v => !v)}
-          whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.35)' }}>
-          <Plus size={16} /> Add Habit
-        </motion.button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <motion.button
+            onClick={() => setShowTemplates(true)}
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
+          >
+            ✨ Templates
+          </motion.button>
+          <motion.button onClick={() => setShowAdd(v => !v)}
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.35)' }}>
+            <Plus size={16} /> Add Habit
+          </motion.button>
+        </div>
       </div>
 
       {/* ── Retroactive Date Picker Strip ── */}
@@ -578,11 +589,17 @@ export function HabitsPage() {
         <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-20 text-center">
           <span className="text-5xl mb-4">🌱</span>
           <h3 className="text-lg font-semibold text-white mb-2">No habits yet</h3>
-          <p className="text-slate-400 text-sm w-full max-w-xs px-4 mb-5 leading-relaxed">Add your first habit and start building a powerful daily routine.</p>
-          <button onClick={() => setShowAdd(true)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-white"
-            style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}>
-            + Add your first habit
-          </button>
+          <p className="text-slate-400 text-sm w-full max-w-xs px-4 mb-6 leading-relaxed">Add your first habit and start building a powerful daily routine.</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button onClick={() => setShowTemplates(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all">
+              ✨ Browse Templates
+            </button>
+            <button onClick={() => setShowAdd(true)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-white"
+              style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}>
+              + Create Custom
+            </button>
+          </div>
         </div>
       ) : visible.length === 0 ? (
         <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-14 text-center">
@@ -641,6 +658,7 @@ export function HabitsPage() {
       )}
 
       {selectedLog && <LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />}
+      {showTemplates && <TemplatesLibrary onClose={() => setShowTemplates(false)} />}
     </div>
   );
 }
