@@ -63,14 +63,21 @@ export function WeeklyReviewPage() {
       <div className="text-center py-8">
         <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Weekly Review</p>
         {(() => {
-          const pct = habits.length
-            ? Math.round((habits.filter(h => h.completionRate30Days >= 0.7).length / habits.length) * 100)
+          // Use real 7-day window: count habits that completed at least once in last 7 days
+          // completionRate30Days * 30 ≈ days completed in 30d, so /30*7 ≈ 7-day completions
+          // Better: use streak.current if ≥1 as proxy for "active this week"
+          const activeHabits = habits.filter(h => !h.archived);
+          const weeklyDone = activeHabits.filter(h =>
+            h.streak.current >= 1 || (h.completionRate30Days * 30) >= 1
+          ).length;
+          const pct = activeHabits.length
+            ? Math.round((weeklyDone / activeHabits.length) * 100)
             : 0;
           const { headline, emoji, color } = pct >= 70
             ? { headline: "You crushed it this week!", emoji: "🔥", color: "text-emerald-400" }
             : pct >= 40
             ? { headline: "Building momentum!", emoji: "💪", color: "text-brand-400" }
-            : habits.length === 0
+            : activeHabits.length === 0
             ? { headline: "Let's get started!", emoji: "🌱", color: "text-amber-400" }
             : { headline: "Tough week — let's reset.", emoji: "🌧️", color: "text-slate-300" };
           return (

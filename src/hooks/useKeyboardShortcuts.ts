@@ -15,7 +15,6 @@ export function useKeyboardShortcuts(options: {
   onEscape?: () => void;
 }) {
   const navigate = useNavigate();
-  const { confirm: activeConfirm, dismissConfirm } = useToastStore();
 
   // Keep latest callbacks in a ref so the effect never needs to re-run
   const cb = useRef(options);
@@ -27,7 +26,14 @@ export function useKeyboardShortcuts(options: {
       const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
         || (e.target as HTMLElement).isContentEditable;
 
-      // ESC: always active
+      // Ctrl/Cmd+K → open search (always active, even while typing)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        cb.current.onSearch?.();
+        return;
+      }
+
+      // ESC: always active — read from store to avoid stale closure
       if (e.key === 'Escape') {
         const store = useToastStore.getState();
         if (store.confirm) {
@@ -38,6 +44,7 @@ export function useKeyboardShortcuts(options: {
         return;
       }
 
+      // Single-key shortcuts — don't fire when typing or with modifiers
       if (isTyping) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
@@ -61,6 +68,6 @@ export function useKeyboardShortcuts(options: {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  // Only re-run if navigate changes (never in practice)
+    // Stable deps only — callbacks are handled via ref
   }, [navigate]);
 }
