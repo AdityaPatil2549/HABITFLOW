@@ -12,6 +12,7 @@ import { habitService } from '../services/habitService';
 import { useGamificationStore } from '../store/gamificationStore';
 import { calculateStats } from '../services/gamificationService';
 import type { MoodScore } from '../types';
+import { cn } from '../lib/utils';
 
 const PROFILE_KEY = 'habitflow_profile';
 
@@ -172,7 +173,7 @@ export function Dashboard() {
               </div>
               <div className="w-28 h-1.5 rounded-full bg-white/10 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
+                  className="xp-bar-fill h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
                   style={{ width: `${xpStats.levelProgress}%` }}
                 />
               </div>
@@ -224,29 +225,42 @@ export function Dashboard() {
           </div>
           <h2 className="text-base font-bold text-white mb-6">Today's Target</h2>
 
-          <div className="flex justify-center mb-6 relative">
-            <svg className="w-40 h-40 -rotate-90" viewBox="0 0 192 192">
-              <circle cx="96" cy="96" r="78" fill="transparent" stroke="rgba(255,255,255,0.04)" strokeWidth="14" />
+          <div className="flex justify-center mb-6 relative group/ring">
+            <div className={cn(
+              "absolute inset-0 rounded-full blur-3xl opacity-20 transition-all duration-1000",
+              pct >= 100 ? "bg-rose-500 scale-110 opacity-30" : "bg-brand-500"
+            )} />
+            
+            <svg className="w-48 h-48 -rotate-90 relative z-10" viewBox="0 0 192 192">
+              <circle cx="96" cy="96" r="78" fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth="12" />
               <motion.circle
                 cx="96" cy="96" r="78" fill="transparent"
-                stroke="url(#dash-grad)" strokeWidth="14"
+                stroke="url(#alive-ring-grad)" strokeWidth="12"
                 strokeDasharray={circ}
                 initial={{ strokeDashoffset: circ }}
                 animate={{ strokeDashoffset: offset }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
+                transition={{ duration: 1.8, ease: "circOut" }}
                 strokeLinecap="round"
-                style={{ filter: 'drop-shadow(0 0 8px rgba(139,92,246,0.4))' }}
+                className={cn(pct >= 100 && "animate-pulse")}
+                style={{ filter: `drop-shadow(0 0 12px ${pct >= 100 ? 'rgba(244,63,94,0.5)' : 'rgba(139,92,246,0.4)'})` }}
               />
               <defs>
-                <linearGradient id="dash-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="var(--brand-400)" />
-                  <stop offset="100%" stopColor="var(--brand-600)" />
+                <linearGradient id="alive-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#6366f1" />
+                  <stop offset="50%" stopColor="#a855f7" />
+                  <stop offset="100%" stopColor="#f43f5e" />
                 </linearGradient>
               </defs>
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-black text-white">{pct}%</span>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Done</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+              <motion.span 
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                className="text-5xl font-black text-white tracking-tighter"
+              >
+                {pct}<span className="text-2xl text-slate-500 ml-0.5">%</span>
+              </motion.span>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Complete</span>
             </div>
           </div>
 
@@ -484,14 +498,14 @@ export function Dashboard() {
             </span>
           )}
         </div>
-        <div className="flex items-center justify-between gap-2">
+        <div className="grid grid-cols-5 gap-1">
           {([
-            { score: 1, emoji: '😞', label: 'Rough' },
-            { score: 2, emoji: '😕', label: 'Meh' },
-            { score: 3, emoji: '😐', label: 'Okay' },
-            { score: 4, emoji: '😊', label: 'Good' },
-            { score: 5, emoji: '😄', label: 'Great' },
-          ] as { score: MoodScore; emoji: string; label: string }[]).map(({ score, emoji, label }) => {
+            { score: 1, emoji: '😞', label: 'Rough', color: '#f43f5e' },
+            { score: 2, emoji: '😕', label: 'Meh', color: '#fb923c' },
+            { score: 3, emoji: '😐', label: 'Okay', color: '#facc15' },
+            { score: 4, emoji: '😊', label: 'Good', color: '#4ade80' },
+            { score: 5, emoji: '😄', label: 'Great', color: '#10b981' },
+          ] as { score: MoodScore; emoji: string; label: string; color: string }[]).map(({ score, emoji, label, color }) => {
             const isSelected = todayMood?.score === score;
             return (
               <button
@@ -502,14 +516,35 @@ export function Dashboard() {
                   await logMood(score);
                   setSavingMood(false);
                 }}
-                className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border transition-all active:scale-95 ${
-                  isSelected
-                    ? 'border-brand-500/40 bg-brand-500/10 scale-105'
-                    : 'border-white/5 bg-white/[0.02] hover:border-brand-500/20 hover:bg-brand-500/5'
-                }`}
+                className="flex flex-col items-center group relative py-2"
               >
-                <span className={`text-2xl transition-all ${isSelected ? '' : 'grayscale opacity-60 hover:grayscale-0 hover:opacity-100'}`}>{emoji}</span>
-                <span className={`text-[10px] font-bold ${isSelected ? 'text-brand-400' : 'text-slate-500'}`}>{label}</span>
+                <div 
+                  className={cn(
+                    "mood-ring mb-3",
+                    isSelected && "active animate-mood-bounce"
+                  )}
+                  style={{ '--ring-color': color + '40' } as any}
+                >
+                  <span className={cn(
+                    "text-3xl transition-all duration-300",
+                    isSelected ? "scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" : "grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110"
+                  )}>
+                    {emoji}
+                  </span>
+                  {isSelected && (
+                    <motion.div 
+                      layoutId="mood-glow"
+                      className="absolute inset-0 rounded-full blur-md -z-10"
+                      style={{ background: color + '30' }}
+                    />
+                  )}
+                </div>
+                <span className={cn(
+                  "text-[10px] font-bold tracking-tight transition-colors",
+                  isSelected ? "text-white" : "text-slate-500 group-hover:text-slate-300"
+                )}>
+                  {label}
+                </span>
               </button>
             );
           })}

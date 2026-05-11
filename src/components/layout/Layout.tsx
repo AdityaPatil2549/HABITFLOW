@@ -426,7 +426,7 @@ export function Layout() {
                 {xpStats ? (
                   <div className="mt-1.5 w-full h-1 rounded-full bg-white/10 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
+                      className="xp-bar-fill h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
                       style={{ width: `${xpStats.levelProgress}%` }}
                     />
                   </div>

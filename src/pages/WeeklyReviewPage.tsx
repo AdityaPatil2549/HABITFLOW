@@ -11,6 +11,8 @@ import { ShareCard } from '../components/gamification/ShareCard';
 import { getOrCreateSettings } from '../db';
 import { soundService } from '../services/soundService';
 import { useToast } from '../components/common/Toast';
+import { cn } from '../lib/utils';
+import { motion } from 'framer-motion';
 
 export function WeeklyReviewPage() {
   const { habits, loadHabits } = useHabitStore();
@@ -59,13 +61,11 @@ export function WeeklyReviewPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-12">
-      <div className="text-center py-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Weekly Review</p>
+    <div className="max-w-2xl mx-auto space-y-8 pb-20 pt-4">
+      <div className="text-center relative">
+        <div className="absolute inset-0 blur-3xl opacity-10 bg-brand-500 rounded-full scale-150 -z-10" />
+        <p className="text-xs font-black uppercase tracking-[0.3em] text-brand-400 mb-4 drop-shadow-sm">Weekly Review</p>
         {(() => {
-          // Use real 7-day window: count habits that completed at least once in last 7 days
-          // completionRate30Days * 30 ≈ days completed in 30d, so /30*7 ≈ 7-day completions
-          // Better: use streak.current if ≥1 as proxy for "active this week"
           const activeHabits = habits.filter(h => !h.archived);
           const weeklyDone = activeHabits.filter(h =>
             h.streak.current >= 1 || (h.completionRate30Days * 30) >= 1
@@ -73,74 +73,88 @@ export function WeeklyReviewPage() {
           const pct = activeHabits.length
             ? Math.round((weeklyDone / activeHabits.length) * 100)
             : 0;
-          const { headline, emoji, color } = pct >= 70
-            ? { headline: "You crushed it this week!", emoji: "🔥", color: "text-emerald-400" }
+          const { headline, emoji, colorClass } = pct >= 70
+            ? { headline: "You crushed it this week!", emoji: "🔥", colorClass: "text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400" }
             : pct >= 40
-            ? { headline: "Building momentum!", emoji: "💪", color: "text-brand-400" }
+            ? { headline: "Building momentum!", emoji: "💪", colorClass: "text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400" }
             : activeHabits.length === 0
-            ? { headline: "Let's get started!", emoji: "🌱", color: "text-amber-400" }
-            : { headline: "Tough week — let's reset.", emoji: "🌧️", color: "text-slate-300" };
+            ? { headline: "Let's get started!", emoji: "🌱", colorClass: "text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400" }
+            : { headline: "Tough week — let's reset.", emoji: "🌧️", colorClass: "text-slate-300" };
           return (
             <>
-              <div className="text-5xl mb-3">{emoji}</div>
-              <h1 className={`text-4xl font-bold mb-3 ${color}`}>{headline}</h1>
+              <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-6xl mb-6">{emoji}</motion.div>
+              <h1 className={cn("text-5xl font-black mb-4 tracking-tight leading-tight", colorClass)}>{headline}</h1>
             </>
           );
         })()}
-        <p className="text-slate-400">Here's a look at what you accomplished over the last 7 days.</p>
+        <p className="text-slate-400 text-base font-medium max-w-md mx-auto leading-relaxed italic opacity-80">"Your habits determine your future."</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="glass-card rounded-2xl p-6 text-center border-t-2 border-t-emerald-500/50">
-          <div className="w-12 h-12 mx-auto rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-3">
-            <CheckCircle2 size={24} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <motion.div 
+          initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}
+          whileHover={{ y: -5, scale: 1.02 }}
+          className="glass-card rounded-3xl p-8 text-center relative overflow-hidden group kpi-card-emerald"
+        >
+          <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-125 transition-transform duration-700">
+            <CheckCircle2 size={120} />
           </div>
-          <h3 className="text-3xl font-black text-white mb-1">{tasksDoneThisWeek}</h3>
-          <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Tasks Completed</p>
-        </div>
+          <h3 className="text-6xl font-black text-white mb-2 tracking-tighter">{tasksDoneThisWeek}</h3>
+          <p className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em]">Tasks Completed</p>
+        </motion.div>
 
-        <div className="glass-card rounded-2xl p-6 text-center border-t-2 border-t-amber-500/50">
-          <div className="w-12 h-12 mx-auto rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 mb-3">
-            <Flame size={24} />
+        <motion.div 
+          initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}
+          whileHover={{ y: -5, scale: 1.02 }}
+          className="glass-card rounded-3xl p-8 text-center relative overflow-hidden group kpi-card-amber"
+        >
+          <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-125 transition-transform duration-700">
+            <Flame size={120} />
           </div>
-          <h3 className="text-3xl font-black text-white mb-1">{bestStreak} <span className="text-lg text-slate-500 font-medium">days</span></h3>
-          <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Best Active Streak</p>
-        </div>
+          <h3 className="text-6xl font-black text-white mb-2 tracking-tighter">{bestStreak}</h3>
+          <p className="text-xs font-black text-amber-400 uppercase tracking-[0.2em]">Best Streak (Days)</p>
+        </motion.div>
       </div>
 
-      <div className="glass-card rounded-2xl p-6 space-y-6 mt-6">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <Target className="text-brand-400" /> Habit Check-in
-        </h2>
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+        className="glass-card rounded-3xl p-8 space-y-6 relative overflow-hidden"
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-400">
+            <Target size={20} />
+          </div>
+          <h2 className="text-xl font-black text-white tracking-tight">Habit Insights</h2>
+        </div>
         
         {bestHabit && (
-          <div className="flex gap-4 items-center bg-white/5 rounded-xl p-4 border border-white/5">
-            <div className="text-3xl">🏆</div>
-            <div>
-              <p className="text-sm text-slate-400 font-medium mb-0.5">Most Consistent</p>
-              <p className="text-base font-bold text-white">{bestHabit.name}</p>
+          <div className="group flex gap-5 items-center bg-white/[0.03] hover:bg-white/[0.06] rounded-2xl p-6 border border-white/5 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">🏆</div>
+            <div className="flex-1">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Star Performer</p>
+              <p className="text-lg font-bold text-white leading-tight">{bestHabit.name}</p>
             </div>
-            <div className="ml-auto text-right">
-              <p className="text-xl font-black text-emerald-400">{Math.round(bestHabit.completionRate30Days * 100)}%</p>
-              <p className="text-xs text-slate-500">completion rate</p>
+            <div className="text-right">
+              <p className="text-3xl font-black text-emerald-400 leading-none">{Math.round(bestHabit.completionRate30Days * 100)}%</p>
+              <p className="text-[10px] font-bold text-slate-600 uppercase mt-1">Consistency</p>
             </div>
           </div>
         )}
 
         {strugglingHabit && strugglingHabit.completionRate30Days < 0.5 && (
-          <div className="flex gap-4 items-center bg-white/5 rounded-xl p-4 border border-white/5">
-            <div className="text-3xl">🌱</div>
-            <div>
-              <p className="text-sm text-slate-400 font-medium mb-0.5">Needs Attention</p>
-              <p className="text-base font-bold text-white">{strugglingHabit.name}</p>
+          <div className="group flex gap-5 items-center bg-white/[0.03] hover:bg-white/[0.06] rounded-2xl p-6 border border-white/5 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-rose-500/10 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">🌱</div>
+            <div className="flex-1">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Needs Attention</p>
+              <p className="text-lg font-bold text-white leading-tight">{strugglingHabit.name}</p>
             </div>
-            <div className="ml-auto text-right">
-              <p className="text-xl font-black text-amber-400">{Math.round(strugglingHabit.completionRate30Days * 100)}%</p>
-              <p className="text-xs text-slate-500">completion rate</p>
+            <div className="text-right">
+              <p className="text-3xl font-black text-rose-400 leading-none">{Math.round(strugglingHabit.completionRate30Days * 100)}%</p>
+              <p className="text-[10px] font-bold text-slate-600 uppercase mt-1">Consistency</p>
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {xpData && (
         <div className="glass-card rounded-2xl p-6 text-center mt-6">

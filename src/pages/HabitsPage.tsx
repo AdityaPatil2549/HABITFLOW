@@ -223,33 +223,43 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
     <motion.div
       layout
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-      className="glass-card rounded-2xl overflow-hidden transition-all group"
-      whileHover={{ y: -2, boxShadow: `0 12px 40px ${c}20` }}
+      className={cn(
+        "glass-card rounded-2xl overflow-hidden transition-all group relative border-l-4",
+        done && "opacity-75 grayscale-[0.3]"
+      )}
+      style={{ borderLeftColor: c }}
+      whileHover={{ y: -4, boxShadow: `0 20px 40px ${c}25` }}
     >
+      {/* Background glow when hovered */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
       {/* Progress bar top */}
-      <div className="h-0.5 w-full bg-white/5">
+      <div className="h-0.5 w-full bg-white/5 relative z-10">
         <motion.div className="h-full" style={{ background: `linear-gradient(90deg, ${c}, ${c}99)` }}
           initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
       </div>
 
-      <div className="p-5">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="p-5 relative z-10">
+        <div className="flex items-center gap-4 mb-4">
           {/* Check button */}
           <motion.button onClick={() => onLogClick(habit)}
             whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-            className="w-12 h-12 rounded-2xl border-2 flex items-center justify-center text-xl flex-shrink-0 transition-all"
+            className={cn(
+              "w-14 h-14 rounded-2xl border-2 flex items-center justify-center text-2xl flex-shrink-0 transition-all",
+              done && "animate-check-pop"
+            )}
             style={done
-              ? { background: habit.todayLog?.isFrozen ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #06b6d4)', borderColor: 'transparent', boxShadow: habit.todayLog?.isFrozen ? '0 4px 16px rgba(59,130,246,0.3)' : '0 4px 16px rgba(16,185,129,0.3)' }
-              : { borderColor: `${c}60`, background: `${c}10` }}>
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center text-white">
-              {done ? (habit.todayLog?.isFrozen ? <Snowflake size={20} /> : '✓') : <IconRenderer name={habit.icon} size={20} color={c} />}
+              ? { background: habit.todayLog?.isFrozen ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : `linear-gradient(135deg, ${c}, ${c}dd)`, borderColor: 'transparent', boxShadow: `0 8px 20px ${c}40` }
+              : { borderColor: `${c}40`, background: `${c}08` }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white">
+              {done ? (habit.todayLog?.isFrozen ? <Snowflake size={24} /> : '✓') : <IconRenderer name={habit.icon} size={24} color={c} />}
             </div>
           </motion.button>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
             <button
-              className={cn('font-semibold text-sm truncate w-full text-left hover:underline transition-all', done ? 'line-through text-slate-500' : 'text-white')}
+              className={cn('font-bold text-base truncate w-full text-left hover:text-brand-300 transition-all block', done ? 'line-through text-slate-500' : 'text-white')}
               onClick={() => {
                 setShowHistory(v => {
                   if (!v) loadHistory();
@@ -260,24 +270,24 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
             >
               {habit.name}
             </button>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${c}15`, color: c }}>{habit.category}</span>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md" style={{ background: `${c}20`, color: c }}>{habit.category}</span>
               {habit.streak.current > 0 && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-amber-400">
-                  <Flame size={10} className="animate-pulse" /> {habit.streak.current}d
+                <span className="flex items-center gap-1 text-xs font-black text-amber-400 animate-flame">
+                  <Flame size={12} fill="currentColor" /> {habit.streak.current}d
                 </span>
               )}
             </div>
           </div>
 
           {/* Best streak + expand */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
-              <p className="text-[10px] text-slate-500">Best</p>
-              <p className="text-sm font-bold text-white">{habit.streak.best}d</p>
+              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Best</p>
+              <p className="text-lg font-black text-white leading-none">{habit.streak.best}d</p>
             </div>
-            <button onClick={() => setShowDetails(v => !v)} className="p-1.5 rounded-xl hover:bg-white/10 text-slate-400 transition-colors">
-              <ChevronRight size={15} className={cn('transition-transform', showDetails && 'rotate-90')} />
+            <button onClick={() => setShowDetails(v => !v)} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-slate-500 transition-colors">
+              <ChevronRight size={18} className={cn('transition-transform', showDetails && 'rotate-90')} />
             </button>
           </div>
         </div>
@@ -606,15 +616,24 @@ export function HabitsPage() {
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Today', value: `${done}/${scheduled.length}`, sub: 'habits done', icon: '✅' },
-          { label: 'Best Streak', value: `${bestStreak}d`, sub: 'all time', icon: '🏆' },
-          { label: 'Completion', value: `${pct}%`, sub: isToday ? 'today' : 'that day', icon: '📈' },
+          { label: 'Today', value: `${done}/${scheduled.length}`, sub: 'habits done', icon: '✅', class: 'kpi-card-indigo' },
+          { label: 'Best Streak', value: `${bestStreak}d`, sub: 'all time', icon: '🏆', class: 'kpi-card-amber' },
+          { label: 'Completion', value: `${pct}%`, sub: isToday ? 'today' : 'that day', icon: '📈', class: 'kpi-card-emerald' },
         ].map(k => (
-          <div key={k.label} className="glass-card rounded-2xl p-4 text-center">
-            <span className="text-2xl">{k.icon}</span>
-            <p className="text-xl font-bold text-white mt-2">{k.value}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{k.sub}</p>
-          </div>
+          <motion.div 
+            key={k.label} 
+            whileHover={{ y: -4, scale: 1.02 }}
+            className={cn("glass-card rounded-2xl p-6 text-center relative overflow-hidden group", k.class)}
+          >
+            {/* Background Icon */}
+            <span className="absolute -right-2 -bottom-2 text-6xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
+              {k.icon}
+            </span>
+            
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">{k.label}</p>
+            <p className="text-4xl font-black text-white tracking-tight mb-1">{k.value}</p>
+            <p className="text-[10px] font-medium text-slate-500 uppercase">{k.sub}</p>
+          </motion.div>
         ))}
       </div>
 

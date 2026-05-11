@@ -3,6 +3,8 @@ import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
 import { useMoodStore } from '../store/moodStore';
 import { db } from '../db';
+import { cn } from '../lib/utils';
+import { motion } from 'framer-motion';
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -399,17 +401,19 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
   );
 }
 
-// ─── Stat Card ─────────────────────────────────────────────────
-function StatCard({ icon, label, value, sub, color = '#818cf8' }: { icon: string; label: string; value: string | number; sub?: string; color?: string }) {
+function StatCard({ icon, label, value, sub, colorClass = 'kpi-card-indigo', iconColor = '#818cf8' }: { icon: string; label: string; value: string | number; sub?: string; colorClass?: string; iconColor?: string }) {
   return (
-    <div className="glass-card glow-border rounded-2xl p-5 flex flex-col gap-2 hover:-translate-y-1 transition-transform cursor-default">
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: `${color}18` }}>
+    <motion.div 
+      whileHover={{ y: -4, scale: 1.02 }}
+      className={cn("glass-card rounded-2xl p-6 text-center relative overflow-hidden group", colorClass)}
+    >
+      <span className="absolute -right-2 -bottom-2 text-6xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
         {icon}
-      </div>
-      <p className="text-xs text-slate-400 font-medium mt-1">{label}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
-      {sub && <p className="text-xs text-slate-500">{sub}</p>}
-    </div>
+      </span>
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">{label}</p>
+      <p className="text-3xl font-black text-white tracking-tight mb-1">{value}</p>
+      {sub && <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider opacity-60">{sub}</p>}
+    </motion.div>
   );
 }
 
@@ -580,10 +584,10 @@ export function AnalyticsPage() {
         <div className="space-y-6">
           {/* KPI row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard icon="🔥" label="Active Habits" value={habits.filter(h => !h.archived).length} sub="tracking now" color="#f97316" />
-            <StatCard icon="🏆" label="Best Streak" value={bestStreak ? `${bestStreak}d` : '—'} sub="all time" color="#f59e0b" />
-            <StatCard icon="✅" label="Tasks Done" value={tasksDone} sub={`of ${tasks.length} total`} color="#10b981" />
-            <StatCard icon="📈" label="30d Avg" value={avgCompletion ? `${avgCompletion}%` : '—'} sub="completion rate" color="#818cf8" />
+            <StatCard icon="🔥" label="Active Habits" value={habits.filter(h => !h.archived).length} sub="tracking now" colorClass="kpi-card-amber" />
+            <StatCard icon="🏆" label="Best Streak" value={bestStreak ? `${bestStreak}d` : '—'} sub="all time" colorClass="kpi-card-indigo" />
+            <StatCard icon="✅" label="Tasks Done" value={tasksDone} sub={`of ${tasks.length} total`} colorClass="kpi-card-emerald" />
+            <StatCard icon="📈" label="30d Avg" value={avgCompletion ? `${avgCompletion}%` : '—'} sub="completion rate" colorClass="kpi-card-indigo" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -643,10 +647,10 @@ export function AnalyticsPage() {
               {selectedHabit && (
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <StatCard icon="🔥" label="Current Streak" value={`${selectedHabit.streak.current}d`} color="#f97316" />
-                    <StatCard icon="🏆" label="Best Streak" value={`${selectedHabit.streak.best}d`} color="#f59e0b" />
-                    <StatCard icon="📈" label="30d Completion" value={`${Math.round(selectedHabit.completionRate30Days * 100)}%`} color="#818cf8" />
-                    <StatCard icon="📅" label="Since" value={selectedHabit.startDate} color="#10b981" />
+                    <StatCard icon="🔥" label="Current Streak" value={`${selectedHabit.streak.current}d`} colorClass="kpi-card-amber" />
+                    <StatCard icon="🏆" label="Best Streak" value={`${selectedHabit.streak.best}d`} colorClass="kpi-card-indigo" />
+                    <StatCard icon="📈" label="30d Completion" value={`${Math.round(selectedHabit.completionRate30Days * 100)}%`} colorClass="kpi-card-indigo" />
+                    <StatCard icon="📅" label="Since" value={selectedHabit.startDate} colorClass="kpi-card-emerald" />
                   </div>
 
                   <ChartCard title={`${selectedHabit.icon} ${selectedHabit.name} — Completion Heatmap`} subtitle="Last 26 weeks">
@@ -663,10 +667,10 @@ export function AnalyticsPage() {
       {tab === 'Tasks' && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard icon="📋" label="Total Tasks" value={tasks.length} color="#818cf8" />
-            <StatCard icon="✅" label="Completed" value={tasksDone} color="#10b981" />
-            <StatCard icon="⏳" label="Pending" value={tasks.filter(t => !t.completed).length} color="#f59e0b" />
-            <StatCard icon="🔴" label="Urgent" value={tasks.filter(t => t.priority === 0 && !t.completed).length} color="#ef4444" />
+            <StatCard icon="📋" label="Total Tasks" value={tasks.length} colorClass="kpi-card-indigo" />
+            <StatCard icon="✅" label="Completed" value={tasksDone} colorClass="kpi-card-emerald" />
+            <StatCard icon="⏳" label="Pending" value={tasks.filter(t => !t.completed).length} colorClass="kpi-card-amber" />
+            <StatCard icon="🔴" label="Urgent" value={tasks.filter(t => t.priority === 0 && !t.completed).length} colorClass="kpi-card-rose" />
           </div>
           <ChartCard title="Task Throughput" subtitle="Created vs. completed per week (last 8 weeks)">
             {tasks.length > 0 ? <TaskThroughput tasks={tasks} /> : <EmptyChart />}

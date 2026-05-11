@@ -151,87 +151,82 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
       <motion.div
         layout
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
-        className="group relative rounded-2xl transition-all"
-        style={{
-          background: task.completed
-            ? 'rgba(255,255,255,0.02)'
-            : `linear-gradient(135deg, ${pc.bg}, rgba(255,255,255,0.02))`,
-          border: task.completed
-            ? '1px solid rgba(255,255,255,0.04)'
-            : `1px solid ${pc.border}`,
-          boxShadow: task.completed ? 'none' : `0 2px 12px ${pc.color}10`,
-        }}
-        whileHover={!task.completed ? { y: -1, boxShadow: `0 8px 24px ${pc.color}20` } : {}}
+        className={cn(
+          "group relative rounded-2xl transition-all border-l-4 overflow-hidden",
+          task.completed ? "glass-card opacity-60 grayscale-[0.5]" : "glass-card shadow-lg"
+        )}
+        style={{ borderLeftColor: task.completed ? 'transparent' : pc.color }}
+        whileHover={!task.completed ? { y: -2, boxShadow: `0 12px 24px ${pc.color}15` } : {}}
       >
-        {/* Priority accent — left bar */}
-        <div className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full" style={{ background: task.completed ? 'transparent' : pc.color, marginLeft: 12, boxShadow: task.completed ? 'none' : `0 0 8px ${pc.color}` }} />
-
-      <div className="flex items-center gap-3 px-4 py-3 pl-6">
-        {/* Check */}
-        <motion.button
-          onClick={() => updateTask(task.id, { completed: !task.completed, completedAt: !task.completed ? new Date().toISOString() : undefined })}
-          whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
-          className="flex-shrink-0"
-        >
-          {task.completed
-            ? <CheckCircle2 size={20} className="text-emerald-400" />
-            : <Circle size={20} style={{ color: pc.color }} />}
-        </motion.button>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <p className={cn('text-sm font-medium truncate', task.completed ? 'line-through text-slate-500' : 'text-white')}>
-            {task.title}
-          </p>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            {task.dueDate && (
-              <span className={cn('flex items-center gap-1 text-xs', isOverdue ? 'text-red-400' : 'text-slate-500')}>
-                <Calendar size={10} /> {isOverdue && '⚠ '}{task.dueDate}
-              </span>
+        <div className="flex items-center gap-4 px-5 py-4">
+          {/* Check */}
+          <motion.button
+            onClick={() => updateTask(task.id, { completed: !task.completed, completedAt: !task.completed ? new Date().toISOString() : undefined })}
+            whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}
+            className={cn(
+              "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+              task.completed ? "bg-emerald-500 border-emerald-500 text-white animate-check-pop" : "border-slate-600 hover:border-white/40"
             )}
-            {task.labels.map(l => (
-              <span key={l} className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20">
-                <Tag size={8} /> {l}
-              </span>
-            ))}
-            {task.recurring !== 'none' && (
-              <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                <RotateCcw size={8} /> {task.recurring}
-              </span>
+            style={!task.completed ? { color: pc.color, borderColor: `${pc.color}60` } : {}}
+          >
+            {task.completed && <CheckCircle2 size={14} />}
+          </motion.button>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <p className={cn('text-sm font-bold tracking-tight', task.completed ? 'line-through text-slate-500' : 'text-white')}>
+              {task.title}
+            </p>
+            <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
+              {task.dueDate && (
+                <span className={cn('flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider', isOverdue ? 'text-red-400' : 'text-slate-500')}>
+                  <Calendar size={10} /> {task.dueDate}
+                </span>
+              )}
+              {task.labels.map(l => (
+                <span key={l} className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20">
+                  {l}
+                </span>
+              ))}
+              {task.recurring !== 'none' && (
+                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                  <RotateCcw size={8} /> {task.recurring}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Priority badge */}
+          <span className="hidden sm:flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-xl flex-shrink-0 border transition-all"
+            style={{ background: `${pc.color}10`, color: pc.color, borderColor: `${pc.color}20` }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: pc.color }} />
+            {pc.label}
+          </span>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {!task.completed && (
+              <button 
+                onClick={() => startFocus({ id: task.id, title: task.title, type: 'task' })} 
+                className="w-8 h-8 rounded-full hover:bg-brand-500/20 text-slate-500 hover:text-brand-400 transition-colors flex items-center justify-center"
+                title="Start Focus"
+              >
+                <Timer size={14} />
+              </button>
             )}
+            {subtasks.length > 0 && (
+              <button onClick={() => setExpanded(v => !v)} className="w-8 h-8 rounded-full hover:bg-white/10 text-slate-500 flex items-center justify-center">
+                {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              </button>
+            )}
+            <button onClick={() => setEditing(true)} className="w-8 h-8 rounded-full hover:bg-white/10 text-slate-500 hover:text-white transition-colors flex items-center justify-center">
+              <Edit2 size={14} />
+            </button>
+            <button onClick={() => deleteTask(task.id)} className="w-8 h-8 rounded-full hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors flex items-center justify-center">
+              <Trash2 size={14} />
+            </button>
           </div>
         </div>
-
-        {/* Priority badge */}
-        <span className="hidden sm:flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0"
-          style={{ background: pc.bg, color: pc.color, border: `1px solid ${pc.border}` }}>
-          {pc.label}
-        </span>
-
-        {/* Actions */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {!task.completed && (
-            <button 
-              onClick={() => startFocus({ id: task.id, title: task.title, type: 'task' })} 
-              className="p-1.5 rounded-lg hover:bg-brand-500/10 text-slate-400 hover:text-brand-400 transition-colors"
-              title="Start Focus Mode"
-            >
-              <Timer size={13} />
-            </button>
-          )}
-          {subtasks.length > 0 && (
-            <button onClick={() => setExpanded(v => !v)} className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400">
-              {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </button>
-          )}
-          <button onClick={() => setEditing(true)} className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
-            <Edit2 size={13} />
-          </button>
-          <button onClick={() => deleteTask(task.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-colors">
-            <Trash2 size={13} />
-          </button>
-        </div>
-      </div>
 
       <AnimatePresence>
         {expanded && subtasks.map(st => <TaskItem key={st.id} task={st} depth={depth + 1} />)}
@@ -287,19 +282,21 @@ export function TasksPage() {
       {/* KPI row */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Due Today', value: totalToday, icon: <Clock size={16} />, color: '#818cf8', bg: 'rgba(129,140,248,0.1)' },
-          { label: 'Completed', value: doneToday, icon: <CheckCircle2 size={16} />, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
-          { label: 'Urgent', value: urgent, icon: <Zap size={16} />, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+          { label: 'Due Today', value: totalToday, icon: '📅', class: 'kpi-card-indigo' },
+          { label: 'Completed', value: doneToday, icon: '✅', class: 'kpi-card-emerald' },
+          { label: 'Urgent', value: urgent, icon: '🔥', class: 'kpi-card-rose' },
         ].map(k => (
-          <div key={k.label} className="glass-card rounded-2xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: k.bg, color: k.color }}>
+          <motion.div 
+            key={k.label} 
+            whileHover={{ y: -4, scale: 1.02 }}
+            className={cn("glass-card rounded-2xl p-6 text-center relative overflow-hidden group", k.class)}
+          >
+            <span className="absolute -right-2 -bottom-2 text-6xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
               {k.icon}
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{k.value}</p>
-              <p className="text-xs text-slate-400">{k.label}</p>
-            </div>
-          </div>
+            </span>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">{k.label}</p>
+            <p className="text-4xl font-black text-white tracking-tight mb-1">{k.value}</p>
+          </motion.div>
         ))}
       </div>
 
