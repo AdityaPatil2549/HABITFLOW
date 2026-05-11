@@ -353,7 +353,7 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => startFocus({ id: habit.id, title: habit.name, type: 'habit' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors">
+                  <button onClick={() => (window as any).__openFocusPicker?.({ id: habit.id, title: habit.name, type: 'habit' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors">
                     <Timer size={11} /> Focus
                   </button>
                   <button onClick={() => onEdit(habit)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">

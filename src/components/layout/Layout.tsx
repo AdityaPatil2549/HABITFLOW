@@ -346,7 +346,7 @@ export function Layout() {
           <button
             onClick={() => {
               if (focusActive) { stopFocus(); }
-              else { startFocus({ id: 'quick', title: 'Quick Focus Session', type: 'habit' }); }
+              else { (window as any).__openFocusPicker?.(); }
             }}
             className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 relative overflow-hidden ${
               focusActive
@@ -470,7 +470,7 @@ export function Layout() {
         <button
           onClick={() => {
             if (focusActive) stopFocus();
-            else startFocus({ id: 'quick', title: 'Quick Focus Session', type: 'habit' });
+            else (window as any).__openFocusPicker?.();
           }}
           className={`flex flex-col items-center gap-1 transition-colors ${
             focusActive ? 'text-red-400' : 'text-slate-500 hover:text-brand-400'

@@ -207,7 +207,7 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {!task.completed && (
               <button 
-                onClick={() => startFocus({ id: task.id, title: task.title, type: 'task' })} 
+                onClick={() => (window as any).__openFocusPicker?.({ id: task.id, title: task.title, type: 'task' })} 
                 className="w-8 h-8 rounded-full hover:bg-brand-500/20 text-slate-500 hover:text-brand-400 transition-colors flex items-center justify-center"
                 title="Start Focus"
               >

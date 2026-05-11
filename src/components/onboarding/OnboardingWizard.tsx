@@ -4,8 +4,7 @@ import { useHabitStore } from '../../store/habitStore';
 import { useProfileStore } from '../../store/profileStore';
 import { format } from 'date-fns';
 import {
-  ArrowRight, Check, Sparkles, Heart, Brain, Briefcase,
-  TrendingUp, Smile, ChevronRight, Flame
+  ArrowRight, Check, Sparkles, ChevronRight, Flame
 } from 'lucide-react';
 
 const ONBOARDING_KEY = 'habitflow_onboarding_done';
@@ -99,10 +98,8 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
     setAdding(true);
     const today = format(new Date(), 'yyyy-MM-dd');
 
-    // Save profile name
     if (name.trim()) saveProfile({ name: name.trim() });
 
-    // Add selected habits
     const templates = GOAL_TEMPLATES[goal].habits;
     for (let i = 0; i < templates.length; i++) {
       if (!selected[i]) continue;
@@ -127,246 +124,281 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
 
   const STEPS = ['Welcome', 'Your Goal', 'Your Habits', 'Ready!'];
 
-  // Step-based backgrounds
-  const BACKGROUNDS = [
-    'radial-gradient(ellipse at 40% 20%, rgba(99,102,241,0.15) 0%, #020617 70%)', // Welcome: Indigo
-    'radial-gradient(ellipse at 40% 20%, rgba(139,92,246,0.15) 0%, #020617 70%)', // Goal: Violet
-    'radial-gradient(ellipse at 40% 20%, rgba(16,185,129,0.12) 0%, #020617 70%)', // Habits: Emerald
-    'radial-gradient(ellipse at 40% 20%, rgba(245,158,11,0.12) 0%, #020617 70%)', // Done: Amber
+  const STEP_COLORS = [
+    'rgba(99,102,241,0.15)',
+    'rgba(139,92,246,0.15)',
+    'rgba(16,185,129,0.12)',
+    'rgba(245,158,11,0.12)',
   ];
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+      {/* Full-screen backdrop */}
+      <div
         style={{
           position: 'fixed',
           inset: 0,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
           zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: BACKGROUNDS[step] || BACKGROUNDS[0],
-          transition: 'background 1s ease-in-out',
+          backgroundColor: '#020617',
+          backgroundImage: `radial-gradient(ellipse at 40% 20%, ${STEP_COLORS[step]} 0%, transparent 70%)`,
           overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        {/* Background orbs */}
-        <div style={{ position: 'absolute', top: 40, left: '33%', width: 384, height: 384, borderRadius: '50%', background: 'rgba(99,102,241,0.05)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: 80, right: '25%', width: 256, height: 256, borderRadius: '50%', background: 'rgba(139,92,246,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+        {/* Decorative orbs */}
+        <div style={{ position: 'fixed', top: 40, left: '33%', width: 384, height: 384, borderRadius: '50%', background: 'rgba(99,102,241,0.05)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'fixed', bottom: 80, right: '25%', width: 256, height: 256, borderRadius: '50%', background: 'rgba(139,92,246,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
-        <div className="relative z-10 w-full max-w-lg mx-auto px-6">
+        {/* Centered content wrapper */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
+          <div style={{ width: '100%', maxWidth: 480, position: 'relative', zIndex: 10 }}>
 
-          {/* Progress steps */}
-          <div className="flex items-center gap-2 justify-center mb-10">
-            {STEPS.map((s, i) => (
-              <div key={s} className="flex items-center gap-2">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 ${
-                  i < step ? 'bg-emerald-500 text-white' :
-                  i === step ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/40' :
-                  'bg-white/5 text-slate-500'
-                }`}>
-                  {i < step ? <Check size={13} /> : i + 1}
-                </div>
-                {i < STEPS.length - 1 && (
-                  <div className={`w-8 h-0.5 rounded-full transition-all duration-500 ${i < step ? 'bg-emerald-500' : 'bg-white/8'}`} />
-                )}
-              </div>
-            ))}
-          </div>
-
-          <AnimatePresence mode="wait">
-
-            {/* ── Step 0: Welcome ── */}
-            {step === 0 && (
-              <motion.div key="welcome"
-                initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }}
-                className="text-center space-y-8"
-              >
-                <div>
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center text-4xl shadow-2xl shadow-brand-500/30">
-                    🌟
+            {/* Progress indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
+              {STEPS.map((s, i) => (
+                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 12, fontWeight: 900, transition: 'all 0.3s',
+                    background: i < step ? '#10b981' : i === step ? '#6366f1' : 'rgba(255,255,255,0.06)',
+                    color: i <= step ? 'white' : '#64748b',
+                    boxShadow: i === step ? '0 0 20px rgba(99,102,241,0.4)' : 'none',
+                  }}>
+                    {i < step ? <Check size={13} /> : i + 1}
                   </div>
-                  <h1 className="text-4xl font-black text-white mb-3">Welcome to<br />
-                    <span className="bg-gradient-to-r from-brand-400 to-violet-400 bg-clip-text text-transparent">HabitFlow</span>
+                  {i < STEPS.length - 1 && (
+                    <div style={{
+                      width: 32, height: 2, borderRadius: 1, transition: 'all 0.5s',
+                      background: i < step ? '#10b981' : 'rgba(255,255,255,0.08)',
+                    }} />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <AnimatePresence mode="wait">
+
+              {/* ── Step 0: Welcome ── */}
+              {step === 0 && (
+                <motion.div key="welcome"
+                  initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }}
+                  style={{ textAlign: 'center' }}
+                >
+                  <div style={{
+                    width: 80, height: 80, margin: '0 auto 24px',
+                    borderRadius: 24, fontSize: 36,
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 20px 60px rgba(99,102,241,0.3)',
+                  }}>🌟</div>
+
+                  <h1 style={{ fontSize: 36, fontWeight: 900, color: 'white', marginBottom: 12, lineHeight: 1.15 }}>
+                    Welcome to{' '}
+                    <span style={{ background: 'linear-gradient(to right, #818cf8, #c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                      HabitFlow
+                    </span>
                   </h1>
-                  <p className="text-slate-400 text-base leading-relaxed">
-                    Build powerful daily routines with a system that actually works.<br />
-                    Let's get you set up in 60 seconds.
+                  <p style={{ color: '#94a3b8', fontSize: 16, lineHeight: 1.6, marginBottom: 32 }}>
+                    Build powerful daily routines with a system that actually works. Let's get you set up in 60 seconds.
                   </p>
-                </div>
 
-                <div className="space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">What should we call you?</p>
-                  <input
-                    type="text"
-                    placeholder="Your name…"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && setStep(1)}
-                    autoFocus
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white text-lg font-semibold placeholder-slate-600 outline-none focus:border-brand-500/50 focus:bg-brand-500/5 transition-all text-center"
-                  />
-                </div>
-
-                <button
-                  onClick={() => setStep(1)}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-500 to-violet-600 text-white font-bold text-base shadow-2xl shadow-brand-500/30 hover:shadow-brand-500/40 active:scale-95 transition-all flex items-center justify-center gap-3"
-                >
-                  {name.trim() ? `Let's go, ${name.split(' ')[0]}!` : "Let's get started"} <ArrowRight size={20} />
-                </button>
-
-                <button onClick={onComplete} className="text-xs text-slate-600 hover:text-slate-400 transition-colors">
-                  Skip setup
-                </button>
-              </motion.div>
-            )}
-
-            {/* ── Step 1: Goal Selection ── */}
-            {step === 1 && (
-              <motion.div key="goal"
-                initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }}
-                className="space-y-6"
-              >
-                <div className="text-center">
-                  <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Step 2 of 4</p>
-                  <h2 className="text-3xl font-black text-white mb-2">What's your main goal?</h2>
-                  <p className="text-slate-400 text-sm">We'll suggest the perfect starter habits for you.</p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  {(Object.entries(GOAL_TEMPLATES) as [GoalKey, typeof GOAL_TEMPLATES[GoalKey]][]).map(([key, t]) => (
-                    <button
-                      key={key}
-                      onClick={() => {
-                        setGoal(key);
-                        setSelected([true, true, true]); // Reset selection for new goal
-                        setStep(2);
+                  <div style={{ marginBottom: 24 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', color: '#64748b', textTransform: 'uppercase', marginBottom: 12 }}>
+                      What should we call you?
+                    </p>
+                    <input
+                      type="text"
+                      placeholder="Your name…"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && setStep(1)}
+                      autoFocus
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 16, padding: '16px 20px', color: 'white', fontSize: 18,
+                        fontWeight: 600, textAlign: 'center', outline: 'none',
+                        transition: 'border-color 0.2s',
                       }}
-                      className={`flex items-center gap-4 p-4 rounded-2xl border text-left transition-all active:scale-98 hover:scale-[1.01] ${
-                        goal === key
-                          ? 'border-brand-500/40 bg-brand-500/10'
-                          : 'border-white/8 bg-white/[0.03] hover:border-white/15 hover:bg-white/5'
-                      }`}
-                    >
-                      <span className="text-3xl flex-shrink-0">{t.icon}</span>
-                      <div className="flex-1">
-                        <p className="font-bold text-white">{t.label}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{t.habits.map(h => h.name.split(' ').slice(0, 3).join(' ')).join(' · ')}</p>
-                      </div>
-                      <ChevronRight size={18} className="text-slate-500 flex-shrink-0" />
-                    </button>
-                  ))}
-                </div>
+                      onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
+                      onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                    />
+                  </div>
 
-                <div className="pt-4 flex justify-center">
-                  <button onClick={() => setStep(0)} className="text-xs font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest transition-colors flex items-center gap-2">
-                    ← Back to Welcome
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* ── Step 2: Habit Selection ── */}
-            {step === 2 && selectedGoal && (
-              <motion.div key="habits"
-                initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }}
-                className="space-y-6"
-              >
-                <div className="text-center">
-                  <span className="text-4xl">{selectedGoal.icon}</span>
-                  <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mt-2 mb-1">Step 3 of 4</p>
-                  <h2 className="text-3xl font-black text-white mb-2">Your starter habits</h2>
-                  <p className="text-slate-400 text-sm">Tap to toggle — start with all 3, or pick your favourites.</p>
-                </div>
-
-                <div className="space-y-3">
-                  {selectedGoal.habits.map((h, i) => (
-                    <button
-                      key={h.name}
-                      onClick={() => setSelected(s => s.map((v, idx) => idx === i ? !v : v))}
-                      className={`w-full flex items-center gap-4 p-4 rounded-2xl border text-left transition-all active:scale-98 ${
-                        selected[i]
-                          ? 'border-emerald-500/30 bg-emerald-500/8'
-                          : 'border-white/8 bg-white/[0.02] opacity-50'
-                      }`}
-                    >
-                      <div
-                        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ background: h.color + '20', color: h.color }}
-                      >
-                        {selected[i] ? <Check size={20} /> : <span className="text-lg opacity-50">○</span>}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-bold text-white text-sm">{h.name}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{h.category} · Daily</p>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selected[i] ? 'bg-emerald-500 border-emerald-500' : 'border-white/20'
-                      }`}>
-                        {selected[i] && <Check size={11} className="text-white" />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-3">
-                  <button onClick={() => setStep(1)} className="px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">
-                    ← Back
-                  </button>
                   <button
-                    onClick={handleFinish}
-                    disabled={adding || !selected.some(Boolean)}
-                    className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-brand-500 to-violet-600 text-white font-bold text-sm shadow-xl shadow-brand-500/30 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    onClick={() => setStep(1)}
+                    style={{
+                      width: '100%', padding: '16px 24px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white',
+                      fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', gap: 12, boxShadow: '0 20px 60px rgba(99,102,241,0.3)',
+                      marginBottom: 16, transition: 'opacity 0.2s',
+                    }}
                   >
-                    {adding ? (
-                      <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Adding habits…</>
-                    ) : (
-                      <><Flame size={18} /> Add {selected.filter(Boolean).length} Habit{selected.filter(Boolean).length !== 1 ? 's' : ''} & Start!</>
-                    )}
+                    {name.trim() ? `Let's go, ${name.split(' ')[0]}!` : "Let's get started"} <ArrowRight size={20} />
                   </button>
-                </div>
-              </motion.div>
-            )}
 
-            {/* ── Step 3: Done ── */}
-            {step === 3 && (
-              <motion.div key="done"
-                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-                className="text-center space-y-6 py-8"
-              >
-                <motion.div
-                  initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-400 to-brand-500 flex items-center justify-center text-5xl shadow-2xl shadow-emerald-500/40"
-                >
-                  🎉
+                  <button onClick={onComplete} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 12, transition: 'color 0.2s' }}>
+                    Skip setup
+                  </button>
                 </motion.div>
-                <div>
-                  <h2 className="text-3xl font-black text-white mb-2">You're all set!</h2>
-                  <p className="text-slate-400">Your habits are ready. Day 1 starts now.</p>
-                </div>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="flex items-center justify-center gap-2 text-amber-400 font-bold"
-                >
-                  <Sparkles size={18} />
-                  <span>+10 XP bonus for setting up!</span>
-                </motion.div>
-              </motion.div>
-            )}
+              )}
 
-          </AnimatePresence>
+              {/* ── Step 1: Goal Selection ── */}
+              {step === 1 && (
+                <motion.div key="goal"
+                  initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }}
+                >
+                  <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: '#818cf8', textTransform: 'uppercase', marginBottom: 8 }}>Step 2 of 4</p>
+                    <h2 style={{ fontSize: 30, fontWeight: 900, color: 'white', marginBottom: 8 }}>What's your main goal?</h2>
+                    <p style={{ color: '#64748b', fontSize: 14 }}>We'll suggest the perfect starter habits for you.</p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+                    {(Object.entries(GOAL_TEMPLATES) as [GoalKey, typeof GOAL_TEMPLATES[GoalKey]][]).map(([key, t]) => (
+                      <button
+                        key={key}
+                        onClick={() => { setGoal(key); setSelected([true, true, true]); setStep(2); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 16, padding: 16,
+                          borderRadius: 16, border: `1px solid ${goal === key ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                          background: goal === key ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.03)',
+                          cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', width: '100%',
+                        }}
+                      >
+                        <span style={{ fontSize: 28, flexShrink: 0 }}>{t.icon}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontWeight: 700, color: 'white', marginBottom: 4 }}>{t.label}</p>
+                          <p style={{ fontSize: 12, color: '#64748b' }}>
+                            {t.habits.map(h => h.name.split(' ').slice(0, 3).join(' ')).join(' · ')}
+                          </p>
+                        </div>
+                        <ChevronRight size={18} color="#64748b" style={{ flexShrink: 0 }} />
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <button onClick={() => setStep(0)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                      ← Back
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── Step 2: Habit Selection ── */}
+              {step === 2 && selectedGoal && (
+                <motion.div key="habits"
+                  initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -24 }}
+                >
+                  <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                    <span style={{ fontSize: 40 }}>{selectedGoal.icon}</span>
+                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: '#818cf8', textTransform: 'uppercase', margin: '8px 0 4px' }}>Step 3 of 4</p>
+                    <h2 style={{ fontSize: 28, fontWeight: 900, color: 'white', marginBottom: 8 }}>Your starter habits</h2>
+                    <p style={{ color: '#64748b', fontSize: 14 }}>Tap to toggle — start with all 3, or pick your favourites.</p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+                    {selectedGoal.habits.map((h, i) => (
+                      <button
+                        key={h.name}
+                        onClick={() => setSelected(s => s.map((v, idx) => idx === i ? !v : v))}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 16, padding: 16, width: '100%',
+                          borderRadius: 16, border: `1px solid ${selected[i] ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                          background: selected[i] ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)',
+                          cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
+                          opacity: selected[i] ? 1 : 0.5,
+                        }}
+                      >
+                        <div style={{
+                          width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: h.color + '20', color: h.color, flexShrink: 0, fontSize: 18,
+                        }}>
+                          {selected[i] ? <Check size={20} color={h.color} /> : '○'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontWeight: 700, color: 'white', fontSize: 14, marginBottom: 4 }}>{h.name}</p>
+                          <p style={{ fontSize: 12, color: '#64748b' }}>{h.category} · Daily</p>
+                        </div>
+                        <div style={{
+                          width: 20, height: 20, borderRadius: '50%', border: `2px solid ${selected[i] ? '#10b981' : 'rgba(255,255,255,0.2)'}`,
+                          background: selected[i] ? '#10b981' : 'transparent', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          {selected[i] && <Check size={11} color="white" />}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <button
+                      onClick={() => setStep(1)}
+                      style={{
+                        padding: '14px 20px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', fontWeight: 600,
+                        fontSize: 14, cursor: 'pointer', transition: 'background 0.2s',
+                      }}
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      onClick={handleFinish}
+                      disabled={adding || !selected.some(Boolean)}
+                      style={{
+                        flex: 1, padding: '14px 20px', borderRadius: 14, border: 'none', cursor: adding ? 'not-allowed' : 'pointer',
+                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white',
+                        fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', gap: 8, opacity: adding || !selected.some(Boolean) ? 0.5 : 1,
+                        boxShadow: '0 12px 40px rgba(99,102,241,0.3)',
+                      }}
+                    >
+                      {adding ? (
+                        <><span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Adding habits…</>
+                      ) : (
+                        <><Flame size={18} /> Add {selected.filter(Boolean).length} Habit{selected.filter(Boolean).length !== 1 ? 's' : ''} & Start!</>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── Step 3: Done ── */}
+              {step === 3 && (
+                <motion.div key="done"
+                  initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                  style={{ textAlign: 'center', padding: '32px 0' }}
+                >
+                  <motion.div
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    style={{
+                      width: 96, height: 96, margin: '0 auto 24px', borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #34d399, #6366f1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48,
+                      boxShadow: '0 20px 60px rgba(52,211,153,0.4)',
+                    }}
+                  >🎉</motion.div>
+                  <h2 style={{ fontSize: 32, fontWeight: 900, color: 'white', marginBottom: 12 }}>You're all set!</h2>
+                  <p style={{ color: '#94a3b8', fontSize: 16 }}>Your habits are ready. Day 1 starts now.</p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#fbbf24', fontWeight: 700, marginTop: 24 }}
+                  >
+                    <Sparkles size={18} />
+                    <span>+10 XP bonus for setting up!</span>
+                  </motion.div>
+                </motion.div>
+              )}
+
+            </AnimatePresence>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 }
