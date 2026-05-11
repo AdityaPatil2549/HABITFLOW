@@ -88,7 +88,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   const [goal, setGoal] = useState<GoalKey | null>(null);
   const [selected, setSelected] = useState<boolean[]>([true, true, true]);
   const [adding, setAdding] = useState(false);
-  const [done, setDone] = useState(false);
 
   const { addHabit } = useHabitStore();
   const { saveProfile } = useProfileStore();
@@ -122,11 +121,19 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
       });
     }
     setAdding(false);
-    setDone(true);
-    setTimeout(() => { onComplete(); }, 1600);
+    setStep(3);
+    setTimeout(() => { onComplete(); }, 2000);
   }
 
   const STEPS = ['Welcome', 'Your Goal', 'Your Habits', 'Ready!'];
+
+  // Step-based backgrounds
+  const BACKGROUNDS = [
+    'radial-gradient(ellipse at 40% 20%, rgba(99,102,241,0.15) 0%, #020617 70%)', // Welcome: Indigo
+    'radial-gradient(ellipse at 40% 20%, rgba(139,92,246,0.15) 0%, #020617 70%)', // Goal: Violet
+    'radial-gradient(ellipse at 40% 20%, rgba(16,185,129,0.12) 0%, #020617 70%)', // Habits: Emerald
+    'radial-gradient(ellipse at 40% 20%, rgba(245,158,11,0.12) 0%, #020617 70%)', // Done: Amber
+  ];
 
   return (
     <AnimatePresence>
@@ -134,12 +141,25 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950"
-        style={{ background: 'radial-gradient(ellipse at 40% 20%, rgba(99,102,241,0.12) 0%, #020617 60%)' }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: BACKGROUNDS[step] || BACKGROUNDS[0],
+          transition: 'background 1s ease-in-out',
+          overflowY: 'auto',
+        }}
       >
         {/* Background orbs */}
-        <div className="absolute top-10 left-1/3 w-96 h-96 rounded-full bg-brand-500/5 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-20 right-1/4 w-64 h-64 rounded-full bg-violet-500/5 blur-3xl pointer-events-none" />
+        <div style={{ position: 'absolute', top: 40, left: '33%', width: 384, height: 384, borderRadius: '50%', background: 'rgba(99,102,241,0.05)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: 80, right: '25%', width: 256, height: 256, borderRadius: '50%', background: 'rgba(139,92,246,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
         <div className="relative z-10 w-full max-w-lg mx-auto px-6">
 
@@ -224,7 +244,11 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   {(Object.entries(GOAL_TEMPLATES) as [GoalKey, typeof GOAL_TEMPLATES[GoalKey]][]).map(([key, t]) => (
                     <button
                       key={key}
-                      onClick={() => { setGoal(key); setStep(2); }}
+                      onClick={() => {
+                        setGoal(key);
+                        setSelected([true, true, true]); // Reset selection for new goal
+                        setStep(2);
+                      }}
                       className={`flex items-center gap-4 p-4 rounded-2xl border text-left transition-all active:scale-98 hover:scale-[1.01] ${
                         goal === key
                           ? 'border-brand-500/40 bg-brand-500/10'
@@ -239,6 +263,12 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                       <ChevronRight size={18} className="text-slate-500 flex-shrink-0" />
                     </button>
                   ))}
+                </div>
+
+                <div className="pt-4 flex justify-center">
+                  <button onClick={() => setStep(0)} className="text-xs font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest transition-colors flex items-center gap-2">
+                    ← Back to Welcome
+                  </button>
                 </div>
               </motion.div>
             )}
@@ -306,7 +336,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
             )}
 
             {/* ── Step 3: Done ── */}
-            {done && (
+            {step === 3 && (
               <motion.div key="done"
                 initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
                 className="text-center space-y-6 py-8"
@@ -322,10 +352,15 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   <h2 className="text-3xl font-black text-white mb-2">You're all set!</h2>
                   <p className="text-slate-400">Your habits are ready. Day 1 starts now.</p>
                 </div>
-                <div className="flex items-center justify-center gap-2 text-amber-400 font-bold">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex items-center justify-center gap-2 text-amber-400 font-bold"
+                >
                   <Sparkles size={18} />
                   <span>+10 XP bonus for setting up!</span>
-                </div>
+                </motion.div>
               </motion.div>
             )}
 
