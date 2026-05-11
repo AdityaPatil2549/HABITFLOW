@@ -29,11 +29,12 @@ function DurationPicker({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.96 }}
       className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/95 backdrop-blur-xl"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
       {/* Glow orb */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl opacity-10 bg-brand-400 pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-sm px-6">
+      <div className="relative z-10 px-6 w-full max-w-sm" style={{ display: 'block', width: '100%', maxWidth: '384px', flexShrink: 0 }}>
         <div className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
             <Timer size={28} className="text-brand-400" />
