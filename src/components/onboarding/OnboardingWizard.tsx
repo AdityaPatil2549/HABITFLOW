@@ -187,11 +187,14 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                 >
                   <div style={{
                     width: 80, height: 80, margin: '0 auto 24px',
-                    borderRadius: 24, fontSize: 36,
+                    borderRadius: 24,
                     background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: '0 20px 60px rgba(99,102,241,0.3)',
-                  }}>🌟</div>
+                    overflow: 'hidden'
+                  }}>
+                    <img src="/logo.png" alt="HabitFlow" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
 
                   <h1 style={{ fontSize: 36, fontWeight: 900, color: 'white', marginBottom: 12, lineHeight: 1.15 }}>
                     Welcome to{' '}
