@@ -1,8 +1,13 @@
 import React from 'react';
 import * as Lucide from 'lucide-react';
 
+const ScalesIcon = ({ size = 24, className }: any) => (
+  <img src="/Scales.png" alt="Scales" style={{ width: size, height: size, objectFit: 'contain' }} className={className} />
+);
+
 // Explicitly define which icons we use for the picker
 const ICON_COMPONENTS: Record<string, any> = {
+  Scales: ScalesIcon,
   Dumbbell: Lucide.Dumbbell,
   BookOpen: Lucide.BookOpen,
   Zap: Lucide.Zap,
@@ -27,6 +32,7 @@ const ICON_COMPONENTS: Record<string, any> = {
 };
 
 export const HABIT_ICONS = [
+  { name: 'Scales', icon: ScalesIcon },
   { name: 'Dumbbell', icon: Lucide.Dumbbell || Lucide.HelpCircle },
   { name: 'BookOpen', icon: Lucide.BookOpen || Lucide.HelpCircle },
   { name: 'Zap', icon: Lucide.Zap || Lucide.HelpCircle },
