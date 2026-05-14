@@ -26,8 +26,7 @@ const DEMO_NOTIFICATIONS = [
 function NotificationPanel({ onClose }: { onClose: () => void }) {
   const [notes, setNotes] = useState(DEMO_NOTIFICATIONS);
   return (
-    <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-80 rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden"
-      style={{ background: 'rgba(10,15,30,0.97)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(24px)' }}>
+    <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-80 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
         <h3 className="text-sm font-bold text-white">Notifications</h3>
         <div className="flex gap-2">
@@ -67,8 +66,7 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: a
   const toast = useToast();
   const go = (path: string) => { navigate(path); onClose(); };
   return (
-    <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-56 rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden"
-      style={{ background: 'rgba(10,15,30,0.97)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(24px)' }}>
+    <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-56 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
       {/* Profile header */}
       <div className="px-5 py-4 border-b border-white/5">
         <div className="flex items-center gap-3">
@@ -163,8 +161,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
       {/* Backdrop */}
       <div className="absolute inset-0 bg-slate-950/80" onClick={onClose} />
       {/* Panel */}
-      <div className="relative w-[calc(100%-2rem)] max-w-[500px] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden"
-        style={{ background: 'rgba(10,15,30,0.98)', border: '1px solid rgba(255,255,255,0.12)' }}>
+      <div className="relative w-[calc(100%-2rem)] max-w-[500px] rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/80 overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
         {/* Input */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
           <Search size={20} className="text-slate-400" />
@@ -328,7 +325,7 @@ export function Layout() {
       <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
         <div className="px-6 mb-8 flex items-center justify-between">
           <NavLink to="/dashboard" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow" className="h-11 w-auto object-contain" />
+            <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow" style={{ height: '50px', width: 'auto' }} className="object-contain" />
           </NavLink>
         </div>
 
