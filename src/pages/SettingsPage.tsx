@@ -346,9 +346,7 @@ export function SettingsPage() {
 
       {/* ─── About ─── */}
       <section className="text-center py-8">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-400 to-violet-600 shadow-lg shadow-brand-500/40 flex items-center justify-center text-white font-bold mx-auto mb-4 text-lg">
-          HF
-        </div>
+        <img src="/logo.png" alt="HabitFlow Logo" className="w-14 h-14 mx-auto mb-4 object-contain drop-shadow-xl" />
         <p className="text-sm font-bold text-white">HabitFlow v1.2</p>
         <p className="text-xs text-slate-500 mt-1">Built with precision for peak performance.</p>
         <div className="flex items-center justify-center gap-4 mt-4">
