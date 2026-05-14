@@ -165,7 +165,7 @@ export function Dashboard() {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {xpStats && (
-            <div className="hidden sm:flex flex-col items-end gap-1 mr-2">
+            <div className="hidden sm:flex flex-col items-end gap-1 mr-4">
               <div className="flex items-center gap-1.5">
                 <Zap size={12} className="text-amber-400" />
                 <span className="text-xs font-bold text-white">{userXP?.total ?? 0} XP</span>
@@ -386,8 +386,8 @@ export function Dashboard() {
                   <p className="text-sm font-semibold text-white">All clear!</p>
                   <p className="text-xs text-slate-500 mt-0.5">No tasks due today.</p>
                 </div>
-                <button onClick={() => navigate('/tasks')} className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1 mt-1">
-                  Add a task <ArrowRight size={12} />
+                <button onClick={() => navigate('/tasks')} className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors flex items-center justify-center gap-1 mt-2">
+                  Add a task <ArrowRight size={12} className="relative top-[0.5px]" />
                 </button>
               </div>
             ) : (
@@ -447,8 +447,9 @@ export function Dashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {scheduled.slice(0, 6).map(h => {
+              {scheduled.slice(0, 6).map((h, i, arr) => {
                 const isDone = h.todayLog && h.todayLog.value >= 1;
+                const isLastOdd = arr.length % 2 !== 0 && i === arr.length - 1;
                 return (
                   <div
                     key={h.id}
@@ -457,7 +458,7 @@ export function Dashboard() {
                       isDone
                         ? 'bg-emerald-500/10 border-emerald-500/20'
                         : 'bg-white/[0.02] border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5'
-                    }`}
+                    } ${isLastOdd ? 'sm:col-span-2' : ''}`}
                   >
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-90 ${isDone ? 'bg-emerald-500/20' : 'bg-white/5'}`}>
                       <IconRenderer name={h.icon} size={18} color={isDone ? '#10b981' : 'var(--brand-400)'} />

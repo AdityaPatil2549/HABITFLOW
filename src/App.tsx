@@ -11,6 +11,8 @@ import { OnboardingWizard, useOnboarding } from './components/onboarding/Onboard
 import { ToastProvider } from './components/common/Toast';
 import { getOrCreateSettings } from './db';
 import { gamificationService } from './services/gamificationService';
+import { useModalStore } from './store/modalStore';
+import { QuickAddModalFixed } from './components/habits/QuickAddModalFixed';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })));
@@ -87,8 +89,20 @@ function App() {
         <OnboardingWizard onComplete={handleOnboardingComplete} />,
         document.body
       )}
+      <ModalContainer />
     </BrowserRouter>
   );
+}
+
+/**
+ * ModalContainer renders QuickAddModalFixed directly into the React tree.
+ * No createPortal needed — the native <dialog> element uses showModal() to
+ * place itself in the browser's top layer automatically.
+ */
+function ModalContainer() {
+  const quickAddOpen = useModalStore(s => s.quickAddOpen);
+  if (!quickAddOpen) return null;
+  return <QuickAddModalFixed onClose={() => useModalStore.getState().setQuickAddOpen(false)} />;
 }
 
 export default App;

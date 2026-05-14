@@ -261,7 +261,7 @@ export function TasksPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Task Manager</p>
           <h1 className="text-3xl font-bold text-white">My Tasks</h1>
@@ -291,7 +291,7 @@ export function TasksPage() {
             whileHover={{ y: -4, scale: 1.02 }}
             className={cn("glass-card rounded-2xl p-6 text-center relative overflow-hidden group", k.class)}
           >
-            <span className="absolute -right-2 -bottom-2 text-6xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
+            <span className="absolute right-2 bottom-2 text-5xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
               {k.icon}
             </span>
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">{k.label}</p>
@@ -347,7 +347,7 @@ export function TasksPage() {
             {view === 'Today' ? 'Enjoy your free time, or add a new task to stay productive.' : 'Tasks you complete will appear here.'}
           </p>
           {view !== 'Completed' && (
-            <button onClick={() => setShowAdd(true)} className="mt-6 px-6 py-2.5 rounded-xl font-semibold text-sm text-white"
+            <button onClick={() => setShowAdd(true)} className="mt-6 px-6 py-2.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2"
               style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}>
               + Add Task
             </button>

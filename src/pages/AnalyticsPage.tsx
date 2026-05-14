@@ -229,16 +229,30 @@ function WeeklyRadar({ habits }: { habits: any[] }) {
         d.setDate(today.getDate() - today.getDay() + i);
         return { day: name, date: format(d, 'yyyy-MM-dd') };
       });
-      const rows = await Promise.all(week.map(async ({ day, date }) => {
-        const logs = await db.habitLogs.where('date').equals(date).toArray();
+      const startDateStr = week[0].date;
+      const endDateStr = week[week.length - 1].date;
+      
+      const allLogs = await db.habitLogs
+        .where('date')
+        .between(startDateStr, endDateStr, true, true)
+        .toArray();
+
+      const logsByDate = new Map<string, typeof allLogs>();
+      for (const log of allLogs) {
+        if (!logsByDate.has(log.date)) logsByDate.set(log.date, []);
+        logsByDate.get(log.date)!.push(log);
+      }
+
+      const rows = week.map(({ day, date }) => {
+        const logs = logsByDate.get(date) ?? [];
         const scheduled = habits.filter(h => h.frequency === 'daily' || (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(new Date(date).getDay())));
-        return { day, completion: scheduled.length ? Math.round((logs.length / scheduled.length) * 100) : 0 };
-      }));
+        return { day, completion: scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0 };
+      });
       setData(rows);
     })();
   }, [habits]);
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={260}>
       <RadarChart data={data}>
         <PolarGrid stroke="rgba(255,255,255,0.08)" />
         <PolarAngleAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 12 }} />
@@ -255,11 +269,25 @@ function TrendLine({ habits }: { habits: any[] }) {
   useEffect(() => {
     (async () => {
       const days = Array.from({ length: 30 }, (_, i) => format(subDays(new Date(), 29 - i), 'yyyy-MM-dd'));
-      const rows = await Promise.all(days.map(async date => {
-        const logs = await db.habitLogs.where('date').equals(date).toArray();
+      const startDateStr = days[0];
+      const endDateStr = days[days.length - 1];
+
+      const allLogs = await db.habitLogs
+        .where('date')
+        .between(startDateStr, endDateStr, true, true)
+        .toArray();
+
+      const logsByDate = new Map<string, typeof allLogs>();
+      for (const log of allLogs) {
+        if (!logsByDate.has(log.date)) logsByDate.set(log.date, []);
+        logsByDate.get(log.date)!.push(log);
+      }
+
+      const rows = days.map(date => {
+        const logs = logsByDate.get(date) ?? [];
         const scheduled = habits.filter(h => h.frequency === 'daily' || (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(new Date(date).getDay())));
         return { date: date.slice(5), completion: scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0 };
-      }));
+      });
       setData(rows);
     })();
   }, [habits]);
@@ -302,8 +330,8 @@ function TaskThroughput({ tasks }: { tasks: any[] }) {
         <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
         <Tooltip contentStyle={TOOLTIP_STYLE} />
         <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
-        <Bar dataKey="created" name="Created" fill="rgba(129,140,248,0.5)" radius={[4,4,0,0]} />
-        <Bar dataKey="completed" name="Completed" fill="#10b981" radius={[4,4,0,0]} />
+        <Bar dataKey="created" name="Created" fill="rgba(129,140,248,0.5)" radius={[4,4,0,0]} maxBarSize={48} />
+        <Bar dataKey="completed" name="Completed" fill="#10b981" radius={[4,4,0,0]} maxBarSize={48} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -315,6 +343,20 @@ function BestWorstDay({ habits }: { habits: any[] }) {
   useEffect(() => {
     (async () => {
       const days90 = Array.from({ length: 90 }, (_, i) => subDays(new Date(), i));
+      const startDateStr = format(days90[days90.length - 1], 'yyyy-MM-dd');
+      const endDateStr = format(days90[0], 'yyyy-MM-dd');
+
+      const allLogs = await db.habitLogs
+        .where('date')
+        .between(startDateStr, endDateStr, true, true)
+        .toArray();
+
+      const logsByDate = new Map<string, typeof allLogs>();
+      for (const log of allLogs) {
+        if (!logsByDate.has(log.date)) logsByDate.set(log.date, []);
+        logsByDate.get(log.date)!.push(log);
+      }
+
       const counts: Record<number, { done: number; total: number }> = {};
       for (const d of days90) {
         const dow = getDay(d);
@@ -322,7 +364,7 @@ function BestWorstDay({ habits }: { habits: any[] }) {
         const date = format(d, 'yyyy-MM-dd');
         const scheduled = habits.filter(h => h.frequency === 'daily' || (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(dow)));
         if (!scheduled.length) continue;
-        const logs = await db.habitLogs.where('date').equals(date).toArray();
+        const logs = logsByDate.get(date) ?? [];
         counts[dow].done += logs.filter(l => l.value >= 1).length;
         counts[dow].total += scheduled.length;
       }
@@ -347,12 +389,12 @@ function BestWorstDay({ habits }: { habits: any[] }) {
           <p className="text-orange-400 text-sm font-bold">{worst.pct}%</p>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={140}>
+      <ResponsiveContainer width="100%" height={180}>
         <BarChart data={dayData}>
           <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11 }} />
           <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
           <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
-          <Bar dataKey="pct" radius={[4, 4, 0, 0]}>
+          <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={48}>
             {dayData.map((d, i) => (
               <Cell key={i} fill={d.day === best.day ? '#10b981' : d.day === worst.day ? '#ef4444' : 'rgba(129,140,248,0.6)'} />
             ))}
@@ -369,13 +411,27 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
   useEffect(() => {
     (async () => {
       const days = Array.from({ length: 30 }, (_, i) => format(subDays(new Date(), 29 - i), 'yyyy-MM-dd'));
-      const rows = await Promise.all(days.map(async date => {
-        const logs = await db.habitLogs.where('date').equals(date).toArray();
+      const startDateStr = days[0];
+      const endDateStr = days[days.length - 1];
+
+      const allLogs = await db.habitLogs
+        .where('date')
+        .between(startDateStr, endDateStr, true, true)
+        .toArray();
+
+      const logsByDate = new Map<string, typeof allLogs>();
+      for (const log of allLogs) {
+        if (!logsByDate.has(log.date)) logsByDate.set(log.date, []);
+        logsByDate.get(log.date)!.push(log);
+      }
+
+      const rows = days.map(date => {
+        const logs = logsByDate.get(date) ?? [];
         const scheduled = habits.filter(h => h.frequency === 'daily' || (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(new Date(date).getDay())));
         const pct = scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0;
         const moodLog = moods.find(m => m.date === date);
         return { date: date.slice(5), completion: pct, mood: moodLog ? moodLog.score : null };
-      }));
+      });
       setData(rows);
     })();
   }, [habits, moods]);
@@ -394,7 +450,7 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
         <YAxis yAxisId="right" orientation="right" domain={[1, 5]} tick={{ fill: '#64748b', fontSize: 11 }} />
         <Tooltip contentStyle={TOOLTIP_STYLE} />
         <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
-        <Bar yAxisId="left" dataKey="completion" name="Completion %" fill="rgba(129,140,248,0.5)" radius={[4,4,0,0]} />
+        <Bar yAxisId="left" dataKey="completion" name="Completion %" fill="rgba(129,140,248,0.5)" radius={[4,4,0,0]} maxBarSize={48} />
         <Line yAxisId="right" type="monotone" dataKey="mood" name="Mood (1–5)" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3, fill: '#10b981' }} connectNulls />
       </ComposedChart>
     </ResponsiveContainer>
@@ -407,7 +463,7 @@ function StatCard({ icon, label, value, sub, colorClass = 'kpi-card-indigo', ico
       whileHover={{ y: -4, scale: 1.02 }}
       className={cn("glass-card rounded-2xl p-6 text-center relative overflow-hidden group", colorClass)}
     >
-      <span className="absolute -right-2 -bottom-2 text-6xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
+      <span className="absolute right-3 bottom-3 text-5xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
         {icon}
       </span>
       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">{label}</p>

@@ -145,7 +145,7 @@ export function SettingsPage() {
   if (!settings) return <div className="text-center py-16 text-slate-500">Loading settings…</div>;
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto">
+    <div className="space-y-10 max-w-2xl mx-auto">
       <div>
         <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Preferences</p>
         <h1 className="text-3xl font-bold text-white">Settings</h1>
@@ -177,7 +177,7 @@ export function SettingsPage() {
                     : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
-                <Icon size={14} /> {l}
+                <Icon size={14} /> <span>{l}</span>
               </button>
             ))}
           </div>
@@ -186,9 +186,9 @@ export function SettingsPage() {
         <div>
           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block flex items-center justify-between">
             <span>Accent Color</span>
-            <a href="/profile" className="text-[10px] text-brand-400 hover:underline flex items-center gap-1"><Palette size={10} /> Get more themes</a>
+            <a href="/profile" className="text-xs text-brand-400 hover:underline flex items-center gap-1.5"><Palette size={12} /> Get more themes</a>
           </label>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-4">
             {THEMES.filter(t => userXP?.unlockedThemes?.includes(t.value)).map(t => (
               <button
                 key={t.value}

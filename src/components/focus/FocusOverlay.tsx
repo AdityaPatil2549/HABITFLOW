@@ -199,7 +199,10 @@ export function FocusOverlay() {
           />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center text-center max-w-sm px-8 w-full">
+        <div 
+          className="relative z-10 flex flex-col items-center text-center px-8 w-full shrink-0"
+          style={{ maxWidth: '384px' }}
+        >
 
           {/* Mode label */}
           {isFocus ? (
@@ -250,10 +253,10 @@ export function FocusOverlay() {
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 mb-6 py-2 px-4 rounded-full bg-amber-500/10 border border-amber-500/20"
+              className="flex items-center justify-center gap-2 mb-6 py-2 px-5 rounded-full bg-amber-500/10 border border-amber-500/20 whitespace-nowrap shadow-lg shadow-amber-500/5"
             >
-              <Zap size={13} className="text-amber-400" />
-              <span className="text-sm font-bold text-amber-400">
+              <Zap size={14} className="text-amber-400" />
+              <span className="text-sm font-black text-amber-400">
                 {liveXP} XP earned so far
               </span>
             </motion.div>
@@ -291,7 +294,7 @@ export function FocusOverlay() {
             </button>
           </div>
 
-          <p className="text-slate-600 text-xs mt-8 leading-relaxed">
+          <p className="text-slate-600 text-xs mt-8 leading-relaxed whitespace-nowrap">
             {isFocus
               ? `Stay focused — you earn 1 XP per minute.`
               : "The next session starts when you're ready."}

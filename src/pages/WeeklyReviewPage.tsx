@@ -66,7 +66,7 @@ export function WeeklyReviewPage() {
   const xpProgressPercent = xpData ? Math.min(100, Math.max(0, ((xpData.totalScore - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)) : 0;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-24 pt-8 relative min-h-[90vh]">
+    <div className="max-w-4xl mx-auto px-4 pb-24 pt-8 relative min-h-[90vh]">
       {/* Background Glows matching Stitch design */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-[#0B0E14]">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cyan-500/20 rounded-full blur-[120px]" />
@@ -101,7 +101,7 @@ export function WeeklyReviewPage() {
         <div className="grid grid-cols-2 gap-4 sm:gap-6">
           <motion.div 
             initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}
-            className="bg-white/[0.02] backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden"
+            className="bg-white/[0.02] backdrop-blur-md border border-white/10 rounded-3xl p-8 relative overflow-hidden"
           >
             <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4 text-emerald-400">
               <CheckCircle2 size={20} />
@@ -112,7 +112,7 @@ export function WeeklyReviewPage() {
 
           <motion.div 
             initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}
-            className="bg-white/[0.02] backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden"
+            className="bg-white/[0.02] backdrop-blur-md border border-white/10 rounded-3xl p-8 relative overflow-hidden"
           >
             <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 text-amber-400">
               <Flame size={20} />

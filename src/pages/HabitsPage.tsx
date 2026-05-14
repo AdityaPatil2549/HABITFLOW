@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical, Timer, Bell, BarChart2, X, ChevronLeft } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
@@ -234,7 +235,7 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
       {/* Progress bar top */}
-      <div className="h-0.5 w-full bg-white/5 relative z-10">
+      <div className="h-1.5 w-full bg-white/5 relative z-10">
         <motion.div className="h-full" style={{ background: `linear-gradient(90deg, ${c}, ${c}99)` }}
           initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
       </div>
@@ -406,7 +407,7 @@ function HabitSkeleton() {
 }
 
 export function HabitsPage() {
-  const { habits, loading, loadHabits, logHabit, applyFreeze, deleteHabit, selectedDate, setSelectedDate, reorderHabits } = useHabitStore();
+  const { habits, loading, loadHabits, logHabit, unlogHabit, applyFreeze, deleteHabit, selectedDate, setSelectedDate, reorderHabits } = useHabitStore();
   const { userXP, buyFreeze, useFreeze } = useGamificationStore();
   const [showAdd, setShowAdd] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -597,7 +598,7 @@ export function HabitsPage() {
                 key={date}
                 onClick={() => setSelectedDate(date)}
                 className={cn(
-                  'flex-1 flex flex-col items-center py-2.5 rounded-xl transition-all text-center border',
+                  'flex-1 flex flex-col items-center justify-center h-[68px] rounded-xl transition-all text-center border',
                   isSelected
                     ? 'text-white border-brand-500/50'
                     : 'border-white/5 text-slate-500 hover:text-slate-300 hover:border-white/10'
@@ -644,7 +645,7 @@ export function HabitsPage() {
             <span className="font-semibold">Daily Progress</span>
             <span className="font-bold" style={{ color: pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#818cf8' }}>{pct}%</span>
           </div>
-          <div className="h-3 rounded-full bg-white/5 overflow-hidden">
+          <div className="h-4 rounded-full bg-white/5 overflow-hidden">
             <motion.div className="h-full rounded-full"
               style={{ background: pct >= 80 ? 'linear-gradient(90deg,#10b981,#06b6d4)' : 'linear-gradient(90deg,#6366f1,#8b5cf6)' }}
               initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1, ease: 'easeOut' }} />
@@ -711,10 +712,12 @@ export function HabitsPage() {
           {[1, 2, 3, 4].map(i => <HabitSkeleton key={i} />)}
         </div>
       ) : habits.length === 0 ? (
-        <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-20 text-center">
+        <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-20 text-center w-full">
           <span className="text-5xl mb-4">🌱</span>
           <h3 className="text-lg font-semibold text-white mb-2">No habits yet</h3>
-          <p className="text-slate-400 text-sm w-full max-w-xs px-4 mb-6 leading-relaxed">Add your first habit and start building a powerful daily routine.</p>
+          <p className="text-slate-400 text-sm max-w-[320px] px-4 mb-6 leading-relaxed">
+            Add your first habit and start building a powerful daily routine.
+          </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button onClick={() => setShowTemplates(true)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all">
@@ -758,13 +761,20 @@ export function HabitsPage() {
                         {/* Drag handle */}
                         <div
                           {...dragProvided.dragHandleProps}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-lg text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing transition-colors"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-lg text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing transition-colors"
                         >
-                          <GripVertical size={14} />
+                          <GripVertical size={16} />
                         </div>
-                        <div className="pl-6">
+                        <div className="pl-11">
                           <HabitCard habit={h}
-                            onLogClick={hab => hab.type === 'boolean' ? logHabit(hab.id, 1) : setSelectedLog(hab)}
+                            onLogClick={hab => {
+                              const isDone = !!hab.todayLog && (hab.todayLog.isFrozen || hab.todayLog.value >= (hab.type === 'boolean' ? 1 : hab.targetValue));
+                              if (isDone) {
+                                unlogHabit(hab.id);
+                              } else {
+                                hab.type === 'boolean' ? logHabit(hab.id, 1) : setSelectedLog(hab);
+                              }
+                            }}
                             onEdit={setEditingHabit}
                             onDelete={deleteHabit}
                             canFreeze={!isToday && selectedDate < today && (!h.todayLog || h.todayLog.value === 0) && (userXP?.streakFreezes ?? 0) > 0}
@@ -782,8 +792,8 @@ export function HabitsPage() {
         </DragDropContext>
       )}
 
-      {selectedLog && <LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />}
-      {showTemplates && <TemplatesLibrary onClose={() => setShowTemplates(false)} />}
+      {selectedLog && createPortal(<LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />, document.body)}
+      {showTemplates && createPortal(<TemplatesLibrary onClose={() => setShowTemplates(false)} />, document.body)}
 
       {/* ── Calendar Month View ── */}
       <AnimatePresence mode="wait">

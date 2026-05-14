@@ -209,7 +209,7 @@ export function ProfilePage() {
             )}
 
             {/* Edit / Save / Cancel buttons */}
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-2 mt-6">
               {editing ? (
                 <>
                   <button
@@ -242,13 +242,13 @@ export function ProfilePage() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { icon: <Flame size={18} />, label: 'Best Streak', value: `${bestStreak}d`, color: '#f97316' },
-          { icon: <CheckCircle2 size={18} />, label: 'Tasks Done', value: totalDone, color: '#10b981' },
-          { icon: <TrendingUp size={18} />, label: '30d Avg', value: `${avgCompletion}%`, color: '#818cf8' },
-          { icon: <Award size={18} />, label: 'Badges', value: `${earnedBadges}/${BADGE_CATALOGUE.length}`, color: '#f59e0b' },
+          { icon: <Flame size={24} />, label: 'Best Streak', value: `${bestStreak}d`, color: '#f97316' },
+          { icon: <CheckCircle2 size={24} />, label: 'Tasks Done', value: totalDone, color: '#10b981' },
+          { icon: <TrendingUp size={24} />, label: '30d Avg', value: `${avgCompletion}%`, color: '#818cf8' },
+          { icon: <Award size={24} />, label: 'Badges', value: `${earnedBadges}/${BADGE_CATALOGUE.length}`, color: '#f59e0b' },
         ].map(s => (
           <div key={s.label} className="glass-card rounded-2xl p-4 text-center">
-            <div className="w-9 h-9 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: `${s.color}18`, color: s.color }}>
+            <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: `${s.color}18`, color: s.color }}>
               {s.icon}
             </div>
             <p className="text-xl font-bold text-white">{s.value}</p>
@@ -290,7 +290,7 @@ export function ProfilePage() {
               });
             }}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-blue-100 transition-all active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 8px 24px rgba(59,130,246,0.3)' }}
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 24px rgba(59,130,246,0.3)' }}
           >
             Buy for 500 XP
           </button>

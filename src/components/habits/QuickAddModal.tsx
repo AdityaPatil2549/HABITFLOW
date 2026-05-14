@@ -1,11 +1,9 @@
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Flame } from 'lucide-react';
 import { useState } from 'react';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import type { HabitType, HabitFrequency, Priority } from '../../types';
 import { format } from 'date-fns';
-import { scaleIn } from '../../lib/motionVariants';
 import { IconRenderer, HABIT_ICONS } from '../common/IconRenderer';
 
 const CATEGORIES = [
@@ -75,21 +73,14 @@ export function QuickAddModal({ onClose }: Props) {
   return (
     <>
       {/* Backdrop */}
-      <motion.div
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+      <div
+        className="fixed inset-0 z-[200] bg-slate-950/80 transition-opacity duration-200"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <motion.div
-        className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg"
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ duration: 0.2 }}
+      <div
+        className="fixed z-[201] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200"
       >
         <div className="mx-4 overflow-hidden relative rounded-3xl bg-slate-900 shadow-2xl border border-white/10">
           {/* Decorative Glow */}
@@ -280,7 +271,7 @@ export function QuickAddModal({ onClose }: Props) {
             </form>
           )}
         </div>
-      </motion.div>
+      </div>
     </>
   );
 }

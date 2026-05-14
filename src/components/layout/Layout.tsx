@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { QuickAddModal } from '../habits/QuickAddModal';
+import { createPortal } from 'react-dom';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
@@ -9,6 +9,7 @@ import { useFocusStore } from '../../store/focusStore';
 import { calculateStats } from '../../services/gamificationService';
 import { useToast } from '../common/Toast';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { useModalStore } from '../../store/modalStore';
 import { IconRenderer } from '../common/IconRenderer';
 import {
   Search, Bell, Settings, User, LayoutDashboard,
@@ -160,7 +161,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[10vh]">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-950/80" onClick={onClose} />
       {/* Panel */}
       <div className="relative w-[calc(100%-2rem)] max-w-[500px] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden"
         style={{ background: 'rgba(10,15,30,0.98)', border: '1px solid rgba(255,255,255,0.12)' }}>
@@ -238,7 +239,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
 
 // ── Layout ─────────────────────────────────────────────────────
 export function Layout() {
-  const [quickAdd, setQuickAdd] = useState(false);
+  const setQuickAddOpen = useModalStore(s => s.setQuickAddOpen);
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
@@ -271,7 +272,7 @@ export function Layout() {
   useKeyboardShortcuts({
     onSearch: () => setShowSearch(true),
     onToggleFocus: () => focusActive ? stopFocus() : startFocus({ id: 'quick', title: 'Quick Focus Session', type: 'habit' }),
-    onNewHabit: () => { navigate('/habits'); setQuickAdd(true); },
+    onNewHabit: () => { navigate('/habits'); setQuickAddOpen(true); },
     onNewTask: () => navigate('/tasks'),
     onEscape: () => { setShowSearch(false); setShowNotifications(false); setShowAccount(false); },
   });
@@ -301,7 +302,7 @@ export function Layout() {
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-slate-950 to-slate-950 flex">
       
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
-      <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950/80 backdrop-blur-xl border-b border-white/8 flex items-center justify-between px-6 h-16">
+      <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950 border-b border-white/8 flex items-center justify-between px-6 h-16">
         <NavLink to="/dashboard" className="text-xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity">HabitFlow</NavLink>
         <div className="flex items-center gap-4">
           <button onClick={() => setShowSearch(true)} className="text-slate-400 hover:text-white transition-colors">
@@ -318,7 +319,7 @@ export function Layout() {
       </nav>
 
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-      <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900/40 backdrop-blur-2xl flex-col py-6 z-40 hidden lg:flex">
+      <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
         <div className="px-6 mb-8 flex items-center justify-between">
           <NavLink to="/dashboard" className="text-2xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity">HabitFlow</NavLink>
         </div>
@@ -362,13 +363,13 @@ export function Layout() {
               }} />
             )}
             <Timer size={16} className={focusActive ? 'animate-pulse' : ''} />
-            <span className="relative">{focusActive ? '⏹ End Focus' : '⏱ Focus Mode'}</span>
+            <span className="relative">{focusActive ? 'End Focus' : 'Focus Mode'}</span>
             {focusActive && <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />}
           </button>
         </div>
 
         <div className="px-5 mb-6">
-          <button onClick={() => setQuickAdd(true)}
+          <button onClick={() => setQuickAddOpen(true)}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2">
             <Plus size={18} />
             New Entry
@@ -381,7 +382,7 @@ export function Layout() {
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left group">
             <Search size={18} />
             <span className="flex-1">Search</span>
-            <kbd className="text-[10px] border border-white/10 rounded px-1.5 py-0.5 text-slate-500 group-hover:text-slate-400 transition-colors">⌘K</kbd>
+            <kbd className="text-[10px] font-sans font-medium border border-white/10 rounded px-1.5 h-5 flex items-center justify-center text-slate-500 group-hover:text-slate-400 transition-colors">⌘K</kbd>
           </button>
 
           {/* Dark / Light toggle */}
@@ -389,8 +390,8 @@ export function Layout() {
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left">
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
             <span className="flex-1">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-            <div className={`w-8 h-4 rounded-full transition-colors flex items-center px-0.5 ${isDark ? 'bg-slate-700' : 'bg-brand-500'}`}>
-              <div className={`w-3 h-3 rounded-full bg-white shadow transition-transform ${isDark ? 'translate-x-0' : 'translate-x-4'}`} />
+            <div className={`relative flex items-center w-11 h-6 rounded-full transition-colors flex-shrink-0 ${isDark ? 'bg-slate-700' : 'bg-brand-500'}`}>
+              <div className={`w-4 h-4 bg-white rounded-full mx-1 shadow-sm transition-transform ${isDark ? 'translate-x-0' : 'translate-x-5'}`} />
             </div>
           </button>
           
@@ -424,7 +425,7 @@ export function Layout() {
                   )}
                 </div>
                 {xpStats ? (
-                  <div className="mt-1.5 w-full h-1 rounded-full bg-white/10 overflow-hidden">
+                  <div className="mt-1.5 w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
                     <div
                       className="xp-bar-fill h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
                       style={{ width: `${xpStats.levelProgress}%` }}
@@ -449,7 +450,7 @@ export function Layout() {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-950/90 backdrop-blur-2xl border-t border-white/8 px-4 pb-safe h-16 flex items-center justify-between z-50">
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-950 border-t border-white/8 px-4 pb-safe h-16 flex items-center justify-between z-50">
         {[
           { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
           { to: '/habits', icon: Target, label: 'Habits' },
@@ -462,7 +463,7 @@ export function Layout() {
             </NavLink>
           )
         })}
-        <div onClick={() => setQuickAdd(true)}
+        <div onClick={() => setQuickAddOpen(true)}
           className="-mt-8 w-14 h-14 cursor-pointer bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-xl shadow-brand-500/40 border-4 border-slate-950 active:scale-95 transition-transform">
           <Plus size={24} className="text-white" />
         </div>
@@ -494,8 +495,7 @@ export function Layout() {
       </nav>
 
       {/* ── Overlays ── */}
-      {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} />}
-      {quickAdd && <QuickAddModal onClose={() => setQuickAdd(false)} />}
+      {showSearch && createPortal(<SearchOverlay onClose={() => setShowSearch(false)} />, document.body)}
     </div>
   );
 }
