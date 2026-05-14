@@ -95,12 +95,11 @@ function ToastCard({ toast }: { toast: ToastItem }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: 60, scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className="flex items-start gap-3 px-4 py-3.5 rounded-2xl shadow-2xl w-[320px] sm:w-[380px] max-w-[calc(100vw-2rem)]"
+      className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl shadow-2xl w-[320px] sm:w-[380px] max-w-[calc(100vw-2rem)] bg-slate-900`}
       style={{
-        background: 'rgba(15,23,42,0.95)',
         backdropFilter: 'blur(16px)',
         border: `1px solid ${cfg.border}`,
-        boxShadow: `0 8px 32px rgba(0,0,0,0.5), inset 0 0 0 1px ${cfg.border}`,
+        boxShadow: `0 8px 32px rgba(0,0,0,0.2), inset 0 0 0 1px ${cfg.border}`,
       }}
     >
       <Icon size={18} style={{ color: cfg.color }} className="flex-shrink-0 mt-0.5" />
@@ -140,11 +139,9 @@ function ConfirmDialog() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 10 }}
         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        className="w-full max-w-sm rounded-2xl overflow-hidden bg-slate-900 border border-white/10"
         style={{
-          background: 'rgba(15,23,42,0.98)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 40px 80px rgba(0,0,0,0.7)',
+          boxShadow: '0 40px 80px rgba(0,0,0,0.2)',
         }}
       >
         <div className="p-6 space-y-5">
