@@ -307,7 +307,10 @@ export function Layout() {
       
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950 border-b border-white/8 flex items-center justify-between px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))]">
-        <NavLink to="/dashboard" className="text-xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity">HabitFlow</NavLink>
+        <NavLink to="/dashboard" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="HabitFlow Logo" className="w-8 h-8 rounded-xl" />
+          <span className="text-xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent">HabitFlow</span>
+        </NavLink>
         <div className="flex items-center gap-4">
           <button onClick={() => setShowSearch(true)} className="text-slate-400 hover:text-white transition-colors">
             <Search size={22} />
@@ -325,7 +328,10 @@ export function Layout() {
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
       <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
         <div className="px-6 mb-8 flex items-center justify-between">
-          <NavLink to="/dashboard" className="text-2xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity">HabitFlow</NavLink>
+          <NavLink to="/dashboard" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="HabitFlow Logo" className="w-8 h-8 rounded-xl" />
+            <span className="text-2xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent">HabitFlow</span>
+          </NavLink>
         </div>
 
         <nav className="flex-1 space-y-0.5 px-3">
