@@ -327,8 +327,8 @@ export function Layout() {
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
       <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
         <div className="px-6 mb-8 flex items-center justify-between">
-          <NavLink to="/dashboard" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity w-full">
-            <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow" className="w-full h-auto object-contain" />
+          <NavLink to="/dashboard" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+            <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow" className="h-11 w-auto object-contain" />
           </NavLink>
         </div>
 
