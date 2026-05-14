@@ -93,7 +93,7 @@ export function WeeklyReviewPage() {
             </>
           );
         })()}
-        <p className="text-slate-400 text-sm sm:text-base font-medium max-w-md mx-auto leading-relaxed italic opacity-80">"Your habits determine your future."</p>
+        <p className="w-full px-4 text-slate-400 text-sm sm:text-base font-medium mx-auto leading-relaxed italic opacity-80 mt-2">"Your habits determine your future."</p>
       </div>
 
       <div className="space-y-6 z-10 relative">
