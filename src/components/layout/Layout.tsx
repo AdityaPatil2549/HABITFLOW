@@ -307,8 +307,8 @@ export function Layout() {
       
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950 border-b border-white/8 flex items-center justify-between px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))]">
-        <NavLink to="/dashboard" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-          <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow Logo" className="h-8 w-auto object-contain" />
+        <NavLink to="/dashboard" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+          <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow" className="h-7 w-auto object-contain max-w-[160px]" />
         </NavLink>
         <div className="flex items-center gap-4">
           <button onClick={() => setShowSearch(true)} className="text-slate-400 hover:text-white transition-colors">
@@ -327,8 +327,8 @@ export function Layout() {
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
       <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
         <div className="px-6 mb-8 flex items-center justify-between">
-          <NavLink to="/dashboard" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-            <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow Logo" className="h-8 w-auto object-contain" />
+          <NavLink to="/dashboard" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+            <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow" className="h-9 w-auto object-contain max-w-[180px]" />
           </NavLink>
         </div>
 
