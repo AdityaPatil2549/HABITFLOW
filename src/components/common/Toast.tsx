@@ -95,7 +95,7 @@ function ToastCard({ toast }: { toast: ToastItem }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: 60, scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className="flex items-start gap-3 px-4 py-3.5 rounded-2xl shadow-2xl max-w-sm w-full"
+      className="flex items-start gap-3 px-4 py-3.5 rounded-2xl shadow-2xl w-[320px] sm:w-[380px] max-w-[calc(100vw-2rem)]"
       style={{
         background: 'rgba(15,23,42,0.95)',
         backdropFilter: 'blur(16px)',
@@ -104,10 +104,10 @@ function ToastCard({ toast }: { toast: ToastItem }) {
       }}
     >
       <Icon size={18} style={{ color: cfg.color }} className="flex-shrink-0 mt-0.5" />
-      <p className="text-sm font-semibold text-white flex-1 leading-relaxed">{toast.message}</p>
+      <p className="text-sm font-semibold text-white flex-1 leading-relaxed break-words">{toast.message}</p>
       <button
         onClick={() => remove(toast.id)}
-        className="text-slate-500 hover:text-white transition-colors flex-shrink-0 ml-1"
+        className="text-slate-500 hover:text-white transition-colors flex-shrink-0 ml-1 mt-0.5"
       >
         <X size={15} />
       </button>
