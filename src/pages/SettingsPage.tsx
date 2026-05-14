@@ -160,7 +160,7 @@ export function SettingsPage() {
 
         <div>
           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block">Color Mode</label>
-          <div className="flex gap-2 p-1 bg-slate-900/50 rounded-xl border border-white/5">
+          <div className="flex gap-2 p-1 bg-slate-900 rounded-xl border border-white/10">
             {(
               [
                 ['system', Monitor, 'System'],
@@ -173,8 +173,8 @@ export function SettingsPage() {
                 onClick={() => saveSetting({ darkMode: v as Settings['darkMode'] })}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${
                   settings.darkMode === v
-                    ? 'bg-brand-500/15 text-brand-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-300'
+                    ? 'bg-brand-500 text-white shadow-md'
+                    : 'text-slate-500 hover:text-white hover:bg-slate-950/20'
                 }`}
               >
                 <Icon size={14} /> <span>{l}</span>
