@@ -215,10 +215,10 @@ export function QuickAddModalFixed({ onClose }: Props) {
                           key={c.name}
                           type="button"
                           onClick={() => setHabitCategory(c.name)}
-                          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+                          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 border ${
                             isActive
-                              ? 'bg-brand-500/20 border-brand-500/30 text-brand-300 shadow-inner'
-                              : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/10 border'
+                              ? 'bg-brand-500/20 border-brand-400 text-white shadow-inner'
+                              : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/10'
                           }`}
                         >
                           <span className="text-sm">{c.icon}</span>
