@@ -251,7 +251,8 @@ export function Layout() {
   const [isDark, setIsDark] = useState(() => {
     try { const s = localStorage.getItem('hf_darkmode'); return s !== 'light'; } catch { return true; }
   });
-  const notifRef = useRef<HTMLDivElement>(null);
+  const mobileNotifRef = useRef<HTMLDivElement>(null);
+  const desktopNotifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -285,7 +286,10 @@ export function Layout() {
   // Close dropdowns on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotifications(false);
+      const isOutsideMobile = mobileNotifRef.current && !mobileNotifRef.current.contains(e.target as Node);
+      const isOutsideDesktop = desktopNotifRef.current && !desktopNotifRef.current.contains(e.target as Node);
+      if (isOutsideMobile && isOutsideDesktop) setShowNotifications(false);
+      
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) setShowAccount(false);
     }
     document.addEventListener('mousedown', handler);
@@ -308,7 +312,7 @@ export function Layout() {
           <button onClick={() => setShowSearch(true)} className="text-slate-400 hover:text-white transition-colors">
             <Search size={22} />
           </button>
-          <div className="relative" ref={notifRef}>
+          <div className="relative" ref={mobileNotifRef}>
             <button onClick={() => { setShowNotifications(v => !v); setShowAccount(false); }} className="relative text-slate-400 hover:text-white transition-colors">
               <Bell size={22} />
               {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-brand-400 ring-2 ring-slate-950" />}
@@ -395,7 +399,7 @@ export function Layout() {
             </div>
           </button>
           
-          <div className="relative" ref={notifRef}>
+          <div className="relative" ref={desktopNotifRef}>
             <button onClick={() => { setShowNotifications(v => !v); setShowAccount(false); }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left">
               <div className="relative">
