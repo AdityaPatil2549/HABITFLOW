@@ -107,7 +107,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
     <dialog
       ref={dialogRef}
       onClick={handleDialogClick}
-      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-end sm:items-center justify-center open:animate-in open:fade-in duration-300 z-[9999]"
+      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-end md:items-center justify-center open:animate-in open:fade-in duration-300 z-[9999]"
     >
       {/* Modal Container */}
       <motion.div
@@ -116,7 +116,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
         exit={{ opacity: 0, scale: 0.95, y: 40 }}
         transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
         onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-[512px] sm:mx-4 bg-slate-900/90 backdrop-blur-2xl border-t sm:border border-white/10 shadow-2xl shadow-black/80 rounded-t-[32px] sm:rounded-[32px] overflow-hidden pb-[env(safe-area-inset-bottom)]"
+        className="relative w-full max-w-[512px] md:mx-4 bg-slate-900/90 backdrop-blur-2xl border-t md:border border-white/10 shadow-2xl shadow-black/80 rounded-t-[32px] md:rounded-[32px] overflow-hidden pb-[env(safe-area-inset-bottom)]"
       >
         {/* Decorative Ambient Glows */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-500/20 rounded-full blur-[64px] pointer-events-none" />

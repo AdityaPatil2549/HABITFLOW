@@ -272,7 +272,7 @@ export function TasksPage() {
         <motion.button
           onClick={() => setShowAdd(v => !v)}
           whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0"
+          className="hidden md:flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.35)' }}
         >
           <Plus size={16} /> New Task

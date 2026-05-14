@@ -463,10 +463,10 @@ export function Layout() {
             </NavLink>
           )
         })}
-        <div onClick={() => setQuickAddOpen(true)}
-          className="-mt-8 w-14 h-14 cursor-pointer bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-xl shadow-brand-500/40 border-4 border-slate-950 active:scale-95 transition-transform">
+        <button onClick={() => setQuickAddOpen(true)}
+          className="relative z-[60] -mt-8 w-14 h-14 cursor-pointer bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-xl shadow-brand-500/40 border-4 border-slate-950 active:scale-95 transition-transform">
           <Plus size={24} className="text-white" />
-        </div>
+        </button>
         {/* Focus button - mobile */}
         <button
           onClick={() => {
