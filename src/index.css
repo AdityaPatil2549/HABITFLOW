@@ -538,3 +538,18 @@ body {
 .light .btn-icon:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
+
+@layer base {
+  html, body {
+    /* Prevent iOS rubber-banding effect on scroll */
+    overscroll-behavior-y: none;
+    /* Remove blue tap highlight on mobile devices */
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevent accidental text selection when rapidly tapping UI elements */
+  button, a, .glass-card, .btn-primary, .btn-icon {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}

@@ -302,7 +302,7 @@ export function Layout() {
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-slate-950 to-slate-950 flex">
       
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
-      <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950 border-b border-white/8 flex items-center justify-between px-6 h-16">
+      <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950 border-b border-white/8 flex items-center justify-between px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))]">
         <NavLink to="/dashboard" className="text-xl font-black bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity">HabitFlow</NavLink>
         <div className="flex items-center gap-4">
           <button onClick={() => setShowSearch(true)} className="text-slate-400 hover:text-white transition-colors">
@@ -450,7 +450,7 @@ export function Layout() {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-950 border-t border-white/8 px-4 pb-safe h-16 flex items-center justify-between z-50">
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-950 border-t border-white/8 px-4 pb-[env(safe-area-inset-bottom)] h-[calc(4rem+env(safe-area-inset-bottom))] flex items-center justify-between z-50">
         {[
           { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
           { to: '/habits', icon: Target, label: 'Habits' },
