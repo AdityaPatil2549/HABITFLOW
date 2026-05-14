@@ -92,7 +92,7 @@ export function Dashboard() {
   const pct = scheduled.length > 0 ? Math.round((done / scheduled.length) * 100) : 0;
 
   // Ring math
-  const circ = 477;
+  const circ = 2 * Math.PI * 78;
   const offset = circ - (circ * pct) / 100;
 
   // Tasks due today
