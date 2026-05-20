@@ -139,7 +139,7 @@ function ConfirmDialog() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 10 }}
         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-        className="w-full max-w-sm rounded-2xl overflow-hidden bg-slate-900 border border-white/10"
+        className="w-[90vw] sm:w-[380px] max-w-sm min-w-[280px] shrink-0 rounded-2xl overflow-hidden bg-slate-900 border border-white/10"
         style={{
           boxShadow: '0 40px 80px rgba(0,0,0,0.2)',
         }}
