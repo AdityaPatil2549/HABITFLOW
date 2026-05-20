@@ -330,13 +330,13 @@ export function TasksPage() {
       </AnimatePresence>
 
       {/* View tabs */}
-      <div className="flex gap-1 p-1 bg-slate-800/60 rounded-xl w-fit border border-white/5">
+      <div className="flex gap-1 p-1 glass-card rounded-xl w-fit mb-4">
         {VIEWS.map(v => (
           <button key={v} onClick={() => setView(v)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${view === v ? 'bg-brand-500/20 text-brand-400' : 'text-slate-400 hover:text-white'}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${view === v ? 'bg-brand-500/20 text-brand-active' : 'text-slate-400 hover:text-white hover-light-text'}`}>
             {v}
             {v === 'Today' && totalToday > 0 && (
-              <span className="ml-1.5 text-[10px] bg-brand-500/30 text-brand-300 px-1.5 py-0.5 rounded-full">{totalToday}</span>
+              <span className="ml-1.5 text-[10px] bg-brand-500/20 text-brand-active px-1.5 py-0.5 rounded-full">{totalToday}</span>
             )}
           </button>
         ))}
