@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical, Timer, Bell, BarChart2, X, ChevronLeft } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
@@ -201,7 +200,7 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
 
 function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }: { habit: HabitWithStreak; onLogClick: (h: HabitWithStreak) => void; onEdit: (h: HabitWithStreak) => void; onDelete: (id: string) => void; canFreeze?: boolean; onFreeze?: (h: HabitWithStreak) => void }) {
   const { archiveHabit } = useHabitStore();
-  const { startFocus } = useFocusStore();
+  const { startFocus, openPicker } = useFocusStore();
   const toast = useToast();
   const [showDetails, setShowDetails] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -354,7 +353,7 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => (window as any).__openFocusPicker?.({ id: habit.id, title: habit.name, type: 'habit' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors">
+                  <button onClick={() => openPicker({ id: habit.id, title: habit.name, type: 'habit' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors">
                     <Timer size={11} /> Focus
                   </button>
                   <button onClick={() => onEdit(habit)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
@@ -792,8 +791,8 @@ export function HabitsPage() {
         </DragDropContext>
       )}
 
-      {selectedLog && createPortal(<LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />, document.body)}
-      {showTemplates && createPortal(<TemplatesLibrary onClose={() => setShowTemplates(false)} />, document.body)}
+      {selectedLog && <LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />}
+      {showTemplates && <TemplatesLibrary onClose={() => setShowTemplates(false)} />}
 
       {/* ── Calendar Month View ── */}
       <AnimatePresence mode="wait">

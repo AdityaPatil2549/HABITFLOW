@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useProfileStore } from '../../store/profileStore';
@@ -82,6 +82,7 @@ export function useOnboarding() {
 }
 
 export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [step, setStep] = useState(0); // 0=welcome, 1=goal, 2=habits, 3=done
   const [name, setName] = useState('');
   const [goal, setGoal] = useState<GoalKey | null>(null);
@@ -92,6 +93,13 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   const { saveProfile } = useProfileStore();
 
   const selectedGoal = goal ? GOAL_TEMPLATES[goal] : null;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    
+    dialog.showModal();
+  }, []);
 
   async function handleFinish() {
     if (!goal) return;
@@ -119,7 +127,10 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
     }
     setAdding(false);
     setStep(3);
-    setTimeout(() => { onComplete(); }, 2000);
+    setTimeout(() => { 
+      dialogRef.current?.close();
+      onComplete(); 
+    }, 2000);
   }
 
   const STEPS = ['Welcome', 'Your Goal', 'Your Habits', 'Ready!'];
@@ -134,11 +145,12 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   return (
     <AnimatePresence>
       {/* Full-screen backdrop */}
-      <div
+      <dialog
+        ref={dialogRef}
+        className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950 open:animate-in open:fade-in duration-300 z-[9999]"
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 9999,
           backgroundColor: '#020617',
           backgroundImage: `radial-gradient(ellipse at 40% 20%, ${STEP_COLORS[step]} 0%, transparent 70%)`,
           overflowY: 'auto',
@@ -401,7 +413,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
             </AnimatePresence>
           </div>
         </div>
-      </div>
+      </dialog>
     </AnimatePresence>
   );
 }

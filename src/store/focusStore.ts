@@ -17,12 +17,18 @@ interface FocusState {
   duration: number;        // seconds for current phase
   totalFocusSeconds: number; // seconds of actual focus time elapsed
   xpEarned: number;        // XP for the current/last session
+
+  showPicker: boolean;
+  pickerTarget: FocusTarget | null;
+  openPicker: (target?: FocusTarget) => void;
+  closePicker: () => void;
   
   startFocus: (target: FocusTarget, durationMinutes?: number) => void;
   toggleTimer: () => void;
   stopFocus: () => void;
   tick: () => void;
   completeSession: () => void;
+  getTimeBasedXP: () => number;
 }
 
 const DEFAULT_FOCUS_MINUTES = 25;
@@ -43,6 +49,16 @@ export const useFocusStore = create<FocusState>((set, get) => ({
   duration: DEFAULT_FOCUS_MINUTES * 60,
   totalFocusSeconds: 0,
   xpEarned: 0,
+  
+  showPicker: false,
+  pickerTarget: null,
+  
+  openPicker: (target) => set({ 
+    showPicker: true, 
+    pickerTarget: target || { id: 'quick', title: 'Focus Session', type: 'habit' } 
+  }),
+  
+  closePicker: () => set({ showPicker: false, pickerTarget: null }),
 
   startFocus: (target, durationMinutes = DEFAULT_FOCUS_MINUTES) => {
     const duration = durationMinutes * 60;

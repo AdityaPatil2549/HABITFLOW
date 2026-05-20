@@ -5,7 +5,7 @@ import { useProfileStore } from '../store/profileStore';
 import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
 import { Trophy, CheckCircle2, Flame, ArrowRight, Target, Share2, Download, CloudRain, Sprout } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { gamificationService } from '../services/gamificationService';
+import { gamificationService, calculateStats } from '../services/gamificationService';
 import { toPng } from 'html-to-image';
 import { ShareCard } from '../components/gamification/ShareCard';
 import { getOrCreateSettings } from '../db';
@@ -61,9 +61,9 @@ export function WeeklyReviewPage() {
   };
 
   // Calculate XP Progress
-  const currentLevelXP = xpData ? 100 * Math.pow(xpData.numericLevel - 1, 2) : 0;
-  const nextLevelXP = xpData ? 100 * Math.pow(xpData.numericLevel, 2) : 100;
-  const xpProgressPercent = xpData ? Math.min(100, Math.max(0, ((xpData.totalScore - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100)) : 0;
+  const stats = xpData ? calculateStats(xpData.total) : null;
+  const numericLevel = stats ? stats.numericLevel : 1;
+  const xpProgressPercent = stats ? stats.levelProgress : 0;
 
   return (
     <div className="max-w-4xl mx-auto px-4 pb-24 pt-8 relative min-h-[90vh]">
@@ -173,21 +173,21 @@ export function WeeklyReviewPage() {
         </motion.div>
 
         {/* Level & Rewards */}
-        {xpData && (
+        {xpData && stats && (
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="bg-white/[0.02] backdrop-blur-md border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
             <div className="flex items-center gap-5">
               <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
                 <Trophy size={32} />
               </div>
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-white mb-1">Level {xpData.numericLevel} — {xpData.level}</h2>
+                <h2 className="text-xl font-bold text-white mb-1">Level {numericLevel} — {xpData.level}</h2>
                 <p className="text-sm text-slate-400">You earned {xpData.weeklyScore} XP this week!</p>
               </div>
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-bold text-slate-500">
-                <span>Progress to Lvl {xpData.numericLevel + 1}</span>
+                <span>Progress to Lvl {numericLevel + 1}</span>
                 <span>{Math.round(xpProgressPercent)}%</span>
               </div>
               <div className="w-full bg-white/5 rounded-full h-2.5 overflow-hidden">

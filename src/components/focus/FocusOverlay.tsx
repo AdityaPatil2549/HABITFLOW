@@ -113,22 +113,10 @@ export function FocusOverlay() {
     isActive, isRunning, timeLeft, mode, target, duration,
     totalFocusSeconds, xpEarned,
     toggleTimer, stopFocus, tick, completeSession,
+    showPicker, pickerTarget, closePicker, startFocus: startFocusStore
   } = useFocusStore();
   const { addXP } = useGamificationStore();
   const [xpAwarded, setXpAwarded] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
-  const startFocusStore = useFocusStore(s => s.startFocus);
-
-  const [pendingTarget, setPendingTarget] = useState<any>(null);
-
-  // Expose a global "open picker" function for the sidebar/mobile buttons
-  useEffect(() => {
-    (window as any).__openFocusPicker = (target?: any) => {
-      setPendingTarget(target || { id: 'quick', title: 'Focus Session', type: 'habit' });
-      setShowPicker(true);
-    };
-    return () => { delete (window as any).__openFocusPicker; };
-  }, []);
 
   // Timer tick
   useEffect(() => {
@@ -168,12 +156,12 @@ export function FocusOverlay() {
   if (showPicker && !isActive) {
     return (
       <DurationPicker
-        targetTitle={pendingTarget?.title || target?.title}
+        targetTitle={pickerTarget?.title || target?.title}
         onStart={mins => {
-          setShowPicker(false);
-          startFocusStore(pendingTarget || target || { id: 'quick', title: 'Focus Session', type: 'habit' }, mins);
+          closePicker();
+          startFocusStore(pickerTarget || target || { id: 'quick', title: 'Focus Session', type: 'habit' }, mins);
         }}
-        onCancel={() => setShowPicker(false)}
+        onCancel={() => closePicker()}
       />
     );
   }

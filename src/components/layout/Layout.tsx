@@ -1,6 +1,5 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
@@ -132,6 +131,18 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
   const { habits, loadHabits } = useHabitStore();
   const { tasks, loadTasks } = useTaskStore();
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    
+    dialog.showModal();
+
+    const handleClose = () => onClose();
+    dialog.addEventListener('close', handleClose);
+    return () => dialog.removeEventListener('close', handleClose);
+  }, [onClose]);
 
   useEffect(() => { 
     inputRef.current?.focus();
@@ -139,6 +150,19 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
     loadHabits();
     loadTasks();
   }, [loadHabits, loadTasks]);
+
+  function handleDialogClick(e: React.MouseEvent<HTMLDialogElement>) {
+    const rect = dialogRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    if (
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom
+    ) {
+      dialogRef.current?.close();
+    }
+  }
 
   const q = query.toLowerCase().trim();
   const habitResults = q ? habits.filter(h => !h.archived && h.name.toLowerCase().includes(q)).slice(0, 4) : [];
@@ -154,14 +178,19 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
-  function go(path: string) { navigate(path); onClose(); }
+  function go(path: string) { navigate(path); dialogRef.current?.close(); }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[10vh]">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-slate-950/80" onClick={onClose} />
+    <dialog
+      ref={dialogRef}
+      onClick={handleDialogClick}
+      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-start justify-center pt-[10vh] z-[9999] open:animate-in open:fade-in duration-200"
+    >
       {/* Panel */}
-      <div className="relative w-[calc(100%-2rem)] max-w-[500px] rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/80 overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
+      <div 
+        onClick={e => e.stopPropagation()}
+        className="relative w-[calc(100%-2rem)] max-w-[500px] rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/80 overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl"
+      >
         {/* Input */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
           <Search size={20} className="text-slate-400" />
@@ -230,7 +259,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
 
@@ -242,7 +271,7 @@ export function Layout() {
   const [showAccount, setShowAccount] = useState(false);
   const { profile } = useProfileStore();
   const { userXP, loadXP } = useGamificationStore();
-  const { isActive: focusActive, startFocus, stopFocus } = useFocusStore();
+  const { isActive: focusActive, startFocus, stopFocus, openPicker } = useFocusStore();
   const toast = useToast();
   // Read persisted darkMode preference — avoid DOM-read race with App.tsx's useEffect
   const [isDark, setIsDark] = useState(() => {
@@ -352,7 +381,7 @@ export function Layout() {
           <button
             onClick={() => {
               if (focusActive) { stopFocus(); }
-              else { (window as any).__openFocusPicker?.(); }
+              else { openPicker(); }
             }}
             className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 relative overflow-hidden ${
               focusActive
@@ -476,7 +505,7 @@ export function Layout() {
         <button
           onClick={() => {
             if (focusActive) stopFocus();
-            else (window as any).__openFocusPicker?.();
+            else openPicker();
           }}
           className={`flex flex-col items-center gap-1 transition-colors ${
             focusActive ? 'text-red-400' : 'text-slate-500 hover:text-brand-400'
@@ -500,7 +529,7 @@ export function Layout() {
       </nav>
 
       {/* ── Overlays ── */}
-      {showSearch && createPortal(<SearchOverlay onClose={() => setShowSearch(false)} />, document.body)}
+      {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} />}
     </div>
   );
 }

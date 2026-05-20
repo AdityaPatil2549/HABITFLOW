@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check } from 'lucide-react';
 import { useHabitStore } from '../../store/habitStore';
@@ -12,6 +12,7 @@ interface Props {
 
 export function LogHabitModal({ habit, onClose }: Props) {
   const logHabit = useHabitStore(s => s.logHabit);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   // default to whatever was logged today, or the target value, or 1
   const initialValue =
@@ -26,33 +27,55 @@ export function LogHabitModal({ habit, onClose }: Props) {
     }
   }, [habit]);
 
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    
+    dialog.showModal();
+
+    const handleClose = () => onClose();
+    dialog.addEventListener('close', handleClose);
+    return () => dialog.removeEventListener('close', handleClose);
+  }, [onClose]);
+
+  function handleDialogClick(e: React.MouseEvent<HTMLDialogElement>) {
+    const rect = dialogRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    if (
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom
+    ) {
+      dialogRef.current?.close();
+    }
+  }
+
   if (!habit) return null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!habit) return;
     await logHabit(habit.id, val);
-    onClose();
+    dialogRef.current?.close();
   }
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <dialog
+      ref={dialogRef}
+      onClick={handleDialogClick}
+      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center open:animate-in open:fade-in duration-300 z-[9999]"
+    >
+      <AnimatePresence>
         <motion.div
-          className="absolute inset-0 bg-slate-950/80"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-        />
-        <motion.div
-          className="relative bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-xs shadow-2xl"
+          className="relative bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-xs shadow-2xl mx-4"
           initial={{ scale: 0.95, opacity: 0, y: 10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 10 }}
+          onClick={e => e.stopPropagation()}
         >
           <button
-            onClick={onClose}
+            onClick={() => dialogRef.current?.close()}
             aria-label="Close modal"
             className="absolute right-4 top-4 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
           >
@@ -95,7 +118,7 @@ export function LogHabitModal({ habit, onClose }: Props) {
             </button>
           </form>
         </motion.div>
-      </div>
-    </AnimatePresence>
+      </AnimatePresence>
+    </dialog>
   );
 }

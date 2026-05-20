@@ -201,7 +201,7 @@ function Heatmap({ logs }: { logs: Record<string, number> }) {
       <svg width={grid.length * 14} height={7 * 14}>
         {grid.map((wk, wi) =>
           wk.map((day) => (
-            <rect key={day.date} x={wi * 14} y={day.date ? DAY_NAMES.indexOf(format(new Date(day.date + 'T00:00:00'), 'EEE') as any) * 14 : 0} width={11} height={11} rx={3} fill={colorFor(day.value)}>
+            <rect key={day.date} x={wi * 14} y={day.date ? new Date(day.date + 'T00:00:00').getDay() * 14 : 0} width={11} height={11} rx={3} fill={colorFor(day.value)}>
               <title>{day.date}: {Math.round(day.value * 100)}%</title>
             </rect>
           ))

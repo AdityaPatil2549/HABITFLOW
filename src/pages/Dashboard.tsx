@@ -105,8 +105,10 @@ export function Dashboard() {
     : [];
 
   // Week trend: compare last 3 days vs prev 4 days
-  const recentAvg = weekChart.slice(4).reduce((s, d) => s + d.pct, 0) / 3;
-  const prevAvg = weekChart.slice(0, 4).reduce((s, d) => s + d.pct, 0) / 4;
+  const recent = weekChart.slice(4);
+  const prev = weekChart.slice(0, 4);
+  const recentAvg = recent.length ? recent.reduce((s, d) => s + d.pct, 0) / recent.length : 0;
+  const prevAvg = prev.length ? prev.reduce((s, d) => s + d.pct, 0) / prev.length : 0;
   const trendDelta = Math.round(recentAvg - prevAvg);
 
   // XP stats

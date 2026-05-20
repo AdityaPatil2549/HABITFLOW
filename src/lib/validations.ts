@@ -18,6 +18,8 @@ export const habitSchema = z
       .optional(),
     graceDayEnabled: z.boolean(),
     archived: z.boolean().default(false),
+    reminderTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format').optional(),
+    reminderDays: z.array(z.number().min(0).max(6)).optional(),
   })
   .refine(
     data => {

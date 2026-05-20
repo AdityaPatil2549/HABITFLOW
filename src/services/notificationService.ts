@@ -95,7 +95,7 @@ class NotificationService {
     if (Notification.permission === 'granted') {
       new Notification('HabitFlow Notifications Enabled!', {
         body: 'You will now receive reminders for your habits.',
-        icon: '/vite.svg',
+        icon: '/pwa-192x192.png',
       });
     }
   }

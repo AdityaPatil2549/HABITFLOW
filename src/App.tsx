@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
-import { createPortal } from 'react-dom';
 import { Layout } from './components/layout/Layout';
 import { notificationService } from './services/notificationService';
 import { soundService } from './services/soundService';
@@ -13,6 +12,7 @@ import { getOrCreateSettings } from './db';
 import { gamificationService } from './services/gamificationService';
 import { useModalStore } from './store/modalStore';
 import { QuickAddModalFixed } from './components/habits/QuickAddModalFixed';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })));
@@ -62,33 +62,32 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center text-[var(--text-muted)]">
-            Loading...
-          </div>
-        }
-      >
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="habits" element={<HabitsPage />} />
-            <Route path="tasks" element={<TasksPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="review" element={<WeeklyReviewPage />} />
-          </Route>
-        </Routes>
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center text-[var(--text-muted)]">
+              Loading...
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="habits" element={<HabitsPage />} />
+              <Route path="tasks" element={<TasksPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="review" element={<WeeklyReviewPage />} />
+            </Route>
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
       <ReloadPrompt />
       <FocusOverlay />
       <ToastProvider />
-      {showOnboarding && createPortal(
-        <OnboardingWizard onComplete={handleOnboardingComplete} />,
-        document.body
-      )}
+      {showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
       <ModalContainer />
     </BrowserRouter>
   );

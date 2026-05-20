@@ -1,6 +1,6 @@
-@import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import 'tailwindcss';
 
 @theme {
   --color-on-surface-variant: #c7c4d7;
@@ -436,7 +436,7 @@ body {
 .light .bg-slate-900 {
   background-color: #f1f5f9;
 }
-.light .border-white\\/10 {
+.light .border-white\/10 {
   border-color: rgba(0,0,0,0.1);
 }
 
