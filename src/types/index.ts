@@ -106,6 +106,8 @@ export interface UserXP {
   dailyScore: number;
   streakFreezes: number;
   unlockedThemes: string[];
+  lastDailyReset?: string;
+  lastWeeklyReset?: string;
   lastUpdated: string;
 }
 

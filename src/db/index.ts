@@ -23,6 +23,11 @@ class HabitFlowDB extends Dexie {
       userXP: '++id',
       settings: '++id',
     });
+
+    // v2: Add compound index for faster habit log queries by habitId+date
+    this.version(2).stores({
+      habitLogs: '++id, habitId, date, [habitId+date], createdAt',
+    });
   }
 }
 
@@ -30,9 +35,8 @@ export const db = new HabitFlowDB();
 
 // ─── Singleton helpers ───────────────────────────────────────
 export async function getOrCreateUserXP(): Promise<UserXP> {
-  const existing = await db.userXP.toArray();
-  if (existing.length > 0) {
-    const user = existing[0];
+  const user = await db.userXP.get('singleton');
+  if (user) {
     if (!user.unlockedThemes) {
       user.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
       await db.userXP.update(user.id, { unlockedThemes: user.unlockedThemes });
@@ -56,8 +60,8 @@ export async function getOrCreateUserXP(): Promise<UserXP> {
 }
 
 export async function getOrCreateSettings(): Promise<Settings> {
-  const existing = await db.settings.toArray();
-  if (existing.length > 0) return existing[0];
+  const existing = await db.settings.get('singleton');
+  if (existing) return existing;
   const defaults: Settings = {
     id: 'singleton',
     theme: 'indigo',

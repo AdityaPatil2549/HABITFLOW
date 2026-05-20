@@ -24,17 +24,23 @@ export function WeeklyReviewPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadHabits();
-    loadTasks();
-    gamificationService.getUserXP().then(setXpData);
-    getOrCreateSettings().then(s => setTheme(s.theme || 'indigo'));
+    setLoading(true);
+    Promise.all([
+      loadHabits(),
+      loadTasks(),
+      gamificationService.getUserXP().then(setXpData),
+      getOrCreateSettings().then(s => setTheme(s.theme || 'indigo')),
+    ]).finally(() => setLoading(false));
   }, [loadHabits, loadTasks]);
+
+  useEffect(() => { document.title = 'Weekly Review — HabitFlow'; }, []);
 
   // Compute stats for the past 7 days
   const today = new Date();
-  const weekStart = subDays(today, 7);
+  const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
   
   const tasksDoneThisWeek = tasks.filter(t => t.completed && t.completedAt && new Date(t.completedAt) >= weekStart).length;
   
@@ -73,6 +79,13 @@ export function WeeklyReviewPage() {
         <div className="absolute top-[40%] right-[-10%] w-[40%] h-[60%] bg-fuchsia-500/15 rounded-full blur-[120px]" />
       </div>
 
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-32 gap-4">
+          <div className="w-8 h-8 border-2 border-brand-500/30 border-t-brand-400 rounded-full animate-spin" />
+          <p className="text-sm text-slate-500 font-medium">Loading your weekly review…</p>
+        </div>
+      ) : (
+      <>
       <div className="text-center relative mb-10 z-10">
         {(() => {
           const activeHabits = habits.filter(h => !h.archived);
@@ -231,6 +244,8 @@ export function WeeklyReviewPage() {
             ]}
           />
         </div>
+      )}
+      </>
       )}
     </div>
   );

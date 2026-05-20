@@ -6,6 +6,7 @@ import type { HabitType, HabitFrequency, Priority } from '../../types';
 import { format } from 'date-fns';
 import { IconRenderer, HABIT_ICONS } from '../common/IconRenderer';
 import { motion, AnimatePresence } from 'framer-motion';
+import { habitSchema } from '../../lib/validations';
 
 const CATEGORIES = [
   { name: 'Health', icon: '🍎' },
@@ -74,18 +75,24 @@ export function QuickAddModalFixed({ onClose }: Props) {
   async function handleHabitSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!habitName.trim()) return;
-    await addHabit({
+    const habitData = {
       name: habitName.trim(),
       icon: habitIcon,
       color: '#6366f1',
       category: habitCategory,
       type: habitType,
       frequency: habitFreq,
+      frequencyDays: habitFreq === 'weekly' ? [1, 2, 3, 4, 5] : undefined,
       targetValue: habitTarget,
       startDate: format(new Date(), 'yyyy-MM-dd'),
       graceDayEnabled: false,
       archived: false,
-    });
+    };
+    const result = habitSchema.safeParse(habitData);
+    if (!result.success) {
+      console.warn('Habit validation:', result.error.issues);
+    }
+    await addHabit(habitData);
     dialogRef.current?.close();
   }
 

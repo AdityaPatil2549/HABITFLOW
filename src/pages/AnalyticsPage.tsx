@@ -11,6 +11,7 @@ import {
   BarChart, Bar, Cell, ComposedChart, Legend, Area, AreaChart,
 } from 'recharts';
 import { format, subDays, subWeeks, startOfWeek, eachDayOfInterval, getDay, subYears } from 'date-fns';
+import { habitService } from '../services/habitService';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap'] as const;
@@ -59,8 +60,7 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
         const ds = format(day, 'yyyy-MM-dd');
         const logs = logsByDate.get(ds) ?? [];
         const scheduled = habits.filter(h =>
-          h.frequency === 'daily' ||
-          (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(day.getDay()))
+          habitService.isScheduledForDate(h, ds)
         );
         map[ds] = scheduled.length ? logs.filter(l => l.value >= 1).length / scheduled.length : 0;
       }
@@ -192,9 +192,9 @@ function Heatmap({ logs }: { logs: Record<string, number> }) {
   });
   function colorFor(val: number) {
     if (val === 0) return 'rgba(255,255,255,0.04)';
-    if (val < 0.4) return 'rgba(99,102,241,0.3)';
-    if (val < 0.7) return 'rgba(99,102,241,0.6)';
-    return '#6366f1';
+    if (val < 0.4) return 'var(--color-brand-300, rgba(99,102,241,0.3))';
+    if (val < 0.7) return 'var(--color-brand-400, rgba(99,102,241,0.6))';
+    return 'var(--color-brand-500, #6366f1)';
   }
   return (
     <div className="overflow-x-auto pb-2">
@@ -245,7 +245,7 @@ function WeeklyRadar({ habits }: { habits: any[] }) {
 
       const rows = week.map(({ day, date }) => {
         const logs = logsByDate.get(date) ?? [];
-        const scheduled = habits.filter(h => h.frequency === 'daily' || (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(new Date(date).getDay())));
+        const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
         return { day, completion: scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0 };
       });
       setData(rows);
@@ -285,7 +285,7 @@ function TrendLine({ habits }: { habits: any[] }) {
 
       const rows = days.map(date => {
         const logs = logsByDate.get(date) ?? [];
-        const scheduled = habits.filter(h => h.frequency === 'daily' || (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(new Date(date).getDay())));
+        const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
         return { date: date.slice(5), completion: scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0 };
       });
       setData(rows);
@@ -314,13 +314,18 @@ function TrendLine({ habits }: { habits: any[] }) {
 function TaskThroughput({ tasks }: { tasks: any[] }) {
   const data = useMemo(() => {
     const weeks: Record<string, { created: number; completed: number }> = {};
+    const ensureWeek = (wk: string) => { if (!weeks[wk]) weeks[wk] = { created: 0, completed: 0 }; };
     tasks.forEach(t => {
-      const wk = format(startOfWeek(new Date(t.createdAt)), 'MM/dd');
-      if (!weeks[wk]) weeks[wk] = { created: 0, completed: 0 };
-      weeks[wk].created++;
-      if (t.completed) weeks[wk].completed++;
+      const createdWk = format(startOfWeek(new Date(t.createdAt)), 'MM/dd');
+      ensureWeek(createdWk);
+      weeks[createdWk].created++;
+      if (t.completed && t.completedAt) {
+        const completedWk = format(startOfWeek(new Date(t.completedAt)), 'MM/dd');
+        ensureWeek(completedWk);
+        weeks[completedWk].completed++;
+      }
     });
-    return Object.entries(weeks).slice(-8).map(([week, v]) => ({ week, ...v }));
+    return Object.entries(weeks).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([week, v]) => ({ week, ...v }));
   }, [tasks]);
   return (
     <ResponsiveContainer width="100%" height={220}>
@@ -362,7 +367,7 @@ function BestWorstDay({ habits }: { habits: any[] }) {
         const dow = getDay(d);
         if (!counts[dow]) counts[dow] = { done: 0, total: 0 };
         const date = format(d, 'yyyy-MM-dd');
-        const scheduled = habits.filter(h => h.frequency === 'daily' || (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(dow)));
+        const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
         if (!scheduled.length) continue;
         const logs = logsByDate.get(date) ?? [];
         counts[dow].done += logs.filter(l => l.value >= 1).length;
@@ -427,7 +432,7 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
 
       const rows = days.map(date => {
         const logs = logsByDate.get(date) ?? [];
-        const scheduled = habits.filter(h => h.frequency === 'daily' || (h.frequency === 'weekly' && (h.frequencyDays ?? []).includes(new Date(date).getDay())));
+        const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
         const pct = scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0;
         const moodLog = moods.find(m => m.date === date);
         return { date: date.slice(5), completion: pct, mood: moodLog ? moodLog.score : null };
@@ -588,6 +593,8 @@ export function AnalyticsPage() {
   const [heatmapData, setHeatmapData] = useState<Record<string, number>>({});
 
   useEffect(() => { loadHabits(); loadTasks(); loadMoods(); }, [loadHabits, loadTasks, loadMoods]);
+
+  useEffect(() => { document.title = 'Analytics — HabitFlow'; }, []);
 
   const selectedHabit = habits.find(h => h.id === selectedHabitId) ?? habits[0] ?? null;
 

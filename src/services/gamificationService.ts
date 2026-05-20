@@ -1,6 +1,5 @@
 import { db, getOrCreateUserXP } from '@/db';
 import type { UserXP, Badge, Level } from '@/types';
-import { nanoid } from 'nanoid';
 import { format } from 'date-fns';
 
 // --- Gamification Logic & Constants ---
@@ -15,6 +14,13 @@ const LEVEL_THRESHOLDS = [
   { xpThreshold: 6000, title: 'Grandmaster' as Level },
 ];
 
+/**
+ * Calculates level information from total XP.
+ * - numericLevel: Every 100 XP = 1 level (Level 1 starts at 0 XP)
+ * - levelProgress: 0-99 representing XP progress within current level
+ * - level: Title string based on XP thresholds (Beginner < 500, Builder < 1500, etc.)
+ * - nextXP: Total XP needed to reach the next numeric level
+ */
 export function calculateStats(totalXP: number): {
   level: Level;
   levelProgress: number;
@@ -59,13 +65,13 @@ export const gamificationService = {
       'yyyy-MM-dd'
     );
 
-    if ((userXP as any).lastDailyReset !== todayStr) {
+    if (userXP.lastDailyReset !== todayStr) {
       userXP.dailyScore = 0;
-      (userXP as any).lastDailyReset = todayStr;
+      userXP.lastDailyReset = todayStr;
     }
-    if ((userXP as any).lastWeeklyReset !== thisMonday) {
+    if (userXP.lastWeeklyReset !== thisMonday) {
       userXP.weeklyScore = 0;
-      (userXP as any).lastWeeklyReset = thisMonday;
+      userXP.lastWeeklyReset = thisMonday;
     }
     // ─────────────────────────────────────────────────────────────
 
@@ -82,15 +88,15 @@ export const gamificationService = {
     return userXP;
   },
 
-  async awardBadge(name: string, description: string, icon: string): Promise<UserXP | null> {
+  async awardBadge(id: string, name: string, description: string, icon: string): Promise<UserXP | null> {
     const userXP = await getOrCreateUserXP();
 
-    // Convert current items to array to check if badge exists
-    const hasBadge = userXP.badgesEarned?.some(b => b.name === name);
+    // Deduplicate by stable id instead of name to prevent re-awards after renames
+    const hasBadge = userXP.badgesEarned?.some(b => b.id === id);
     if (hasBadge) return null; // Already earned
 
     const newBadge: Badge = {
-      id: nanoid(),
+      id,
       name,
       description,
       icon,
@@ -105,11 +111,15 @@ export const gamificationService = {
   },
 
   async checkStreakBadges(streak: number): Promise<UserXP | null> {
-    // Check and award streak badges automatically
-    if (streak === 3)
-      return this.awardBadge('Streak Novice', 'Hit a 3-day streak on any habit', '🔥');
-    if (streak === 7) return this.awardBadge('Consistency Key', 'Hit a 7-day streak', '⭐');
-    if (streak === 30) return this.awardBadge('Unstoppable', 'Hit a 30-day streak', '🚀');
+    // Use >= so badges aren't missed if streak jumps past a threshold (e.g., grace days)
+    if (streak >= 100)
+      return this.awardBadge('streak_100', 'Legend', 'Achieved a 100-day streak — extraordinary!', '🏆');
+    if (streak >= 30)
+      return this.awardBadge('streak_30', 'Unstoppable', 'Hit a 30-day streak', '🚀');
+    if (streak >= 7)
+      return this.awardBadge('streak_7', 'Consistency Key', 'Hit a 7-day streak', '⭐');
+    if (streak >= 3)
+      return this.awardBadge('streak_3', 'Streak Novice', 'Hit a 3-day streak on any habit', '🔥');
     return null;
   },
 

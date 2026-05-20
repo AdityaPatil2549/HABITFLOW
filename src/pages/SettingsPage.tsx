@@ -32,6 +32,8 @@ export function SettingsPage() {
     loadXP();
   }, [loadXP]);
 
+  useEffect(() => { document.title = 'Settings — HabitFlow'; }, []);
+
   async function saveSetting(update: Partial<Settings>) {
     if (!settings) return;
     const updated = { ...settings, ...update };
@@ -99,19 +101,54 @@ export function SettingsPage() {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      await db.transaction('rw', [db.habits, db.habitLogs, db.tasks, db.projects, db.moods, db.userXP], async () => {
-        if (data.habits) { await db.habits.clear(); await db.habits.bulkAdd(data.habits); }
-        if (data.habitLogs) { await db.habitLogs.clear(); await db.habitLogs.bulkAdd(data.habitLogs); }
-        if (data.tasks) { await db.tasks.clear(); await db.tasks.bulkAdd(data.tasks); }
-        if (data.projects) { await db.projects.clear(); await db.projects.bulkAdd(data.projects); }
-        if (data.moods) { await db.moods.clear(); await db.moods.bulkAdd(data.moods); }
-        if (data.userXP) { await db.userXP.clear(); await db.userXP.bulkAdd(data.userXP); }
-      });
-      toast.success('Import successful! Reloading…');
-      setTimeout(() => window.location.reload(), 1200);
+
+      // Validate required data shape
+      const isValid = data && typeof data === 'object' &&
+        (!data.habits || Array.isArray(data.habits)) &&
+        (!data.habitLogs || Array.isArray(data.habitLogs)) &&
+        (!data.tasks || Array.isArray(data.tasks)) &&
+        (!data.projects || Array.isArray(data.projects)) &&
+        (!data.moods || Array.isArray(data.moods)) &&
+        (!data.userXP || Array.isArray(data.userXP));
+
+      if (!isValid) {
+        toast.error('Invalid backup file: unexpected data format.');
+        e.target.value = '';
+        return;
+      }
+
+      // Check that arrays contain objects with id fields
+      const hasIds = (arr: any[]) => arr.length === 0 || arr.every((item: any) => item && typeof item.id !== 'undefined');
+      if (
+        (data.habits && !hasIds(data.habits)) ||
+        (data.tasks && !hasIds(data.tasks)) ||
+        (data.habitLogs && !hasIds(data.habitLogs))
+      ) {
+        toast.error('Invalid backup file: records missing required ID fields.');
+        e.target.value = '';
+        return;
+      }
+
+      toast.confirm(
+        `Import ${data.habits?.length ?? 0} habits, ${data.tasks?.length ?? 0} tasks, and ${data.habitLogs?.length ?? 0} logs? This will replace all existing data.`,
+        async () => {
+          await db.transaction('rw', [db.habits, db.habitLogs, db.tasks, db.projects, db.moods, db.userXP], async () => {
+            if (data.habits) { await db.habits.clear(); await db.habits.bulkAdd(data.habits); }
+            if (data.habitLogs) { await db.habitLogs.clear(); await db.habitLogs.bulkAdd(data.habitLogs); }
+            if (data.tasks) { await db.tasks.clear(); await db.tasks.bulkAdd(data.tasks); }
+            if (data.projects) { await db.projects.clear(); await db.projects.bulkAdd(data.projects); }
+            if (data.moods) { await db.moods.clear(); await db.moods.bulkAdd(data.moods); }
+            if (data.userXP) { await db.userXP.clear(); await db.userXP.bulkAdd(data.userXP); }
+          });
+          toast.success('Import successful! Reloading…');
+          setTimeout(() => window.location.reload(), 1200);
+        },
+        { confirmLabel: 'Import & Replace', cancelLabel: 'Cancel', danger: true }
+      );
     } catch (err) {
-      toast.error('Import failed: invalid file format.');
+      toast.error('Import failed: could not parse file as valid JSON.');
     }
+    e.target.value = '';
   }
 
   async function handleReset() {
@@ -226,6 +263,9 @@ export function SettingsPage() {
             <p className="text-xs text-slate-500">Audible feedback when completing habits and leveling up.</p>
           </div>
           <button
+            role="switch"
+            aria-checked={settings.soundEnabled !== false}
+            aria-label="Toggle sound effects"
             onClick={() => {
               const next = !settings.soundEnabled;
               saveSetting({ soundEnabled: next });
@@ -244,6 +284,9 @@ export function SettingsPage() {
             <p className="text-xs text-slate-500">Vibration on habit completion (mobile only).</p>
           </div>
           <button
+            role="switch"
+            aria-checked={settings.hapticEnabled !== false}
+            aria-label="Toggle haptic feedback"
             onClick={() => {
               const next = !settings.hapticEnabled;
               saveSetting({ hapticEnabled: next });
@@ -350,9 +393,9 @@ export function SettingsPage() {
         <p className="text-sm font-bold text-white">HabitFlow v1.2</p>
         <p className="text-xs text-slate-500 mt-1">Built with precision for peak performance.</p>
         <div className="flex items-center justify-center gap-4 mt-4">
-          <button className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Privacy Policy</button>
-          <button className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Terms of Use</button>
-          <button className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Source Code</button>
+          <button onClick={() => toast.info('HabitFlow is a local-first app. Your data never leaves your device.')} className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Privacy Policy</button>
+          <button onClick={() => toast.info('HabitFlow is free to use. No terms or restrictions apply.')} className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Terms of Use</button>
+          <button onClick={() => toast.info('HabitFlow is an open-source project.')} className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Source Code</button>
         </div>
       </section>
     </div>

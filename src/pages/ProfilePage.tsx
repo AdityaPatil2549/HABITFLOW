@@ -11,6 +11,7 @@ import { ShareCard } from '../components/gamification/ShareCard';
 import { getOrCreateSettings } from '../db';
 import { useToast } from '../components/common/Toast';
 import { soundService } from '../services/soundService';
+import { calculateStats } from '../services/gamificationService';
 
 // All achievable badges (catalogue) — icon + label must match what gamificationService awards
 const BADGE_CATALOGUE = [
@@ -95,6 +96,7 @@ export function ProfilePage() {
     if (!cardRef.current) return;
     setIsGenerating(true);
     try {
+      await document.fonts.ready;
       const dataUrl = await toPng(cardRef.current, { quality: 1, pixelRatio: 2 });
       soundService.playLevelUp();
       const link = document.createElement('a');
@@ -108,6 +110,8 @@ export function ProfilePage() {
       setIsGenerating(false);
     }
   };
+
+  useEffect(() => { document.title = 'Profile — HabitFlow'; }, []);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-24 relative">
@@ -200,9 +204,9 @@ export function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xs font-bold text-brand-400 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <Star size={9} /> Peak Performer
+                    <Star size={9} /> {userXP ? calculateStats(userXP.total).level : 'Beginner'}
                   </span>
-                  <span className="text-xs text-slate-500">Member since Apr 2026</span>
+                  <span className="text-xs text-slate-500">Member since {habits.length > 0 ? format(new Date(Math.min(...habits.map(h => new Date(h.createdAt).getTime()))), 'MMM yyyy') : format(new Date(), 'MMM yyyy')}</span>
                 </div>
                 <p className="text-slate-400 text-sm leading-relaxed">{bio || 'No bio set yet.'}</p>
               </div>

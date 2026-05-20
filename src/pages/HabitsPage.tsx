@@ -17,7 +17,7 @@ import { TemplatesLibrary } from '../components/habits/TemplatesLibrary';
 import { useToast } from '../components/common/Toast';
 import { db } from '../db';
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const CATEGORIES = [
   { name: 'Health', icon: '🍎' },
   { name: 'Learning', icon: '📚' },
@@ -28,7 +28,7 @@ const CATEGORIES = [
 ];
 const COLORS = ['#6366f1', '#8b5cf6', '#10b981', '#f43f5e', '#f59e0b', '#06b6d4'];
 
-function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabit?: HabitWithStreak }) {
+function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => void; initialHabit?: HabitWithStreak }) {
   const { addHabit, updateHabit } = useHabitStore();
   const [name, setName] = useState(initialHabit?.name ?? '');
   const [icon, setIcon] = useState(initialHabit?.icon ?? '🎯');
@@ -47,11 +47,13 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
+    if (freq === 'weekly' && freqDays.length === 0) { setError('Please select at least one day for weekly habits.'); return; }
     const parsed = habitSchema.safeParse({ name: name.trim(), icon, color, category, type, frequency: freq, frequencyDays: freq === 'weekly' ? freqDays : undefined, targetValue: target, startDate: initialHabit?.startDate ?? format(new Date(), 'yyyy-MM-dd'), graceDayEnabled: grace, archived: initialHabit?.archived ?? false, reminderTime: reminderTime || undefined });
     if (!parsed.success) { setError(parsed.error.issues[0].message); return; }
     if (initialHabit) await updateHabit(initialHabit.id, parsed.data);
     else await addHabit(parsed.data);
-    onClose();
+    // Signal that a new habit was just created (parent will reset category filter)
+    onClose('created');
   }
 
   return (
@@ -145,7 +147,7 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
               <button key={d} type="button" onClick={() => toggleDay(i)}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${freqDays.includes(i) ? 'text-brand-300' : 'border-white/8 text-slate-500'}`}
                 style={freqDays.includes(i) ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.15)' } : {}}>
-                {d[0]}
+                {d}
               </button>
             ))}
           </div>
@@ -154,8 +156,10 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
 
       {type !== 'boolean' && (
         <div>
-          <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Daily Target</p>
-          <input type="number" min={1} value={target} onChange={e => setTarget(Number(e.target.value))}
+          <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">
+            Daily Target {type === 'duration' ? '(minutes)' : type === 'rating' ? '(out of 5)' : '(count)'}
+          </p>
+          <input type="number" min={1} max={type === 'rating' ? 5 : undefined} value={target} onChange={e => setTarget(Number(e.target.value))}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all" />
         </div>
       )}
@@ -186,7 +190,7 @@ function HabitForm({ onClose, initialHabit }: { onClose: () => void; initialHabi
       </div>
 
       <div className="flex gap-3 pt-1">
-        <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">
+        <button type="button" onClick={() => onClose()} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">
           Cancel
         </button>
         <button type="submit" className="flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95"
@@ -210,8 +214,11 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
   const c = habit.color || '#6366f1';
 
   async function loadHistory() {
+    const thirtyDaysAgo = format(subDays(new Date(), 30), 'yyyy-MM-dd');
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
     const logs = await db.habitLogs
-      .where('habitId').equals(habit.id)
+      .where('[habitId+date]')
+      .between([habit.id, thirtyDaysAgo], [habit.id, todayStr], true, true)
       .filter(l => l.value >= 1 || !!l.isFrozen)
       .toArray();
     const map: Record<string, boolean> = {};
@@ -415,6 +422,13 @@ export function HabitsPage() {
   // Map of date -> Set of habitIds completed that day (for calendar dots)
   const [calLogs, setCalLogs] = useState<Record<string, Set<string>>>({});
 
+  // Reset selectedDate to today when the page mounts so stale dates don't hide today's habits
+  useEffect(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    if (selectedDate !== today) setSelectedDate(today);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function loadCalendarLogs(month: Date) {
     const start = format(startOfMonth(month), 'yyyy-MM-dd');
     const end = format(endOfMonth(month), 'yyyy-MM-dd');
@@ -480,7 +494,7 @@ export function HabitsPage() {
 
   const done = scheduled.filter(h => !!h.todayLog && (h.todayLog.isFrozen || h.todayLog.value >= 1)).length;
   const pct = scheduled.length ? Math.round((done / scheduled.length) * 100) : 0;
-  const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.best)) : 0;
+  const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.best ?? 0)) : 0;
   const today = format(new Date(), 'yyyy-MM-dd');
   const isToday = selectedDate === today;
 
@@ -500,16 +514,34 @@ export function HabitsPage() {
     const sourceIdx = result.source.index;
     const destIdx = result.destination.index;
     if (sourceIdx === destIdx) return;
-    // Get the current visible list, reorder it
+    // Reorder within visible list only
     const newVisible = Array.from(visible);
     const [removed] = newVisible.splice(sourceIdx, 1);
     newVisible.splice(destIdx, 0, removed);
-    // Build the full ordered ID list (keep habits not in visible unchanged)
-    const visibleIds = new Set(visible.map(h => h.id));
-    const otherHabits = habits.filter(h => !visibleIds.has(h.id));
-    const orderedIds = [...newVisible.map(h => h.id), ...otherHabits.map(h => h.id)];
+    // Rebuild full order preserving non-visible habits in their original positions
+    const visibleIdSet = new Set(visible.map(h => h.id));
+    const fullOrder = habits.map(h => h.id);
+    const nonVisibleOrder = fullOrder.filter(id => !visibleIdSet.has(id));
+    const firstVisibleIdx = fullOrder.findIndex(id => visibleIdSet.has(id));
+    const insertIdx = firstVisibleIdx >= 0 ? firstVisibleIdx : 0;
+    const orderedIds = [
+      ...nonVisibleOrder.slice(0, insertIdx),
+      ...newVisible.map(h => h.id),
+      ...nonVisibleOrder.slice(insertIdx),
+    ];
     reorderHabits(orderedIds);
   };
+
+  const handleLogClick = (hab: HabitWithStreak) => {
+    const isDone = !!hab.todayLog && (hab.todayLog.isFrozen || hab.todayLog.value >= (hab.type === 'boolean' ? 1 : hab.targetValue));
+    if (isDone) {
+      unlogHabit(hab.id);
+    } else {
+      hab.type === 'boolean' ? logHabit(hab.id, 1) : setSelectedLog(hab);
+    }
+  };
+
+  useEffect(() => { document.title = 'My Habits — HabitFlow'; }, []);
 
   return (
     <div className="space-y-5 relative">
@@ -520,7 +552,7 @@ export function HabitsPage() {
             initial={{ opacity: 0, scale: 0.8, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: -20 }}
-            className="fixed inset-x-4 top-24 z-[999] flex justify-center pointer-events-none"
+            className="fixed inset-x-4 z-[999] flex justify-center pointer-events-none" style={{ top: 'max(96px, calc(env(safe-area-inset-top, 0px) + 24px))' }}
           >
             <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-2xl shadow-emerald-500/40 flex items-center gap-3">
               <span className="text-2xl">🎉</span>
@@ -531,10 +563,10 @@ export function HabitsPage() {
         )}
       </AnimatePresence>
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Habit Tracker</p>
-          <h1 className="text-3xl font-bold text-white">My Habits</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">My Habits</h1>
           <p className="text-slate-400 text-sm mt-1">
             {isToday ? (
               <>
@@ -546,12 +578,12 @@ export function HabitsPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
           {/* View toggle */}
           <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/8">
             <button
               onClick={() => setShowView('list')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 showView === 'list' ? 'bg-brand-500/20 text-brand-300' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
@@ -559,7 +591,7 @@ export function HabitsPage() {
             </button>
             <button
               onClick={() => { setShowView('calendar'); const m = new Date(); setCalMonth(m); loadCalendarLogs(m); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 showView === 'calendar' ? 'bg-brand-500/20 text-brand-300' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
@@ -569,26 +601,26 @@ export function HabitsPage() {
           <motion.button
             onClick={() => setShowTemplates(true)}
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
+            className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
           >
             ✨ Templates
           </motion.button>
           <motion.button onClick={() => setShowAdd(v => !v)}
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0"
+            className="flex items-center gap-2 px-4 sm:px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0 ml-auto sm:ml-0"
             style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.35)' }}>
-            <Plus size={16} /> Add Habit
+            <Plus size={16} /> <span className="hidden sm:inline">Add Habit</span><span className="sm:hidden">Add</span>
           </motion.button>
         </div>
       </div>
 
       {/* ── Retroactive Date Picker Strip ── */}
-      <div className="glass-card rounded-2xl p-3">
+      <div className="glass-card rounded-2xl p-2.5 sm:p-3">
         <div className="flex items-center gap-2 mb-2 px-1">
           <CalendarDays size={13} className="text-brand-400" />
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Log for date</span>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1 sm:gap-1.5">
           {dateStrip.map(({ date, day, num }) => {
             const isSelected = date === selectedDate;
             const isCurrentDay = date === today;
@@ -597,15 +629,15 @@ export function HabitsPage() {
                 key={date}
                 onClick={() => setSelectedDate(date)}
                 className={cn(
-                  'flex-1 flex flex-col items-center justify-center h-[68px] rounded-xl transition-all text-center border',
+                  'flex-1 flex flex-col items-center justify-center h-[56px] sm:h-[68px] rounded-xl transition-all text-center border',
                   isSelected
                     ? 'text-white border-brand-500/50'
                     : 'border-white/5 text-slate-500 hover:text-slate-300 hover:border-white/10'
                 )}
                 style={isSelected ? { background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 4px 12px rgba(var(--brand-500-rgb),0.4)' } : {}}
               >
-                <span className="text-[10px] font-bold uppercase">{day}</span>
-                <span className={cn('text-base font-black mt-0.5', isSelected ? 'text-white' : isCurrentDay ? 'text-brand-400' : '')}>{num}</span>
+                <span className="text-[9px] sm:text-[10px] font-bold uppercase">{day}</span>
+                <span className={cn('text-sm sm:text-base font-black mt-0.5', isSelected ? 'text-white' : isCurrentDay ? 'text-brand-400' : '')}>{num}</span>
                 {isCurrentDay && !isSelected && <span className="w-1 h-1 rounded-full bg-brand-400 mt-0.5" />}
               </button>
             );
@@ -614,7 +646,7 @@ export function HabitsPage() {
       </div>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
           { label: 'Today', value: `${done}/${scheduled.length}`, sub: 'habits done', icon: '✅', class: 'kpi-card-indigo' },
           { label: 'Best Streak', value: `${bestStreak}d`, sub: 'all time', icon: '🏆', class: 'kpi-card-amber' },
@@ -623,16 +655,16 @@ export function HabitsPage() {
           <motion.div 
             key={k.label} 
             whileHover={{ y: -4, scale: 1.02 }}
-            className={cn("glass-card rounded-2xl p-6 text-center relative overflow-hidden group", k.class)}
+            className={cn("glass-card rounded-2xl p-3 sm:p-6 text-center relative overflow-hidden group", k.class)}
           >
             {/* Background Icon */}
-            <span className="absolute -right-2 -bottom-2 text-6xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
+            <span className="absolute -right-2 -bottom-2 text-4xl sm:text-6xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
               {k.icon}
             </span>
             
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">{k.label}</p>
-            <p className="text-4xl font-black text-white tracking-tight mb-1">{k.value}</p>
-            <p className="text-[10px] font-medium text-slate-500 uppercase">{k.sub}</p>
+            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 sm:mb-2">{k.label}</p>
+            <p className="text-2xl sm:text-4xl font-black text-white tracking-tight mb-0.5 sm:mb-1">{k.value}</p>
+            <p className="text-[9px] sm:text-[10px] font-medium text-slate-500 uppercase">{k.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -665,7 +697,7 @@ export function HabitsPage() {
               </div>
               <h2 className="text-base font-bold text-white">New Habit</h2>
             </div>
-            <HabitForm onClose={() => setShowAdd(false)} />
+            <HabitForm onClose={(reason) => { setShowAdd(false); if (reason === 'created') setActiveCategory('All'); }} />
           </motion.div>
         )}
         {editingHabit && (
@@ -679,7 +711,7 @@ export function HabitsPage() {
               </div>
               <h2 className="text-base font-bold text-white">Edit — {editingHabit.name}</h2>
             </div>
-            <HabitForm initialHabit={editingHabit} onClose={() => setEditingHabit(null)} />
+            <HabitForm initialHabit={editingHabit} onClose={() => { setEditingHabit(null); }} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -732,12 +764,12 @@ export function HabitsPage() {
         <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-14 text-center">
           <span className="text-4xl mb-3">🎉</span>
           <h3 className="text-base font-semibold text-white mb-1">
-            {activeCategory !== 'All' ? `No ${activeCategory} habits scheduled` : 'No habits scheduled'}
+            {activeCategory !== 'All' ? `No ${activeCategory} habits scheduled` : 'No habits scheduled for this day'}
           </h3>
           <p className="text-slate-500 text-sm">
             {activeCategory !== 'All' ? (
               <button onClick={() => setActiveCategory('All')} className="text-brand-400 hover:text-brand-300 transition-colors">Show all categories</button>
-            ) : 'Nothing scheduled for this day.'}
+            ) : 'Try selecting a different date or check "All My Habits" below.'}
           </p>
         </div>
       ) : (
@@ -766,17 +798,10 @@ export function HabitsPage() {
                         </div>
                         <div className="pl-11">
                           <HabitCard habit={h}
-                            onLogClick={hab => {
-                              const isDone = !!hab.todayLog && (hab.todayLog.isFrozen || hab.todayLog.value >= (hab.type === 'boolean' ? 1 : hab.targetValue));
-                              if (isDone) {
-                                unlogHabit(hab.id);
-                              } else {
-                                hab.type === 'boolean' ? logHabit(hab.id, 1) : setSelectedLog(hab);
-                              }
-                            }}
+                            onLogClick={handleLogClick}
                             onEdit={setEditingHabit}
                             onDelete={deleteHabit}
-                            canFreeze={!isToday && selectedDate < today && (!h.todayLog || h.todayLog.value === 0) && (userXP?.streakFreezes ?? 0) > 0}
+                            canFreeze={isToday && (!h.todayLog || h.todayLog.value === 0) && !h.todayLog?.isFrozen && h.streak.current > 0 && (userXP?.streakFreezes ?? 0) > 0}
                             onFreeze={handleUseFreeze}
                           />
                         </div>
@@ -790,6 +815,36 @@ export function HabitsPage() {
           </Droppable>
         </DragDropContext>
       )}
+
+      {/* ── All My Habits (always visible regardless of schedule) ── */}
+      {!loading && habits.filter(h => !h.archived).length > 0 && (() => {
+        const allActive = habits.filter(h => !h.archived);
+        const scheduledIds = new Set(scheduled.map(h => h.id));
+        const unscheduled = allActive.filter(h => !scheduledIds.has(h.id));
+        if (unscheduled.length === 0) return null;
+        return (
+          <div className="mt-6">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
+                <Archive size={12} className="text-slate-500" />
+              </div>
+              <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Not Scheduled Today</h2>
+              <span className="text-[10px] text-slate-600 font-bold">{unscheduled.length} habit{unscheduled.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="grid grid-cols-1 gap-3 opacity-70">
+              {unscheduled.map(h => (
+                <HabitCard
+                  key={h.id}
+                  habit={h}
+                  onLogClick={handleLogClick}
+                  onEdit={setEditingHabit}
+                  onDelete={deleteHabit}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {selectedLog && <LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />}
       {showTemplates && <TemplatesLibrary onClose={() => setShowTemplates(false)} />}
@@ -864,7 +919,7 @@ export function HabitsPage() {
                             {dayHabits.slice(0, 4).map((h, i) => (
                               <div key={i}
                                 className="w-1.5 h-1.5 rounded-full"
-                                style={{ background: allDone ? '#10b981' : (h.color || 'var(--brand-500)'), opacity: isTodayDay ? 1 : 0.7 }}
+                                style={{ background: donIds.has(h.id) ? (h.color || 'var(--brand-500)') : 'rgba(255,255,255,0.15)', opacity: isTodayDay ? 1 : 0.7, boxShadow: allDone ? '0 0 3px #10b981' : 'none' }}
                               />
                             ))}
                           </div>

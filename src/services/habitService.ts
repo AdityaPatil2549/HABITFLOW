@@ -55,12 +55,14 @@ export const habitService = {
 
   // ─── Logs ────────────────────────────────────────────────────
   async getLogsForHabit(habitId: string, fromDate?: string, toDate?: string): Promise<HabitLog[]> {
-    const query = db.habitLogs.where('habitId').equals(habitId);
-    const logs = await query.toArray();
     if (fromDate && toDate) {
-      return logs.filter(l => l.date >= fromDate && l.date <= toDate);
+      // Use compound index for efficient date-range queries
+      return db.habitLogs
+        .where('[habitId+date]')
+        .between([habitId, fromDate], [habitId, toDate], true, true)
+        .sortBy('date');
     }
-    return logs;
+    return db.habitLogs.where('habitId').equals(habitId).sortBy('date');
   },
 
   async getLogForDate(habitId: string, date: string): Promise<HabitLog | undefined> {
@@ -118,11 +120,13 @@ export const habitService = {
       if (habit.frequency === 'weekly') {
         return (habit.frequencyDays ?? []).includes(date.getDay());
       }
-      // custom interval — simplified: every N days from startDate
+      // custom interval — every N days from startDate
       if (habit.frequency === 'custom' && habit.frequencyInterval) {
+        if (!habit.startDate) return true; // No startDate = assume scheduled
         const start = parseISO(habit.startDate);
+        if (isNaN(start.getTime())) return true;
         const diff = Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-        return diff % habit.frequencyInterval === 0;
+        return diff >= 0 && diff % habit.frequencyInterval === 0;
       }
       return true;
     }
@@ -162,28 +166,26 @@ export const habitService = {
       if (i > 400) break; // safety cap
     }
 
-    // Calculate best streak
-    const sortedDates = allLogs
-      .filter(l => l.value >= (habit.type === 'boolean' ? 1 : habit.targetValue))
-      .map(l => l.date)
-      .sort();
-
+    // Calculate best streak (respecting frequency)
     let best = 0;
     let tempStreak = 0;
-    let prevDate: string | null = null;
-
-    for (const dateStr of sortedDates) {
-      if (prevDate === null) {
-        tempStreak = 1;
-      } else {
-        const prev = parseISO(prevDate);
-        const curr = parseISO(dateStr);
-        const gap = Math.floor((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
-        tempStreak = gap === 1 ? tempStreak + 1 : 1;
+    let j = 0;
+    while (true) {
+      const d = subDays(new Date(), j);
+      const dStr = format(d, 'yyyy-MM-dd');
+      if (habit.startDate && dStr < habit.startDate) break;
+      if (isDayScheduled(d)) {
+        if (isCompleted(d)) {
+          tempStreak++;
+        } else {
+          if (tempStreak > best) best = tempStreak;
+          tempStreak = 0;
+        }
       }
-      if (tempStreak > best) best = tempStreak;
-      prevDate = dateStr;
+      j++;
+      if (j > 400) break;
     }
+    if (tempStreak > best) best = tempStreak;
 
     return { current, best, graceUsed };
   },
@@ -222,9 +224,11 @@ export const habitService = {
       return (habit.frequencyDays ?? []).includes(d.getDay());
     }
     if (habit.frequency === 'custom' && habit.frequencyInterval) {
+      if (!habit.startDate) return true;
       const start = parseISO(habit.startDate);
+      if (isNaN(start.getTime())) return true;
       const diff = Math.floor((d.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      return diff % habit.frequencyInterval === 0;
+      return diff >= 0 && diff % habit.frequencyInterval === 0;
     }
     return true;
   },

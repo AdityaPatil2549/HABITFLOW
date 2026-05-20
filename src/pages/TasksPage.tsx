@@ -7,6 +7,7 @@ import type { Task, Priority } from '../types';
 import { format, isToday, isPast } from 'date-fns';
 import { taskSchema } from '../lib/validations';
 import { cn } from '../lib/utils';
+import { useToast } from '../components/common/Toast';
 
 const PRIORITY_CONFIG = [
   { label: 'Urgent', color: '#ef4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.3)', icon: '🔴' },
@@ -125,8 +126,9 @@ function TaskSkeleton() {
 }
 
 function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
-  const { tasks, updateTask, deleteTask } = useTaskStore();
+  const { tasks, updateTask, deleteTask, completeTask, uncompleteTask } = useTaskStore();
   const { startFocus, openPicker } = useFocusStore();
+  const toast = useToast();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const subtasks = tasks.filter(t => t.parentId === task.id);
@@ -161,7 +163,7 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
         <div className="flex items-center gap-4 px-5 py-4">
           {/* Check */}
           <motion.button
-            onClick={() => updateTask(task.id, { completed: !task.completed, completedAt: !task.completed ? new Date().toISOString() : undefined })}
+            onClick={() => task.completed ? uncompleteTask(task.id) : completeTask(task.id)}
             whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}
             className={cn(
               "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
@@ -222,7 +224,13 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
             <button onClick={() => setEditing(true)} className="w-8 h-8 rounded-full hover:bg-white/10 text-slate-500 hover:text-white transition-colors flex items-center justify-center">
               <Edit2 size={14} />
             </button>
-            <button onClick={() => deleteTask(task.id)} className="w-8 h-8 rounded-full hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors flex items-center justify-center">
+            <button onClick={() => {
+              toast.confirm(
+                `Delete "${task.title}"${subtasks.length > 0 ? ' and its subtasks' : ''}? This cannot be undone.`,
+                () => deleteTask(task.id),
+                { confirmLabel: 'Delete', danger: true }
+              );
+            }} className="w-8 h-8 rounded-full hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors flex items-center justify-center">
               <Trash2 size={14} />
             </button>
           </div>
@@ -242,6 +250,8 @@ export function TasksPage() {
   const [showAdd, setShowAdd] = useState(false);
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
+
+  useEffect(() => { document.title = 'Tasks — HabitFlow'; }, []);
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const filtered = tasks

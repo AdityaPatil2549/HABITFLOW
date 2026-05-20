@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
 import { useMoodStore } from '../store/moodStore';
@@ -28,7 +28,12 @@ async function computeWeekChart(habits: any[]): Promise<{ day: string; pct: numb
       const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
       if (!scheduled.length) return { day, date, pct: 0 };
       const logs = await db.habitLogs.where('date').equals(date).toArray();
-      const done = logs.filter(l => l.value >= 1 && scheduled.some(h => h.id === l.habitId)).length;
+      const done = logs.filter(l => {
+        const habit = scheduled.find(h => h.id === l.habitId);
+        if (!habit) return false;
+        if (habit.type === 'boolean') return l.value >= 1;
+        return l.value >= habit.targetValue;
+      }).length;
       return { day, date, pct: Math.round((done / scheduled.length) * 100) };
     })
   );
@@ -40,11 +45,17 @@ export function Dashboard() {
   const { tasks, loadTasks, completeTask } = useTaskStore();
   const { userXP, loadXP } = useGamificationStore();
   const { todayMood, loadMoods, logMood } = useMoodStore();
-  const [userName, setUserName] = useState('Alex');
+  const [userName, setUserName] = useState(() => {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      return raw ? JSON.parse(raw).name || 'User' : 'User';
+    } catch { return 'User'; }
+  });
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [weekChart, setWeekChart] = useState<{ day: string; pct: number; date: string }[]>([]);
   const [chartLoading, setChartLoading] = useState(true);
   const [savingMood, setSavingMood] = useState(false);
+  const logDebounceRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     loadHabits();
@@ -68,7 +79,9 @@ export function Dashboard() {
       window.removeEventListener('storage', sync);
       window.removeEventListener('profile-updated', sync);
     };
-  }, [loadHabits, loadTasks, loadXP]);
+  }, [loadHabits, loadTasks, loadXP, loadMoods]);
+
+  useEffect(() => { document.title = 'Dashboard — HabitFlow'; }, []);
 
   // Compute real chart whenever habits load
   useEffect(() => {
@@ -100,7 +113,7 @@ export function Dashboard() {
 
   // Streak at-risk: habits not done today that have a live streak, after 6 PM
   const hour = new Date().getHours();
-  const atRiskHabits = hour >= 18
+  const atRiskHabits = hour >= 20
     ? scheduled.filter(h => !h.todayLog && h.streak.current > 0)
     : [];
 
@@ -131,7 +144,7 @@ export function Dashboard() {
 
   const polyline = chartPoints.map(p => `${p.x},${p.y}`).join(' ');
   const areaPath = chartPoints.length
-    ? `M${chartPoints[0].x},110 ` + chartPoints.map(p => `L${p.x},${p.y}`).join(' ') + ` L${chartPoints[6].x},110 Z`
+    ? `M${chartPoints[0].x},110 ` + chartPoints.map(p => `L${p.x},${p.y}`).join(' ') + ` L${chartPoints[chartPoints.length - 1].x},110 Z`
     : '';
 
   return (
@@ -142,19 +155,20 @@ export function Dashboard() {
       animate="show"
     >
       {/* ── Header ── */}
-      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center shadow-xl shadow-brand-500/20 border-2 border-white/10 flex-shrink-0">
+      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-white/5 pb-4 sm:pb-6">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center shadow-xl shadow-brand-500/20 border-2 border-white/10 flex-shrink-0">
             {userAvatar ? (
               <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-2xl font-black text-white">{userName[0]?.toUpperCase()}</span>
+              <span className="text-xl sm:text-2xl font-black text-white">{userName[0]?.toUpperCase()}</span>
             )}
           </div>
-          <div>
-            <h1 className="text-3xl font-black text-white tracking-tight">{greeting}, {userName} 👋</h1>
-            <p className="text-slate-400 text-sm mt-1 flex items-center gap-2">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight truncate">{greeting}, {userName} 👋</h1>
+            <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+              <span className="truncate">
               {done === scheduled.length && scheduled.length > 0
                 ? '🎉 All habits done! Outstanding work.'
                 : done > 0
@@ -162,6 +176,7 @@ export function Dashboard() {
                 : scheduled.length > 0
                 ? `${scheduled.length} habits scheduled — let's get started!`
                 : 'No habits scheduled — add one to begin!'}
+              </span>
             </p>
           </div>
         </div>
@@ -183,9 +198,9 @@ export function Dashboard() {
           )}
           <button
             onClick={() => navigate('/habits')}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-tr from-brand-500 to-brand-600 text-white text-sm font-bold shadow-lg shadow-brand-500/20 active:scale-95 transition-all"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-tr from-brand-500 to-brand-600 text-white text-sm font-bold shadow-lg shadow-brand-500/20 active:scale-95 transition-all"
           >
-            <Plus size={16} /> New Habit
+            <Plus size={16} /> <span className="hidden sm:inline">New Habit</span><span className="sm:hidden">New</span>
           </button>
         </div>
       </motion.div>
@@ -221,19 +236,19 @@ export function Dashboard() {
       {/* ── Bento Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Progress Ring Card */}
-        <motion.div variants={item} className="lg:col-span-1 glass-card rounded-3xl p-6 relative overflow-hidden group">
+        <motion.div variants={item} className="lg:col-span-1 glass-card rounded-3xl p-4 sm:p-6 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
             <Trophy size={100} className="text-brand-400" />
           </div>
-          <h2 className="text-base font-bold text-white mb-6">Today's Target</h2>
+          <h2 className="text-sm sm:text-base font-bold text-white mb-4 sm:mb-6">Today's Target</h2>
 
-          <div className="flex justify-center mb-6 relative group/ring">
+          <div className="flex justify-center mb-4 sm:mb-6 relative group/ring">
             <div className={cn(
               "absolute inset-0 rounded-full blur-3xl opacity-20 transition-all duration-1000",
               pct >= 100 ? "bg-rose-500 scale-110 opacity-30" : "bg-brand-500"
             )} />
             
-            <svg className="w-48 h-48 -rotate-90 relative z-10" viewBox="0 0 192 192">
+            <svg className="w-36 h-36 sm:w-48 sm:h-48 -rotate-90 relative z-10" viewBox="0 0 192 192">
               <circle cx="96" cy="96" r="78" fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth="12" />
               <motion.circle
                 cx="96" cy="96" r="78" fill="transparent"
@@ -258,38 +273,38 @@ export function Dashboard() {
               <motion.span 
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
-                className="text-5xl font-black text-white tracking-tighter"
+                className="text-4xl sm:text-5xl font-black text-white tracking-tighter"
               >
-                {pct}<span className="text-2xl text-slate-500 ml-0.5">%</span>
+                {pct}<span className="text-xl sm:text-2xl text-slate-500 ml-0.5">%</span>
               </motion.span>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Complete</span>
+              <span className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Complete</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/5">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-white/5">
             <div className="text-center">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Done</p>
-              <p className="text-lg font-bold text-emerald-400">{done}</p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Done</p>
+              <p className="text-base sm:text-lg font-bold text-emerald-400">{done}</p>
             </div>
             <div className="text-center border-x border-white/5">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Left</p>
-              <p className="text-lg font-bold text-white">{remaining}</p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Left</p>
+              <p className="text-base sm:text-lg font-bold text-white">{remaining}</p>
             </div>
             <div className="text-center">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total</p>
-              <p className="text-lg font-bold text-white">{scheduled.length}</p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total</p>
+              <p className="text-base sm:text-lg font-bold text-white">{scheduled.length}</p>
             </div>
           </div>
         </motion.div>
 
         {/* REAL 7-Day Chart */}
-        <motion.div variants={item} className="lg:col-span-2 glass-card rounded-3xl p-6">
-          <div className="flex items-start justify-between mb-6">
+        <motion.div variants={item} className="lg:col-span-2 glass-card rounded-3xl p-4 sm:p-6">
+          <div className="flex items-start justify-between mb-4 sm:mb-6">
             <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <Activity size={16} className="text-brand-400" /> 7-Day Performance
               </h2>
-              <p className="text-slate-400 text-xs mt-1">Your habit completion rate over the last week</p>
+              <p className="text-slate-400 text-[10px] sm:text-xs mt-1">Your habit completion rate over the last week</p>
             </div>
             {!chartLoading && weekChart.length > 0 && (
               <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${
@@ -306,7 +321,7 @@ export function Dashboard() {
             )}
           </div>
 
-          <div className="h-40 w-full">
+          <div className="h-28 sm:h-40 w-full">
             {chartLoading ? (
               <div className="h-full flex items-center justify-center">
                 <div className="w-6 h-6 border-2 border-brand-500/30 border-t-brand-400 rounded-full animate-spin" />
@@ -371,7 +386,7 @@ export function Dashboard() {
         <motion.div variants={item} className="glass-card rounded-3xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-brand-400" /> Focus for Today
+              <CheckCircle2 size={16} className="text-brand-400" /> Due & Overdue
             </h2>
             <button onClick={() => navigate('/tasks')} className="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors uppercase tracking-widest">
               View All
@@ -455,7 +470,12 @@ export function Dashboard() {
                 return (
                   <div
                     key={h.id}
-                    onClick={() => { if (isDone) unlogHabit(h.id); else logHabit(h.id, 1); }}
+                    onClick={() => {
+                      if (logDebounceRef.current.has(h.id)) return;
+                      logDebounceRef.current.add(h.id);
+                      const action = isDone ? unlogHabit(h.id) : logHabit(h.id, 1);
+                      Promise.resolve(action).finally(() => logDebounceRef.current.delete(h.id));
+                    }}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer group flex items-center gap-3 ${
                       isDone
                         ? 'bg-emerald-500/10 border-emerald-500/20'
@@ -489,11 +509,11 @@ export function Dashboard() {
       </div>
 
       {/* ── Daily Mood Check-in ── */}
-      <motion.div variants={item} className="glass-card rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-4">
+      <motion.div variants={item} className="glass-card rounded-2xl p-4 sm:p-5">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="flex items-center gap-2">
             <Smile size={18} className="text-brand-400" />
-            <h2 className="text-sm font-bold text-white">How are you feeling today?</h2>
+            <h2 className="text-xs sm:text-sm font-bold text-white">How are you feeling today?</h2>
           </div>
           {todayMood && (
             <span className="text-xs text-slate-500 font-medium">
@@ -523,13 +543,13 @@ export function Dashboard() {
               >
                 <div 
                   className={cn(
-                    "mood-ring mb-3",
+                    "mood-ring mb-2 sm:mb-3",
                     isSelected && "active animate-mood-bounce"
                   )}
                   style={{ '--ring-color': color + '40' } as any}
                 >
                   <span className={cn(
-                    "text-3xl transition-all duration-300",
+                    "text-2xl sm:text-3xl transition-all duration-300",
                     isSelected ? "scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" : "grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110"
                   )}>
                     {emoji}

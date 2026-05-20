@@ -60,19 +60,24 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
   },
 
   logHabit: async (habitId, value, note) => {
-    await habitService.logCompletion(habitId, get().selectedDate, value, note);
-    soundService.playTick();
-    soundService.haptic([30]);
-    await get().loadHabits();
+    try {
+      await habitService.logCompletion(habitId, get().selectedDate, value, note);
+      soundService.playTick();
+      soundService.haptic([30]);
+      await get().loadHabits();
 
-    // Award XP
-    await useGamificationStore.getState().addXP(10);
+      // Award XP
+      await useGamificationStore.getState().addXP(10);
 
-    // Check streaks for badges
-    const updatedHabits = get().habits;
-    const h = updatedHabits.find(x => x.id === habitId);
-    if (h && h.streak.current > 0) {
-      await useGamificationStore.getState().awardStreakBadge(h.streak.current);
+      // Check streaks for badges
+      const updatedHabits = get().habits;
+      const h = updatedHabits.find(x => x.id === habitId);
+      if (h && h.streak.current > 0) {
+        await useGamificationStore.getState().awardStreakBadge(h.streak.current);
+      }
+    } catch (err) {
+      console.error('Failed to log habit:', err);
+      await get().loadHabits(); // Reload to reset UI state
     }
   },
 

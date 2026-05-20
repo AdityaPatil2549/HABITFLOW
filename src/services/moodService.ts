@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import type { Mood, MoodScore } from '@/types';
 import { nanoid } from 'nanoid';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { format } from 'date-fns';
 
 export const moodService = {
   async getAllMoods(): Promise<Mood[]> {

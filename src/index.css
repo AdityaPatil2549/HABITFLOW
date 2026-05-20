@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import 'tailwindcss';
 
 @theme {
@@ -191,7 +190,8 @@
 
 .glass-card {
   background: rgba(15, 23, 42, 0.6);
-  /* backdrop-filter: blur(20px); */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   border-left: 1px solid rgba(255, 255, 255, 0.15);
@@ -548,8 +548,37 @@ body {
   }
   
   /* Prevent accidental text selection when rapidly tapping UI elements */
-  button, a, .glass-card, .btn-primary, .btn-icon {
+  button, a, .btn-primary, .btn-icon {
     user-select: none;
     -webkit-user-select: none;
+  }
+}
+
+/* ── Mobile Responsive Adjustments ────────────────────────────── */
+@media (max-width: 639px) {
+  .mood-ring {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Tighter glass-card padding on mobile */
+  .glass-card {
+    border-radius: 1rem;
+  }
+
+  /* Compact scrollbars on mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+
+  /* Ensure dialogs don't overflow on mobile */
+  dialog {
+    padding: 0.5rem;
   }
 }

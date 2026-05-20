@@ -1,3 +1,4 @@
+import './index.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 import { Layout } from './components/layout/Layout';
@@ -28,7 +29,7 @@ const ProfilePage = lazy(() =>
 const WeeklyReviewPage = lazy(() =>
   import('./pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage }))
 );
-import './index.css';
+
 
 function App() {
   const { show: showOnboarding, complete: completeOnboarding } = useOnboarding();
@@ -36,8 +37,13 @@ function App() {
   useEffect(() => {
     getOrCreateSettings().then(settings => {
       const root = document.documentElement;
-      if (settings.darkMode) {
-        root.classList.toggle('light', settings.darkMode === 'light');
+      if (settings.darkMode === 'light') {
+        root.classList.add('light');
+      } else if (settings.darkMode === 'system') {
+        const preferLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        root.classList.toggle('light', preferLight);
+      } else {
+        root.classList.remove('light');
       }
       if (settings.theme) {
         if (settings.theme === 'indigo') root.removeAttribute('data-theme');
@@ -83,12 +89,12 @@ function App() {
             </Route>
           </Routes>
         </Suspense>
+        <ModalContainer />
       </ErrorBoundary>
       <ReloadPrompt />
       <FocusOverlay />
       <ToastProvider />
       {showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
-      <ModalContainer />
     </BrowserRouter>
   );
 }

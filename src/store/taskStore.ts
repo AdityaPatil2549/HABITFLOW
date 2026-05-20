@@ -46,6 +46,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   },
 
   completeTask: async id => {
+    const task = get().tasks.find(t => t.id === id);
+    if (task?.completed) return; // Already completed — prevent double XP
     await taskService.complete(id);
     await get().loadTasks();
     await useGamificationStore.getState().addXP(20);

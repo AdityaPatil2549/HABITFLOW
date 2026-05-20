@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 // ── Notification panel ─────────────────────────────────────────
+// Demo notifications — will be replaced with real event-driven notifications in a future update
 const DEMO_NOTIFICATIONS = [
   { id: 1, icon: '🔥', title: 'Streak milestone!', body: 'You\'ve kept your "Deep Work" habit for 7 days.', time: '2m ago', unread: true },
   { id: 2, icon: '✅', title: 'Task due soon', body: '"Finalize report" is due in 2 hours.', time: '1h ago', unread: true },
@@ -34,7 +35,7 @@ function NotificationPanel({
   onViewAll: () => void;
 }) {
   return (
-    <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-80 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
+    <div className="fixed left-0 right-0 top-14 sm:absolute sm:left-full sm:right-auto sm:top-12 lg:left-0 lg:top-auto lg:bottom-12 mx-2 sm:ml-2 sm:mx-0 lg:ml-0 w-auto sm:w-80 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl max-h-[70vh] sm:max-h-none">
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
         <h3 className="text-sm font-bold text-white">Notifications</h3>
         <div className="flex gap-2">
@@ -244,7 +245,7 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: a
         <button
           onClick={() => {
             toast.confirm(
-              'Log out will clear your local session. Your data will remain on this device. Continue?',
+              'This will permanently erase ALL your habits, tasks, and progress from this device. This cannot be undone. Are you sure?',
               async () => {
                 onClose();
                 const { db } = await import('../../db');
@@ -255,13 +256,13 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void, profile: a
                 localStorage.clear();
                 window.location.reload();
               },
-              { confirmLabel: 'Log Out', cancelLabel: 'Stay', danger: true }
+              { confirmLabel: 'Erase Everything', cancelLabel: 'Keep My Data', danger: true }
             );
           }}
           className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
         >
           <LogOut size={18} className="text-red-500/70" />
-          Log Out
+          Reset All Data
         </button>
       </div>
     </div>
@@ -421,9 +422,7 @@ export function Layout() {
   const { isActive: focusActive, startFocus, stopFocus, openPicker } = useFocusStore();
   const toast = useToast();
   // Read persisted darkMode preference — avoid DOM-read race with App.tsx's useEffect
-  const [isDark, setIsDark] = useState(() => {
-    try { const s = localStorage.getItem('hf_darkmode'); return s !== 'light'; } catch { return true; }
-  });
+  const [isDark, setIsDark] = useState(() => !document.documentElement.classList.contains('light'));
   const mobileNotifRef = useRef<HTMLDivElement>(null);
   const desktopNotifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
@@ -435,7 +434,6 @@ export function Layout() {
     root.classList.toggle('light', nowDark);
     setIsDark(!nowDark);
     const newMode = nowDark ? 'light' : 'dark';
-    try { localStorage.setItem('hf_darkmode', newMode); } catch {}
     import('../../db').then(({ db }) =>
       db.settings.toCollection().first().then(s =>
         s && db.settings.update(s.id!, { darkMode: newMode })
@@ -481,14 +479,14 @@ export function Layout() {
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950 border-b border-white/8 flex items-center justify-between px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))]">
         <NavLink to="/dashboard" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-          <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow" className="h-10 w-auto object-contain" />
+          <img src={isDark ? "/brand-lockup-dark.png" : "/brand-lockup-light.png"} alt="HabitFlow" className="h-7 sm:h-9 w-auto max-w-[140px] sm:max-w-[180px] object-contain" />
         </NavLink>
         <div className="flex items-center gap-4">
           <button onClick={() => setShowSearch(true)} className="text-slate-400 hover:text-white transition-colors">
             <Search size={22} />
           </button>
           <div className="relative" ref={mobileNotifRef}>
-            <button onClick={() => { setShowNotifications(v => !v); setShowAccount(false); }} className="relative text-slate-400 hover:text-white transition-colors">
+            <button onClick={() => { setShowNotifications(v => !v); setShowAccount(false); }} aria-label="Toggle notifications" className="relative text-slate-400 hover:text-white transition-colors">
               <Bell size={22} />
               {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-brand-400 ring-2 ring-slate-950" />}
             </button>
@@ -574,7 +572,7 @@ export function Layout() {
           </button>
 
           {/* Dark / Light toggle */}
-          <button onClick={toggleDark}
+          <button onClick={toggleDark} role="switch" aria-checked={isDark} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left">
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
             <span className="flex-1">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
@@ -639,7 +637,7 @@ export function Layout() {
       {/* ── Main content ── */}
       <main className="flex-1 lg:ml-64 w-full max-w-full">
         {/* On mobile, add padding to clear the top nav. On all screens, add bottom padding to clear mobile nav if visible. */}
-        <div className="pt-20 lg:pt-8 pb-24 lg:pb-8 px-4 md:px-8 max-w-7xl mx-auto">
+        <div className="pt-20 lg:pt-8 pb-28 lg:pb-8 px-3 sm:px-4 md:px-8 max-w-7xl mx-auto">
           <Outlet />
         </div>
       </main>
@@ -659,6 +657,7 @@ export function Layout() {
           )
         })}
         <button onClick={() => setQuickAddOpen(true)}
+          aria-label="Create new entry"
           className="relative z-[60] -mt-8 w-14 h-14 cursor-pointer bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-xl shadow-brand-500/40 border-4 border-slate-950 active:scale-95 transition-transform">
           <Plus size={24} className="text-white" />
         </button>
@@ -676,8 +675,8 @@ export function Layout() {
           <span className="text-[10px] font-bold">{focusActive ? 'End' : 'Focus'}</span>
         </button>
         {[
+          { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
           { to: '/analytics', icon: BarChart2, label: 'Stats' },
-          { to: '/profile', icon: User, label: 'Profile' },
         ].map(l => {
           const Icon = l.icon;
           return (

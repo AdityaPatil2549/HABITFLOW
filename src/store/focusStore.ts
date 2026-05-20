@@ -33,6 +33,7 @@ interface FocusState {
 
 const DEFAULT_FOCUS_MINUTES = 25;
 const DEFAULT_BREAK_MINUTES = 5;
+const STORAGE_KEY = 'hf_focus_session';
 
 // XP formula: 1 XP per minute, minimum 5 XP for any focus session
 function calcXP(focusSeconds: number): number {
@@ -40,14 +41,58 @@ function calcXP(focusSeconds: number): number {
   return Math.max(5, Math.round(minutes));
 }
 
+// Persist critical focus state to sessionStorage so it survives page refresh
+function persistFocus(state: Partial<FocusState>) {
+  try {
+    const data = {
+      isActive: state.isActive,
+      timeLeft: state.timeLeft,
+      mode: state.mode,
+      target: state.target,
+      duration: state.duration,
+      totalFocusSeconds: state.totalFocusSeconds,
+      savedAt: Date.now(),
+    };
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch { /* quota exceeded or private browsing */ }
+}
+
+function clearPersistedFocus() {
+  try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+}
+
+function loadPersistedFocus(): Partial<FocusState> | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data.isActive) return null;
+    // Adjust timeLeft for elapsed time since save
+    const elapsedSinceSave = Math.floor((Date.now() - data.savedAt) / 1000);
+    const adjustedTimeLeft = Math.max(0, data.timeLeft - elapsedSinceSave);
+    const additionalFocus = data.mode === 'focus' ? Math.min(elapsedSinceSave, data.timeLeft) : 0;
+    return {
+      isActive: true,
+      isRunning: false, // paused on reload — user must manually resume
+      timeLeft: adjustedTimeLeft,
+      mode: data.mode,
+      target: data.target,
+      duration: data.duration,
+      totalFocusSeconds: data.totalFocusSeconds + additionalFocus,
+    };
+  } catch { return null; }
+}
+
+const restored = loadPersistedFocus();
+
 export const useFocusStore = create<FocusState>((set, get) => ({
-  isActive: false,
-  isRunning: false,
-  timeLeft: DEFAULT_FOCUS_MINUTES * 60,
-  mode: 'focus',
-  target: null,
-  duration: DEFAULT_FOCUS_MINUTES * 60,
-  totalFocusSeconds: 0,
+  isActive: restored?.isActive ?? false,
+  isRunning: restored?.isRunning ?? false,
+  timeLeft: restored?.timeLeft ?? DEFAULT_FOCUS_MINUTES * 60,
+  mode: restored?.mode ?? 'focus',
+  target: restored?.target ?? null,
+  duration: restored?.duration ?? DEFAULT_FOCUS_MINUTES * 60,
+  totalFocusSeconds: restored?.totalFocusSeconds ?? 0,
   xpEarned: 0,
   
   showPicker: false,
@@ -62,23 +107,30 @@ export const useFocusStore = create<FocusState>((set, get) => ({
 
   startFocus: (target, durationMinutes = DEFAULT_FOCUS_MINUTES) => {
     const duration = durationMinutes * 60;
-    set({
+    const newState = {
       isActive: true,
       isRunning: true,
-      mode: 'focus',
+      mode: 'focus' as FocusMode,
       target,
       duration,
       timeLeft: duration,
       totalFocusSeconds: 0,
       xpEarned: 0,
-    });
+    };
+    set(newState);
+    persistFocus(newState);
   },
 
   toggleTimer: () => {
-    set((state) => ({ isRunning: !state.isRunning }));
+    set((state) => {
+      const next = { ...state, isRunning: !state.isRunning };
+      persistFocus(next);
+      return { isRunning: next.isRunning };
+    });
   },
 
   stopFocus: () => {
+    clearPersistedFocus();
     set({
       isActive: false,
       isRunning: false,
@@ -89,17 +141,19 @@ export const useFocusStore = create<FocusState>((set, get) => ({
   },
 
   completeSession: () => {
-    const { mode, duration, totalFocusSeconds } = get();
+    const { mode, totalFocusSeconds } = get();
     if (mode === 'focus') {
       // XP is calculated externally in FocusOverlay before calling this
       const breakDuration = DEFAULT_BREAK_MINUTES * 60;
-      set({
-        mode: 'break',
+      const newState = {
+        mode: 'break' as FocusMode,
         timeLeft: breakDuration,
         duration: breakDuration,
         isRunning: false,
         xpEarned: calcXP(totalFocusSeconds),
-      });
+      };
+      set(newState);
+      persistFocus({ ...get(), ...newState });
     } else {
       get().stopFocus();
     }
@@ -120,6 +174,10 @@ export const useFocusStore = create<FocusState>((set, get) => ({
         set(s => ({ timeLeft: s.timeLeft - 1, totalFocusSeconds: s.totalFocusSeconds + 1 }));
       } else {
         set(s => ({ timeLeft: s.timeLeft - 1 }));
+      }
+      // Persist every 10 seconds to avoid excessive writes
+      if (timeLeft % 10 === 0) {
+        persistFocus(get());
       }
     }
   },
