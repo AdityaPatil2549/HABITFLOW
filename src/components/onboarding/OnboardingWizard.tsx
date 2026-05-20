@@ -97,8 +97,9 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    
-    dialog.showModal();
+    if (!dialog.open) {
+      dialog.showModal();
+    }
   }, []);
 
   async function handleFinish() {

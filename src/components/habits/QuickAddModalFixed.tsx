@@ -45,12 +45,12 @@ export function QuickAddModalFixed({ onClose }: Props) {
   const addHabit = useHabitStore(s => s.addHabit);
   const addTask = useTaskStore(s => s.addTask);
 
-  // Open the dialog in the top layer when the component mounts
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    
-    dialog.showModal();
+    if (!dialog.open) {
+      dialog.showModal();
+    }
 
     const handleClose = () => onClose();
     dialog.addEventListener('close', handleClose);

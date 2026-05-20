@@ -30,8 +30,9 @@ export function LogHabitModal({ habit, onClose }: Props) {
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    
-    dialog.showModal();
+    if (!dialog.open) {
+      dialog.showModal();
+    }
 
     const handleClose = () => onClose();
     dialog.addEventListener('close', handleClose);

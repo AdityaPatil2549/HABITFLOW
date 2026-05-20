@@ -22,8 +22,17 @@ const DEMO_NOTIFICATIONS = [
   { id: 3, icon: '📈', title: 'Weekly summary ready', body: 'You completed 84% of habits this week!', time: '1d ago', unread: false },
 ];
 
-function NotificationPanel({ onClose }: { onClose: () => void }) {
-  const [notes, setNotes] = useState(DEMO_NOTIFICATIONS);
+function NotificationPanel({
+  onClose,
+  notes,
+  setNotes,
+  onViewAll,
+}: {
+  onClose: () => void;
+  notes: typeof DEMO_NOTIFICATIONS;
+  setNotes: React.Dispatch<React.SetStateAction<typeof DEMO_NOTIFICATIONS>>;
+  onViewAll: () => void;
+}) {
   return (
     <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-80 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
@@ -53,9 +62,144 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
         ))}
       </div>
       <div className="px-5 py-3 border-t border-white/5 text-center">
-        <button className="text-xs text-brand-400 hover:text-brand-300 font-semibold transition-colors">View all notifications</button>
+        <button onClick={onViewAll} className="text-xs text-brand-400 hover:text-brand-300 font-semibold transition-colors">
+          View all notifications
+        </button>
       </div>
     </div>
+  );
+}
+
+// ── All Notifications Modal ──────────────────────────────────────
+function AllNotificationsModal({ onClose, notes, setNotes }: { 
+  onClose: () => void; 
+  notes: typeof DEMO_NOTIFICATIONS;
+  setNotes: React.Dispatch<React.SetStateAction<typeof DEMO_NOTIFICATIONS>>;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (!dialog.open) {
+      dialog.showModal();
+    }
+    const handleClose = () => onClose();
+    dialog.addEventListener('close', handleClose);
+    return () => dialog.removeEventListener('close', handleClose);
+  }, [onClose]);
+
+  function handleDialogClick(e: React.MouseEvent<HTMLDialogElement>) {
+    const rect = dialogRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    if (
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom
+    ) {
+      dialogRef.current?.close();
+    }
+  }
+
+  const filteredNotes = notes.filter(n => {
+    if (filter === 'unread') return n.unread;
+    if (filter === 'read') return !n.unread;
+    return true;
+  });
+
+  return (
+    <dialog
+      ref={dialogRef}
+      onClick={handleDialogClick}
+      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center p-4 z-[9999] open:animate-in open:fade-in duration-200"
+    >
+      <div 
+        onClick={e => e.stopPropagation()}
+        className="relative w-full max-w-[550px] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl flex flex-col max-h-[80vh]"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 flex-shrink-0">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <Bell size={20} className="text-brand-400" />
+              Notification Center
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">Manage all your updates and milestones</p>
+          </div>
+          <button 
+            onClick={() => dialogRef.current?.close()} 
+            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Filters & Quick Action */}
+        <div className="flex items-center justify-between px-6 py-3 bg-slate-950/40 border-b border-white/5 flex-shrink-0">
+          <div className="flex gap-1">
+            {(['all', 'unread', 'read'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium capitalize transition-all ${
+                  filter === f
+                    ? 'bg-brand-500/20 text-brand-400 font-semibold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setNotes(ns => ns.map(x => ({ ...x, unread: false })))}
+            className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+          >
+            Mark all read
+          </button>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto divide-y divide-white/5 min-h-[300px]">
+          {filteredNotes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center text-slate-500">
+              <Bell size={40} className="opacity-20 mb-3" />
+              <p className="text-sm font-medium">No notifications found</p>
+              <p className="text-xs text-slate-600 mt-1">You're all caught up!</p>
+            </div>
+          ) : (
+            filteredNotes.map(n => (
+              <div 
+                key={n.id}
+                onClick={() => setNotes(ns => ns.map(x => x.id === n.id ? { ...x, unread: false } : x))}
+                className={`flex gap-4 px-6 py-5 cursor-pointer transition-all hover:bg-white/5 relative ${
+                  n.unread ? 'bg-brand-500/5' : ''
+                }`}
+              >
+                {n.unread && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-400" />
+                )}
+                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-2xl flex-shrink-0">
+                  {n.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-white leading-snug">{n.title}</p>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{n.body}</p>
+                    </div>
+                    <span className="text-[10px] text-slate-500 whitespace-nowrap flex-shrink-0 mt-0.5">{n.time}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </dialog>
   );
 }
 
@@ -136,8 +280,9 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    
-    dialog.showModal();
+    if (!dialog.open) {
+      dialog.showModal();
+    }
 
     const handleClose = () => onClose();
     dialog.addEventListener('close', handleClose);
@@ -269,6 +414,8 @@ export function Layout() {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [notes, setNotes] = useState(DEMO_NOTIFICATIONS);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
   const { profile } = useProfileStore();
   const { userXP, loadXP } = useGamificationStore();
   const { isActive: focusActive, startFocus, stopFocus, openPicker } = useFocusStore();
@@ -306,7 +453,7 @@ export function Layout() {
 
   useEffect(() => { loadXP(); }, [loadXP]);
 
-  const unreadCount = DEMO_NOTIFICATIONS.filter(n => n.unread).length;
+  const unreadCount = notes.filter(n => n.unread).length;
   const xpStats = userXP ? calculateStats(userXP.total) : null;
 
   // Close dropdowns on outside click
@@ -345,7 +492,14 @@ export function Layout() {
               <Bell size={22} />
               {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-brand-400 ring-2 ring-slate-950" />}
             </button>
-            {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}
+            {showNotifications && (
+              <NotificationPanel 
+                onClose={() => setShowNotifications(false)} 
+                notes={notes}
+                setNotes={setNotes}
+                onViewAll={() => { setShowNotifications(false); setShowAllNotifications(true); }}
+              />
+            )}
           </div>
         </div>
       </nav>
@@ -438,7 +592,14 @@ export function Layout() {
               </div>
               <span>Notifications</span>
             </button>
-            {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}
+            {showNotifications && (
+              <NotificationPanel 
+                onClose={() => setShowNotifications(false)} 
+                notes={notes}
+                setNotes={setNotes}
+                onViewAll={() => { setShowNotifications(false); setShowAllNotifications(true); }}
+              />
+            )}
           </div>
         </div>
 
@@ -530,6 +691,13 @@ export function Layout() {
 
       {/* ── Overlays ── */}
       {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} />}
+      {showAllNotifications && (
+        <AllNotificationsModal
+          onClose={() => setShowAllNotifications(false)}
+          notes={notes}
+          setNotes={setNotes}
+        />
+      )}
     </div>
   );
 }
