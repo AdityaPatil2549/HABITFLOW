@@ -35,24 +35,24 @@ interface ToastState {
 
 let _nextId = 1;
 
-export const useToastStore = create<ToastState>((set) => ({
+export const useToastStore = create<ToastState>(set => ({
   toasts: [],
   confirm: null,
 
-  add: (t) => {
+  add: t => {
     const id = String(_nextId++);
-    set((s) => ({ toasts: [...s.toasts, { ...t, id }] }));
+    set(s => ({ toasts: [...s.toasts, { ...t, id }] }));
     if (t.duration !== 0) {
       const dur = t.duration ?? (t.type === 'error' ? 5000 : 3500);
       setTimeout(() => {
-        set((s) => ({ toasts: s.toasts.filter((x) => x.id !== id) }));
+        set(s => ({ toasts: s.toasts.filter(x => x.id !== id) }));
       }, dur);
     }
   },
 
-  remove: (id) => set((s) => ({ toasts: s.toasts.filter((x) => x.id !== id) })),
+  remove: id => set(s => ({ toasts: s.toasts.filter(x => x.id !== id) })),
 
-  showConfirm: (c) => set({ confirm: { ...c, id: String(_nextId++) } }),
+  showConfirm: c => set({ confirm: { ...c, id: String(_nextId++) } }),
 
   dismissConfirm: () => set({ confirm: null }),
 }));
@@ -69,17 +69,45 @@ export function useToast() {
     confirm: (
       message: string,
       onConfirm: () => void,
-      options?: { confirmLabel?: string; cancelLabel?: string; danger?: boolean; onCancel?: () => void }
+      options?: {
+        confirmLabel?: string;
+        cancelLabel?: string;
+        danger?: boolean;
+        onCancel?: () => void;
+      }
     ) => showConfirm({ message, onConfirm, ...options }),
   };
 }
 
 // ── Icon + Color config ─────────────────────────────────────────
-const TOAST_CONFIG: Record<ToastType, { icon: React.FC<any>; color: string; bg: string; border: string }> = {
-  success: { icon: CheckCircle2, color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' },
-  error:   { icon: XCircle,      color: '#ef4444', bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.25)'  },
-  warning: { icon: AlertTriangle, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)' },
-  info:    { icon: Info,          color: '#818cf8', bg: 'rgba(129,140,248,0.12)', border: 'rgba(129,140,248,0.25)' },
+const TOAST_CONFIG: Record<
+  ToastType,
+  { icon: React.FC<any>; color: string; bg: string; border: string }
+> = {
+  success: {
+    icon: CheckCircle2,
+    color: '#10b981',
+    bg: 'rgba(16,185,129,0.12)',
+    border: 'rgba(16,185,129,0.25)',
+  },
+  error: {
+    icon: XCircle,
+    color: '#ef4444',
+    bg: 'rgba(239,68,68,0.12)',
+    border: 'rgba(239,68,68,0.25)',
+  },
+  warning: {
+    icon: AlertTriangle,
+    color: '#f59e0b',
+    bg: 'rgba(245,158,11,0.12)',
+    border: 'rgba(245,158,11,0.25)',
+  },
+  info: {
+    icon: Info,
+    color: '#818cf8',
+    bg: 'rgba(129,140,248,0.12)',
+    border: 'rgba(129,140,248,0.25)',
+  },
 };
 
 // ── Single Toast ────────────────────────────────────────────────
@@ -103,7 +131,9 @@ function ToastCard({ toast }: { toast: ToastItem }) {
       }}
     >
       <Icon size={18} style={{ color: cfg.color }} className="flex-shrink-0 mt-0.5" />
-      <p className="text-sm font-semibold text-white flex-1 leading-relaxed break-words">{toast.message}</p>
+      <p className="text-sm font-semibold text-white flex-1 leading-relaxed break-words">
+        {toast.message}
+      </p>
       <button
         onClick={() => remove(toast.id)}
         className="text-slate-500 hover:text-white transition-colors flex-shrink-0 ml-1 mt-0.5"
@@ -132,7 +162,12 @@ function ConfirmDialog() {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[10001] flex items-center justify-center p-6"
       style={{ background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(8px)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) { confirm.onCancel?.(); dismissConfirm(); } }}
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          confirm.onCancel?.();
+          dismissConfirm();
+        }
+      }}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -146,26 +181,38 @@ function ConfirmDialog() {
       >
         <div className="p-6 space-y-5">
           <div className="flex items-start gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-              confirm.danger ? 'bg-red-500/15' : 'bg-amber-500/15'
-            }`}>
-              {confirm.danger
-                ? <XCircle size={20} className="text-red-400" />
-                : <AlertTriangle size={20} className="text-amber-400" />}
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                confirm.danger ? 'bg-red-500/15' : 'bg-amber-500/15'
+              }`}
+            >
+              {confirm.danger ? (
+                <XCircle size={20} className="text-red-400" />
+              ) : (
+                <AlertTriangle size={20} className="text-amber-400" />
+              )}
             </div>
-            <p className="text-white font-semibold text-base leading-relaxed pt-1">{confirm.message}</p>
+            <p className="text-white font-semibold text-base leading-relaxed pt-1">
+              {confirm.message}
+            </p>
           </div>
 
           <div className="flex gap-3 pt-1">
             <button
-              onClick={() => { confirm.onCancel?.(); dismissConfirm(); }}
+              onClick={() => {
+                confirm.onCancel?.();
+                dismissConfirm();
+              }}
               className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors"
             >
               {confirm.cancelLabel ?? 'Cancel'}
             </button>
             <button
               ref={btnRef}
-              onClick={() => { confirm.onConfirm(); dismissConfirm(); }}
+              onClick={() => {
+                confirm.onConfirm();
+                dismissConfirm();
+              }}
               className={`flex-1 py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95 ${
                 confirm.danger
                   ? 'bg-gradient-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/30'
@@ -190,7 +237,7 @@ export function ToastProvider() {
       {/* Toast stack — bottom-right on desktop, bottom-center on mobile */}
       <div className="fixed bottom-24 lg:bottom-8 right-4 lg:right-6 z-[10000] flex flex-col gap-2 items-end pointer-events-none">
         <AnimatePresence mode="popLayout">
-          {toasts.map((t) => (
+          {toasts.map(t => (
             <div key={t.id} className="pointer-events-auto">
               <ToastCard toast={t} />
             </div>
@@ -199,9 +246,7 @@ export function ToastProvider() {
       </div>
 
       {/* Confirm dialog */}
-      <AnimatePresence>
-        {confirm && <ConfirmDialog key="confirm" />}
-      </AnimatePresence>
+      <AnimatePresence>{confirm && <ConfirmDialog key="confirm" />}</AnimatePresence>
     </>
   );
 }

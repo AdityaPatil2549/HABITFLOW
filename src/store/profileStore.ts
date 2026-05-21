@@ -18,24 +18,28 @@ function loadProfile(): Profile {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
     if (raw) return { name: 'Alex', bio: '', avatar: null, ...JSON.parse(raw) };
-  } catch {}
+  } catch (e) {
+    console.error('Failed to parse profile from localStorage:', e);
+  }
   return { name: 'Alex', bio: '', avatar: null };
 }
 
 export const useProfileStore = create<ProfileState>((set, get) => ({
   profile: loadProfile(),
 
-  setProfile: (partial) => {
+  setProfile: partial => {
     set(state => ({ profile: { ...state.profile, ...partial } }));
   },
 
-  saveProfile: (partial) => {
+  saveProfile: partial => {
     const updated = { ...get().profile, ...partial };
     set({ profile: updated });
     try {
       localStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
       window.dispatchEvent(new Event('profile-updated'));
-    } catch {}
+    } catch (e) {
+      console.error('Failed to save profile to localStorage:', e);
+    }
   },
 }));
 

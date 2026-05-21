@@ -58,7 +58,7 @@ export const gamificationService = {
       (() => {
         const d = new Date();
         const day = d.getDay(); // 0=Sun
-        const diff = (day === 0 ? -6 : 1 - day);
+        const diff = day === 0 ? -6 : 1 - day;
         d.setDate(d.getDate() + diff);
         return d;
       })(),
@@ -88,7 +88,12 @@ export const gamificationService = {
     return userXP;
   },
 
-  async awardBadge(id: string, name: string, description: string, icon: string): Promise<UserXP | null> {
+  async awardBadge(
+    id: string,
+    name: string,
+    description: string,
+    icon: string
+  ): Promise<UserXP | null> {
     const userXP = await getOrCreateUserXP();
 
     // Deduplicate by stable id instead of name to prevent re-awards after renames
@@ -113,7 +118,12 @@ export const gamificationService = {
   async checkStreakBadges(streak: number): Promise<UserXP | null> {
     // Use >= so badges aren't missed if streak jumps past a threshold (e.g., grace days)
     if (streak >= 100)
-      return this.awardBadge('streak_100', 'Legend', 'Achieved a 100-day streak — extraordinary!', '🏆');
+      return this.awardBadge(
+        'streak_100',
+        'Legend',
+        'Achieved a 100-day streak — extraordinary!',
+        '🏆'
+      );
     if (streak >= 30)
       return this.awardBadge('streak_30', 'Unstoppable', 'Hit a 30-day streak', '🚀');
     if (streak >= 7)
@@ -150,13 +160,14 @@ export const gamificationService = {
     if (userXP.unlockedThemes?.includes(themeId)) return false;
 
     userXP.total -= cost;
-    if (!userXP.unlockedThemes) userXP.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
+    if (!userXP.unlockedThemes)
+      userXP.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
     userXP.unlockedThemes.push(themeId);
-    
+
     const { level, levelProgress } = calculateStats(userXP.total);
     userXP.level = level;
     userXP.levelProgress = levelProgress;
-    
+
     await db.userXP.put(userXP);
     return true;
   },

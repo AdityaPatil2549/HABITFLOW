@@ -206,9 +206,11 @@ export const habitService = {
           return habitService.isScheduledForDate(h, format(d, 'yyyy-MM-dd'));
         }).filter(Boolean).length;
 
-        const completionRate30Days = scheduledDays > 0
-          ? logs30.filter(l => l.value >= (h.type === 'boolean' ? 1 : h.targetValue)).length / scheduledDays
-          : 0;
+        const completionRate30Days =
+          scheduledDays > 0
+            ? logs30.filter(l => l.value >= (h.type === 'boolean' ? 1 : h.targetValue)).length /
+              scheduledDays
+            : 0;
 
         return { ...h, streak, todayLog, completionRate30Days };
       })

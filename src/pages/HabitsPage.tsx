@@ -1,11 +1,35 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Flame, Archive, Trash2, Edit2, CheckCircle2, ChevronRight, CalendarDays, Snowflake, GripVertical, Timer, Bell, BarChart2, X, ChevronLeft } from 'lucide-react';
+import {
+  Plus,
+  Flame,
+  Archive,
+  Trash2,
+  Edit2,
+  CheckCircle2,
+  ChevronRight,
+  CalendarDays,
+  Snowflake,
+  GripVertical,
+  Timer,
+  Bell,
+  BarChart2,
+  ChevronLeft,
+} from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useHabitStore } from '../store/habitStore';
 import { useGamificationStore } from '../store/gamificationStore';
 import type { HabitWithStreak, HabitType, HabitFrequency } from '../types';
-import { format, subDays, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
+import {
+  format,
+  subDays,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  getDay,
+} from 'date-fns';
 import { habitSchema } from '../lib/validations';
 import { LogHabitModal } from '../components/habits/LogHabitModal';
 import { cn } from '../lib/utils';
@@ -28,7 +52,13 @@ const CATEGORIES = [
 ];
 const COLORS = ['#6366f1', '#8b5cf6', '#10b981', '#f43f5e', '#f59e0b', '#06b6d4'];
 
-function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => void; initialHabit?: HabitWithStreak }) {
+function HabitForm({
+  onClose,
+  initialHabit,
+}: {
+  onClose: (reason?: string) => void;
+  initialHabit?: HabitWithStreak;
+}) {
   const { addHabit, updateHabit } = useHabitStore();
   const [name, setName] = useState(initialHabit?.name ?? '');
   const [icon, setIcon] = useState(initialHabit?.icon ?? '🎯');
@@ -36,20 +66,42 @@ function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => vo
   const [category, setCategory] = useState(initialHabit?.category ?? 'Health');
   const [type, setType] = useState<HabitType>(initialHabit?.type ?? 'boolean');
   const [freq, setFreq] = useState<HabitFrequency>(initialHabit?.frequency ?? 'daily');
-  const [freqDays, setFreqDays] = useState<number[]>(initialHabit?.frequencyDays ?? [1, 2, 3, 4, 5]);
+  const [freqDays, setFreqDays] = useState<number[]>(
+    initialHabit?.frequencyDays ?? [1, 2, 3, 4, 5]
+  );
   const [target, setTarget] = useState(initialHabit?.targetValue ?? 1);
   const [grace, setGrace] = useState(initialHabit?.graceDayEnabled ?? false);
   const [reminderTime, setReminderTime] = useState(initialHabit?.reminderTime ?? '');
   const [error, setError] = useState<string | null>(null);
 
-  const toggleDay = (d: number) => setFreqDays(ds => ds.includes(d) ? ds.filter(x => x !== d) : [...ds, d]);
+  const toggleDay = (d: number) =>
+    setFreqDays(ds => (ds.includes(d) ? ds.filter(x => x !== d) : [...ds, d]));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    if (freq === 'weekly' && freqDays.length === 0) { setError('Please select at least one day for weekly habits.'); return; }
-    const parsed = habitSchema.safeParse({ name: name.trim(), icon, color, category, type, frequency: freq, frequencyDays: freq === 'weekly' ? freqDays : undefined, targetValue: target, startDate: initialHabit?.startDate ?? format(new Date(), 'yyyy-MM-dd'), graceDayEnabled: grace, archived: initialHabit?.archived ?? false, reminderTime: reminderTime || undefined });
-    if (!parsed.success) { setError(parsed.error.issues[0].message); return; }
+    if (freq === 'weekly' && freqDays.length === 0) {
+      setError('Please select at least one day for weekly habits.');
+      return;
+    }
+    const parsed = habitSchema.safeParse({
+      name: name.trim(),
+      icon,
+      color,
+      category,
+      type,
+      frequency: freq,
+      frequencyDays: freq === 'weekly' ? freqDays : undefined,
+      targetValue: target,
+      startDate: initialHabit?.startDate ?? format(new Date(), 'yyyy-MM-dd'),
+      graceDayEnabled: grace,
+      archived: initialHabit?.archived ?? false,
+      reminderTime: reminderTime || undefined,
+    });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
+      return;
+    }
     if (initialHabit) await updateHabit(initialHabit.id, parsed.data);
     else await addHabit(parsed.data);
     // Signal that a new habit was just created (parent will reset category filter)
@@ -58,24 +110,41 @@ function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => vo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error && <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">
+          {error}
+        </p>
+      )}
 
       {/* Name + emoji */}
       <div>
-        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Name & Icon</p>
+        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">
+          Name & Icon
+        </p>
         <div className="flex gap-3">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 cursor-pointer transition-all hover:scale-105 active:scale-95" style={{ background: color + '15', border: `2px solid ${color}30`, color: color }}>
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 cursor-pointer transition-all hover:scale-105 active:scale-95"
+            style={{ background: color + '15', border: `2px solid ${color}30`, color: color }}
+          >
             <IconRenderer name={icon} size={24} />
           </div>
           <input
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-base font-medium outline-none focus:border-brand-500/50 transition-all"
-            placeholder="Habit name…" value={name} onChange={e => setName(e.target.value)} autoFocus required
+            placeholder="Habit name…"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            autoFocus
+            required
           />
         </div>
         <div className="flex flex-wrap gap-2 mt-3 bg-white/5 rounded-2xl p-3 border border-white/5">
           {HABIT_ICONS.map(item => (
-            <button key={item.name} type="button" onClick={() => setIcon(item.name)}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${icon === item.name ? 'bg-brand-500 text-white shadow-lg' : 'text-slate-500 hover:bg-white/10 hover:text-white'}`}>
+            <button
+              key={item.name}
+              type="button"
+              onClick={() => setIcon(item.name)}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${icon === item.name ? 'bg-brand-500 text-white shadow-lg' : 'text-slate-500 hover:bg-white/10 hover:text-white'}`}
+            >
               <item.icon size={18} />
             </button>
           ))}
@@ -88,14 +157,20 @@ function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => vo
           <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Color</p>
           <div className="flex gap-2 flex-wrap">
             {COLORS.map(c => (
-              <button key={c} type="button" onClick={() => setColor(c)}
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
                 className={`w-8 h-8 rounded-full transition-all ${color === c ? 'scale-125' : 'hover:scale-110'}`}
-                style={{ background: c, boxShadow: color === c ? `0 0 10px ${c}80` : 'none' }} />
+                style={{ background: c, boxShadow: color === c ? `0 0 10px ${c}80` : 'none' }}
+              />
             ))}
           </div>
         </div>
         <div className="col-span-2 sm:col-span-1">
-          <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Category</p>
+          <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">
+            Category
+          </p>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map(c => (
               <button
@@ -118,25 +193,53 @@ function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => vo
 
       {/* Type */}
       <div>
-        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Habit Type</p>
+        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">
+          Habit Type
+        </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {([['boolean','✅ Yes/No'],['count','🔢 Count'],['duration','⏱ Duration'],['rating','⭐ Rating']] as const).map(([v, l]) => (
-            <button key={v} type="button" onClick={() => setType(v as HabitType)}
+          {(
+            [
+              ['boolean', '✅ Yes/No'],
+              ['count', '🔢 Count'],
+              ['duration', '⏱ Duration'],
+              ['rating', '⭐ Rating'],
+            ] as const
+          ).map(([v, l]) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setType(v as HabitType)}
               className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all ${type === v ? 'text-brand-300 scale-[1.03]' : 'border-white/8 text-slate-400 hover:border-white/20'}`}
-              style={type === v ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.1)' } : {}}
-            >{l}</button>
+              style={
+                type === v
+                  ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.1)' }
+                  : {}
+              }
+            >
+              {l}
+            </button>
           ))}
         </div>
       </div>
 
       {/* Frequency */}
       <div>
-        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Frequency</p>
+        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">
+          Frequency
+        </p>
         <div className="flex gap-2 mb-2">
-          {(['daily','weekly'] as const).map(f => (
-            <button key={f} type="button" onClick={() => setFreq(f)}
+          {(['daily', 'weekly'] as const).map(f => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFreq(f)}
               className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${freq === f ? 'text-brand-300' : 'border-white/8 text-slate-400'}`}
-              style={freq === f ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.1)' } : {}}>
+              style={
+                freq === f
+                  ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.1)' }
+                  : {}
+              }
+            >
               {f === 'daily' ? '📅 Every day' : '📆 Specific days'}
             </button>
           ))}
@@ -144,9 +247,17 @@ function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => vo
         {freq === 'weekly' && (
           <div className="flex gap-1.5">
             {DAYS.map((d, i) => (
-              <button key={d} type="button" onClick={() => toggleDay(i)}
+              <button
+                key={d}
+                type="button"
+                onClick={() => toggleDay(i)}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${freqDays.includes(i) ? 'text-brand-300' : 'border-white/8 text-slate-500'}`}
-                style={freqDays.includes(i) ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.15)' } : {}}>
+                style={
+                  freqDays.includes(i)
+                    ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.15)' }
+                    : {}
+                }
+              >
                 {d}
               </button>
             ))}
@@ -157,19 +268,30 @@ function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => vo
       {type !== 'boolean' && (
         <div>
           <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">
-            Daily Target {type === 'duration' ? '(minutes)' : type === 'rating' ? '(out of 5)' : '(count)'}
+            Daily Target{' '}
+            {type === 'duration' ? '(minutes)' : type === 'rating' ? '(out of 5)' : '(count)'}
           </p>
-          <input type="number" min={1} max={type === 'rating' ? 5 : undefined} value={target} onChange={e => setTarget(Number(e.target.value))}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all" />
+          <input
+            type="number"
+            min={1}
+            max={type === 'rating' ? 5 : undefined}
+            value={target}
+            onChange={e => setTarget(Number(e.target.value))}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all"
+          />
         </div>
       )}
 
       <label className="flex items-center gap-3 cursor-pointer py-1">
-        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${grace ? 'border-brand-500 bg-brand-500' : 'border-white/20'}`}
-          onClick={() => setGrace(v => !v)}>
+        <div
+          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${grace ? 'border-brand-500 bg-brand-500' : 'border-white/20'}`}
+          onClick={() => setGrace(v => !v)}
+        >
           {grace && <CheckCircle2 size={12} className="text-white" />}
         </div>
-        <span className="text-sm text-slate-300">Enable grace day <span className="text-slate-500">(1 free miss/week)</span></span>
+        <span className="text-sm text-slate-300">
+          Enable grace day <span className="text-slate-500">(1 free miss/week)</span>
+        </span>
       </label>
 
       {/* Reminder time */}
@@ -183,18 +305,32 @@ function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => vo
           className="bg-transparent text-sm text-white outline-none cursor-pointer [color-scheme:dark]"
         />
         {reminderTime && (
-          <button type="button" onClick={() => setReminderTime('')} className="text-slate-500 hover:text-white transition-colors text-xs">
+          <button
+            type="button"
+            onClick={() => setReminderTime('')}
+            className="text-slate-500 hover:text-white transition-colors text-xs"
+          >
             ✕
           </button>
         )}
       </div>
 
       <div className="flex gap-3 pt-1">
-        <button type="button" onClick={() => onClose()} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">
+        <button
+          type="button"
+          onClick={() => onClose()}
+          className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors"
+        >
           Cancel
         </button>
-        <button type="submit" className="flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95"
-          style={{ background: `linear-gradient(135deg, ${color}, ${color}cc)`, boxShadow: `0 8px 20px ${color}40` }}>
+        <button
+          type="submit"
+          className="flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95"
+          style={{
+            background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+            boxShadow: `0 8px 20px ${color}40`,
+          }}
+        >
           {initialHabit ? '✓ Save Changes' : '🔥 Create Habit'}
         </button>
       </div>
@@ -202,15 +338,37 @@ function HabitForm({ onClose, initialHabit }: { onClose: (reason?: string) => vo
   );
 }
 
-function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }: { habit: HabitWithStreak; onLogClick: (h: HabitWithStreak) => void; onEdit: (h: HabitWithStreak) => void; onDelete: (id: string) => void; canFreeze?: boolean; onFreeze?: (h: HabitWithStreak) => void }) {
+function HabitCard({
+  habit,
+  onLogClick,
+  onEdit,
+  onDelete,
+  canFreeze,
+  onFreeze,
+}: {
+  habit: HabitWithStreak;
+  onLogClick: (h: HabitWithStreak) => void;
+  onEdit: (h: HabitWithStreak) => void;
+  onDelete: (id: string) => void;
+  canFreeze?: boolean;
+  onFreeze?: (h: HabitWithStreak) => void;
+}) {
   const { archiveHabit } = useHabitStore();
-  const { startFocus, openPicker } = useFocusStore();
+  const { openPicker } = useFocusStore();
   const toast = useToast();
   const [showDetails, setShowDetails] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<Record<string, boolean>>({});
-  const done = !!habit.todayLog && (habit.todayLog.isFrozen || habit.todayLog.value >= (habit.type === 'boolean' ? 1 : habit.targetValue));
-  const pct = habit.type !== 'boolean' && habit.todayLog ? Math.min((habit.todayLog.value / habit.targetValue) * 100, 100) : done ? 100 : 0;
+  const done =
+    !!habit.todayLog &&
+    (habit.todayLog.isFrozen ||
+      habit.todayLog.value >= (habit.type === 'boolean' ? 1 : habit.targetValue));
+  const pct =
+    habit.type !== 'boolean' && habit.todayLog
+      ? Math.min((habit.todayLog.value / habit.targetValue) * 100, 100)
+      : done
+        ? 100
+        : 0;
   const c = habit.color || '#6366f1';
 
   async function loadHistory() {
@@ -222,17 +380,21 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
       .filter(l => l.value >= 1 || !!l.isFrozen)
       .toArray();
     const map: Record<string, boolean> = {};
-    logs.forEach(l => { map[l.date] = true; });
+    logs.forEach(l => {
+      map[l.date] = true;
+    });
     setHistory(map);
   }
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        "glass-card rounded-2xl overflow-hidden transition-all group relative border-l-4",
-        done && "opacity-75 grayscale-[0.3]"
+        'glass-card rounded-2xl overflow-hidden transition-all group relative border-l-4',
+        done && 'opacity-75 grayscale-[0.3]'
       )}
       style={{ borderLeftColor: c }}
       whileHover={{ y: -4, boxShadow: `0 20px 40px ${c}25` }}
@@ -242,31 +404,58 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
 
       {/* Progress bar top */}
       <div className="h-1.5 w-full bg-white/5 relative z-10">
-        <motion.div className="h-full" style={{ background: `linear-gradient(90deg, ${c}, ${c}99)` }}
-          initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
+        <motion.div
+          className="h-full"
+          style={{ background: `linear-gradient(90deg, ${c}, ${c}99)` }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+        />
       </div>
 
       <div className="p-5 relative z-10">
         <div className="flex items-center gap-4 mb-4">
           {/* Check button */}
-          <motion.button onClick={() => onLogClick(habit)}
-            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          <motion.button
+            onClick={() => onLogClick(habit)}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             className={cn(
-              "w-14 h-14 rounded-2xl border-2 flex items-center justify-center text-2xl flex-shrink-0 transition-all",
-              done && "animate-check-pop"
+              'w-14 h-14 rounded-2xl border-2 flex items-center justify-center text-2xl flex-shrink-0 transition-all',
+              done && 'animate-check-pop'
             )}
-            style={done
-              ? { background: habit.todayLog?.isFrozen ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : `linear-gradient(135deg, ${c}, ${c}dd)`, borderColor: 'transparent', boxShadow: `0 8px 20px ${c}40` }
-              : { borderColor: `${c}40`, background: `${c}08` }}>
+            style={
+              done
+                ? {
+                    background: habit.todayLog?.isFrozen
+                      ? 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                      : `linear-gradient(135deg, ${c}, ${c}dd)`,
+                    borderColor: 'transparent',
+                    boxShadow: `0 8px 20px ${c}40`,
+                  }
+                : { borderColor: `${c}40`, background: `${c}08` }
+            }
+          >
             <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white">
-              {done ? (habit.todayLog?.isFrozen ? <Snowflake size={24} /> : '✓') : <IconRenderer name={habit.icon} size={24} color={c} />}
+              {done ? (
+                habit.todayLog?.isFrozen ? (
+                  <Snowflake size={24} />
+                ) : (
+                  '✓'
+                )
+              ) : (
+                <IconRenderer name={habit.icon} size={24} color={c} />
+              )}
             </div>
           </motion.button>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
             <button
-              className={cn('font-bold text-base truncate w-full text-left hover:text-brand-300 transition-all block', done ? 'line-through text-slate-500' : 'text-white')}
+              className={cn(
+                'font-bold text-base truncate w-full text-left hover:text-brand-300 transition-all block',
+                done ? 'line-through text-slate-500' : 'text-white'
+              )}
               onClick={() => {
                 setShowHistory(v => {
                   if (!v) loadHistory();
@@ -278,7 +467,12 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
               {habit.name}
             </button>
             <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md" style={{ background: `${c}20`, color: c }}>{habit.category}</span>
+              <span
+                className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md"
+                style={{ background: `${c}20`, color: c }}
+              >
+                {habit.category}
+              </span>
               {habit.streak.current > 0 && (
                 <span className="flex items-center gap-1 text-xs font-black text-amber-400 animate-flame">
                   <Flame size={12} fill="currentColor" /> {habit.streak.current}d
@@ -290,11 +484,19 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
           {/* Best streak + expand */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
-              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Best</p>
+              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">
+                Best
+              </p>
               <p className="text-lg font-black text-white leading-none">{habit.streak.best}d</p>
             </div>
-            <button onClick={() => setShowDetails(v => !v)} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-slate-500 transition-colors">
-              <ChevronRight size={18} className={cn('transition-transform', showDetails && 'rotate-90')} />
+            <button
+              onClick={() => setShowDetails(v => !v)}
+              className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-slate-500 transition-colors"
+            >
+              <ChevronRight
+                size={18}
+                className={cn('transition-transform', showDetails && 'rotate-90')}
+              />
             </button>
           </div>
         </div>
@@ -303,12 +505,19 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
         {habit.type !== 'boolean' && (
           <div className="mb-3">
             <div className="flex justify-between text-xs text-slate-500 mb-1">
-              <span>{habit.todayLog?.value ?? 0} / {habit.targetValue}</span>
+              <span>
+                {habit.todayLog?.value ?? 0} / {habit.targetValue}
+              </span>
               <span>{Math.round(pct)}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-white/5">
-              <motion.div className="h-full rounded-full" style={{ background: c }}
-                initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+              <motion.div
+                className="h-full rounded-full"
+                style={{ background: c }}
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.8 }}
+              />
             </div>
           </div>
         )}
@@ -317,22 +526,37 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
         <AnimatePresence>
           {showHistory && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
               <div className="pt-3 mt-3 border-t border-white/5">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5"><BarChart2 size={10} /> 30-Day History</p>
-                  <span className="text-[10px] text-slate-600">{Object.keys(history).length} days completed</span>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+                    <BarChart2 size={10} /> 30-Day History
+                  </p>
+                  <span className="text-[10px] text-slate-600">
+                    {Object.keys(history).length} days completed
+                  </span>
                 </div>
-                <div className="grid gap-[3px]" style={{ gridTemplateColumns: 'repeat(15, minmax(0, 1fr))' }}>
+                <div
+                  className="grid gap-[3px]"
+                  style={{ gridTemplateColumns: 'repeat(15, minmax(0, 1fr))' }}
+                >
                   {Array.from({ length: 30 }, (_, i) => {
                     const d = format(subDays(new Date(), 29 - i), 'yyyy-MM-dd');
                     const done = !!history[d];
                     return (
-                      <div key={d} title={d}
+                      <div
+                        key={d}
+                        title={d}
                         className="aspect-square rounded-[3px] transition-all"
-                        style={{ background: done ? c : 'rgba(255,255,255,0.05)', boxShadow: done ? `0 0 4px ${c}60` : 'none', opacity: done ? 1 : 0.4 }}
+                        style={{
+                          background: done ? c : 'rgba(255,255,255,0.05)',
+                          boxShadow: done ? `0 0 4px ${c}60` : 'none',
+                          opacity: done ? 1 : 0.4,
+                        }}
                       />
                     );
                   })}
@@ -345,7 +569,12 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
         {/* Expanded action details */}
         <AnimatePresence>
           {showDetails && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
               <div className="pt-3 mt-3 border-t border-white/5 space-y-3">
                 <div className="grid grid-cols-3 gap-2 text-center">
                   {[
@@ -360,29 +589,43 @@ function HabitCard({ habit, onLogClick, onEdit, onDelete, canFreeze, onFreeze }:
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => openPicker({ id: habit.id, title: habit.name, type: 'habit' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors">
+                  <button
+                    onClick={() => openPicker({ id: habit.id, title: habit.name, type: 'habit' })}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors"
+                  >
                     <Timer size={11} /> Focus
                   </button>
-                  <button onClick={() => onEdit(habit)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
+                  <button
+                    onClick={() => onEdit(habit)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors"
+                  >
                     <Edit2 size={11} /> Edit
                   </button>
                   {canFreeze && onFreeze ? (
-                    <button onClick={() => onFreeze(habit)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-bold text-blue-400 hover:bg-blue-500/20 transition-colors">
+                    <button
+                      onClick={() => onFreeze(habit)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-bold text-blue-400 hover:bg-blue-500/20 transition-colors"
+                    >
                       <Snowflake size={11} /> Use Freeze
                     </button>
                   ) : (
-                    <button onClick={() => archiveHabit(habit.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
+                    <button
+                      onClick={() => archiveHabit(habit.id)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors"
+                    >
                       <Archive size={11} /> Archive
                     </button>
                   )}
-                  <button onClick={() => {
-                    toast.confirm(
-                      `Delete "${habit.name}" and all its history? This cannot be undone.`,
-                      () => onDelete(habit.id),
-                      { confirmLabel: 'Delete', danger: true }
-                    );
-                  }}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-red-400 bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-colors">
+                  <button
+                    onClick={() => {
+                      toast.confirm(
+                        `Delete "${habit.name}" and all its history? This cannot be undone.`,
+                        () => onDelete(habit.id),
+                        { confirmLabel: 'Delete', danger: true }
+                      );
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-red-400 bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-colors"
+                  >
                     <Trash2 size={11} /> Delete
                   </button>
                 </div>
@@ -413,8 +656,19 @@ function HabitSkeleton() {
 }
 
 export function HabitsPage() {
-  const { habits, loading, loadHabits, logHabit, unlogHabit, applyFreeze, deleteHabit, selectedDate, setSelectedDate, reorderHabits } = useHabitStore();
-  const { userXP, buyFreeze, useFreeze } = useGamificationStore();
+  const {
+    habits,
+    loading,
+    loadHabits,
+    logHabit,
+    unlogHabit,
+    applyFreeze,
+    deleteHabit,
+    selectedDate,
+    setSelectedDate,
+    reorderHabits,
+  } = useHabitStore();
+  const { userXP, consumeFreeze } = useGamificationStore();
   const [showAdd, setShowAdd] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showView, setShowView] = useState<'list' | 'calendar'>('list');
@@ -433,7 +687,8 @@ export function HabitsPage() {
     const start = format(startOfMonth(month), 'yyyy-MM-dd');
     const end = format(endOfMonth(month), 'yyyy-MM-dd');
     const logs = await db.habitLogs
-      .where('date').between(start, end, true, true)
+      .where('date')
+      .between(start, end, true, true)
       .filter(l => l.value >= 1 || !!l.isFrozen)
       .toArray();
     const map: Record<string, Set<string>> = {};
@@ -459,7 +714,7 @@ export function HabitsPage() {
     toast.confirm(
       `Use 1 Streak Freeze to protect "${habit.name}" today?`,
       async () => {
-        const success = await useFreeze();
+        const success = await consumeFreeze();
         if (success) {
           await applyFreeze(habit.id);
           toast.success('Streak Freeze applied! ❄️');
@@ -476,7 +731,9 @@ export function HabitsPage() {
   });
 
   // Load habits whenever selected date changes
-  useEffect(() => { loadHabits(); }, [loadHabits, selectedDate]);
+  useEffect(() => {
+    loadHabits();
+  }, [loadHabits, selectedDate]);
 
   // Scheduled for selected date
   const scheduled = habits.filter(h => {
@@ -485,14 +742,18 @@ export function HabitsPage() {
   });
 
   // Category list from real habits
-  const categories = ['All', ...Array.from(new Set(habits.filter(h => !h.archived).map(h => h.category))).sort()];
+  const categories = [
+    'All',
+    ...Array.from(new Set(habits.filter(h => !h.archived).map(h => h.category))).sort(),
+  ];
 
   // Apply category filter
-  const visible = activeCategory === 'All'
-    ? scheduled
-    : scheduled.filter(h => h.category === activeCategory);
+  const visible =
+    activeCategory === 'All' ? scheduled : scheduled.filter(h => h.category === activeCategory);
 
-  const done = scheduled.filter(h => !!h.todayLog && (h.todayLog.isFrozen || h.todayLog.value >= 1)).length;
+  const done = scheduled.filter(
+    h => !!h.todayLog && (h.todayLog.isFrozen || h.todayLog.value >= 1)
+  ).length;
   const pct = scheduled.length ? Math.round((done / scheduled.length) * 100) : 0;
   const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.best ?? 0)) : 0;
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -500,7 +761,12 @@ export function HabitsPage() {
 
   // Fire celebration when all habits for today are completed
   useEffect(() => {
-    if (isToday && scheduled.length > 0 && done === scheduled.length && prevDoneRef.current < scheduled.length) {
+    if (
+      isToday &&
+      scheduled.length > 0 &&
+      done === scheduled.length &&
+      prevDoneRef.current < scheduled.length
+    ) {
       soundService.playCelebration();
       soundService.haptic([40, 30, 40, 30, 80]);
       setShowCelebration(true);
@@ -533,15 +799,22 @@ export function HabitsPage() {
   };
 
   const handleLogClick = (hab: HabitWithStreak) => {
-    const isDone = !!hab.todayLog && (hab.todayLog.isFrozen || hab.todayLog.value >= (hab.type === 'boolean' ? 1 : hab.targetValue));
+    const isDone =
+      !!hab.todayLog &&
+      (hab.todayLog.isFrozen ||
+        hab.todayLog.value >= (hab.type === 'boolean' ? 1 : hab.targetValue));
     if (isDone) {
       unlogHabit(hab.id);
+    } else if (hab.type === 'boolean') {
+      logHabit(hab.id, 1);
     } else {
-      hab.type === 'boolean' ? logHabit(hab.id, 1) : setSelectedLog(hab);
+      setSelectedLog(hab);
     }
   };
 
-  useEffect(() => { document.title = 'My Habits — HabitFlow'; }, []);
+  useEffect(() => {
+    document.title = 'My Habits — HabitFlow';
+  }, []);
 
   return (
     <div className="space-y-5 relative">
@@ -552,7 +825,8 @@ export function HabitsPage() {
             initial={{ opacity: 0, scale: 0.8, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: -20 }}
-            className="fixed inset-x-4 z-[999] flex justify-center pointer-events-none" style={{ top: 'max(96px, calc(env(safe-area-inset-top, 0px) + 24px))' }}
+            className="fixed inset-x-4 z-[999] flex justify-center pointer-events-none"
+            style={{ top: 'max(96px, calc(env(safe-area-inset-top, 0px) + 24px))' }}
           >
             <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-2xl shadow-emerald-500/40 flex items-center gap-3">
               <span className="text-2xl">🎉</span>
@@ -565,13 +839,19 @@ export function HabitsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Habit Tracker</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
+            Habit Tracker
+          </p>
           <h1 className="text-2xl sm:text-3xl font-bold text-white">My Habits</h1>
           <p className="text-slate-400 text-sm mt-1">
             {isToday ? (
               <>
                 {done}/{scheduled.length} done today
-                {pct >= 80 ? ' — You\'re on fire! 🔥' : pct >= 50 ? ' — Keep pushing! 💪' : ' — Let\'s get started! 🌱'}
+                {pct >= 80
+                  ? " — You're on fire! 🔥"
+                  : pct >= 50
+                    ? ' — Keep pushing! 💪'
+                    : " — Let's get started! 🌱"}
               </>
             ) : (
               <>Viewing {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, MMM d')}</>
@@ -584,15 +864,24 @@ export function HabitsPage() {
             <button
               onClick={() => setShowView('list')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                showView === 'list' ? 'bg-brand-500/20 text-brand-300' : 'text-slate-500 hover:text-slate-300'
+                showView === 'list'
+                  ? 'bg-brand-500/20 text-brand-300'
+                  : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <BarChart2 size={12} /> List
             </button>
             <button
-              onClick={() => { setShowView('calendar'); const m = new Date(); setCalMonth(m); loadCalendarLogs(m); }}
+              onClick={() => {
+                setShowView('calendar');
+                const m = new Date();
+                setCalMonth(m);
+                loadCalendarLogs(m);
+              }}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                showView === 'calendar' ? 'bg-brand-500/20 text-brand-300' : 'text-slate-500 hover:text-slate-300'
+                showView === 'calendar'
+                  ? 'bg-brand-500/20 text-brand-300'
+                  : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <CalendarDays size={12} /> Calendar
@@ -600,16 +889,24 @@ export function HabitsPage() {
           </div>
           <motion.button
             onClick={() => setShowTemplates(true)}
-            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
           >
             ✨ Templates
           </motion.button>
-          <motion.button onClick={() => setShowAdd(v => !v)}
-            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+          <motion.button
+            onClick={() => setShowAdd(v => !v)}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             className="flex items-center gap-2 px-4 sm:px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0 ml-auto sm:ml-0"
-            style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.35)' }}>
-            <Plus size={16} /> <span className="hidden sm:inline">Add Habit</span><span className="sm:hidden">Add</span>
+            style={{
+              background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
+              boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.35)',
+            }}
+          >
+            <Plus size={16} /> <span className="hidden sm:inline">Add Habit</span>
+            <span className="sm:hidden">Add</span>
           </motion.button>
         </div>
       </div>
@@ -618,7 +915,9 @@ export function HabitsPage() {
       <div className="glass-card rounded-2xl p-2.5 sm:p-3">
         <div className="flex items-center gap-2 mb-2 px-1">
           <CalendarDays size={13} className="text-brand-400" />
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Log for date</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Log for date
+          </span>
         </div>
         <div className="flex gap-1 sm:gap-1.5">
           {dateStrip.map(({ date, day, num }) => {
@@ -634,11 +933,27 @@ export function HabitsPage() {
                     ? 'text-white border-brand-500/50'
                     : 'border-white/5 text-slate-500 hover:text-slate-300 hover:border-white/10'
                 )}
-                style={isSelected ? { background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 4px 12px rgba(var(--brand-500-rgb),0.4)' } : {}}
+                style={
+                  isSelected
+                    ? {
+                        background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
+                        boxShadow: '0 4px 12px rgba(var(--brand-500-rgb),0.4)',
+                      }
+                    : {}
+                }
               >
                 <span className="text-[9px] sm:text-[10px] font-bold uppercase">{day}</span>
-                <span className={cn('text-sm sm:text-base font-black mt-0.5', isSelected ? 'text-white' : isCurrentDay ? 'text-brand-400' : '')}>{num}</span>
-                {isCurrentDay && !isSelected && <span className="w-1 h-1 rounded-full bg-brand-400 mt-0.5" />}
+                <span
+                  className={cn(
+                    'text-sm sm:text-base font-black mt-0.5',
+                    isSelected ? 'text-white' : isCurrentDay ? 'text-brand-400' : ''
+                  )}
+                >
+                  {num}
+                </span>
+                {isCurrentDay && !isSelected && (
+                  <span className="w-1 h-1 rounded-full bg-brand-400 mt-0.5" />
+                )}
               </button>
             );
           })}
@@ -648,23 +963,50 @@ export function HabitsPage() {
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
-          { label: 'Today', value: `${done}/${scheduled.length}`, sub: 'habits done', icon: '✅', class: 'kpi-card-indigo' },
-          { label: 'Best Streak', value: `${bestStreak}d`, sub: 'all time', icon: '🏆', class: 'kpi-card-amber' },
-          { label: 'Completion', value: `${pct}%`, sub: isToday ? 'today' : 'that day', icon: '📈', class: 'kpi-card-emerald' },
+          {
+            label: 'Today',
+            value: `${done}/${scheduled.length}`,
+            sub: 'habits done',
+            icon: '✅',
+            class: 'kpi-card-indigo',
+          },
+          {
+            label: 'Best Streak',
+            value: `${bestStreak}d`,
+            sub: 'all time',
+            icon: '🏆',
+            class: 'kpi-card-amber',
+          },
+          {
+            label: 'Completion',
+            value: `${pct}%`,
+            sub: isToday ? 'today' : 'that day',
+            icon: '📈',
+            class: 'kpi-card-emerald',
+          },
         ].map(k => (
-          <motion.div 
-            key={k.label} 
+          <motion.div
+            key={k.label}
             whileHover={{ y: -4, scale: 1.02 }}
-            className={cn("glass-card rounded-2xl p-3 sm:p-6 text-center relative overflow-hidden group", k.class)}
+            className={cn(
+              'glass-card rounded-2xl p-3 sm:p-6 text-center relative overflow-hidden group',
+              k.class
+            )}
           >
             {/* Background Icon */}
             <span className="absolute -right-2 -bottom-2 text-4xl sm:text-6xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
               {k.icon}
             </span>
-            
-            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 sm:mb-2">{k.label}</p>
-            <p className="text-2xl sm:text-4xl font-black text-white tracking-tight mb-0.5 sm:mb-1">{k.value}</p>
-            <p className="text-[9px] sm:text-[10px] font-medium text-slate-500 uppercase">{k.sub}</p>
+
+            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 sm:mb-2">
+              {k.label}
+            </p>
+            <p className="text-2xl sm:text-4xl font-black text-white tracking-tight mb-0.5 sm:mb-1">
+              {k.value}
+            </p>
+            <p className="text-[9px] sm:text-[10px] font-medium text-slate-500 uppercase">
+              {k.sub}
+            </p>
           </motion.div>
         ))}
       </div>
@@ -674,12 +1016,26 @@ export function HabitsPage() {
         <div className="glass-card rounded-2xl p-4">
           <div className="flex justify-between text-sm text-slate-300 mb-2">
             <span className="font-semibold">Daily Progress</span>
-            <span className="font-bold" style={{ color: pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#818cf8' }}>{pct}%</span>
+            <span
+              className="font-bold"
+              style={{ color: pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#818cf8' }}
+            >
+              {pct}%
+            </span>
           </div>
           <div className="h-4 rounded-full bg-white/5 overflow-hidden">
-            <motion.div className="h-full rounded-full"
-              style={{ background: pct >= 80 ? 'linear-gradient(90deg,#10b981,#06b6d4)' : 'linear-gradient(90deg,#6366f1,#8b5cf6)' }}
-              initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1, ease: 'easeOut' }} />
+            <motion.div
+              className="h-full rounded-full"
+              style={{
+                background:
+                  pct >= 80
+                    ? 'linear-gradient(90deg,#10b981,#06b6d4)'
+                    : 'linear-gradient(90deg,#6366f1,#8b5cf6)',
+              }}
+              initial={{ width: 0 }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 1, ease: 'easeOut' }}
+            />
           </div>
         </div>
       )}
@@ -687,31 +1043,46 @@ export function HabitsPage() {
       {/* Add / Edit forms */}
       <AnimatePresence>
         {showAdd && (
-          <motion.div className="glass-card rounded-2xl p-6"
+          <motion.div
+            className="glass-card rounded-2xl p-6"
             initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
             animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
-            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}>
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+          >
             <div className="flex items-center gap-3 mb-5">
               <div className="w-8 h-8 rounded-xl bg-brand-500/20 flex items-center justify-center">
                 <Flame size={16} className="text-brand-400" />
               </div>
               <h2 className="text-base font-bold text-white">New Habit</h2>
             </div>
-            <HabitForm onClose={(reason) => { setShowAdd(false); if (reason === 'created') setActiveCategory('All'); }} />
+            <HabitForm
+              onClose={reason => {
+                setShowAdd(false);
+                if (reason === 'created') setActiveCategory('All');
+              }}
+            />
           </motion.div>
         )}
         {editingHabit && (
-          <motion.div className="glass-card rounded-2xl p-6" style={{ borderLeft: `3px solid ${editingHabit.color}` }}
+          <motion.div
+            className="glass-card rounded-2xl p-6"
+            style={{ borderLeft: `3px solid ${editingHabit.color}` }}
             initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
             animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
-            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}>
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+          >
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-400">
                 <IconRenderer name={editingHabit.icon} size={20} />
               </div>
               <h2 className="text-base font-bold text-white">Edit — {editingHabit.name}</h2>
             </div>
-            <HabitForm initialHabit={editingHabit} onClose={() => { setEditingHabit(null); }} />
+            <HabitForm
+              initialHabit={editingHabit}
+              onClose={() => {
+                setEditingHabit(null);
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -729,7 +1100,9 @@ export function HabitsPage() {
                   ? 'border-brand-500/50 text-brand-300'
                   : 'border-white/8 text-slate-500 hover:text-slate-300 hover:border-white/15'
               )}
-              style={activeCategory === cat ? { background: 'rgba(var(--brand-500-rgb),0.15)' } : {}}
+              style={
+                activeCategory === cat ? { background: 'rgba(var(--brand-500-rgb),0.15)' } : {}
+              }
             >
               {CATEGORIES.find(c => c.name === cat)?.icon ?? '🔖'} {cat}
             </button>
@@ -740,7 +1113,9 @@ export function HabitsPage() {
       {/* Habit grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => <HabitSkeleton key={i} />)}
+          {[1, 2, 3, 4].map(i => (
+            <HabitSkeleton key={i} />
+          ))}
         </div>
       ) : habits.length === 0 ? (
         <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-20 text-center w-full">
@@ -750,12 +1125,17 @@ export function HabitsPage() {
             Add your first habit and start building a powerful daily routine.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <button onClick={() => setShowTemplates(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all">
+            <button
+              onClick={() => setShowTemplates(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
+            >
               ✨ Browse Templates
             </button>
-            <button onClick={() => setShowAdd(true)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-white"
-              style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="px-5 py-2.5 rounded-xl font-bold text-sm text-white"
+              style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
+            >
               + Create Custom
             </button>
           </div>
@@ -764,18 +1144,27 @@ export function HabitsPage() {
         <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-14 text-center">
           <span className="text-4xl mb-3">🎉</span>
           <h3 className="text-base font-semibold text-white mb-1">
-            {activeCategory !== 'All' ? `No ${activeCategory} habits scheduled` : 'No habits scheduled for this day'}
+            {activeCategory !== 'All'
+              ? `No ${activeCategory} habits scheduled`
+              : 'No habits scheduled for this day'}
           </h3>
           <p className="text-slate-500 text-sm">
             {activeCategory !== 'All' ? (
-              <button onClick={() => setActiveCategory('All')} className="text-brand-400 hover:text-brand-300 transition-colors">Show all categories</button>
-            ) : 'Try selecting a different date or check "All My Habits" below.'}
+              <button
+                onClick={() => setActiveCategory('All')}
+                className="text-brand-400 hover:text-brand-300 transition-colors"
+              >
+                Show all categories
+              </button>
+            ) : (
+              'Try selecting a different date or check "All My Habits" below.'
+            )}
           </p>
         </div>
       ) : (
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="habits-list" direction="vertical">
-            {(provided) => (
+            {provided => (
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
@@ -787,7 +1176,10 @@ export function HabitsPage() {
                       <div
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
-                        className={cn('relative', snapshot.isDragging && 'z-50 opacity-90 scale-[1.02]')}
+                        className={cn(
+                          'relative',
+                          snapshot.isDragging && 'z-50 opacity-90 scale-[1.02]'
+                        )}
                       >
                         {/* Drag handle */}
                         <div
@@ -797,11 +1189,18 @@ export function HabitsPage() {
                           <GripVertical size={16} />
                         </div>
                         <div className="pl-11">
-                          <HabitCard habit={h}
+                          <HabitCard
+                            habit={h}
                             onLogClick={handleLogClick}
                             onEdit={setEditingHabit}
                             onDelete={deleteHabit}
-                            canFreeze={isToday && (!h.todayLog || h.todayLog.value === 0) && !h.todayLog?.isFrozen && h.streak.current > 0 && (userXP?.streakFreezes ?? 0) > 0}
+                            canFreeze={
+                              isToday &&
+                              (!h.todayLog || h.todayLog.value === 0) &&
+                              !h.todayLog?.isFrozen &&
+                              h.streak.current > 0 &&
+                              (userXP?.streakFreezes ?? 0) > 0
+                            }
                             onFreeze={handleUseFreeze}
                           />
                         </div>
@@ -817,34 +1216,40 @@ export function HabitsPage() {
       )}
 
       {/* ── All My Habits (always visible regardless of schedule) ── */}
-      {!loading && habits.filter(h => !h.archived).length > 0 && (() => {
-        const allActive = habits.filter(h => !h.archived);
-        const scheduledIds = new Set(scheduled.map(h => h.id));
-        const unscheduled = allActive.filter(h => !scheduledIds.has(h.id));
-        if (unscheduled.length === 0) return null;
-        return (
-          <div className="mt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
-                <Archive size={12} className="text-slate-500" />
+      {!loading &&
+        habits.filter(h => !h.archived).length > 0 &&
+        (() => {
+          const allActive = habits.filter(h => !h.archived);
+          const scheduledIds = new Set(scheduled.map(h => h.id));
+          const unscheduled = allActive.filter(h => !scheduledIds.has(h.id));
+          if (unscheduled.length === 0) return null;
+          return (
+            <div className="mt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
+                  <Archive size={12} className="text-slate-500" />
+                </div>
+                <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                  Not Scheduled Today
+                </h2>
+                <span className="text-[10px] text-slate-600 font-bold">
+                  {unscheduled.length} habit{unscheduled.length !== 1 ? 's' : ''}
+                </span>
               </div>
-              <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Not Scheduled Today</h2>
-              <span className="text-[10px] text-slate-600 font-bold">{unscheduled.length} habit{unscheduled.length !== 1 ? 's' : ''}</span>
+              <div className="grid grid-cols-1 gap-3 opacity-70">
+                {unscheduled.map(h => (
+                  <HabitCard
+                    key={h.id}
+                    habit={h}
+                    onLogClick={handleLogClick}
+                    onEdit={setEditingHabit}
+                    onDelete={deleteHabit}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-1 gap-3 opacity-70">
-              {unscheduled.map(h => (
-                <HabitCard
-                  key={h.id}
-                  habit={h}
-                  onLogClick={handleLogClick}
-                  onEdit={setEditingHabit}
-                  onDelete={deleteHabit}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
 
       {selectedLog && <LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />}
       {showTemplates && <TemplatesLibrary onClose={() => setShowTemplates(false)} />}
@@ -854,24 +1259,45 @@ export function HabitsPage() {
         {showView === 'calendar' && (
           <motion.div
             key="calendar"
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
             className="glass-card rounded-2xl p-5 mt-2"
           >
             {/* Month nav */}
             <div className="flex items-center justify-between mb-4">
-              <button onClick={() => { const m = subMonths(calMonth, 1); setCalMonth(m); loadCalendarLogs(m); }} className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+              <button
+                onClick={() => {
+                  const m = subMonths(calMonth, 1);
+                  setCalMonth(m);
+                  loadCalendarLogs(m);
+                }}
+                className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+              >
                 <ChevronLeft size={16} />
               </button>
               <h2 className="text-base font-bold text-white">{format(calMonth, 'MMMM yyyy')}</h2>
-              <button onClick={() => { const m = addMonths(calMonth, 1); setCalMonth(m); loadCalendarLogs(m); }} className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+              <button
+                onClick={() => {
+                  const m = addMonths(calMonth, 1);
+                  setCalMonth(m);
+                  loadCalendarLogs(m);
+                }}
+                className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+              >
                 <ChevronRight size={16} />
               </button>
             </div>
 
             {/* Weekday headers */}
             <div className="grid grid-cols-7 mb-2">
-              {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
-                <div key={d} className="text-center text-[10px] font-bold text-slate-600 uppercase tracking-wider py-1">{d}</div>
+              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+                <div
+                  key={d}
+                  className="text-center text-[10px] font-bold text-slate-600 uppercase tracking-wider py-1"
+                >
+                  {d}
+                </div>
               ))}
             </div>
 
@@ -885,10 +1311,14 @@ export function HabitsPage() {
               return (
                 <div className="grid grid-cols-7 gap-1">
                   {/* leading padding */}
-                  {Array.from({ length: startPad }).map((_, i) => <div key={`p${i}`} />)}
+                  {Array.from({ length: startPad }).map((_, i) => (
+                    <div key={`p${i}`} />
+                  ))}
                   {days.map(day => {
                     const ds = format(day, 'yyyy-MM-dd');
-                    const dayHabits = habits.filter(h => !h.archived && habitService.isScheduledForDate(h, ds));
+                    const dayHabits = habits.filter(
+                      h => !h.archived && habitService.isScheduledForDate(h, ds)
+                    );
                     const donIds = calLogs[ds] ?? new Set<string>();
                     const dayDone = dayHabits.filter(h => donIds.has(h.id)).length;
                     const isSelected = ds === selectedDate;
@@ -898,28 +1328,47 @@ export function HabitsPage() {
                     return (
                       <button
                         key={ds}
-                        onClick={() => { setSelectedDate(ds); setShowView('list'); }}
+                        onClick={() => {
+                          setSelectedDate(ds);
+                          setShowView('list');
+                        }}
                         className={`relative flex flex-col items-center justify-center rounded-xl p-1.5 min-h-[44px] transition-all ${
-                          isSelected ? 'ring-2 ring-brand-500 bg-brand-500/15' :
-                          isTodayDay ? 'bg-white/8 font-bold' :
-                          isFuture ? 'opacity-40 cursor-default' :
-                          'hover:bg-white/5'
+                          isSelected
+                            ? 'ring-2 ring-brand-500 bg-brand-500/15'
+                            : isTodayDay
+                              ? 'bg-white/8 font-bold'
+                              : isFuture
+                                ? 'opacity-40 cursor-default'
+                                : 'hover:bg-white/5'
                         }`}
                         disabled={isFuture}
                       >
-                        <span className={`text-xs font-semibold ${
-                          isSelected ? 'text-brand-300' :
-                          isTodayDay ? 'text-white' :
-                          isFuture ? 'text-slate-700' : 'text-slate-400'
-                        }`}>
+                        <span
+                          className={`text-xs font-semibold ${
+                            isSelected
+                              ? 'text-brand-300'
+                              : isTodayDay
+                                ? 'text-white'
+                                : isFuture
+                                  ? 'text-slate-700'
+                                  : 'text-slate-400'
+                          }`}
+                        >
                           {format(day, 'd')}
                         </span>
                         {dayHabits.length > 0 && !isFuture && (
                           <div className="flex gap-[2px] mt-0.5 flex-wrap justify-center max-w-[28px]">
                             {dayHabits.slice(0, 4).map((h, i) => (
-                              <div key={i}
+                              <div
+                                key={i}
                                 className="w-1.5 h-1.5 rounded-full"
-                                style={{ background: donIds.has(h.id) ? (h.color || 'var(--brand-500)') : 'rgba(255,255,255,0.15)', opacity: isTodayDay ? 1 : 0.7, boxShadow: allDone ? '0 0 3px #10b981' : 'none' }}
+                                style={{
+                                  background: donIds.has(h.id)
+                                    ? h.color || 'var(--brand-500)'
+                                    : 'rgba(255,255,255,0.15)',
+                                  opacity: isTodayDay ? 1 : 0.7,
+                                  boxShadow: allDone ? '0 0 3px #10b981' : 'none',
+                                }}
                               />
                             ))}
                           </div>
@@ -931,7 +1380,9 @@ export function HabitsPage() {
               );
             })()}
 
-            <p className="text-center text-xs text-slate-600 mt-3">Tap any past day to view &amp; log habits for that date</p>
+            <p className="text-center text-xs text-slate-600 mt-3">
+              Tap any past day to view &amp; log habits for that date
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

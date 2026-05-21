@@ -121,7 +121,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
         initial={{ opacity: 0, scale: 0.95, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 40 }}
-        transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
+        transition={{ type: 'spring', bounce: 0.3, duration: 0.6 }}
         onClick={e => e.stopPropagation()}
         className="relative w-full max-w-[512px] md:mx-4 bg-slate-900/90 backdrop-blur-2xl border-t md:border border-white/10 shadow-2xl shadow-black/80 rounded-t-[32px] md:rounded-[32px] overflow-hidden pb-[env(safe-area-inset-bottom)]"
       >
@@ -133,7 +133,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
         <div className="relative px-8 pt-8 pb-6 flex items-center justify-between z-10">
           <div>
             <h2 className="text-2xl font-black text-white tracking-tight">Create New</h2>
-            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">What's your next move?</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+              What's your next move?
+            </p>
           </div>
           <button
             onClick={() => dialogRef.current?.close()}
@@ -160,11 +162,15 @@ export function QuickAddModalFixed({ onClose }: Props) {
                     <motion.div
                       layoutId="quickAddTab"
                       className="absolute inset-0 bg-white/10 border border-white/10 rounded-xl shadow-lg"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                     />
                   )}
                   <span className="relative z-20 flex items-center justify-center gap-2">
-                    {t === 'habit' ? <Flame size={16} className={isActive ? "text-brand-400" : ""} /> : <Check size={16} className={isActive ? "text-emerald-400" : ""} />}
+                    {t === 'habit' ? (
+                      <Flame size={16} className={isActive ? 'text-brand-400' : ''} />
+                    ) : (
+                      <Check size={16} className={isActive ? 'text-emerald-400' : ''} />
+                    )}
                     {t === 'habit' ? 'Build Habit' : 'Add Task'}
                   </span>
                 </button>
@@ -188,7 +194,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
               >
                 {/* Icon Picker */}
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">Choose Identity</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+                    Choose Identity
+                  </label>
                   <div className="grid grid-cols-5 gap-2 bg-slate-950/30 rounded-2xl p-3 border border-white/5">
                     {HABIT_ICONS.map(item => {
                       const isActive = habitIcon === item.name;
@@ -198,11 +206,16 @@ export function QuickAddModalFixed({ onClose }: Props) {
                           type="button"
                           onClick={() => setHabitIcon(item.name)}
                           className={`relative h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ${
-                            isActive ? 'text-white' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
+                            isActive
+                              ? 'text-white'
+                              : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
                           }`}
                         >
                           {isActive && (
-                            <motion.div layoutId="iconBg" className="absolute inset-0 bg-brand-500 rounded-xl shadow-lg shadow-brand-500/30" />
+                            <motion.div
+                              layoutId="iconBg"
+                              className="absolute inset-0 bg-brand-500 rounded-xl shadow-lg shadow-brand-500/30"
+                            />
                           )}
                           <item.icon size={20} className="relative z-10" />
                         </button>
@@ -213,7 +226,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                 {/* Category Picker */}
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">Category</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+                    Category
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     {CATEGORIES.map(c => {
                       const isActive = habitCategory === c.name;
@@ -238,7 +253,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                 <div className="space-y-5">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Habit Name</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                      Habit Name
+                    </label>
                     <div className="relative group">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-400 transition-transform group-focus-within:scale-110">
                         <IconRenderer name={habitIcon} size={20} />
@@ -256,34 +273,55 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Type</label>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                        Type
+                      </label>
                       <select
                         className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer"
                         value={habitType}
                         onChange={e => setHabitType(e.target.value as HabitType)}
                       >
-                        <option value="boolean" className="bg-slate-900">Yes / No</option>
-                        <option value="count" className="bg-slate-900">Count (reps, pages…)</option>
-                        <option value="duration" className="bg-slate-900">Duration (min)</option>
-                        <option value="rating" className="bg-slate-900">Rating (1-5)</option>
+                        <option value="boolean" className="bg-slate-900">
+                          Yes / No
+                        </option>
+                        <option value="count" className="bg-slate-900">
+                          Count (reps, pages…)
+                        </option>
+                        <option value="duration" className="bg-slate-900">
+                          Duration (min)
+                        </option>
+                        <option value="rating" className="bg-slate-900">
+                          Rating (1-5)
+                        </option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Frequency</label>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                        Frequency
+                      </label>
                       <select
                         className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer"
                         value={habitFreq}
                         onChange={e => setHabitFreq(e.target.value as HabitFrequency)}
                       >
-                        <option value="daily" className="bg-slate-900">Every day</option>
-                        <option value="weekly" className="bg-slate-900">Specific days</option>
+                        <option value="daily" className="bg-slate-900">
+                          Every day
+                        </option>
+                        <option value="weekly" className="bg-slate-900">
+                          Specific days
+                        </option>
                       </select>
                     </div>
                   </div>
 
                   {habitType !== 'boolean' && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block mt-1">Daily Target</label>
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                    >
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block mt-1">
+                        Daily Target
+                      </label>
                       <input
                         type="number"
                         className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-brand-300 text-lg font-bold outline-none focus:border-brand-500/50 transition-all shadow-inner"
@@ -301,7 +339,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                 >
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
                   <span className="relative flex items-center justify-center gap-2">
-                    <Flame size={20} className="group-hover:text-amber-300 transition-colors" /> 
+                    <Flame size={20} className="group-hover:text-amber-300 transition-colors" />
                     Ignite Habit
                   </span>
                 </button>
@@ -317,7 +355,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
                 className="space-y-6"
               >
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Task Title</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                    Task Title
+                  </label>
                   <input
                     className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-slate-600 text-base font-medium outline-none focus:border-emerald-500/50 focus:bg-slate-950/60 transition-all shadow-inner"
                     placeholder="e.g. Project presentation"
@@ -330,7 +370,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Due Date</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                      Due Date
+                    </label>
                     <input
                       type="date"
                       className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium outline-none focus:border-emerald-500/50 transition-all cursor-text"
@@ -339,16 +381,26 @@ export function QuickAddModalFixed({ onClose }: Props) {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Priority</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                      Priority
+                    </label>
                     <select
                       className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium outline-none focus:border-emerald-500/50 transition-all appearance-none cursor-pointer"
                       value={taskPriority}
                       onChange={e => setTaskPriority(Number(e.target.value) as Priority)}
                     >
-                      <option value={0} className="bg-slate-900">Urgent 🔴</option>
-                      <option value={1} className="bg-slate-900">High 🟠</option>
-                      <option value={2} className="bg-slate-900">Normal 🔵</option>
-                      <option value={3} className="bg-slate-900">Low ⚪</option>
+                      <option value={0} className="bg-slate-900">
+                        Urgent 🔴
+                      </option>
+                      <option value={1} className="bg-slate-900">
+                        High 🟠
+                      </option>
+                      <option value={2} className="bg-slate-900">
+                        Normal 🔵
+                      </option>
+                      <option value={3} className="bg-slate-900">
+                        Low ⚪
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -359,7 +411,10 @@ export function QuickAddModalFixed({ onClose }: Props) {
                 >
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
                   <span className="relative flex items-center justify-center gap-2">
-                    <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" /> 
+                    <Plus
+                      size={20}
+                      className="group-hover:rotate-90 transition-transform duration-300"
+                    />
                     Add Task
                   </span>
                 </button>

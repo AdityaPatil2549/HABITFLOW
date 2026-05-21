@@ -14,15 +14,15 @@ interface FocusState {
   timeLeft: number;
   mode: FocusMode;
   target: FocusTarget | null;
-  duration: number;        // seconds for current phase
+  duration: number; // seconds for current phase
   totalFocusSeconds: number; // seconds of actual focus time elapsed
-  xpEarned: number;        // XP for the current/last session
+  xpEarned: number; // XP for the current/last session
 
   showPicker: boolean;
   pickerTarget: FocusTarget | null;
   openPicker: (target?: FocusTarget) => void;
   closePicker: () => void;
-  
+
   startFocus: (target: FocusTarget, durationMinutes?: number) => void;
   toggleTimer: () => void;
   stopFocus: () => void;
@@ -54,11 +54,17 @@ function persistFocus(state: Partial<FocusState>) {
       savedAt: Date.now(),
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch { /* quota exceeded or private browsing */ }
+  } catch {
+    /* quota exceeded or private browsing */
+  }
 }
 
 function clearPersistedFocus() {
-  try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    console.error('Failed to clear focus state from sessionStorage:', e);
+  }
 }
 
 function loadPersistedFocus(): Partial<FocusState> | null {
@@ -80,7 +86,9 @@ function loadPersistedFocus(): Partial<FocusState> | null {
       duration: data.duration,
       totalFocusSeconds: data.totalFocusSeconds + additionalFocus,
     };
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 const restored = loadPersistedFocus();
@@ -94,15 +102,16 @@ export const useFocusStore = create<FocusState>((set, get) => ({
   duration: restored?.duration ?? DEFAULT_FOCUS_MINUTES * 60,
   totalFocusSeconds: restored?.totalFocusSeconds ?? 0,
   xpEarned: 0,
-  
+
   showPicker: false,
   pickerTarget: null,
-  
-  openPicker: (target) => set({ 
-    showPicker: true, 
-    pickerTarget: target || { id: 'quick', title: 'Focus Session', type: 'habit' } 
-  }),
-  
+
+  openPicker: target =>
+    set({
+      showPicker: true,
+      pickerTarget: target || { id: 'quick', title: 'Focus Session', type: 'habit' },
+    }),
+
   closePicker: () => set({ showPicker: false, pickerTarget: null }),
 
   startFocus: (target, durationMinutes = DEFAULT_FOCUS_MINUTES) => {
@@ -122,7 +131,7 @@ export const useFocusStore = create<FocusState>((set, get) => ({
   },
 
   toggleTimer: () => {
-    set((state) => {
+    set(state => {
       const next = { ...state, isRunning: !state.isRunning };
       persistFocus(next);
       return { isRunning: next.isRunning };

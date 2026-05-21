@@ -81,7 +81,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
-  applyFreeze: async (habitId) => {
+  applyFreeze: async habitId => {
     await habitService.logCompletion(habitId, get().selectedDate, -1, 'Used Streak Freeze', true);
     await get().loadHabits();
   },
@@ -91,7 +91,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     await get().loadHabits();
   },
 
-  reorderHabits: async (orderedIds) => {
+  reorderHabits: async orderedIds => {
     // Optimistic update
     const current = get().habits;
     const reordered = orderedIds

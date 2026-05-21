@@ -9,7 +9,7 @@ interface GamificationState {
   addXP: (amount: number) => Promise<void>;
   awardStreakBadge: (streak: number) => Promise<void>;
   buyFreeze: (cost: number) => Promise<boolean>;
-  useFreeze: () => Promise<boolean>;
+  consumeFreeze: () => Promise<boolean>;
   unlockTheme: (themeId: string, cost: number) => Promise<boolean>;
 }
 
@@ -39,7 +39,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     return success;
   },
 
-  useFreeze: async () => {
+  consumeFreeze: async () => {
     const success = await gamificationService.useStreakFreeze();
     if (success) await get().loadXP();
     return success;

@@ -59,7 +59,9 @@ class SoundService {
     if (!this.enabled) return;
     try {
       this.playTone(880, 0.08, 'sine', 0.14);
-    } catch { /* silently ignore AudioContext errors */ }
+    } catch {
+      /* silently ignore AudioContext errors */
+    }
   }
 
   /** Un-check sound — slightly lower pitch */
@@ -67,7 +69,9 @@ class SoundService {
     if (!this.enabled) return;
     try {
       this.playTone(440, 0.08, 'sine', 0.1);
-    } catch { /**/ }
+    } catch {
+      /**/
+    }
   }
 
   /** Ascending celebratory arpeggio — played when all habits for the day are done */
@@ -78,7 +82,9 @@ class SoundService {
       // C5 - E5 - G5 - C6 arpeggio
       const notes = [523.25, 659.25, 783.99, 1046.5];
       notes.forEach((freq, i) => this.playTone(freq, 0.18, 'sine', 0.16, i * 0.1, ctx));
-    } catch { /**/ }
+    } catch {
+      /**/
+    }
   }
 
   /** 3-note rising chime — played on XP level-up */
@@ -89,7 +95,9 @@ class SoundService {
       // G4 - B4 - D5 - G5
       const notes = [392, 493.88, 587.33, 783.99];
       notes.forEach((freq, i) => this.playTone(freq, 0.22, 'triangle', 0.2, i * 0.12, ctx));
-    } catch { /**/ }
+    } catch {
+      /**/
+    }
   }
 
   /** Short reward pop — for earning badges */
@@ -99,7 +107,9 @@ class SoundService {
       const ctx = this.getCtx();
       this.playTone(660, 0.06, 'sine', 0.15, 0, ctx);
       this.playTone(880, 0.12, 'sine', 0.18, 0.06, ctx);
-    } catch { /**/ }
+    } catch {
+      /**/
+    }
   }
 
   /** Device haptic feedback */
@@ -108,7 +118,9 @@ class SoundService {
     if ('vibrate' in navigator) {
       try {
         navigator.vibrate(pattern);
-      } catch { /**/ }
+      } catch {
+        /**/
+      }
     }
   }
 }

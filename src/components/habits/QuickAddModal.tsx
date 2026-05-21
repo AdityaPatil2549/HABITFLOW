@@ -79,9 +79,7 @@ export function QuickAddModal({ onClose }: Props) {
       />
 
       {/* Modal */}
-      <div
-        className="fixed z-[201] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200"
-      >
+      <div className="fixed z-[201] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
         <div className="mx-4 overflow-hidden relative rounded-3xl bg-slate-900 shadow-2xl border border-white/10">
           {/* Decorative Glow */}
           <div
@@ -92,7 +90,10 @@ export function QuickAddModal({ onClose }: Props) {
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-4">
             <h2 className="text-xl font-bold text-white">Create New</h2>
-            <button onClick={onClose} className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+            >
               <X size={18} />
             </button>
           </div>
@@ -119,7 +120,9 @@ export function QuickAddModal({ onClose }: Props) {
             <form onSubmit={handleHabitSubmit} className="px-6 pb-8 space-y-6">
               {/* Icon Picker */}
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">Choose Identity</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+                  Choose Identity
+                </label>
                 <div className="grid grid-cols-5 gap-2 bg-white/5 rounded-2xl p-3 border border-white/5">
                   {HABIT_ICONS.map(item => (
                     <button
@@ -127,9 +130,9 @@ export function QuickAddModal({ onClose }: Props) {
                       type="button"
                       onClick={() => setHabitIcon(item.name)}
                       className={`h-12 rounded-xl flex items-center justify-center transition-all ${
-                        habitIcon === item.name 
-                        ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30' 
-                        : 'text-slate-400 hover:bg-white/8 hover:text-white'
+                        habitIcon === item.name
+                          ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/30'
+                          : 'text-slate-400 hover:bg-white/8 hover:text-white'
                       }`}
                     >
                       <item.icon size={20} />
@@ -140,7 +143,9 @@ export function QuickAddModal({ onClose }: Props) {
 
               {/* Category Picker */}
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">Category</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+                  Category
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {CATEGORIES.map(c => (
                     <button
@@ -162,7 +167,9 @@ export function QuickAddModal({ onClose }: Props) {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Habit Name</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                    Habit Name
+                  </label>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-400">
                       <IconRenderer name={habitIcon} size={20} />
@@ -180,7 +187,9 @@ export function QuickAddModal({ onClose }: Props) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Type</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                      Type
+                    </label>
                     <select
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all appearance-none"
                       value={habitType}
@@ -193,7 +202,9 @@ export function QuickAddModal({ onClose }: Props) {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Frequency</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                      Frequency
+                    </label>
                     <select
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all appearance-none"
                       value={habitFreq}
@@ -207,7 +218,9 @@ export function QuickAddModal({ onClose }: Props) {
 
                 {habitType !== 'boolean' && (
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Daily Target</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                      Daily Target
+                    </label>
                     <input
                       type="number"
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-base font-medium outline-none focus:border-brand-500/50 transition-all"
@@ -219,7 +232,10 @@ export function QuickAddModal({ onClose }: Props) {
                 )}
               </div>
 
-              <button type="submit" className="w-full py-4 rounded-2xl bg-gradient-to-tr from-brand-500 to-brand-600 text-white font-bold text-base shadow-xl shadow-brand-500/20 active:scale-95 transition-all flex items-center justify-center gap-2">
+              <button
+                type="submit"
+                className="w-full py-4 rounded-2xl bg-gradient-to-tr from-brand-500 to-brand-600 text-white font-bold text-base shadow-xl shadow-brand-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
                 <Flame size={20} /> Create Habit
               </button>
             </form>
@@ -229,7 +245,9 @@ export function QuickAddModal({ onClose }: Props) {
           {tab === 'task' && (
             <form onSubmit={handleTaskSubmit} className="px-6 pb-8 space-y-6">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Task Title</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                  Task Title
+                </label>
                 <input
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-white placeholder-slate-600 text-base font-medium outline-none focus:border-brand-500/50 transition-all"
                   placeholder="e.g. Project presentation"
@@ -242,7 +260,9 @@ export function QuickAddModal({ onClose }: Props) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Due Date</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                    Due Date
+                  </label>
                   <input
                     type="date"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all"
@@ -251,7 +271,9 @@ export function QuickAddModal({ onClose }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Priority</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                    Priority
+                  </label>
                   <select
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all appearance-none"
                     value={taskPriority}
@@ -265,7 +287,10 @@ export function QuickAddModal({ onClose }: Props) {
                 </div>
               </div>
 
-              <button type="submit" className="w-full py-4 rounded-2xl bg-gradient-to-tr from-brand-500 to-brand-600 text-white font-bold text-base shadow-xl shadow-brand-500/20 active:scale-95 transition-all flex items-center justify-center gap-2">
+              <button
+                type="submit"
+                className="w-full py-4 rounded-2xl bg-gradient-to-tr from-brand-500 to-brand-600 text-white font-bold text-base shadow-xl shadow-brand-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
                 <Plus size={20} /> Add Task
               </button>
             </form>

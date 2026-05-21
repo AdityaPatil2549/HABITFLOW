@@ -99,7 +99,12 @@ const TEMPLATE_PACKS = [
     color: '#f43f5e',
     category: 'Personal',
     habits: [
-      { name: 'Text a friend or family', icon: 'messageCircle', color: '#f43f5e', category: 'Personal' },
+      {
+        name: 'Text a friend or family',
+        icon: 'messageCircle',
+        color: '#f43f5e',
+        category: 'Personal',
+      },
       { name: 'Practice active listening', icon: 'users', color: '#8b5cf6', category: 'Personal' },
       { name: 'No phone at dinner', icon: 'shield', color: '#10b981', category: 'Personal' },
     ],
@@ -115,7 +120,7 @@ const TEMPLATE_PACKS = [
       { name: 'Code for 1 hour', icon: 'code', color: '#06b6d4', category: 'Learning' },
       { name: 'Solve 1 algorithm problem', icon: 'cpu', color: '#8b5cf6', category: 'Learning' },
       { name: 'Read tech article', icon: 'book', color: '#f59e0b', category: 'Learning' },
-      { name: 'Review yesterday\'s code', icon: 'gitBranch', color: '#10b981', category: 'Work' },
+      { name: "Review yesterday's code", icon: 'gitBranch', color: '#10b981', category: 'Work' },
     ],
   },
   {
@@ -127,8 +132,18 @@ const TEMPLATE_PACKS = [
     category: 'Health',
     habits: [
       { name: 'No screens in bed', icon: 'moon', color: '#8b5cf6', category: 'Health' },
-      { name: 'App limit: Social media < 30m', icon: 'smartphone', color: '#f43f5e', category: 'Health' },
-      { name: 'Leave phone in another room', icon: 'shield', color: '#06b6d4', category: 'Personal' },
+      {
+        name: 'App limit: Social media < 30m',
+        icon: 'smartphone',
+        color: '#f43f5e',
+        category: 'Health',
+      },
+      {
+        name: 'Leave phone in another room',
+        icon: 'shield',
+        color: '#06b6d4',
+        category: 'Personal',
+      },
       { name: 'Read instead of scrolling', icon: 'book', color: '#f59e0b', category: 'Learning' },
     ],
   },
@@ -141,8 +156,18 @@ const TEMPLATE_PACKS = [
     category: 'Learning',
     habits: [
       { name: 'Duolingo lesson', icon: 'globe', color: '#22c55e', category: 'Learning' },
-      { name: 'Learn 5 new vocabulary words', icon: 'edit3', color: '#f59e0b', category: 'Learning' },
-      { name: 'Watch video in target language', icon: 'tv', color: '#6366f1', category: 'Learning' },
+      {
+        name: 'Learn 5 new vocabulary words',
+        icon: 'edit3',
+        color: '#f59e0b',
+        category: 'Learning',
+      },
+      {
+        name: 'Watch video in target language',
+        icon: 'tv',
+        color: '#6366f1',
+        category: 'Learning',
+      },
       { name: 'Practice speaking (10 min)', icon: 'mic', color: '#f43f5e', category: 'Learning' },
     ],
   },
@@ -155,7 +180,7 @@ const TEMPLATE_PACKS = [
     category: 'Personal',
     habits: [
       { name: 'Stretch for 5 minutes', icon: 'activity', color: '#10b981', category: 'Health' },
-      { name: 'Review tomorrow\'s schedule', icon: 'calendar', color: '#f59e0b', category: 'Work' },
+      { name: "Review tomorrow's schedule", icon: 'calendar', color: '#f59e0b', category: 'Work' },
       { name: 'Read fiction', icon: 'bookOpen', color: '#8b5cf6', category: 'Personal' },
       { name: 'Lights out by 10:30 PM', icon: 'moon', color: '#06b6d4', category: 'Health' },
     ],
@@ -168,7 +193,12 @@ const TEMPLATE_PACKS = [
     color: '#f43f5e',
     category: 'Personal',
     habits: [
-      { name: 'Doodle or sketch (10 min)', icon: 'penTool', color: '#f43f5e', category: 'Personal' },
+      {
+        name: 'Doodle or sketch (10 min)',
+        icon: 'penTool',
+        color: '#f43f5e',
+        category: 'Personal',
+      },
       { name: 'Write 500 words', icon: 'edit2', color: '#f59e0b', category: 'Personal' },
       { name: 'Listen to a new album', icon: 'music', color: '#8b5cf6', category: 'Personal' },
       { name: 'Brainstorm 10 new ideas', icon: 'zap', color: '#06b6d4', category: 'Work' },
@@ -217,7 +247,10 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
   }
 
   const visible = TEMPLATE_PACKS.filter(p => {
-    const matchesSearch = search === '' || p.name.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      search === '' ||
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.description.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === 'All' || p.category === filter;
     return matchesSearch && matchesFilter;
   });
@@ -231,7 +264,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
     });
   };
 
-  async function addPack(pack: typeof TEMPLATE_PACKS[number]) {
+  async function addPack(pack: (typeof TEMPLATE_PACKS)[number]) {
     setAdding(pack.id);
     const today = format(new Date(), 'yyyy-MM-dd');
     for (const h of pack.habits) {
@@ -263,7 +296,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
         initial={{ opacity: 0, scale: 0.95, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 40 }}
-        transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
+        transition={{ type: 'spring', bounce: 0.3, duration: 0.6 }}
         onClick={e => e.stopPropagation()}
         className="relative w-full max-w-[640px] md:mx-4 bg-slate-900/90 backdrop-blur-2xl border-t md:border border-white/10 shadow-2xl shadow-black/80 rounded-t-[32px] md:rounded-[32px] overflow-hidden flex flex-col max-h-[85vh] pb-[env(safe-area-inset-bottom)]"
       >
@@ -278,7 +311,9 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
               <Sparkles size={20} className="text-brand-400" />
               <h2 className="text-2xl font-black text-white tracking-tight">Habit Templates</h2>
             </div>
-            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Expert curated habit packs</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+              Expert curated habit packs
+            </p>
           </div>
           <button
             onClick={() => dialogRef.current?.close()}
@@ -315,7 +350,10 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                   }`}
                 >
                   {isActive && (
-                    <motion.div layoutId="filterBg" className="absolute inset-0 bg-brand-500/20 shadow-inner" />
+                    <motion.div
+                      layoutId="filterBg"
+                      className="absolute inset-0 bg-brand-500/20 shadow-inner"
+                    />
                   )}
                   <span className="relative z-10">{f}</span>
                 </button>
@@ -327,7 +365,11 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
         {/* Template Grid */}
         <div className="relative overflow-y-auto flex-1 px-8 pb-8 z-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {visible.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16 text-slate-500">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-16 text-slate-500"
+            >
               <p className="text-5xl mb-4">🔍</p>
               <p className="text-lg font-bold text-white mb-1">No templates found</p>
               <p className="text-sm font-medium">Try a different search or filter</p>
@@ -345,7 +387,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                   <motion.div
                     key={pack.id}
                     layout
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                     className="relative rounded-[24px] border border-white/10 bg-slate-950/40 p-5 flex flex-col gap-5 hover:bg-slate-950/60 hover:border-white/20 transition-all shadow-inner overflow-hidden group"
                   >
                     {/* Hover Glow */}
@@ -355,21 +397,29 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                     <motion.div layout="position" className="flex items-start gap-4 z-10">
                       <div
                         className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg"
-                        style={{ background: pack.color + '20', border: `1px solid ${pack.color}40` }}
+                        style={{
+                          background: pack.color + '20',
+                          border: `1px solid ${pack.color}40`,
+                        }}
                       >
                         {pack.emoji}
                       </div>
                       <div className="flex-1 min-w-0 pt-0.5">
                         <p className="font-bold text-white text-base">{pack.name}</p>
-                        <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">{pack.description}</p>
+                        <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
+                          {pack.description}
+                        </p>
                       </div>
                     </motion.div>
 
                     {/* Habit list preview */}
-                    <motion.div layout className="space-y-2 z-10 bg-black/20 rounded-xl p-3 border border-white/5">
+                    <motion.div
+                      layout
+                      className="space-y-2 z-10 bg-black/20 rounded-xl p-3 border border-white/5"
+                    >
                       <AnimatePresence initial={false}>
                         {visibleHabits.map((h, i) => (
-                          <motion.div 
+                          <motion.div
                             key={h.name}
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
@@ -377,12 +427,17 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                             transition={{ duration: 0.2, delay: i * 0.02 }}
                             className="flex items-center gap-2.5 overflow-hidden"
                           >
-                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: h.color, boxShadow: `0 0 6px ${h.color}` }} />
-                            <p className="text-xs font-semibold text-slate-300 truncate">{h.name}</p>
+                            <div
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                              style={{ background: h.color, boxShadow: `0 0 6px ${h.color}` }}
+                            />
+                            <p className="text-xs font-semibold text-slate-300 truncate">
+                              {h.name}
+                            </p>
                           </motion.div>
                         ))}
                       </AnimatePresence>
-                      
+
                       {showExpandButton && (
                         <motion.button
                           layout="position"
@@ -390,9 +445,13 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                           className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-brand-400 transition-colors pt-1 pl-4"
                         >
                           {isExpanded ? (
-                            <><ChevronUp size={12} /> Show less</>
+                            <>
+                              <ChevronUp size={12} /> Show less
+                            </>
                           ) : (
-                            <><ChevronDown size={12} /> +{pack.habits.length - 3} more habits</>
+                            <>
+                              <ChevronDown size={12} /> +{pack.habits.length - 3} more habits
+                            </>
                           )}
                         </motion.button>
                       )}
@@ -407,22 +466,33 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                         isAdded
                           ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 cursor-default'
                           : isAdding
-                          ? 'bg-brand-500/10 border border-brand-500/20 text-brand-400'
-                          : 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg shadow-brand-500/20 active:scale-95 border border-white/10 group-hover:shadow-brand-500/30'
+                            ? 'bg-brand-500/10 border border-brand-500/20 text-brand-400'
+                            : 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg shadow-brand-500/20 active:scale-95 border border-white/10 group-hover:shadow-brand-500/30'
                       }`}
                     >
                       {/* Button Hover Effect */}
                       {!isAdded && !isAdding && (
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out pointer-events-none" />
                       )}
-                      
+
                       <span className="relative flex items-center gap-2">
                         {isAdded ? (
-                          <><Check size={14} /> Added to Library</>
+                          <>
+                            <Check size={14} /> Added to Library
+                          </>
                         ) : isAdding ? (
-                          <><span className="w-3.5 h-3.5 border-2 border-brand-400/30 border-t-brand-400 rounded-full animate-spin" /> Adding…</>
+                          <>
+                            <span className="w-3.5 h-3.5 border-2 border-brand-400/30 border-t-brand-400 rounded-full animate-spin" />{' '}
+                            Adding…
+                          </>
                         ) : (
-                          <><Plus size={14} className="group-hover:rotate-90 transition-transform duration-300" /> Add {pack.habits.length} Habits</>
+                          <>
+                            <Plus
+                              size={14}
+                              className="group-hover:rotate-90 transition-transform duration-300"
+                            />{' '}
+                            Add {pack.habits.length} Habits
+                          </>
                         )}
                       </span>
                     </motion.button>

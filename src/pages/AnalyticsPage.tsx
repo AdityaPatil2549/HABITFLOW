@@ -6,11 +6,35 @@ import { db } from '../db';
 import { cn } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  BarChart, Bar, Cell, ComposedChart, Legend, Area, AreaChart,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  BarChart,
+  Bar,
+  Cell,
+  ComposedChart,
+  Legend,
+  Area,
+  AreaChart,
 } from 'recharts';
-import { format, subDays, subWeeks, startOfWeek, eachDayOfInterval, getDay, subYears } from 'date-fns';
+import {
+  format,
+  subDays,
+  subWeeks,
+  startOfWeek,
+  eachDayOfInterval,
+  getDay,
+  subYears,
+} from 'date-fns';
 import { habitService } from '../services/habitService';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -29,10 +53,26 @@ const TOOLTIP_STYLE = {
 function YearlyHeatmap({ habits }: { habits: any[] }) {
   const [data, setData] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONTHS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
 
   useEffect(() => {
-    if (!habits.length) { setLoading(false); return; }
+    if (!habits.length) {
+      setLoading(false);
+      return;
+    }
     (async () => {
       setLoading(true);
       const today = new Date();
@@ -59,9 +99,7 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
       for (const day of days) {
         const ds = format(day, 'yyyy-MM-dd');
         const logs = logsByDate.get(ds) ?? [];
-        const scheduled = habits.filter(h =>
-          habitService.isScheduledForDate(h, ds)
-        );
+        const scheduled = habits.filter(h => habitService.isScheduledForDate(h, ds));
         map[ds] = scheduled.length ? logs.filter(l => l.value >= 1).length / scheduled.length : 0;
       }
       setData(map);
@@ -87,7 +125,10 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
   days.forEach((d, i) => {
     const ds = format(d, 'yyyy-MM-dd');
     week.push({ date: ds, value: data[ds] ?? 0, dow: d.getDay() });
-    if (d.getDay() === 6 || i === days.length - 1) { weeks.push(week); week = []; }
+    if (d.getDay() === 6 || i === days.length - 1) {
+      weeks.push(week);
+      week = [];
+    }
   });
 
   // Month labels: find week index where month changes
@@ -102,7 +143,12 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
     }
   });
 
-  if (loading) return <div className="h-40 flex items-center justify-center text-slate-500 text-sm animate-pulse">Loading year of data…</div>;
+  if (loading)
+    return (
+      <div className="h-40 flex items-center justify-center text-slate-500 text-sm animate-pulse">
+        Loading year of data…
+      </div>
+    );
 
   const CELL = 13;
   const GAP = 2;
@@ -111,26 +157,37 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
   return (
     <div className="space-y-4">
       <div className="overflow-x-auto pb-2 -mx-1">
-        <svg
-          width={weeks.length * STEP + 30}
-          height={7 * STEP + 24}
-          className="block"
-        >
+        <svg width={weeks.length * STEP + 30} height={7 * STEP + 24} className="block">
           {/* Month labels */}
           {monthLabels.map(({ label, col }) => (
-            <text key={`${label}-${col}`} x={col * STEP + 30} y={10} fill="#475569" fontSize={10} fontFamily="Inter, sans-serif">
+            <text
+              key={`${label}-${col}`}
+              x={col * STEP + 30}
+              y={10}
+              fill="#475569"
+              fontSize={10}
+              fontFamily="Inter, sans-serif"
+            >
               {label}
             </text>
           ))}
           {/* Day-of-week labels */}
-          {['M','W','F'].map((l, i) => (
-            <text key={l} x={4} y={12 + (i * 2 + 1) * STEP} fill="#475569" fontSize={9} fontFamily="Inter, sans-serif" alignmentBaseline="middle">
+          {['M', 'W', 'F'].map((l, i) => (
+            <text
+              key={l}
+              x={4}
+              y={12 + (i * 2 + 1) * STEP}
+              fill="#475569"
+              fontSize={9}
+              fontFamily="Inter, sans-serif"
+              alignmentBaseline="middle"
+            >
               {l}
             </text>
           ))}
           {/* Cells */}
           {weeks.map((wk, wi) =>
-            wk.map((day) => (
+            wk.map(day => (
               <rect
                 key={day.date}
                 x={wi * STEP + 30}
@@ -141,7 +198,9 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
                 fill={colorFor(day.value)}
                 style={{ transition: 'fill 0.3s' }}
               >
-                <title>{day.date}: {Math.round(day.value * 100)}% completion</title>
+                <title>
+                  {day.date}: {Math.round(day.value * 100)}% completion
+                </title>
               </rect>
             ))
           )}
@@ -164,9 +223,15 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
           {[
             { label: 'Active Days', value: Object.values(data).filter(v => v > 0).length },
             { label: 'Perfect Days', value: Object.values(data).filter(v => v === 1).length },
-            { label: 'Avg Rate', value: `${Math.round((Object.values(data).reduce((a, b) => a + b, 0) / Object.values(data).length) * 100)}%` },
+            {
+              label: 'Avg Rate',
+              value: `${Math.round((Object.values(data).reduce((a, b) => a + b, 0) / Object.values(data).length) * 100)}%`,
+            },
           ].map(s => (
-            <div key={s.label} className="rounded-xl p-3 text-center bg-white/3 border border-white/5">
+            <div
+              key={s.label}
+              className="rounded-xl p-3 text-center bg-white/3 border border-white/5"
+            >
               <p className="text-xl font-bold text-white">{s.value}</p>
               <p className="text-[10px] text-slate-500 mt-0.5">{s.label}</p>
             </div>
@@ -188,7 +253,10 @@ function Heatmap({ logs }: { logs: Record<string, number> }) {
   days.forEach((d, i) => {
     const ds = format(d, 'yyyy-MM-dd');
     week.push({ date: ds, value: logs[ds] ?? 0 });
-    if (d.getDay() === 6 || i === days.length - 1) { grid.push(week); week = []; }
+    if (d.getDay() === 6 || i === days.length - 1) {
+      grid.push(week);
+      week = [];
+    }
   });
   function colorFor(val: number) {
     if (val === 0) return 'rgba(255,255,255,0.04)';
@@ -200,9 +268,19 @@ function Heatmap({ logs }: { logs: Record<string, number> }) {
     <div className="overflow-x-auto pb-2">
       <svg width={grid.length * 14} height={7 * 14}>
         {grid.map((wk, wi) =>
-          wk.map((day) => (
-            <rect key={day.date} x={wi * 14} y={day.date ? new Date(day.date + 'T00:00:00').getDay() * 14 : 0} width={11} height={11} rx={3} fill={colorFor(day.value)}>
-              <title>{day.date}: {Math.round(day.value * 100)}%</title>
+          wk.map(day => (
+            <rect
+              key={day.date}
+              x={wi * 14}
+              y={day.date ? new Date(day.date + 'T00:00:00').getDay() * 14 : 0}
+              width={11}
+              height={11}
+              rx={3}
+              fill={colorFor(day.value)}
+            >
+              <title>
+                {day.date}: {Math.round(day.value * 100)}%
+              </title>
             </rect>
           ))
         )}
@@ -231,7 +309,7 @@ function WeeklyRadar({ habits }: { habits: any[] }) {
       });
       const startDateStr = week[0].date;
       const endDateStr = week[week.length - 1].date;
-      
+
       const allLogs = await db.habitLogs
         .where('date')
         .between(startDateStr, endDateStr, true, true)
@@ -246,7 +324,12 @@ function WeeklyRadar({ habits }: { habits: any[] }) {
       const rows = week.map(({ day, date }) => {
         const logs = logsByDate.get(date) ?? [];
         const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
-        return { day, completion: scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0 };
+        return {
+          day,
+          completion: scheduled.length
+            ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100)
+            : 0,
+        };
       });
       setData(rows);
     })();
@@ -257,7 +340,13 @@ function WeeklyRadar({ habits }: { habits: any[] }) {
         <PolarGrid stroke="rgba(255,255,255,0.08)" />
         <PolarAngleAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 12 }} />
         <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#475569', fontSize: 10 }} />
-        <Radar name="Completion %" dataKey="completion" stroke="#818cf8" fill="rgba(129,140,248,0.2)" strokeWidth={2} />
+        <Radar
+          name="Completion %"
+          dataKey="completion"
+          stroke="#818cf8"
+          fill="rgba(129,140,248,0.2)"
+          strokeWidth={2}
+        />
       </RadarChart>
     </ResponsiveContainer>
   );
@@ -268,7 +357,9 @@ function TrendLine({ habits }: { habits: any[] }) {
   const [data, setData] = useState<any[]>([]);
   useEffect(() => {
     (async () => {
-      const days = Array.from({ length: 30 }, (_, i) => format(subDays(new Date(), 29 - i), 'yyyy-MM-dd'));
+      const days = Array.from({ length: 30 }, (_, i) =>
+        format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
+      );
       const startDateStr = days[0];
       const endDateStr = days[days.length - 1];
 
@@ -286,7 +377,12 @@ function TrendLine({ habits }: { habits: any[] }) {
       const rows = days.map(date => {
         const logs = logsByDate.get(date) ?? [];
         const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
-        return { date: date.slice(5), completion: scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0 };
+        return {
+          date: date.slice(5),
+          completion: scheduled.length
+            ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100)
+            : 0,
+        };
       });
       setData(rows);
     })();
@@ -304,7 +400,14 @@ function TrendLine({ habits }: { habits: any[] }) {
         <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
         <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
         <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
-        <Area type="monotone" dataKey="completion" stroke="#818cf8" strokeWidth={2.5} fill="url(#areaGrad)" dot={false} />
+        <Area
+          type="monotone"
+          dataKey="completion"
+          stroke="#818cf8"
+          strokeWidth={2.5}
+          fill="url(#areaGrad)"
+          dot={false}
+        />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -314,7 +417,9 @@ function TrendLine({ habits }: { habits: any[] }) {
 function TaskThroughput({ tasks }: { tasks: any[] }) {
   const data = useMemo(() => {
     const weeks: Record<string, { created: number; completed: number }> = {};
-    const ensureWeek = (wk: string) => { if (!weeks[wk]) weeks[wk] = { created: 0, completed: 0 }; };
+    const ensureWeek = (wk: string) => {
+      if (!weeks[wk]) weeks[wk] = { created: 0, completed: 0 };
+    };
     tasks.forEach(t => {
       const createdWk = format(startOfWeek(new Date(t.createdAt)), 'MM/dd');
       ensureWeek(createdWk);
@@ -325,7 +430,10 @@ function TaskThroughput({ tasks }: { tasks: any[] }) {
         weeks[completedWk].completed++;
       }
     });
-    return Object.entries(weeks).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([week, v]) => ({ week, ...v }));
+    return Object.entries(weeks)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-8)
+      .map(([week, v]) => ({ week, ...v }));
   }, [tasks]);
   return (
     <ResponsiveContainer width="100%" height={220}>
@@ -335,8 +443,20 @@ function TaskThroughput({ tasks }: { tasks: any[] }) {
         <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
         <Tooltip contentStyle={TOOLTIP_STYLE} />
         <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
-        <Bar dataKey="created" name="Created" fill="rgba(129,140,248,0.5)" radius={[4,4,0,0]} maxBarSize={48} />
-        <Bar dataKey="completed" name="Completed" fill="#10b981" radius={[4,4,0,0]} maxBarSize={48} />
+        <Bar
+          dataKey="created"
+          name="Created"
+          fill="rgba(129,140,248,0.5)"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={48}
+        />
+        <Bar
+          dataKey="completed"
+          name="Completed"
+          fill="#10b981"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={48}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -373,11 +493,16 @@ function BestWorstDay({ habits }: { habits: any[] }) {
         counts[dow].done += logs.filter(l => l.value >= 1).length;
         counts[dow].total += scheduled.length;
       }
-      setDayData(DAY_NAMES.map((day, i) => ({ day, pct: counts[i]?.total ? Math.round((counts[i].done / counts[i].total) * 100) : 0 })));
+      setDayData(
+        DAY_NAMES.map((day, i) => ({
+          day,
+          pct: counts[i]?.total ? Math.round((counts[i].done / counts[i].total) * 100) : 0,
+        }))
+      );
     })();
   }, [habits]);
-  const best = dayData.reduce((a, b) => b.pct > a.pct ? b : a, { day: '—', pct: 0 });
-  const worst = dayData.reduce((a, b) => b.pct < a.pct ? b : a, { day: '—', pct: 100 });
+  const best = dayData.reduce((a, b) => (b.pct > a.pct ? b : a), { day: '—', pct: 0 });
+  const worst = dayData.reduce((a, b) => (b.pct < a.pct ? b : a), { day: '—', pct: 100 });
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -401,7 +526,16 @@ function BestWorstDay({ habits }: { habits: any[] }) {
           <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
           <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={48}>
             {dayData.map((d, i) => (
-              <Cell key={i} fill={d.day === best.day ? '#10b981' : d.day === worst.day ? '#ef4444' : 'rgba(129,140,248,0.6)'} />
+              <Cell
+                key={i}
+                fill={
+                  d.day === best.day
+                    ? '#10b981'
+                    : d.day === worst.day
+                      ? '#ef4444'
+                      : 'rgba(129,140,248,0.6)'
+                }
+              />
             ))}
           </Bar>
         </BarChart>
@@ -415,7 +549,9 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
   const [data, setData] = useState<any[]>([]);
   useEffect(() => {
     (async () => {
-      const days = Array.from({ length: 30 }, (_, i) => format(subDays(new Date(), 29 - i), 'yyyy-MM-dd'));
+      const days = Array.from({ length: 30 }, (_, i) =>
+        format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
+      );
       const startDateStr = days[0];
       const endDateStr = days[days.length - 1];
 
@@ -433,7 +569,9 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
       const rows = days.map(date => {
         const logs = logsByDate.get(date) ?? [];
         const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
-        const pct = scheduled.length ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100) : 0;
+        const pct = scheduled.length
+          ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100)
+          : 0;
         const moodLog = moods.find(m => m.date === date);
         return { date: date.slice(5), completion: pct, mood: moodLog ? moodLog.score : null };
       });
@@ -452,33 +590,85 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
         <YAxis yAxisId="left" domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
-        <YAxis yAxisId="right" orientation="right" domain={[1, 5]} tick={{ fill: '#64748b', fontSize: 11 }} />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          domain={[1, 5]}
+          tick={{ fill: '#64748b', fontSize: 11 }}
+        />
         <Tooltip contentStyle={TOOLTIP_STYLE} />
         <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
-        <Bar yAxisId="left" dataKey="completion" name="Completion %" fill="rgba(129,140,248,0.5)" radius={[4,4,0,0]} maxBarSize={48} />
-        <Line yAxisId="right" type="monotone" dataKey="mood" name="Mood (1–5)" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3, fill: '#10b981' }} connectNulls />
+        <Bar
+          yAxisId="left"
+          dataKey="completion"
+          name="Completion %"
+          fill="rgba(129,140,248,0.5)"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={48}
+        />
+        <Line
+          yAxisId="right"
+          type="monotone"
+          dataKey="mood"
+          name="Mood (1–5)"
+          stroke="#10b981"
+          strokeWidth={2.5}
+          dot={{ r: 3, fill: '#10b981' }}
+          connectNulls
+        />
       </ComposedChart>
     </ResponsiveContainer>
   );
 }
 
-function StatCard({ icon, label, value, sub, colorClass = 'kpi-card-indigo', iconColor = '#818cf8' }: { icon: string; label: string; value: string | number; sub?: string; colorClass?: string; iconColor?: string }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  sub,
+  colorClass = 'kpi-card-indigo',
+  iconColor = '#818cf8',
+}: {
+  icon: string;
+  label: string;
+  value: string | number;
+  sub?: string;
+  colorClass?: string;
+  iconColor?: string;
+}) {
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -4, scale: 1.02 }}
-      className={cn("glass-card rounded-2xl p-6 text-center relative overflow-hidden group", colorClass)}
+      className={cn(
+        'glass-card rounded-2xl p-6 text-center relative overflow-hidden group',
+        colorClass
+      )}
     >
       <span className="absolute right-3 bottom-3 text-5xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
         {icon}
       </span>
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">
+        {label}
+      </p>
       <p className="text-3xl font-black text-white tracking-tight mb-1">{value}</p>
-      {sub && <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider opacity-60">{sub}</p>}
+      {sub && (
+        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider opacity-60">
+          {sub}
+        </p>
+      )}
     </motion.div>
   );
 }
 
-function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function ChartCard({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="glass-card rounded-2xl p-6">
       <div className="mb-5">
@@ -506,9 +696,9 @@ function DynamicInsights({ habits }: { habits: any[] }) {
 
   useEffect(() => {
     if (habits.length === 0) return;
-    
+
     const newInsights: { icon: string; title: string; body: string }[] = [];
-    
+
     // Insight 1: Longest active streak
     const bestCurrent = [...habits].sort((a, b) => b.streak.current - a.streak.current)[0];
     if (bestCurrent && bestCurrent.streak.current >= 3) {
@@ -526,7 +716,9 @@ function DynamicInsights({ habits }: { habits: any[] }) {
     }
 
     // Insight 2: Overall consistency
-    const avgComp = Math.round((habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100);
+    const avgComp = Math.round(
+      (habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100
+    );
     if (avgComp > 80) {
       newInsights.push({
         icon: '⭐',
@@ -540,7 +732,7 @@ function DynamicInsights({ habits }: { habits: any[] }) {
         body: `Your ${avgComp}% completion rate shows good effort. Focus on your hardest habits next.`,
       });
     } else {
-       newInsights.push({
+      newInsights.push({
         icon: '🎯',
         title: 'Room to Grow',
         body: `Focus on completing just one core habit daily to build momentum.`,
@@ -560,7 +752,7 @@ function DynamicInsights({ habits }: { habits: any[] }) {
         body: `You've been most consistent with your ${bestCat[0]} habits lately.`,
       });
     } else {
-       newInsights.push({
+      newInsights.push({
         icon: '⚖️',
         title: 'Find Balance',
         body: `Try to spread your focus evenly across different areas of your life.`,
@@ -592,9 +784,15 @@ export function AnalyticsPage() {
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const [heatmapData, setHeatmapData] = useState<Record<string, number>>({});
 
-  useEffect(() => { loadHabits(); loadTasks(); loadMoods(); }, [loadHabits, loadTasks, loadMoods]);
+  useEffect(() => {
+    loadHabits();
+    loadTasks();
+    loadMoods();
+  }, [loadHabits, loadTasks, loadMoods]);
 
-  useEffect(() => { document.title = 'Analytics — HabitFlow'; }, []);
+  useEffect(() => {
+    document.title = 'Analytics — HabitFlow';
+  }, []);
 
   const selectedHabit = habits.find(h => h.id === selectedHabitId) ?? habits[0] ?? null;
 
@@ -604,14 +802,21 @@ export function AnalyticsPage() {
       const logs = await db.habitLogs.where('habitId').equals(selectedHabit.id).toArray();
       const map: Record<string, number> = {};
       logs.forEach(l => {
-        map[l.date] = selectedHabit.type === 'boolean' ? (l.value >= 1 ? 1 : 0) : Math.min(l.value / selectedHabit.targetValue, 1);
+        map[l.date] =
+          selectedHabit.type === 'boolean'
+            ? l.value >= 1
+              ? 1
+              : 0
+            : Math.min(l.value / selectedHabit.targetValue, 1);
       });
       setHeatmapData(map);
     })();
   }, [selectedHabit]);
 
   const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.best)) : 0;
-  const avgCompletion = habits.length ? Math.round((habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100) : 0;
+  const avgCompletion = habits.length
+    ? Math.round((habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100)
+    : 0;
   const tasksDone = tasks.filter(t => t.completed).length;
 
   return (
@@ -619,9 +824,13 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Analytics</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
+            Analytics
+          </p>
           <h1 className="text-3xl font-bold text-white">Your Progress Report</h1>
-          <p className="text-slate-400 text-sm mt-1">Track, analyze, and improve your habits over time.</p>
+          <p className="text-slate-400 text-sm mt-1">
+            Track, analyze, and improve your habits over time.
+          </p>
         </div>
       </div>
 
@@ -647,10 +856,34 @@ export function AnalyticsPage() {
         <div className="space-y-6">
           {/* KPI row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard icon="🔥" label="Active Habits" value={habits.filter(h => !h.archived).length} sub="tracking now" colorClass="kpi-card-amber" />
-            <StatCard icon="🏆" label="Best Streak" value={bestStreak ? `${bestStreak}d` : '—'} sub="all time" colorClass="kpi-card-indigo" />
-            <StatCard icon="✅" label="Tasks Done" value={tasksDone} sub={`of ${tasks.length} total`} colorClass="kpi-card-emerald" />
-            <StatCard icon="📈" label="30d Avg" value={avgCompletion ? `${avgCompletion}%` : '—'} sub="completion rate" colorClass="kpi-card-indigo" />
+            <StatCard
+              icon="🔥"
+              label="Active Habits"
+              value={habits.filter(h => !h.archived).length}
+              sub="tracking now"
+              colorClass="kpi-card-amber"
+            />
+            <StatCard
+              icon="🏆"
+              label="Best Streak"
+              value={bestStreak ? `${bestStreak}d` : '—'}
+              sub="all time"
+              colorClass="kpi-card-indigo"
+            />
+            <StatCard
+              icon="✅"
+              label="Tasks Done"
+              value={tasksDone}
+              sub={`of ${tasks.length} total`}
+              colorClass="kpi-card-emerald"
+            />
+            <StatCard
+              icon="📈"
+              label="30d Avg"
+              value={avgCompletion ? `${avgCompletion}%` : '—'}
+              sub="completion rate"
+              colorClass="kpi-card-indigo"
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -662,7 +895,10 @@ export function AnalyticsPage() {
             </ChartCard>
           </div>
 
-          <ChartCard title="30-Day Completion Trend" subtitle="Daily habit completion rate over the last month">
+          <ChartCard
+            title="30-Day Completion Trend"
+            subtitle="Daily habit completion rate over the last month"
+          >
             {habits.length > 0 ? <TrendLine habits={habits} /> : <EmptyChart />}
           </ChartCard>
         </div>
@@ -675,7 +911,11 @@ export function AnalyticsPage() {
             title="Habit Completion vs. Daily Mood"
             subtitle="Discover how keeping up with your habits affects your energy, and vice versa (30 days)"
           >
-            {habits.length > 0 ? <HabitMoodCorrelation habits={habits} moods={moods} /> : <EmptyChart />}
+            {habits.length > 0 ? (
+              <HabitMoodCorrelation habits={habits} moods={moods} />
+            ) : (
+              <EmptyChart />
+            )}
           </ChartCard>
 
           {/* Dynamic insight callouts */}
@@ -710,13 +950,36 @@ export function AnalyticsPage() {
               {selectedHabit && (
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <StatCard icon="🔥" label="Current Streak" value={`${selectedHabit.streak.current}d`} colorClass="kpi-card-amber" />
-                    <StatCard icon="🏆" label="Best Streak" value={`${selectedHabit.streak.best}d`} colorClass="kpi-card-indigo" />
-                    <StatCard icon="📈" label="30d Completion" value={`${Math.round(selectedHabit.completionRate30Days * 100)}%`} colorClass="kpi-card-indigo" />
-                    <StatCard icon="📅" label="Since" value={selectedHabit.startDate} colorClass="kpi-card-emerald" />
+                    <StatCard
+                      icon="🔥"
+                      label="Current Streak"
+                      value={`${selectedHabit.streak.current}d`}
+                      colorClass="kpi-card-amber"
+                    />
+                    <StatCard
+                      icon="🏆"
+                      label="Best Streak"
+                      value={`${selectedHabit.streak.best}d`}
+                      colorClass="kpi-card-indigo"
+                    />
+                    <StatCard
+                      icon="📈"
+                      label="30d Completion"
+                      value={`${Math.round(selectedHabit.completionRate30Days * 100)}%`}
+                      colorClass="kpi-card-indigo"
+                    />
+                    <StatCard
+                      icon="📅"
+                      label="Since"
+                      value={selectedHabit.startDate}
+                      colorClass="kpi-card-emerald"
+                    />
                   </div>
 
-                  <ChartCard title={`${selectedHabit.icon} ${selectedHabit.name} — Completion Heatmap`} subtitle="Last 26 weeks">
+                  <ChartCard
+                    title={`${selectedHabit.icon} ${selectedHabit.name} — Completion Heatmap`}
+                    subtitle="Last 26 weeks"
+                  >
                     <Heatmap logs={heatmapData} />
                   </ChartCard>
                 </>
@@ -730,12 +993,30 @@ export function AnalyticsPage() {
       {tab === 'Tasks' && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard icon="📋" label="Total Tasks" value={tasks.length} colorClass="kpi-card-indigo" />
+            <StatCard
+              icon="📋"
+              label="Total Tasks"
+              value={tasks.length}
+              colorClass="kpi-card-indigo"
+            />
             <StatCard icon="✅" label="Completed" value={tasksDone} colorClass="kpi-card-emerald" />
-            <StatCard icon="⏳" label="Pending" value={tasks.filter(t => !t.completed).length} colorClass="kpi-card-amber" />
-            <StatCard icon="🔴" label="Urgent" value={tasks.filter(t => t.priority === 0 && !t.completed).length} colorClass="kpi-card-rose" />
+            <StatCard
+              icon="⏳"
+              label="Pending"
+              value={tasks.filter(t => !t.completed).length}
+              colorClass="kpi-card-amber"
+            />
+            <StatCard
+              icon="🔴"
+              label="Urgent"
+              value={tasks.filter(t => t.priority === 0 && !t.completed).length}
+              colorClass="kpi-card-rose"
+            />
           </div>
-          <ChartCard title="Task Throughput" subtitle="Created vs. completed per week (last 8 weeks)">
+          <ChartCard
+            title="Task Throughput"
+            subtitle="Created vs. completed per week (last 8 weeks)"
+          >
             {tasks.length > 0 ? <TaskThroughput tasks={tasks} /> : <EmptyChart />}
           </ChartCard>
         </div>
@@ -746,8 +1027,12 @@ export function AnalyticsPage() {
         <div className="space-y-6">
           <div className="glass-card rounded-2xl p-6">
             <div className="mb-5">
-              <h3 className="text-base font-semibold text-white flex items-center gap-2">🟩 365-Day Activity Heatmap</h3>
-              <p className="text-xs text-slate-400 mt-1">Your overall habit completion across the entire last year, just like GitHub.</p>
+              <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                🟩 365-Day Activity Heatmap
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Your overall habit completion across the entire last year, just like GitHub.
+              </p>
             </div>
             {habits.length > 0 ? <YearlyHeatmap habits={habits} /> : <EmptyChart />}
           </div>

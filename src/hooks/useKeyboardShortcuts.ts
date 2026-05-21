@@ -18,13 +18,18 @@ export function useKeyboardShortcuts(options: {
 
   // Keep latest callbacks in a ref so the effect never needs to re-run
   const cb = useRef(options);
-  useEffect(() => { cb.current = options; });
+  useEffect(() => {
+    cb.current = options;
+  });
 
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName;
-      const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
-        || (e.target as HTMLElement).isContentEditable;
+      const isTyping =
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        (e.target as HTMLElement).isContentEditable;
 
       // Ctrl/Cmd+K → open search (always active, even while typing)
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -49,20 +54,37 @@ export function useKeyboardShortcuts(options: {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       switch (e.key) {
-        case 'n': case 'N':
-          e.preventDefault(); cb.current.onNewHabit?.(); break;
-        case 't': case 'T':
-          e.preventDefault(); cb.current.onNewTask?.(); break;
-        case 'f': case 'F':
-          e.preventDefault(); cb.current.onToggleFocus?.(); break;
-        case 'h': case 'H':
-          navigate('/habits'); break;
-        case 'd': case 'D':
-          navigate('/dashboard'); break;
-        case 'a': case 'A':
-          navigate('/analytics'); break;
-        case 'p': case 'P':
-          navigate('/profile'); break;
+        case 'n':
+        case 'N':
+          e.preventDefault();
+          cb.current.onNewHabit?.();
+          break;
+        case 't':
+        case 'T':
+          e.preventDefault();
+          cb.current.onNewTask?.();
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          cb.current.onToggleFocus?.();
+          break;
+        case 'h':
+        case 'H':
+          navigate('/habits');
+          break;
+        case 'd':
+        case 'D':
+          navigate('/dashboard');
+          break;
+        case 'a':
+        case 'A':
+          navigate('/analytics');
+          break;
+        case 'p':
+        case 'P':
+          navigate('/profile');
+          break;
       }
     }
 

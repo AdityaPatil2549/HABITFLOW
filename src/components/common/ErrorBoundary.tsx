@@ -29,7 +29,9 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen flex items-center justify-center bg-[var(--bg-base,#0f0f13)] text-[var(--text-primary,white)] p-6 text-center">
           <div className="max-w-md">
             <h1 className="text-3xl font-black text-brand-400 mb-4">Something went wrong</h1>
-            <p className="text-slate-400 mb-6 font-medium">An unexpected error occurred in the application. Please try reloading the page.</p>
+            <p className="text-slate-400 mb-6 font-medium">
+              An unexpected error occurred in the application. Please try reloading the page.
+            </p>
             <button
               onClick={() => window.location.reload()}
               className="px-6 py-3 bg-brand-500 hover:bg-brand-600 rounded-xl font-bold transition-colors"

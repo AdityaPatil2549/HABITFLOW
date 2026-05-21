@@ -1,6 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Save, Award, Flame, CheckCircle2, TrendingUp, Star, Edit2, X, Settings, Share2, Snowflake, Palette } from 'lucide-react';
+import {
+  Camera,
+  Save,
+  Award,
+  Flame,
+  CheckCircle2,
+  TrendingUp,
+  Star,
+  Edit2,
+  X,
+  Settings,
+  Share2,
+  Snowflake,
+  Palette,
+} from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
 import { useProfileStore } from '../store/profileStore';
@@ -15,14 +29,14 @@ import { calculateStats } from '../services/gamificationService';
 
 // All achievable badges (catalogue) — icon + label must match what gamificationService awards
 const BADGE_CATALOGUE = [
-  { id: 'streak_3',  icon: '🔥', label: '3-Day Streak',   desc: 'Kept a habit for 3 days in a row' },
-  { id: 'streak_7',  icon: '🌟', label: '7-Day Streak',   desc: 'Completed habits 7 days in a row' },
-  { id: 'streak_30', icon: '💪', label: 'Iron Will',      desc: '30-day streak on any habit' },
-  { id: 'streak_100',icon: '🏆', label: 'Legend',         desc: '100-day streak — extraordinary!' },
-  { id: 'xp_100',   icon: '⚡', label: 'XP Starter',    desc: 'Earn your first 100 XP' },
-  { id: 'xp_500',   icon: '🚀', label: 'Rising Star',   desc: 'Accumulate 500 XP' },
-  { id: 'xp_1000',  icon: '💎', label: 'Diamond',       desc: 'Accumulate 1,000 XP' },
-  { id: 'tasks_10', icon: '✅', label: 'Task Crusher',  desc: 'Complete 10 tasks' },
+  { id: 'streak_3', icon: '🔥', label: '3-Day Streak', desc: 'Kept a habit for 3 days in a row' },
+  { id: 'streak_7', icon: '🌟', label: '7-Day Streak', desc: 'Completed habits 7 days in a row' },
+  { id: 'streak_30', icon: '💪', label: 'Iron Will', desc: '30-day streak on any habit' },
+  { id: 'streak_100', icon: '🏆', label: 'Legend', desc: '100-day streak — extraordinary!' },
+  { id: 'xp_100', icon: '⚡', label: 'XP Starter', desc: 'Earn your first 100 XP' },
+  { id: 'xp_500', icon: '🚀', label: 'Rising Star', desc: 'Accumulate 500 XP' },
+  { id: 'xp_1000', icon: '💎', label: 'Diamond', desc: 'Accumulate 1,000 XP' },
+  { id: 'tasks_10', icon: '✅', label: 'Task Crusher', desc: 'Complete 10 tasks' },
 ];
 
 export function ProfilePage() {
@@ -78,7 +92,10 @@ export function ProfilePage() {
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { toast.error('Image must be under 10MB'); return; }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be under 10MB');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setDraftAvatar(reader.result as string);
     reader.readAsDataURL(file);
@@ -111,7 +128,9 @@ export function ProfilePage() {
     }
   };
 
-  useEffect(() => { document.title = 'Profile — HabitFlow'; }, []);
+  useEffect(() => {
+    document.title = 'Profile — HabitFlow';
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-24 relative">
@@ -132,24 +151,35 @@ export function ProfilePage() {
       <div className="glass-card rounded-2xl p-6">
         <div className="flex flex-col sm:flex-row items-start gap-6">
           {/* Avatar */}
-          <div className={`relative flex-shrink-0 ${!editing ? 'cursor-pointer group' : ''}`} onClick={() => !editing && startEdit()}>
+          <div
+            className={`relative flex-shrink-0 ${!editing ? 'cursor-pointer group' : ''}`}
+            onClick={() => !editing && startEdit()}
+          >
             <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/30 transition-transform group-hover:scale-105">
               {editing && draftAvatar ? (
                 <img src={draftAvatar} alt="avatar" className="w-full h-full object-cover" />
               ) : avatar ? (
                 <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-4xl font-black text-white">{name[0]?.toUpperCase() ?? 'A'}</span>
+                <span className="text-4xl font-black text-white">
+                  {name[0]?.toUpperCase() ?? 'A'}
+                </span>
               )}
               {!editing && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <Edit2 size={20} className="text-white" />
+                  <Edit2 size={20} className="text-white" />
                 </div>
               )}
             </div>
             {editing && (
               <>
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="absolute inset-0 w-24 h-24 rounded-2xl bg-black/50 flex flex-col items-center justify-center gap-1 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
@@ -174,7 +204,9 @@ export function ProfilePage() {
             {editing ? (
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">Display Name</label>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">
+                    Display Name
+                  </label>
                   <input
                     className="w-full bg-white/5 border border-brand-500/40 rounded-xl px-4 py-2.5 text-white text-lg font-bold outline-none focus:border-brand-400 transition-all"
                     value={draftName}
@@ -185,7 +217,9 @@ export function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">Bio</label>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">
+                    Bio
+                  </label>
                   <textarea
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-slate-300 text-sm outline-none focus:border-brand-500/50 transition-all resize-none leading-relaxed"
                     value={draftBio}
@@ -194,7 +228,9 @@ export function ProfilePage() {
                     rows={3}
                     maxLength={160}
                   />
-                  <p className="text-[10px] text-slate-600 text-right mt-1">{draftBio.length}/160</p>
+                  <p className="text-[10px] text-slate-600 text-right mt-1">
+                    {draftBio.length}/160
+                  </p>
                 </div>
               </div>
             ) : (
@@ -206,7 +242,15 @@ export function ProfilePage() {
                   <span className="text-xs font-bold text-brand-400 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
                     <Star size={9} /> {userXP ? calculateStats(userXP.total).level : 'Beginner'}
                   </span>
-                  <span className="text-xs text-slate-500">Member since {habits.length > 0 ? format(new Date(Math.min(...habits.map(h => new Date(h.createdAt).getTime()))), 'MMM yyyy') : format(new Date(), 'MMM yyyy')}</span>
+                  <span className="text-xs text-slate-500">
+                    Member since{' '}
+                    {habits.length > 0
+                      ? format(
+                          new Date(Math.min(...habits.map(h => new Date(h.createdAt).getTime()))),
+                          'MMM yyyy'
+                        )
+                      : format(new Date(), 'MMM yyyy')}
+                  </span>
                 </div>
                 <p className="text-slate-400 text-sm leading-relaxed">{bio || 'No bio set yet.'}</p>
               </div>
@@ -219,7 +263,10 @@ export function ProfilePage() {
                   <button
                     onClick={handleSave}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95"
-                    style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 6px 20px rgba(var(--brand-500-rgb),0.3)' }}
+                    style={{
+                      background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
+                      boxShadow: '0 6px 20px rgba(var(--brand-500-rgb),0.3)',
+                    }}
                   >
                     <Save size={14} /> Save Changes
                   </button>
@@ -246,13 +293,36 @@ export function ProfilePage() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { icon: <Flame size={24} />, label: 'Best Streak', value: `${bestStreak}d`, color: '#f97316' },
-          { icon: <CheckCircle2 size={24} />, label: 'Tasks Done', value: totalDone, color: '#10b981' },
-          { icon: <TrendingUp size={24} />, label: '30d Avg', value: `${avgCompletion}%`, color: '#818cf8' },
-          { icon: <Award size={24} />, label: 'Badges', value: `${earnedBadges}/${BADGE_CATALOGUE.length}`, color: '#f59e0b' },
+          {
+            icon: <Flame size={24} />,
+            label: 'Best Streak',
+            value: `${bestStreak}d`,
+            color: '#f97316',
+          },
+          {
+            icon: <CheckCircle2 size={24} />,
+            label: 'Tasks Done',
+            value: totalDone,
+            color: '#10b981',
+          },
+          {
+            icon: <TrendingUp size={24} />,
+            label: '30d Avg',
+            value: `${avgCompletion}%`,
+            color: '#818cf8',
+          },
+          {
+            icon: <Award size={24} />,
+            label: 'Badges',
+            value: `${earnedBadges}/${BADGE_CATALOGUE.length}`,
+            color: '#f59e0b',
+          },
         ].map(s => (
           <div key={s.label} className="glass-card rounded-2xl p-4 text-center">
-            <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: `${s.color}18`, color: s.color }}>
+            <div
+              className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center"
+              style={{ background: `${s.color}18`, color: s.color }}
+            >
               {s.icon}
             </div>
             <p className="text-xl font-bold text-white">{s.value}</p>
@@ -275,7 +345,9 @@ export function ProfilePage() {
               <h2 className="text-xl font-bold text-white mb-1">
                 Streak Freezes: <span className="text-blue-400">{userXP?.streakFreezes ?? 0}</span>
               </h2>
-              <p className="text-sm text-slate-400">Protects your streak if you miss a day. (Auto-applied)</p>
+              <p className="text-sm text-slate-400">
+                Protects your streak if you miss a day. (Auto-applied)
+              </p>
             </div>
           </div>
           <button
@@ -294,7 +366,10 @@ export function ProfilePage() {
               });
             }}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-blue-100 transition-all active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)', boxShadow: '0 0 24px rgba(59,130,246,0.3)' }}
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+              boxShadow: '0 0 24px rgba(59,130,246,0.3)',
+            }}
           >
             Buy for 500 XP
           </button>
@@ -319,7 +394,10 @@ export function ProfilePage() {
           ].map(t => {
             const unlocked = userXP?.unlockedThemes?.includes(t.id);
             return (
-              <div key={t.id} className="rounded-xl p-4 border border-white/5 bg-white/[0.02] flex flex-col gap-3 transition-all hover:bg-white/[0.04]">
+              <div
+                key={t.id}
+                className="rounded-xl p-4 border border-white/5 bg-white/[0.02] flex flex-col gap-3 transition-all hover:bg-white/[0.04]"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded-full shadow" style={{ background: t.color }} />
@@ -327,7 +405,10 @@ export function ProfilePage() {
                   </div>
                 </div>
                 {unlocked ? (
-                  <button disabled className="w-full py-2 rounded-lg bg-white/5 text-slate-500 text-xs font-bold cursor-default">
+                  <button
+                    disabled
+                    className="w-full py-2 rounded-lg bg-white/5 text-slate-500 text-xs font-bold cursor-default"
+                  >
                     Unlocked
                   </button>
                 ) : (
@@ -338,12 +419,15 @@ export function ProfilePage() {
                         return;
                       }
                       toast.confirm(`Unlock ${t.label} theme for ${t.cost} XP?`, () => {
-                        useGamificationStore.getState().unlockTheme(t.id, t.cost).then(success => {
-                          if (success) {
-                            soundService.playLevelUp();
-                            toast.success('Theme unlocked! Go to Settings to equip it. 🎨');
-                          }
-                        });
+                        useGamificationStore
+                          .getState()
+                          .unlockTheme(t.id, t.cost)
+                          .then(success => {
+                            if (success) {
+                              soundService.playLevelUp();
+                              toast.success('Theme unlocked! Go to Settings to equip it. 🎨');
+                            }
+                          });
                       });
                     }}
                     className="w-full py-2 rounded-lg bg-brand-500/10 text-brand-400 text-xs font-bold hover:bg-brand-500/20 transition-all active:scale-95 border border-brand-500/20"
@@ -360,21 +444,32 @@ export function ProfilePage() {
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-white">Badges & Achievements</h2>
-          <span className="text-xs text-slate-500">{userXP?.badgesEarned?.length ?? 0} of {BADGE_CATALOGUE.length} earned</span>
+          <span className="text-xs text-slate-500">
+            {userXP?.badgesEarned?.length ?? 0} of {BADGE_CATALOGUE.length} earned
+          </span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {BADGE_CATALOGUE.map(b => {
-            const earnedBadge = userXP?.badgesEarned?.find(e => e.id === b.id || e.name === b.label);
+            const earnedBadge = userXP?.badgesEarned?.find(
+              e => e.id === b.id || e.name === b.label
+            );
             const isEarned = !!earnedBadge;
             return (
-              <div key={b.id}
-                className={`rounded-xl p-4 border transition-all ${isEarned ? 'border-brand-500/20 bg-brand-500/5' : 'border-white/5 bg-white/[0.02] opacity-50'}`}>
-                <span className={`text-2xl block mb-2 ${!isEarned && 'grayscale opacity-50'}`}>{b.icon}</span>
+              <div
+                key={b.id}
+                className={`rounded-xl p-4 border transition-all ${isEarned ? 'border-brand-500/20 bg-brand-500/5' : 'border-white/5 bg-white/[0.02] opacity-50'}`}
+              >
+                <span className={`text-2xl block mb-2 ${!isEarned && 'grayscale opacity-50'}`}>
+                  {b.icon}
+                </span>
                 <p className="text-sm font-semibold text-white mb-1">{b.label}</p>
                 <p className="text-xs text-slate-500 leading-relaxed">{b.desc}</p>
                 {isEarned && (
                   <span className="mt-2 inline-block text-[10px] font-bold text-emerald-400">
-                    ✓ Earned{earnedBadge?.earnedAt ? ` · ${new Date(earnedBadge.earnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
+                    ✓ Earned
+                    {earnedBadge?.earnedAt
+                      ? ` · ${new Date(earnedBadge.earnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                      : ''}
                   </span>
                 )}
               </div>
@@ -385,8 +480,10 @@ export function ProfilePage() {
 
       {/* Quick links */}
       <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row gap-3">
-        <button onClick={() => navigate('/settings')}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">
+        <button
+          onClick={() => navigate('/settings')}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors"
+        >
           <Settings size={16} /> Go to Settings
         </button>
         <button
@@ -395,7 +492,13 @@ export function ProfilePage() {
           style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
           onClick={shareProfile}
         >
-          {isGenerating ? 'Generating...' : <><Share2 size={16} /> Download Player Card</>}
+          {isGenerating ? (
+            'Generating...'
+          ) : (
+            <>
+              <Share2 size={16} /> Download Player Card
+            </>
+          )}
         </button>
       </div>
 

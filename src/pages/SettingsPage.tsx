@@ -1,5 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sun, Monitor, Download, Upload, Trash2, Bell, Shield, Palette, Database, Info, CheckCircle2 } from 'lucide-react';
+import {
+  Moon,
+  Sun,
+  Monitor,
+  Download,
+  Upload,
+  Trash2,
+  Bell,
+  Shield,
+  Palette,
+  Database,
+  Info,
+  CheckCircle2,
+} from 'lucide-react';
 import { db, getOrCreateSettings } from '../db';
 import type { Settings, Theme } from '../types';
 import { format } from 'date-fns';
@@ -32,7 +45,9 @@ export function SettingsPage() {
     loadXP();
   }, [loadXP]);
 
-  useEffect(() => { document.title = 'Settings — HabitFlow'; }, []);
+  useEffect(() => {
+    document.title = 'Settings — HabitFlow';
+  }, []);
 
   async function saveSetting(update: Partial<Settings>) {
     if (!settings) return;
@@ -60,7 +75,21 @@ export function SettingsPage() {
       db.userXP.toArray(),
     ]);
     const blob = new Blob(
-      [JSON.stringify({ habits, habitLogs, tasks, projects, moods, userXP, exportedAt: new Date().toISOString() }, null, 2)],
+      [
+        JSON.stringify(
+          {
+            habits,
+            habitLogs,
+            tasks,
+            projects,
+            moods,
+            userXP,
+            exportedAt: new Date().toISOString(),
+          },
+          null,
+          2
+        ),
+      ],
       { type: 'application/json' }
     );
     const url = URL.createObjectURL(blob);
@@ -81,7 +110,15 @@ export function SettingsPage() {
     const rows = logs.map(l => {
       const h = habitMap.get(l.habitId);
       const escape = (str: string) => `"${String(str).replace(/"/g, '""')}"`;
-      return [l.date, escape(h?.name || 'Unknown Habit'), escape(h?.category || ''), escape(h?.type || ''), l.value, l.mood || '', escape(l.note || '')].join(',');
+      return [
+        l.date,
+        escape(h?.name || 'Unknown Habit'),
+        escape(h?.category || ''),
+        escape(h?.type || ''),
+        l.value,
+        l.mood || '',
+        escape(l.note || ''),
+      ].join(',');
     });
     const csvContent = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -103,7 +140,9 @@ export function SettingsPage() {
       const data = JSON.parse(text);
 
       // Validate required data shape
-      const isValid = data && typeof data === 'object' &&
+      const isValid =
+        data &&
+        typeof data === 'object' &&
         (!data.habits || Array.isArray(data.habits)) &&
         (!data.habitLogs || Array.isArray(data.habitLogs)) &&
         (!data.tasks || Array.isArray(data.tasks)) &&
@@ -118,7 +157,8 @@ export function SettingsPage() {
       }
 
       // Check that arrays contain objects with id fields
-      const hasIds = (arr: any[]) => arr.length === 0 || arr.every((item: any) => item && typeof item.id !== 'undefined');
+      const hasIds = (arr: any[]) =>
+        arr.length === 0 || arr.every((item: any) => item && typeof item.id !== 'undefined');
       if (
         (data.habits && !hasIds(data.habits)) ||
         (data.tasks && !hasIds(data.tasks)) ||
@@ -132,14 +172,36 @@ export function SettingsPage() {
       toast.confirm(
         `Import ${data.habits?.length ?? 0} habits, ${data.tasks?.length ?? 0} tasks, and ${data.habitLogs?.length ?? 0} logs? This will replace all existing data.`,
         async () => {
-          await db.transaction('rw', [db.habits, db.habitLogs, db.tasks, db.projects, db.moods, db.userXP], async () => {
-            if (data.habits) { await db.habits.clear(); await db.habits.bulkAdd(data.habits); }
-            if (data.habitLogs) { await db.habitLogs.clear(); await db.habitLogs.bulkAdd(data.habitLogs); }
-            if (data.tasks) { await db.tasks.clear(); await db.tasks.bulkAdd(data.tasks); }
-            if (data.projects) { await db.projects.clear(); await db.projects.bulkAdd(data.projects); }
-            if (data.moods) { await db.moods.clear(); await db.moods.bulkAdd(data.moods); }
-            if (data.userXP) { await db.userXP.clear(); await db.userXP.bulkAdd(data.userXP); }
-          });
+          await db.transaction(
+            'rw',
+            [db.habits, db.habitLogs, db.tasks, db.projects, db.moods, db.userXP],
+            async () => {
+              if (data.habits) {
+                await db.habits.clear();
+                await db.habits.bulkAdd(data.habits);
+              }
+              if (data.habitLogs) {
+                await db.habitLogs.clear();
+                await db.habitLogs.bulkAdd(data.habitLogs);
+              }
+              if (data.tasks) {
+                await db.tasks.clear();
+                await db.tasks.bulkAdd(data.tasks);
+              }
+              if (data.projects) {
+                await db.projects.clear();
+                await db.projects.bulkAdd(data.projects);
+              }
+              if (data.moods) {
+                await db.moods.clear();
+                await db.moods.bulkAdd(data.moods);
+              }
+              if (data.userXP) {
+                await db.userXP.clear();
+                await db.userXP.bulkAdd(data.userXP);
+              }
+            }
+          );
           toast.success('Import successful! Reloading…');
           setTimeout(() => window.location.reload(), 1200);
         },
@@ -156,8 +218,12 @@ export function SettingsPage() {
       'This will permanently delete ALL your HabitFlow data. Are you sure?',
       async () => {
         await Promise.all([
-          db.habits.clear(), db.habitLogs.clear(), db.tasks.clear(),
-          db.projects.clear(), db.moods.clear(), db.userXP.clear(),
+          db.habits.clear(),
+          db.habitLogs.clear(),
+          db.tasks.clear(),
+          db.projects.clear(),
+          db.moods.clear(),
+          db.userXP.clear(),
         ]);
         localStorage.clear();
         toast.success('All data cleared.');
@@ -168,7 +234,10 @@ export function SettingsPage() {
   }
 
   async function requestNotificationPermission() {
-    if (!('Notification' in window)) { toast.error('Browser does not support notifications'); return; }
+    if (!('Notification' in window)) {
+      toast.error('Browser does not support notifications');
+      return;
+    }
     const perm = await Notification.requestPermission();
     if (perm === 'granted') {
       await saveSetting({ notificationsEnabled: true });
@@ -184,9 +253,13 @@ export function SettingsPage() {
   return (
     <div className="space-y-10 max-w-2xl mx-auto">
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Preferences</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
+          Preferences
+        </p>
         <h1 className="text-3xl font-bold text-white">Settings</h1>
-        <p className="text-slate-400 text-sm mt-1">Configure your experience and manage your local data.</p>
+        <p className="text-slate-400 text-sm mt-1">
+          Configure your experience and manage your local data.
+        </p>
       </div>
 
       {/* ─── Appearance ─── */}
@@ -196,7 +269,9 @@ export function SettingsPage() {
         </h2>
 
         <div>
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block">Color Mode</label>
+          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block">
+            Color Mode
+          </label>
           <div className="flex gap-2 p-1 bg-slate-900 rounded-xl border border-white/10">
             {(
               [
@@ -223,7 +298,12 @@ export function SettingsPage() {
         <div>
           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block flex items-center justify-between">
             <span>Accent Color</span>
-            <a href="/profile" className="text-xs text-brand-400 hover:underline flex items-center gap-1.5"><Palette size={12} /> Get more themes</a>
+            <a
+              href="/profile"
+              className="text-xs text-brand-400 hover:underline flex items-center gap-1.5"
+            >
+              <Palette size={12} /> Get more themes
+            </a>
           </label>
           <div className="flex flex-wrap gap-4">
             {THEMES.filter(t => userXP?.unlockedThemes?.includes(t.value)).map(t => (
@@ -234,7 +314,9 @@ export function SettingsPage() {
                 className={`w-9 h-9 rounded-full transition-all flex items-center justify-center ${settings.theme === t.value ? 'scale-110 ring-2 ring-white/20' : 'hover:scale-105 opacity-60 hover:opacity-100'}`}
                 style={{ background: t.color }}
               >
-                {settings.theme === t.value && <div className="w-2 h-2 rounded-full bg-white shadow-sm" />}
+                {settings.theme === t.value && (
+                  <div className="w-2 h-2 rounded-full bg-white shadow-sm" />
+                )}
               </button>
             ))}
           </div>
@@ -260,7 +342,9 @@ export function SettingsPage() {
         <div className="flex items-center justify-between pt-2">
           <div>
             <p className="text-sm font-semibold text-white">Sound Effects</p>
-            <p className="text-xs text-slate-500">Audible feedback when completing habits and leveling up.</p>
+            <p className="text-xs text-slate-500">
+              Audible feedback when completing habits and leveling up.
+            </p>
           </div>
           <button
             role="switch"
@@ -269,12 +353,17 @@ export function SettingsPage() {
             onClick={() => {
               const next = !settings.soundEnabled;
               saveSetting({ soundEnabled: next });
-              import('../services/soundService').then(m => m.soundService.setEnabled(next, settings.hapticEnabled !== false));
+              import('../services/soundService').then(m =>
+                m.soundService.setEnabled(next, settings.hapticEnabled !== false)
+              );
             }}
             className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.soundEnabled !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
           >
-            <motion.div layout className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
-              animate={{ x: settings.soundEnabled !== false ? 20 : 0 }} />
+            <motion.div
+              layout
+              className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
+              animate={{ x: settings.soundEnabled !== false ? 20 : 0 }}
+            />
           </button>
         </div>
 
@@ -290,12 +379,17 @@ export function SettingsPage() {
             onClick={() => {
               const next = !settings.hapticEnabled;
               saveSetting({ hapticEnabled: next });
-              import('../services/soundService').then(m => m.soundService.setEnabled(settings.soundEnabled !== false, next));
+              import('../services/soundService').then(m =>
+                m.soundService.setEnabled(settings.soundEnabled !== false, next)
+              );
             }}
             className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.hapticEnabled !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
           >
-            <motion.div layout className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
-              animate={{ x: settings.hapticEnabled !== false ? 20 : 0 }} />
+            <motion.div
+              layout
+              className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
+              animate={{ x: settings.hapticEnabled !== false ? 20 : 0 }}
+            />
           </button>
         </div>
       </section>
@@ -311,7 +405,10 @@ export function SettingsPage() {
             <p className="text-xs text-slate-500">Get reminders for your daily habits and tasks.</p>
           </div>
           {!settings.notificationsEnabled ? (
-            <button className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-all" onClick={requestNotificationPermission}>
+            <button
+              className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-all"
+              onClick={requestNotificationPermission}
+            >
               Enable
             </button>
           ) : (
@@ -329,22 +426,32 @@ export function SettingsPage() {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button onClick={handleExport} className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all text-left">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all text-left"
+          >
             <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
               <Download size={18} />
             </div>
             <div>
-              <p className="text-sm font-bold text-white">{exported ? 'Exported!' : 'Export JSON'}</p>
+              <p className="text-sm font-bold text-white">
+                {exported ? 'Exported!' : 'Export JSON'}
+              </p>
               <p className="text-[10px] text-slate-500">Backup your data as a file.</p>
             </div>
           </button>
 
-          <button onClick={handleExportCSV} className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all text-left">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all text-left"
+          >
             <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
               <Download size={18} />
             </div>
             <div>
-              <p className="text-sm font-bold text-white">{csvExported ? 'CSV Saved!' : 'Export CSV'}</p>
+              <p className="text-sm font-bold text-white">
+                {csvExported ? 'CSV Saved!' : 'Export CSV'}
+              </p>
               <p className="text-[10px] text-slate-500">View logs in Excel/Sheets.</p>
             </div>
           </button>
@@ -360,7 +467,10 @@ export function SettingsPage() {
             <input type="file" accept=".json" className="sr-only" onChange={handleImport} />
           </label>
 
-          <button onClick={handleReset} className="flex items-center gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-all text-left">
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-all text-left"
+          >
             <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
               <Trash2 size={18} />
             </div>
@@ -381,7 +491,9 @@ export function SettingsPage() {
           <div>
             <h2 className="text-sm font-bold text-white">Privacy First</h2>
             <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              HabitFlow is a local-first application. We don't have servers to store your data. Everything is kept securely in your browser's IndexedDB. Your habits, tasks, and profile photo never leave your device.
+              HabitFlow is a local-first application. We don't have servers to store your data.
+              Everything is kept securely in your browser's IndexedDB. Your habits, tasks, and
+              profile photo never leave your device.
             </p>
           </div>
         </div>
@@ -389,13 +501,34 @@ export function SettingsPage() {
 
       {/* ─── About ─── */}
       <section className="text-center py-8">
-        <img src="/logo.png" alt="HabitFlow Logo" className="h-20 w-auto mx-auto mb-4 object-contain drop-shadow-xl" />
+        <img
+          src="/logo.png"
+          alt="HabitFlow Logo"
+          className="h-20 w-auto mx-auto mb-4 object-contain drop-shadow-xl"
+        />
         <p className="text-sm font-bold text-white">HabitFlow v1.2</p>
         <p className="text-xs text-slate-500 mt-1">Built with precision for peak performance.</p>
         <div className="flex items-center justify-center gap-4 mt-4">
-          <button onClick={() => toast.info('HabitFlow is a local-first app. Your data never leaves your device.')} className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Privacy Policy</button>
-          <button onClick={() => toast.info('HabitFlow is free to use. No terms or restrictions apply.')} className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Terms of Use</button>
-          <button onClick={() => toast.info('HabitFlow is an open-source project.')} className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors">Source Code</button>
+          <button
+            onClick={() =>
+              toast.info('HabitFlow is a local-first app. Your data never leaves your device.')
+            }
+            className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"
+          >
+            Privacy Policy
+          </button>
+          <button
+            onClick={() => toast.info('HabitFlow is free to use. No terms or restrictions apply.')}
+            className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"
+          >
+            Terms of Use
+          </button>
+          <button
+            onClick={() => toast.info('HabitFlow is an open-source project.')}
+            className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"
+          >
+            Source Code
+          </button>
         </div>
       </section>
     </div>

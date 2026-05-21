@@ -79,7 +79,7 @@ class NotificationService {
     }
   }
 
-  private sendNotification(habitName: string, icon: string) {
+  private sendNotification(habitName: string, _icon: string) {
     new Notification(`Time for your habit: ${habitName}`, {
       body: `Don't forget to ${habitName.toLowerCase()} to keep your streak!`,
       icon: '/pwa-192x192.png',

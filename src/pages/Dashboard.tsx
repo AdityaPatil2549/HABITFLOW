@@ -4,7 +4,20 @@ import { useTaskStore } from '../store/taskStore';
 import { useMoodStore } from '../store/moodStore';
 import { format, subDays } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Flame, CheckCircle2, Trophy, ArrowRight, Plus, Activity, TrendingUp, TrendingDown, Zap, Target, Smile, AlertTriangle } from 'lucide-react';
+import {
+  Flame,
+  CheckCircle2,
+  Trophy,
+  ArrowRight,
+  Plus,
+  Activity,
+  TrendingUp,
+  TrendingDown,
+  Zap,
+  Target,
+  Smile,
+  AlertTriangle,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconRenderer } from '../components/common/IconRenderer';
 import { db } from '../db';
@@ -17,7 +30,9 @@ import { cn } from '../lib/utils';
 const PROFILE_KEY = 'habitflow_profile';
 
 // Compute 7-day chart data from real logs
-async function computeWeekChart(habits: any[]): Promise<{ day: string; pct: number; date: string }[]> {
+async function computeWeekChart(
+  habits: any[]
+): Promise<{ day: string; pct: number; date: string }[]> {
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = subDays(new Date(), 6 - i);
     return { date: format(d, 'yyyy-MM-dd'), day: format(d, 'EEE') };
@@ -49,7 +64,9 @@ export function Dashboard() {
     try {
       const raw = localStorage.getItem(PROFILE_KEY);
       return raw ? JSON.parse(raw).name || 'User' : 'User';
-    } catch { return 'User'; }
+    } catch {
+      return 'User';
+    }
   });
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [weekChart, setWeekChart] = useState<{ day: string; pct: number; date: string }[]>([]);
@@ -81,16 +98,27 @@ export function Dashboard() {
     };
   }, [loadHabits, loadTasks, loadXP, loadMoods]);
 
-  useEffect(() => { document.title = 'Dashboard — HabitFlow'; }, []);
+  useEffect(() => {
+    document.title = 'Dashboard — HabitFlow';
+  }, []);
 
   // Compute real chart whenever habits load
   useEffect(() => {
-    if (!habits.length) { setChartLoading(false); return; }
-    setChartLoading(true);
-    computeWeekChart(habits).then(data => {
-      setWeekChart(data);
-      setChartLoading(false);
-    });
+    let mounted = true;
+    const loadChart = async () => {
+      if (!habits.length) {
+        if (mounted) setChartLoading(false);
+        return;
+      }
+      if (mounted) setChartLoading(true);
+      const data = await computeWeekChart(habits);
+      if (mounted) {
+        setWeekChart(data);
+        setChartLoading(false);
+      }
+    };
+    loadChart();
+    return () => { mounted = false; };
   }, [habits]);
 
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -109,13 +137,13 @@ export function Dashboard() {
   const offset = circ - (circ * pct) / 100;
 
   // Tasks due today
-  const todayTasks = tasks.filter(t => !t.parentId && !t.completed && t.dueDate && t.dueDate <= today);
+  const todayTasks = tasks.filter(
+    t => !t.parentId && !t.completed && t.dueDate && t.dueDate <= today
+  );
 
   // Streak at-risk: habits not done today that have a live streak, after 6 PM
   const hour = new Date().getHours();
-  const atRiskHabits = hour >= 20
-    ? scheduled.filter(h => !h.todayLog && h.streak.current > 0)
-    : [];
+  const atRiskHabits = hour >= 20 ? scheduled.filter(h => !h.todayLog && h.streak.current > 0) : [];
 
   // Week trend: compare last 3 days vs prev 4 days
   const recent = weekChart.slice(4);
@@ -131,51 +159,58 @@ export function Dashboard() {
 
   const container = {
     hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.08 } }
+    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
   };
   const item = { hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } };
 
   // SVG chart rendering from real data
-  const chartPoints = weekChart.length === 7 ? weekChart.map((d, i) => {
-    const x = (i / 6) * 380 + 10;
-    const y = 110 - (d.pct / 100) * 100;
-    return { x, y, ...d };
-  }) : [];
+  const chartPoints =
+    weekChart.length === 7
+      ? weekChart.map((d, i) => {
+          const x = (i / 6) * 380 + 10;
+          const y = 110 - (d.pct / 100) * 100;
+          return { x, y, ...d };
+        })
+      : [];
 
   const polyline = chartPoints.map(p => `${p.x},${p.y}`).join(' ');
   const areaPath = chartPoints.length
-    ? `M${chartPoints[0].x},110 ` + chartPoints.map(p => `L${p.x},${p.y}`).join(' ') + ` L${chartPoints[chartPoints.length - 1].x},110 Z`
+    ? `M${chartPoints[0].x},110 ` +
+      chartPoints.map(p => `L${p.x},${p.y}`).join(' ') +
+      ` L${chartPoints[chartPoints.length - 1].x},110 Z`
     : '';
 
   return (
-    <motion.div
-      className="space-y-6"
-      variants={container}
-      initial="hidden"
-      animate="show"
-    >
+    <motion.div className="space-y-6" variants={container} initial="hidden" animate="show">
       {/* ── Header ── */}
-      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-white/5 pb-4 sm:pb-6">
+      <motion.div
+        variants={item}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-white/5 pb-4 sm:pb-6"
+      >
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center shadow-xl shadow-brand-500/20 border-2 border-white/10 flex-shrink-0">
             {userAvatar ? (
               <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-xl sm:text-2xl font-black text-white">{userName[0]?.toUpperCase()}</span>
+              <span className="text-xl sm:text-2xl font-black text-white">
+                {userName[0]?.toUpperCase()}
+              </span>
             )}
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight truncate">{greeting}, {userName} 👋</h1>
+            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight truncate">
+              {greeting}, {userName} 👋
+            </h1>
             <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
               <span className="truncate">
-              {done === scheduled.length && scheduled.length > 0
-                ? '🎉 All habits done! Outstanding work.'
-                : done > 0
-                ? `${done} of ${scheduled.length} habits logged today. Keep going!`
-                : scheduled.length > 0
-                ? `${scheduled.length} habits scheduled — let's get started!`
-                : 'No habits scheduled — add one to begin!'}
+                {done === scheduled.length && scheduled.length > 0
+                  ? '🎉 All habits done! Outstanding work.'
+                  : done > 0
+                    ? `${done} of ${scheduled.length} habits logged today. Keep going!`
+                    : scheduled.length > 0
+                      ? `${scheduled.length} habits scheduled — let's get started!`
+                      : 'No habits scheduled — add one to begin!'}
               </span>
             </p>
           </div>
@@ -200,14 +235,16 @@ export function Dashboard() {
             onClick={() => navigate('/habits')}
             className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-tr from-brand-500 to-brand-600 text-white text-sm font-bold shadow-lg shadow-brand-500/20 active:scale-95 transition-all"
           >
-            <Plus size={16} /> <span className="hidden sm:inline">New Habit</span><span className="sm:hidden">New</span>
+            <Plus size={16} /> <span className="hidden sm:inline">New Habit</span>
+            <span className="sm:hidden">New</span>
           </button>
         </div>
       </motion.div>
 
       {/* ── Streak At-Risk Warning ── */}
       {atRiskHabits.length > 0 && (
-        <motion.div variants={item}
+        <motion.div
+          variants={item}
           className="flex items-center gap-4 px-5 py-4 rounded-2xl border border-amber-500/25 bg-amber-500/8"
           style={{ boxShadow: '0 0 24px rgba(245,158,11,0.08)' }}
         >
@@ -236,30 +273,51 @@ export function Dashboard() {
       {/* ── Bento Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Progress Ring Card */}
-        <motion.div variants={item} className="lg:col-span-1 glass-card rounded-3xl p-4 sm:p-6 relative overflow-hidden group">
+        <motion.div
+          variants={item}
+          className="lg:col-span-1 glass-card rounded-3xl p-4 sm:p-6 relative overflow-hidden group"
+        >
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
             <Trophy size={100} className="text-brand-400" />
           </div>
           <h2 className="text-sm sm:text-base font-bold text-white mb-4 sm:mb-6">Today's Target</h2>
 
           <div className="flex justify-center mb-4 sm:mb-6 relative group/ring">
-            <div className={cn(
-              "absolute inset-0 rounded-full blur-3xl opacity-20 transition-all duration-1000",
-              pct >= 100 ? "bg-rose-500 scale-110 opacity-30" : "bg-brand-500"
-            )} />
-            
-            <svg className="w-36 h-36 sm:w-48 sm:h-48 -rotate-90 relative z-10" viewBox="0 0 192 192">
-              <circle cx="96" cy="96" r="78" fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth="12" />
+            <div
+              className={cn(
+                'absolute inset-0 rounded-full blur-3xl opacity-20 transition-all duration-1000',
+                pct >= 100 ? 'bg-rose-500 scale-110 opacity-30' : 'bg-brand-500'
+              )}
+            />
+
+            <svg
+              className="w-36 h-36 sm:w-48 sm:h-48 -rotate-90 relative z-10"
+              viewBox="0 0 192 192"
+            >
+              <circle
+                cx="96"
+                cy="96"
+                r="78"
+                fill="transparent"
+                stroke="rgba(255,255,255,0.03)"
+                strokeWidth="12"
+              />
               <motion.circle
-                cx="96" cy="96" r="78" fill="transparent"
-                stroke="url(#alive-ring-grad)" strokeWidth="12"
+                cx="96"
+                cy="96"
+                r="78"
+                fill="transparent"
+                stroke="url(#alive-ring-grad)"
+                strokeWidth="12"
                 strokeDasharray={circ}
                 initial={{ strokeDashoffset: circ }}
                 animate={{ strokeDashoffset: offset }}
-                transition={{ duration: 1.8, ease: "circOut" }}
+                transition={{ duration: 1.8, ease: 'circOut' }}
                 strokeLinecap="round"
-                className={cn(pct >= 100 && "animate-pulse")}
-                style={{ filter: `drop-shadow(0 0 12px ${pct >= 100 ? 'rgba(244,63,94,0.5)' : 'rgba(139,92,246,0.4)'})` }}
+                className={cn(pct >= 100 && 'animate-pulse')}
+                style={{
+                  filter: `drop-shadow(0 0 12px ${pct >= 100 ? 'rgba(244,63,94,0.5)' : 'rgba(139,92,246,0.4)'})`,
+                }}
               />
               <defs>
                 <linearGradient id="alive-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -270,28 +328,37 @@ export function Dashboard() {
               </defs>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-              <motion.span 
+              <motion.span
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 className="text-4xl sm:text-5xl font-black text-white tracking-tighter"
               >
-                {pct}<span className="text-xl sm:text-2xl text-slate-500 ml-0.5">%</span>
+                {pct}
+                <span className="text-xl sm:text-2xl text-slate-500 ml-0.5">%</span>
               </motion.span>
-              <span className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">Complete</span>
+              <span className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">
+                Complete
+              </span>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-white/5">
             <div className="text-center">
-              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Done</p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Done
+              </p>
               <p className="text-base sm:text-lg font-bold text-emerald-400">{done}</p>
             </div>
             <div className="text-center border-x border-white/5">
-              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Left</p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Left
+              </p>
               <p className="text-base sm:text-lg font-bold text-white">{remaining}</p>
             </div>
             <div className="text-center">
-              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total</p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Total
+              </p>
               <p className="text-base sm:text-lg font-bold text-white">{scheduled.length}</p>
             </div>
           </div>
@@ -304,19 +371,21 @@ export function Dashboard() {
               <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <Activity size={16} className="text-brand-400" /> 7-Day Performance
               </h2>
-              <p className="text-slate-400 text-[10px] sm:text-xs mt-1">Your habit completion rate over the last week</p>
+              <p className="text-slate-400 text-[10px] sm:text-xs mt-1">
+                Your habit completion rate over the last week
+              </p>
             </div>
             {!chartLoading && weekChart.length > 0 && (
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${
-                trendDelta >= 0
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                  : 'bg-red-500/10 border-red-500/20 text-red-400'
-              }`}>
-                {trendDelta >= 0
-                  ? <TrendingUp size={12} />
-                  : <TrendingDown size={12} />
-                }
-                {trendDelta >= 0 ? '+' : ''}{trendDelta}%
+              <div
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${
+                  trendDelta >= 0
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                    : 'bg-red-500/10 border-red-500/20 text-red-400'
+                }`}
+              >
+                {trendDelta >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {trendDelta >= 0 ? '+' : ''}
+                {trendDelta}%
               </div>
             )}
           </div>
@@ -332,7 +401,11 @@ export function Dashboard() {
                 <p className="text-xs">Log habits to see your performance chart</p>
               </div>
             ) : (
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 400 120" preserveAspectRatio="none">
+              <svg
+                className="w-full h-full overflow-visible"
+                viewBox="0 0 400 120"
+                preserveAspectRatio="none"
+              >
                 <defs>
                   <linearGradient id="line-grad-real" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="var(--brand-500)" stopOpacity="0.6" />
@@ -347,20 +420,49 @@ export function Dashboard() {
                 {[0, 25, 50, 75, 100].map(pctLine => {
                   const y = 110 - (pctLine / 100) * 100;
                   return (
-                    <line key={pctLine} x1="10" y1={y} x2="390" y2={y}
-                      stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                    <line
+                      key={pctLine}
+                      x1="10"
+                      y1={y}
+                      x2="390"
+                      y2={y}
+                      stroke="rgba(255,255,255,0.04)"
+                      strokeWidth="1"
+                    />
                   );
                 })}
                 {/* Area fill */}
                 <path d={areaPath} fill="url(#area-grad-real)" />
                 {/* Line */}
-                <polyline points={polyline} fill="none" stroke="url(#line-grad-real)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <polyline
+                  points={polyline}
+                  fill="none"
+                  stroke="url(#line-grad-real)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
                 {/* Data points */}
                 {chartPoints.map((p, i) => (
                   <g key={i}>
-                    <circle cx={p.x} cy={p.y} r="5" fill="#0f172a" stroke="var(--brand-400)" strokeWidth="2" />
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="5"
+                      fill="#0f172a"
+                      stroke="var(--brand-400)"
+                      strokeWidth="2"
+                    />
                     {p.pct > 0 && (
-                      <text x={p.x} y={p.y - 10} textAnchor="middle" fontSize="8" fill="rgba(148,163,184,0.8)">{p.pct}%</text>
+                      <text
+                        x={p.x}
+                        y={p.y - 10}
+                        textAnchor="middle"
+                        fontSize="8"
+                        fill="rgba(148,163,184,0.8)"
+                      >
+                        {p.pct}%
+                      </text>
                     )}
                   </g>
                 ))}
@@ -371,7 +473,10 @@ export function Dashboard() {
           {!chartLoading && chartPoints.length > 0 && (
             <div className="flex justify-between mt-2 px-1">
               {weekChart.map(d => (
-                <span key={d.date} className={`text-[10px] font-bold ${d.date === today ? 'text-brand-400' : 'text-slate-600'}`}>
+                <span
+                  key={d.date}
+                  className={`text-[10px] font-bold ${d.date === today ? 'text-brand-400' : 'text-slate-600'}`}
+                >
                   {d.day}
                 </span>
               ))}
@@ -388,7 +493,10 @@ export function Dashboard() {
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <CheckCircle2 size={16} className="text-brand-400" /> Due & Overdue
             </h2>
-            <button onClick={() => navigate('/tasks')} className="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors uppercase tracking-widest">
+            <button
+              onClick={() => navigate('/tasks')}
+              className="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors uppercase tracking-widest"
+            >
               View All
             </button>
           </div>
@@ -403,23 +511,38 @@ export function Dashboard() {
                   <p className="text-sm font-semibold text-white">All clear!</p>
                   <p className="text-xs text-slate-500 mt-0.5">No tasks due today.</p>
                 </div>
-                <button onClick={() => navigate('/tasks')} className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors flex items-center justify-center gap-1 mt-2">
+                <button
+                  onClick={() => navigate('/tasks')}
+                  className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors flex items-center justify-center gap-1 mt-2"
+                >
                   Add a task <ArrowRight size={12} className="relative top-[0.5px]" />
                 </button>
               </div>
             ) : (
               todayTasks.slice(0, 5).map(t => (
-                <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all group">
+                <div
+                  key={t.id}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all group"
+                >
                   <button
                     onClick={() => completeTask(t.id)}
                     className="w-5 h-5 rounded-full border-2 border-white/20 flex items-center justify-center flex-shrink-0 hover:border-brand-400 hover:bg-brand-500/10 transition-all"
                   >
-                    <CheckCircle2 size={11} className="text-transparent group-hover:text-brand-400 transition-colors" />
+                    <CheckCircle2
+                      size={11}
+                      className="text-transparent group-hover:text-brand-400 transition-colors"
+                    />
                   </button>
-                  <div className={`w-1 h-6 rounded-full flex-shrink-0 ${['bg-red-500', 'bg-orange-500', 'bg-brand-500', 'bg-slate-600'][t.priority]}`} />
+                  <div
+                    className={`w-1 h-6 rounded-full flex-shrink-0 ${['bg-red-500', 'bg-orange-500', 'bg-brand-500', 'bg-slate-600'][t.priority]}`}
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate group-hover:text-brand-400 transition-colors">{t.title}</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{t.dueDate === today ? 'Due today' : '⚠️ Overdue'}</p>
+                    <p className="text-sm font-semibold text-white truncate group-hover:text-brand-400 transition-colors">
+                      {t.title}
+                    </p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">
+                      {t.dueDate === today ? 'Due today' : '⚠️ Overdue'}
+                    </p>
                   </div>
                   <button
                     onClick={() => navigate('/tasks')}
@@ -431,7 +554,10 @@ export function Dashboard() {
               ))
             )}
             {todayTasks.length > 5 && (
-              <button onClick={() => navigate('/tasks')} className="w-full text-center text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest pt-1 transition-colors">
+              <button
+                onClick={() => navigate('/tasks')}
+                className="w-full text-center text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest pt-1 transition-colors"
+              >
                 + {todayTasks.length - 5} more tasks
               </button>
             )}
@@ -444,7 +570,10 @@ export function Dashboard() {
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <Flame size={16} className="text-orange-500" /> Active Habits
             </h2>
-            <button onClick={() => navigate('/habits')} className="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors uppercase tracking-widest">
+            <button
+              onClick={() => navigate('/habits')}
+              className="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors uppercase tracking-widest"
+            >
               Manage
             </button>
           </div>
@@ -456,9 +585,14 @@ export function Dashboard() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-white">No habits today</p>
-                <p className="text-xs text-slate-500 mt-0.5">Add your first habit to start building streaks.</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Add your first habit to start building streaks.
+                </p>
               </div>
-              <button onClick={() => navigate('/habits')} className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1 mt-1">
+              <button
+                onClick={() => navigate('/habits')}
+                className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1 mt-1"
+              >
                 Add a habit <ArrowRight size={12} />
               </button>
             </div>
@@ -482,17 +616,34 @@ export function Dashboard() {
                         : 'bg-white/[0.02] border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5'
                     } ${isLastOdd ? 'sm:col-span-2' : ''}`}
                   >
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-90 ${isDone ? 'bg-emerald-500/20' : 'bg-white/5'}`}>
-                      <IconRenderer name={h.icon} size={18} color={isDone ? '#10b981' : 'var(--brand-400)'} />
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active:scale-90 ${isDone ? 'bg-emerald-500/20' : 'bg-white/5'}`}
+                    >
+                      <IconRenderer
+                        name={h.icon}
+                        size={18}
+                        color={isDone ? '#10b981' : 'var(--brand-400)'}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-bold truncate ${isDone ? 'text-emerald-400' : 'text-white'}`}>{h.name}</p>
+                      <p
+                        className={`text-xs font-bold truncate ${isDone ? 'text-emerald-400' : 'text-white'}`}
+                      >
+                        {h.name}
+                      </p>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <Flame size={9} className={h.streak.current > 0 ? 'text-orange-500' : 'text-slate-600'} />
-                        <span className="text-[10px] font-bold text-slate-500">{h.streak.current}d streak</span>
+                        <Flame
+                          size={9}
+                          className={h.streak.current > 0 ? 'text-orange-500' : 'text-slate-600'}
+                        />
+                        <span className="text-[10px] font-bold text-slate-500">
+                          {h.streak.current}d streak
+                        </span>
                       </div>
                     </div>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${isDone ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-white/20'}`}>
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${isDone ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-white/20'}`}
+                    >
                       {isDone && <CheckCircle2 size={11} />}
                     </div>
                   </div>
@@ -501,7 +652,10 @@ export function Dashboard() {
             </div>
           )}
           {scheduled.length > 6 && (
-            <button onClick={() => navigate('/habits')} className="w-full text-center text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest pt-3 transition-colors">
+            <button
+              onClick={() => navigate('/habits')}
+              className="w-full text-center text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest pt-3 transition-colors"
+            >
               + {scheduled.length - 6} more habits
             </button>
           )}
@@ -515,20 +669,18 @@ export function Dashboard() {
             <Smile size={18} className="text-brand-400" />
             <h2 className="text-xs sm:text-sm font-bold text-white">How are you feeling today?</h2>
           </div>
-          {todayMood && (
-            <span className="text-xs text-slate-500 font-medium">
-              Logged ✔
-            </span>
-          )}
+          {todayMood && <span className="text-xs text-slate-500 font-medium">Logged ✔</span>}
         </div>
         <div className="grid grid-cols-5 gap-1">
-          {([
-            { score: 1, emoji: '😞', label: 'Rough', color: '#f43f5e' },
-            { score: 2, emoji: '😕', label: 'Meh', color: '#fb923c' },
-            { score: 3, emoji: '😐', label: 'Okay', color: '#facc15' },
-            { score: 4, emoji: '😊', label: 'Good', color: '#4ade80' },
-            { score: 5, emoji: '😄', label: 'Great', color: '#10b981' },
-          ] as { score: MoodScore; emoji: string; label: string; color: string }[]).map(({ score, emoji, label, color }) => {
+          {(
+            [
+              { score: 1, emoji: '😞', label: 'Rough', color: '#f43f5e' },
+              { score: 2, emoji: '😕', label: 'Meh', color: '#fb923c' },
+              { score: 3, emoji: '😐', label: 'Okay', color: '#facc15' },
+              { score: 4, emoji: '😊', label: 'Good', color: '#4ade80' },
+              { score: 5, emoji: '😄', label: 'Great', color: '#10b981' },
+            ] as { score: MoodScore; emoji: string; label: string; color: string }[]
+          ).map(({ score, emoji, label, color }) => {
             const isSelected = todayMood?.score === score;
             return (
               <button
@@ -541,31 +693,37 @@ export function Dashboard() {
                 }}
                 className="flex flex-col items-center group relative py-2"
               >
-                <div 
+                <div
                   className={cn(
-                    "mood-ring mb-2 sm:mb-3",
-                    isSelected && "active animate-mood-bounce"
+                    'mood-ring mb-2 sm:mb-3',
+                    isSelected && 'active animate-mood-bounce'
                   )}
                   style={{ '--ring-color': color + '40' } as any}
                 >
-                  <span className={cn(
-                    "text-2xl sm:text-3xl transition-all duration-300",
-                    isSelected ? "scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" : "grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110"
-                  )}>
+                  <span
+                    className={cn(
+                      'text-2xl sm:text-3xl transition-all duration-300',
+                      isSelected
+                        ? 'scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                        : 'grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110'
+                    )}
+                  >
                     {emoji}
                   </span>
                   {isSelected && (
-                    <motion.div 
+                    <motion.div
                       layoutId="mood-glow"
                       className="absolute inset-0 rounded-full blur-md -z-10"
                       style={{ background: color + '30' }}
                     />
                   )}
                 </div>
-                <span className={cn(
-                  "text-[10px] font-bold tracking-tight transition-colors",
-                  isSelected ? "text-white" : "text-slate-500 group-hover:text-slate-300"
-                )}>
+                <span
+                  className={cn(
+                    'text-[10px] font-bold tracking-tight transition-colors',
+                    isSelected ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'
+                  )}
+                >
                   {label}
                 </span>
               </button>
@@ -573,7 +731,6 @@ export function Dashboard() {
           })}
         </div>
       </motion.div>
-
     </motion.div>
   );
 }

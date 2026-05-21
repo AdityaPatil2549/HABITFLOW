@@ -63,7 +63,8 @@ export const taskService = {
         nextDueDate = format(addDays(baseDate, task.recurringInterval), 'yyyy-MM-dd');
       }
       if (nextDueDate) {
-        const { id: _id, parentId: _pid, order: _ord, createdAt: _ca, ...rest } = task;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, parentId, order, createdAt, ...rest } = task;
         await taskService.create({
           ...rest,
           parentId: undefined,

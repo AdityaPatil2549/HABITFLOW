@@ -5,7 +5,7 @@ interface ModalStore {
   setQuickAddOpen: (open: boolean) => void;
 }
 
-export const useModalStore = create<ModalStore>((set) => ({
+export const useModalStore = create<ModalStore>(set => ({
   quickAddOpen: false,
-  setQuickAddOpen: (open) => set({ quickAddOpen: open }),
+  setQuickAddOpen: open => set({ quickAddOpen: open }),
 }));

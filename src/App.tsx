@@ -30,7 +30,6 @@ const WeeklyReviewPage = lazy(() =>
   import('./pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage }))
 );
 
-
 function App() {
   const { show: showOnboarding, complete: completeOnboarding } = useOnboarding();
 
@@ -49,10 +48,7 @@ function App() {
         if (settings.theme === 'indigo') root.removeAttribute('data-theme');
         else root.setAttribute('data-theme', settings.theme);
       }
-      soundService.setEnabled(
-        settings.soundEnabled !== false,
-        settings.hapticEnabled !== false
-      );
+      soundService.setEnabled(settings.soundEnabled !== false, settings.hapticEnabled !== false);
     });
   }, []);
 

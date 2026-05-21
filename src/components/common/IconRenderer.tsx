@@ -2,7 +2,12 @@ import React from 'react';
 import * as Lucide from 'lucide-react';
 
 const ScalesIcon = ({ size = 24, className }: any) => (
-  <img src="/Scales.png" alt="Scales" style={{ width: size, height: size, objectFit: 'contain' }} className={className} />
+  <img
+    src="/Scales.png"
+    alt="Scales"
+    style={{ width: size, height: size, objectFit: 'contain' }}
+    className={className}
+  />
 );
 
 // Explicitly define which icons we use for the picker
@@ -28,7 +33,7 @@ const ICON_COMPONENTS: Record<string, any> = {
   Bike: Lucide.Bike,
   DollarSign: Lucide.DollarSign,
   Hammer: Lucide.Hammer,
-  HelpCircle: Lucide.HelpCircle
+  HelpCircle: Lucide.HelpCircle,
 };
 
 export const HABIT_ICONS = [
@@ -64,10 +69,14 @@ interface IconRendererProps {
 
 export function IconRenderer({ name, className, size = 18, color }: IconRendererProps) {
   if (!name) return <Lucide.HelpCircle size={size} className={className} style={{ color }} />;
-  
+
   // Emoji check (old data)
   if (name.length <= 2) {
-    return <span className={className} style={{ fontSize: size, color }}>{name}</span>;
+    return (
+      <span className={className} style={{ fontSize: size, color }}>
+        {name}
+      </span>
+    );
   }
 
   // Lookup in our safe map
