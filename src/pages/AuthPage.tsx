@@ -58,7 +58,7 @@ export function AuthPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden px-4">
       {/* ── Animated background orbs ────────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {orbs.map((orb, i) => (
