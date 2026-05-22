@@ -46,6 +46,10 @@ export function AuthPage() {
   const navigate = useNavigate();
   const signInWithGoogle = useAuthStore((s) => s.signInWithGoogle);
   const user = useAuthStore((s) => s.user);
+  const loading = useAuthStore((s) => s.loading);
+
+  // Detect if we're in an OAuth callback (URL has ?code= param)
+  const isOAuthCallback = window.location.search.includes('code=');
 
   useEffect(() => {
     if (user) {
@@ -64,6 +68,26 @@ export function AuthPage() {
   const handleGuestMode = () => {
     navigate('/dashboard');
   };
+
+  // Show a loading screen while processing OAuth callback
+  if ((loading && isOAuthCallback) || (user && isOAuthCallback)) {
+    return (
+      <div className="relative min-h-screen w-screen flex items-center justify-center overflow-hidden px-4">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5"
+            style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
+          >
+            <Sparkles className="w-8 h-8 text-white" />
+          </motion.div>
+          <h2 className="text-xl font-bold text-white mt-4">Signing you in...</h2>
+          <p className="text-slate-400 mt-2">Connecting to your Google account</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen w-screen flex items-center justify-center overflow-hidden px-4">
