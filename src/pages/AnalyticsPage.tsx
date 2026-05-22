@@ -841,12 +841,12 @@ export function AnalyticsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-800/60 rounded-xl w-fit border border-white/5">
+      <div className="flex gap-1 p-1 bg-slate-800/60 rounded-xl border border-white/5 overflow-x-auto hide-scrollbar snap-x max-w-full">
         {TABS.map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap snap-start flex-shrink-0 ${
               tab === t
                 ? 'bg-brand-500/20 text-brand-400 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
