@@ -31,6 +31,7 @@ import {
   Moon,
   Cloud,
   CloudOff,
+  Users,
 } from 'lucide-react';
 
 // ── Notification panel ─────────────────────────────────────────
@@ -266,6 +267,7 @@ function AllNotificationsModal({
 
 // ── Account dropdown ───────────────────────────────────────────
 function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: any }) {
+  const { isGuest, signOut } = useAuthStore();
   const navigate = useNavigate();
   const toast = useToast();
   const go = (path: string) => {
@@ -285,18 +287,19 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-white truncate">{profile.name}</p>
-            <p className="text-[10px] text-slate-400">Peak Performer</p>
+            <p className="text-sm font-bold text-white truncate">{isGuest ? 'Guest User' : profile.name}</p>
+            <p className="text-[10px] text-slate-400">{isGuest ? 'Local Mode Only' : 'Peak Performer'}</p>
           </div>
         </div>
       </div>
       {/* Menu items */}
       <div className="py-2">
         {[
+          { icon: Zap, label: 'Rewards Shop', path: '/shop' },
+          { icon: Users, label: 'Squad', path: '/squad' },
+          { icon: BarChart2, label: 'Analytics', path: '/analytics' },
           { icon: User, label: 'Profile', path: '/profile' },
           { icon: Settings, label: 'Settings', path: '/settings' },
-          { icon: BarChart2, label: 'Analytics', path: '/analytics' },
-          { icon: HelpCircle, label: 'Help & Support', path: '/dashboard' },
         ].map(item => {
           const Icon = item.icon;
           return (
@@ -312,6 +315,30 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
         })}
       </div>
       <div className="border-t border-white/5 py-2">
+        {isGuest ? (
+          <button
+            onClick={() => {
+              onClose();
+              navigate('/login');
+            }}
+            className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm font-bold text-brand-400 hover:bg-brand-500/10 transition-colors"
+          >
+            <Cloud size={18} />
+            Sign in to Sync Data
+          </button>
+        ) : (
+          <button
+            onClick={async () => {
+              onClose();
+              await signOut();
+              navigate('/login');
+            }}
+            className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 transition-colors"
+          >
+            <LogOut size={18} />
+            Sign Out
+          </button>
+        )}
         <button
           onClick={() => {
             toast.confirm(
@@ -597,8 +624,8 @@ export function Layout() {
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
-      ? 'bg-gradient-to-r from-brand-500/20 to-brand-600/20 text-brand-400 border-l-2 border-brand-500 px-6 py-3 flex items-center gap-3 text-sm font-medium tracking-wide transition-all rounded-r-xl'
-      : 'text-slate-400 px-6 py-3 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
+      ? 'bg-gradient-to-r from-brand-500/20 to-brand-600/20 text-brand-400 border-l-2 border-brand-500 px-5 py-2.5 flex items-center gap-3 text-sm font-medium tracking-wide transition-all rounded-r-xl'
+      : 'text-slate-400 px-5 py-2.5 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-slate-950 to-slate-950 flex">
@@ -648,28 +675,19 @@ export function Layout() {
             )}
           </div>
           <div className="relative ml-2" ref={mobileAccountRef}>
-            {isGuest ? (
-              <Link 
-                to="/login" 
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 text-slate-400 border border-white/10 hover:text-white transition-colors"
-              >
-                 <User size={16} />
-              </Link>
-            ) : (
-              <button
-                onClick={() => {
-                   setShowAccount(v => !v);
-                   setShowNotifications(false);
-                }}
-                className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white border border-white/10 overflow-hidden shadow-lg"
-              >
-                {(user?.user_metadata?.avatar_url || profile.avatar) ? (
-                  <img src={user?.user_metadata?.avatar_url || profile.avatar} className="w-full h-full object-cover" alt="" />
-                ) : (
-                  <User size={16} />
-                )}
-              </button>
-            )}
+            <button
+              onClick={() => {
+                 setShowAccount(v => !v);
+                 setShowNotifications(false);
+              }}
+              className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white border border-white/10 overflow-hidden shadow-lg"
+            >
+              {(user?.user_metadata?.avatar_url || profile.avatar) ? (
+                <img src={user?.user_metadata?.avatar_url || profile.avatar} className="w-full h-full object-cover" alt="" />
+              ) : (
+                <User size={16} />
+              )}
+            </button>
             
             {showAccount && (
               <div className="absolute right-0 top-full mt-2 w-56 z-[100]">
@@ -703,8 +721,6 @@ export function Layout() {
             { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
             { to: '/analytics', icon: BarChart2, label: 'Analytics' },
             { to: '/review', icon: CheckCircle2, label: 'Weekly Review' },
-            { to: '/shop', icon: Zap, label: 'Rewards Shop' },
-            { to: '/squad', icon: HelpCircle, label: 'Squad' },
           ].map(l => {
             const Icon = l.icon;
             return (
@@ -716,8 +732,8 @@ export function Layout() {
           })}
         </nav>
 
-        {/* ── Focus Mode Button ── */}
-        <div className="px-5 mb-3">
+        {/* ── Actions ── */}
+        <div className="px-5 mb-4 grid grid-cols-2 gap-2">
           <button
             onClick={() => {
               if (focusActive) {
@@ -726,7 +742,7 @@ export function Layout() {
                 openPicker();
               }
             }}
-            className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 relative overflow-hidden ${
+            className={`py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-95 relative overflow-hidden ${
               focusActive
                 ? 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'
                 : 'border border-brand-500/30 text-brand-300 hover:bg-brand-500/10'
@@ -740,114 +756,87 @@ export function Layout() {
                 : {}
             }
           >
-            {!focusActive && (
-              <span
-                className="absolute inset-0 rounded-xl"
-                style={{
-                  boxShadow: 'inset 0 0 20px rgba(99,102,241,0.08)',
-                  background:
-                    'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%)',
-                }}
-              />
-            )}
-            <Timer size={16} className={focusActive ? 'animate-pulse' : ''} />
-            <span className="relative">{focusActive ? 'End Focus' : 'Focus Mode'}</span>
-            {focusActive && <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />}
+            <Timer size={14} className={focusActive ? 'animate-pulse' : ''} />
+            <span className="relative truncate">{focusActive ? 'End Focus' : 'Focus'}</span>
+            {focusActive && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />}
           </button>
-        </div>
 
-        <div className="px-5 mb-6">
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2"
+            className="py-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold text-[11px] shadow-lg shadow-brand-500/20 active:scale-95 transition-transform flex items-center justify-center gap-1.5"
           >
-            <Plus size={18} />
-            New Entry
+            <Plus size={14} />
+            <span className="truncate">New Entry</span>
           </button>
         </div>
 
         {/* Sidebar Footer Controls */}
-        <div className="mt-auto px-5 space-y-2 pb-2">
-          <button
-            onClick={() => setShowSearch(true)}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left group"
-          >
-            <Search size={18} />
-            <span className="flex-1">Search</span>
-            <kbd className="text-[10px] font-sans font-medium border border-white/10 rounded px-1.5 h-5 flex items-center justify-center text-slate-500 group-hover:text-slate-400 transition-colors">
-              ⌘K
-            </kbd>
-          </button>
-
-          {/* Dark / Light toggle */}
-          <button
-            onClick={toggleDark}
-            role="switch"
-            aria-checked={isDark}
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left"
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            <span className="flex-1">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-            <div
-              className={`relative flex items-center w-11 h-6 rounded-full transition-colors flex-shrink-0 ${isDark ? 'bg-slate-700' : 'bg-brand-500'}`}
-            >
-              <div
-                className={`w-4 h-4 bg-white rounded-full mx-1 shadow-sm transition-transform ${isDark ? 'translate-x-0' : 'translate-x-5'}`}
-              />
-            </div>
-          </button>
-
-          <div className="relative" ref={desktopNotifRef}>
+        <div className="mt-auto px-5 pb-2">
+          <div className="flex items-center justify-between border-t border-white/5 pt-3 pb-1">
             <button
-              onClick={() => {
-                setShowNotifications(v => !v);
-                setShowAccount(false);
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left"
+              onClick={() => setShowSearch(true)}
+              title="Search (Cmd+K)"
+              className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
             >
-              <div className="relative">
+              <Search size={18} />
+            </button>
+
+            <button
+              onClick={toggleDark}
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+            <div className="relative" ref={desktopNotifRef}>
+              <button
+                onClick={() => {
+                  setShowNotifications(v => !v);
+                  setShowAccount(false);
+                }}
+                title="Notifications"
+                className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors relative"
+              >
                 <Bell size={18} />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-brand-400 ring-2 ring-slate-900" />
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-400 ring-2 ring-slate-900" />
                 )}
-              </div>
-              <span>Notifications</span>
-            </button>
-            {showNotifications && (
-              <NotificationPanel
-                onClose={() => setShowNotifications(false)}
-                notes={notes}
-                setNotes={setNotes}
-                onViewAll={() => {
-                  setShowNotifications(false);
-                  setShowAllNotifications(true);
+              </button>
+              {showNotifications && (
+                <NotificationPanel
+                  onClose={() => setShowNotifications(false)}
+                  notes={notes}
+                  setNotes={setNotes}
+                  onViewAll={() => {
+                    setShowNotifications(false);
+                    setShowAllNotifications(true);
+                  }}
+                />
+              )}
+            </div>
+
+            {isGuest ? (
+              <Link
+                to="/login"
+                title="Sign in to sync"
+                className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+              >
+                <CloudOff size={18} />
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                  signOut();
+                  navigate('/login');
                 }}
-              />
+                title={`Synced as ${user?.email}`}
+                className="p-2.5 rounded-xl text-emerald-400 hover:bg-white/5 transition-colors"
+              >
+                <Cloud size={18} />
+              </button>
             )}
           </div>
-
-          {/* Sync Status / Auth */}
-          {isGuest ? (
-            <Link
-              to="/login"
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left"
-            >
-              <CloudOff size={18} />
-              <span className="flex-1">Sign in to sync</span>
-            </Link>
-          ) : (
-            <button
-              onClick={() => {
-                signOut();
-                navigate('/login');
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-emerald-400 hover:bg-white/5 transition-colors text-left"
-            >
-              <Cloud size={18} />
-              <span className="flex-1 truncate">{user?.email ?? 'Synced'}</span>
-            </button>
-          )}
         </div>
 
         <div className="px-5 pt-4 border-t border-white/5 mx-3 mt-2">

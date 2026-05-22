@@ -896,15 +896,15 @@ export function AnalyticsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-800/60 rounded-xl border border-white/5 overflow-x-auto hide-scrollbar snap-x max-w-full">
+      <div className="flex flex-wrap gap-1 sm:gap-2 p-1 bg-transparent sm:bg-slate-800/60 sm:rounded-xl sm:border sm:border-white/5">
         {TABS.map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap snap-start flex-shrink-0 ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[13px] sm:text-sm font-semibold transition-all whitespace-nowrap flex-grow sm:flex-grow-0 text-center ${
               tab === t
                 ? 'bg-brand-500/20 text-brand-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                : 'text-slate-400 bg-slate-800/40 sm:bg-transparent hover:text-slate-200 hover:bg-white/5'
             }`}
           >
             {t}

@@ -100,7 +100,7 @@ export function SquadPage() {
           <div className="relative">
             <div className="text-6xl mb-4">👥</div>
             <h2 className="text-xl font-bold text-white mb-2">Better Together</h2>
-            <p className="text-sm text-slate-300 max-w-md mx-auto mb-6">
+            <p className="text-sm text-slate-300 w-full max-w-[400px] mx-auto mb-6 leading-relaxed">
               You're <span className="text-brand-400 font-bold">65% more likely</span> to reach your goals
               with an accountability partner. Create or join a squad of up to 5 people.
             </p>

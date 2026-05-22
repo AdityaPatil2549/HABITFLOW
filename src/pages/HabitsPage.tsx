@@ -1111,8 +1111,10 @@ export function HabitsPage() {
       )}
 
       {/* Habit grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {showView === 'list' && (
+        <>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => (
             <HabitSkeleton key={i} />
           ))}
@@ -1250,6 +1252,8 @@ export function HabitsPage() {
             </div>
           );
         })()}
+        </>
+      )}
 
       {selectedLog && <LogHabitModal habit={selectedLog} onClose={() => setSelectedLog(null)} />}
       {showTemplates && <TemplatesLibrary onClose={() => setShowTemplates(false)} />}
