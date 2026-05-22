@@ -173,7 +173,7 @@ function AllNotificationsModal({
     <dialog
       ref={dialogRef}
       onClick={handleDialogClick}
-      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center p-4 z-[9999] open:animate-in open:fade-in duration-200"
+      className="dark-overlay bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center p-4 z-[9999] open:animate-in open:fade-in duration-200"
     >
       <div
         onClick={e => e.stopPropagation()}
@@ -439,7 +439,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
     <dialog
       ref={dialogRef}
       onClick={handleDialogClick}
-      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-start justify-center pt-[10vh] z-[9999] open:animate-in open:fade-in duration-200"
+      className="dark-overlay bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-start justify-center pt-[10vh] z-[9999] open:animate-in open:fade-in duration-200"
     >
       {/* Panel */}
       <div

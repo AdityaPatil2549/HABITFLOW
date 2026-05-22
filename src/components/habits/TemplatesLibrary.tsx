@@ -289,7 +289,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
     <dialog
       ref={dialogRef}
       onClick={handleDialogClick}
-      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-end md:items-center justify-center open:animate-in open:fade-in duration-300 z-[9997]"
+      className="dark-overlay bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-end md:items-center justify-center open:animate-in open:fade-in duration-300 z-[9997]"
     >
       {/* Modal Container */}
       <motion.div
@@ -309,15 +309,15 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Sparkles size={20} className="text-brand-400" />
-              <h2 className="text-2xl font-black text-white tracking-tight">Habit Templates</h2>
+              <h2 className="text-2xl font-black text-slate-50 tracking-tight">Habit Templates</h2>
             </div>
-            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+            <p className="text-[10px] font-bold text-slate-300 mt-1 uppercase tracking-widest">
               Expert curated habit packs
             </p>
           </div>
           <button
             onClick={() => dialogRef.current?.close()}
-            className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:bg-white/10 hover:text-white hover:rotate-90 transition-all duration-300"
+            className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-slate-300 hover:bg-white/10 hover:text-slate-50 hover:rotate-90 transition-all duration-300"
           >
             <X size={18} strokeWidth={2.5} />
           </button>
@@ -333,7 +333,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search templates…"
-              className="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-slate-600 text-sm font-medium outline-none focus:border-brand-500/50 focus:bg-slate-950/60 transition-all shadow-inner"
+              className="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-slate-50 placeholder-slate-600 text-sm font-medium outline-none focus:border-brand-500/50 focus:bg-slate-950/60 transition-all shadow-inner"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -346,7 +346,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                   className={`relative flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 overflow-hidden ${
                     isActive
                       ? 'text-brand-300 border border-brand-500/30'
-                      : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/10'
+                      : 'bg-white/5 border border-white/5 text-slate-300 hover:text-slate-50 hover:bg-white/10 hover:border-white/10'
                   }`}
                 >
                   {isActive && (
@@ -371,7 +371,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
               className="text-center py-16 text-slate-500"
             >
               <p className="text-5xl mb-4">🔍</p>
-              <p className="text-lg font-bold text-white mb-1">No templates found</p>
+              <p className="text-lg font-bold text-slate-50 mb-1">No templates found</p>
               <p className="text-sm font-medium">Try a different search or filter</p>
             </motion.div>
           ) : (
@@ -405,7 +405,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                         {pack.emoji}
                       </div>
                       <div className="flex-1 min-w-0 pt-0.5">
-                        <p className="font-bold text-white text-base">{pack.name}</p>
+                        <p className="font-bold text-slate-50 text-base">{pack.name}</p>
                         <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
                           {pack.description}
                         </p>
@@ -467,7 +467,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                           ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 cursor-default'
                           : isAdding
                             ? 'bg-brand-500/10 border border-brand-500/20 text-brand-400'
-                            : 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg shadow-brand-500/20 active:scale-95 border border-white/10 group-hover:shadow-brand-500/30'
+                            : 'bg-gradient-to-r from-brand-600 to-indigo-600 text-slate-50 shadow-lg shadow-brand-500/20 active:scale-95 border border-white/10 group-hover:shadow-brand-500/30'
                       }`}
                     >
                       {/* Button Hover Effect */}

@@ -65,7 +65,7 @@ export function LogHabitModal({ habit, onClose }: Props) {
     <dialog
       ref={dialogRef}
       onClick={handleDialogClick}
-      className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center open:animate-in open:fade-in duration-300 z-[9999]"
+      className="dark-overlay bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center open:animate-in open:fade-in duration-300 z-[9999]"
     >
       <AnimatePresence>
         <motion.div

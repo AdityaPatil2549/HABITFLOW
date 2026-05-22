@@ -29,7 +29,7 @@ function DurationPicker({
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.96 }}
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/95 backdrop-blur-xl"
+      className="dark-overlay fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/95 backdrop-blur-xl"
       style={{
         position: 'fixed',
         top: 0,
@@ -302,7 +302,7 @@ export function FocusOverlay() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden"
+        className="dark-overlay fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden"
       >
         {/* Background atmosphere */}
         <div

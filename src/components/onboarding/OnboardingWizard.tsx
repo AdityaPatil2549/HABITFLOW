@@ -156,7 +156,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
       {/* Full-screen backdrop */}
       <dialog
         ref={dialogRef}
-        className="bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950 open:animate-in open:fade-in duration-300 z-[9999]"
+        className="dark-overlay bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950 open:animate-in open:fade-in duration-300 z-[9999]"
         style={{
           position: 'fixed',
           inset: 0,

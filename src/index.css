@@ -594,3 +594,13 @@ body {
 
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Fix for dark modals in light mode */
+.light .dark-overlay .text-white { color: #ffffff !important; }
+.light .dark-overlay .text-slate-50 { color: #f8fafc !important; }
+.light .dark-overlay .text-slate-300 { color: #cbd5e1 !important; }
+.light .dark-overlay .text-slate-400 { color: #94a3b8 !important; }
+.light .dark-overlay .text-slate-500 { color: #64748b !important; }
+.light .dark-overlay .bg-slate-900 { background-color: #0f172a !important; }
+.light .dark-overlay .bg-slate-950 { background-color: #020617 !important; }
+.light .dark-overlay .border-white\/10 { border-color: rgba(255, 255, 255, 0.1) !important; }
