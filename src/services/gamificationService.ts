@@ -58,9 +58,8 @@ export const gamificationService = {
       (() => {
         const d = new Date();
         const day = d.getDay(); // 0=Sun
-        const diff = day === 0 ? -6 : 1 - day;
-        d.setDate(d.getDate() + diff);
-        return d;
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        return new Date(d.setDate(diff));
       })(),
       'yyyy-MM-dd'
     );
@@ -73,19 +72,85 @@ export const gamificationService = {
       userXP.weeklyScore = 0;
       userXP.lastWeeklyReset = thisMonday;
     }
-    // ─────────────────────────────────────────────────────────────
 
+    // ── Apply XP and Coins ───────────────────────────────────────
     userXP.total += amount;
     userXP.dailyScore += amount;
     userXP.weeklyScore += amount;
-
-    const { level, levelProgress } = calculateStats(userXP.total);
-    userXP.level = level;
-    userXP.levelProgress = levelProgress;
     userXP.lastUpdated = new Date().toISOString();
 
+    // Earn coins based on XP amount (roughly 1 coin per 2 XP)
+    const coinsEarned = Math.max(1, Math.floor(amount / 2));
+    userXP.coins = (userXP.coins || 0) + coinsEarned;
+
+    const stats = calculateStats(userXP.total);
+    userXP.level = stats.level;
+    userXP.levelProgress = stats.levelProgress;
+
     await db.userXP.put(userXP);
+
+    // Notify listeners so UI updates instantly
+    window.dispatchEvent(new CustomEvent('xp-updated'));
+
+    // Return the updated object
     return userXP;
+  },
+
+  async recordHabitCompletion(habitId: string): Promise<{
+    xpGained: number;
+    coinsGained: number;
+    newTotal: number;
+    badgesUnlocked: Badge[];
+  }> {
+    const previousXP = await getOrCreateUserXP();
+    const prevStats = calculateStats(previousXP.total);
+
+    // Add XP & Coins
+    const userXP = await this.addXP(XP_PER_HABIT);
+    
+    // Squad Sync
+    try {
+      const mySquadId = localStorage.getItem('habitflow_my_squad_id');
+      if (mySquadId) {
+        // Just trigger a fake squad sync to simulate social progress
+        const d = new Date().toISOString();
+        localStorage.setItem(`squad_sync_${mySquadId}`, d);
+      }
+    } catch {
+      // Ignored
+    }
+
+    const newStats = calculateStats(userXP.total);
+    const badgesUnlocked: Badge[] = [];
+
+    // Check Level Up Badge
+    if (newStats.numericLevel > prevStats.numericLevel) {
+      const bId = `level_${newStats.numericLevel}`;
+      if (!userXP.badgesEarned.some(b => b.id === bId)) {
+        const badge: Badge = {
+          id: bId,
+          name: `Level ${newStats.numericLevel}`,
+          description: `Reached Level ${newStats.numericLevel}`,
+          icon: '⭐',
+          earnedAt: new Date().toISOString(),
+        };
+        userXP.badgesEarned.push(badge);
+        badgesUnlocked.push(badge);
+        await db.userXP.put(userXP);
+      }
+    }
+
+    return {
+      xpGained: XP_PER_HABIT,
+      coinsGained: Math.floor(XP_PER_HABIT / 2),
+      newTotal: userXP.total,
+      badgesUnlocked,
+    };
+  },
+
+  async recordTaskCompletion(): Promise<{ xpGained: number; coinsGained: number }> {
+    await this.addXP(XP_PER_TASK);
+    return { xpGained: XP_PER_TASK, coinsGained: Math.floor(XP_PER_TASK / 2) };
   },
 
   async awardBadge(

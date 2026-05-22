@@ -119,6 +119,7 @@ export interface Badge {
 export interface UserXP {
   id: string; // always 'singleton'
   total: number;
+  coins: number; // spendable currency (separate from XP)
   level: Level;
   levelProgress: number; // 0-100 within current level
   badgesEarned: Badge[];
@@ -178,4 +179,77 @@ export interface SyncQueueItem {
   operation: 'upsert' | 'delete';
   payload: Record<string, unknown>;
   created_at: string;
+}
+
+// ─── Coins / Shop ────────────────────────────────────────────
+export interface ShopItem {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'theme' | 'avatar' | 'icon_pack' | 'badge_frame';
+  price: number;
+  preview?: string; // CSS class or image URL
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+}
+
+export interface ShopPurchase {
+  id: string;
+  item_id: string;
+  purchased_at: string;
+}
+
+// ─── AI Coach ────────────────────────────────────────────────
+export interface AIInsight {
+  id: string;
+  type: 'weekly_summary' | 'tip' | 'warning' | 'correlation';
+  title: string;
+  body: string;
+  icon: string;
+  created_at: string;
+  read: boolean;
+}
+
+// ─── Squad (Social Accountability) ───────────────────────────
+export interface SquadMember {
+  user_id: string;
+  display_name: string;
+  avatar_url?: string;
+  streak: number;
+  completion_today: number;
+  joined_at: string;
+}
+
+export interface Squad {
+  id: string;
+  name: string;
+  invite_code: string;
+  members: SquadMember[];
+  created_at: string;
+  owner_id: string;
+}
+
+// ─── NLP Parsed Habit ────────────────────────────────────────
+export interface ParsedHabitIntent {
+  name: string;
+  frequency: HabitFrequency;
+  frequencyDays?: number[];
+  frequencyInterval?: number;
+  reminderTime?: string;
+  category?: string;
+  type: HabitType;
+  targetValue: number;
+  unit?: string;
+  confidence: number; // 0-1 how confident the parse is
+}
+
+// ─── Correlation ─────────────────────────────────────────────
+export interface CorrelationResult {
+  habitA: string;
+  habitAName: string;
+  factorB: string; // another habit name, mood, or day-of-week
+  factorBType: 'habit' | 'mood' | 'day';
+  correlation: number; // -1 to 1
+  description: string;
+  sampleSize: number;
 }

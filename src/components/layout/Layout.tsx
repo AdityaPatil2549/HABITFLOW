@@ -703,6 +703,8 @@ export function Layout() {
             { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
             { to: '/analytics', icon: BarChart2, label: 'Analytics' },
             { to: '/review', icon: CheckCircle2, label: 'Weekly Review' },
+            { to: '/shop', icon: Zap, label: 'Rewards Shop' },
+            { to: '/squad', icon: HelpCircle, label: 'Squad' },
           ].map(l => {
             const Icon = l.icon;
             return (

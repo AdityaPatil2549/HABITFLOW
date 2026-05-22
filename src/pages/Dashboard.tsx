@@ -26,6 +26,8 @@ import { useGamificationStore } from '../store/gamificationStore';
 import { calculateStats } from '../services/gamificationService';
 import type { MoodScore } from '../types';
 import { cn } from '../lib/utils';
+import { AICoachCard } from '../components/coach/AICoachCard';
+import { NLPQuickAdd } from '../components/habits/NLPQuickAdd';
 
 const PROFILE_KEY = 'habitflow_profile';
 
@@ -157,6 +159,8 @@ export function Dashboard() {
   // XP stats
   const xpStats = userXP ? calculateStats(userXP.total) : null;
 
+  const [showSmartAdd, setShowSmartAdd] = useState(false);
+
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
 
   const container = {
@@ -271,6 +275,11 @@ export function Dashboard() {
           </button>
         </motion.div>
       )}
+
+      {/* ── AI Coach ── */}
+      <motion.div variants={item}>
+        <AICoachCard />
+      </motion.div>
 
       {/* ── Bento Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -572,13 +581,36 @@ export function Dashboard() {
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <Flame size={16} className="text-orange-500" /> Active Habits
             </h2>
-            <button
-              onClick={() => navigate('/habits')}
-              className="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors uppercase tracking-widest"
-            >
-              Manage
-            </button>
+            <div className="flex items-center gap-2">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowSmartAdd(true)}
+                className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 font-bold text-xs border border-indigo-500/20 hover:bg-indigo-500/20 transition-colors flex items-center gap-1.5"
+              >
+                <Zap size={12} />
+                Smart Add
+              </motion.button>
+              <button
+                onClick={() => navigate('/habits')}
+                className="text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors uppercase tracking-widest"
+              >
+                Manage
+              </button>
+            </div>
           </div>
+
+          {/* Smart Add Modal Overlay */}
+          {showSmartAdd && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+              <NLPQuickAdd
+                onClose={() => setShowSmartAdd(false)}
+                onHabitCreated={(habit) => {
+                  setShowSmartAdd(false);
+                }}
+              />
+            </div>
+          )}
 
           {scheduled.length === 0 ? (
             <div className="py-10 flex flex-col items-center gap-3 text-center">

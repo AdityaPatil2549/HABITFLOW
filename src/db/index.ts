@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Habit, HabitLog, Task, Project, Mood, UserXP, Settings } from '../types';
+import type { Habit, HabitLog, Task, Project, Mood, UserXP, Settings, ShopPurchase, AIInsight } from '../types';
 
 // ─── Sync Queue Item ─────────────────────────────────────────
 export interface SyncQueueItem {
@@ -21,6 +21,8 @@ class HabitFlowDB extends Dexie {
   userXP!: EntityTable<UserXP, 'id'>;
   settings!: EntityTable<Settings, 'id'>;
   sync_queue!: EntityTable<SyncQueueItem, 'id'>;
+  shop_purchases!: EntityTable<ShopPurchase, 'id'>;
+  ai_insights!: EntityTable<AIInsight, 'id'>;
 
   constructor() {
     super('HabitFlowDB');
@@ -44,6 +46,12 @@ class HabitFlowDB extends Dexie {
     this.version(3).stores({
       sync_queue: '++id, table_name, record_id, created_at',
     });
+
+    // v4: Add shop_purchases and ai_insights tables
+    this.version(4).stores({
+      shop_purchases: '++id, item_id, purchased_at',
+      ai_insights: '++id, type, created_at, read',
+    });
   }
 }
 
@@ -53,15 +61,24 @@ export const db = new HabitFlowDB();
 export async function getOrCreateUserXP(): Promise<UserXP> {
   const user = await db.userXP.get('singleton');
   if (user) {
+    let needsUpdate = false;
     if (!user.unlockedThemes) {
       user.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
-      await db.userXP.update(user.id, { unlockedThemes: user.unlockedThemes });
+      needsUpdate = true;
+    }
+    if (user.coins === undefined || user.coins === null) {
+      user.coins = 0;
+      needsUpdate = true;
+    }
+    if (needsUpdate) {
+      await db.userXP.update(user.id, { unlockedThemes: user.unlockedThemes, coins: user.coins });
     }
     return user;
   }
   const newXP: UserXP = {
     id: 'singleton',
     total: 0,
+    coins: 0,
     level: 'Beginner',
     levelProgress: 0,
     badgesEarned: [],

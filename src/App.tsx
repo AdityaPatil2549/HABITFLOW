@@ -17,6 +17,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useAuthStore } from './store/authStore';
 import { syncService } from './services/syncService';
 import { migrateLocalDataToCloud } from './services/migrationService';
+import { pushNotificationService } from './services/pushNotificationService';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })));
@@ -34,6 +35,12 @@ const WeeklyReviewPage = lazy(() =>
 );
 const AuthPage = lazy(() =>
   import('./pages/AuthPage').then(m => ({ default: m.AuthPage }))
+);
+const ShopPage = lazy(() =>
+  import('./pages/ShopPage').then(m => ({ default: m.ShopPage }))
+);
+const SquadPage = lazy(() =>
+  import('./pages/SquadPage').then(m => ({ default: m.SquadPage }))
 );
 
 function App() {
@@ -55,6 +62,10 @@ function App() {
     } else {
       syncService.stopAutoSync();
     }
+    
+    // Initialize Web Push Notifications
+    pushNotificationService.initialize();
+
     return () => syncService.stopAutoSync();
   }, [user, isGuest]);
 
@@ -108,6 +119,8 @@ function App() {
               <Route path="settings" element={<SettingsPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="review" element={<WeeklyReviewPage />} />
+              <Route path="shop" element={<ShopPage />} />
+              <Route path="squad" element={<SquadPage />} />
             </Route>
           </Routes>
         </Suspense>

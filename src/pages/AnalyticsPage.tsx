@@ -5,6 +5,8 @@ import { useMoodStore } from '../store/moodStore';
 import { db } from '../db';
 import { cn } from '../lib/utils';
 import { motion } from 'framer-motion';
+import { correlationService } from '../services/correlationService';
+import type { CorrelationResult } from '../types';
 import {
   ResponsiveContainer,
   LineChart,
@@ -48,6 +50,59 @@ const TOOLTIP_STYLE = {
   color: '#dae2fd',
   fontSize: 13,
 };
+
+// ─── Correlation Insights ──────────────────────────────────────
+function CorrelationInsights() {
+  const [correlations, setCorrelations] = useState<CorrelationResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    correlationService.getAllCorrelations().then(data => {
+      setCorrelations(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <ChartCard title="Deep Insights" subtitle="Analyzing patterns in your habit data...">
+        <div className="flex flex-col space-y-3 p-4">
+          <div className="h-4 rounded-full bg-white/5 animate-pulse w-full" />
+          <div className="h-4 rounded-full bg-white/5 animate-pulse w-3/4" />
+          <div className="h-4 rounded-full bg-white/5 animate-pulse w-5/6" />
+        </div>
+      </ChartCard>
+    );
+  }
+
+  if (correlations.length === 0) {
+    return (
+      <ChartCard title="Deep Insights" subtitle="Not enough data yet.">
+        <EmptyChart />
+      </ChartCard>
+    );
+  }
+
+  return (
+    <ChartCard title="Deep Insights" subtitle="AI-powered correlations based on your data">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
+        {correlations.map((corr, i) => (
+          <div key={i} className="rounded-xl bg-white/5 border border-white/10 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-bold text-brand-300">{corr.habitAName}</h4>
+              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                corr.correlation > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+              }`}>
+                {corr.correlation > 0 ? '+' : ''}{Math.round(corr.correlation * 100)}%
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">{corr.description}</p>
+          </div>
+        ))}
+      </div>
+    </ChartCard>
+  );
+}
 
 // ─── 365-Day Yearly Heatmap ────────────────────────────────────
 function YearlyHeatmap({ habits }: { habits: any[] }) {
@@ -926,6 +981,9 @@ export function AnalyticsPage() {
 
           {/* Dynamic insight callouts */}
           <DynamicInsights habits={habits} />
+
+          {/* Correlation Engine */}
+          <CorrelationInsights />
         </div>
       )}
 
