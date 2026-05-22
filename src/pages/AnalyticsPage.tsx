@@ -69,9 +69,9 @@ function CorrelationInsights() {
     return (
       <ChartCard title="Deep Insights" subtitle="Analyzing patterns in your habit data...">
         <div className="flex flex-col space-y-3 p-4">
-          <div className="h-4 rounded-full bg-white/5 animate-pulse w-full" />
-          <div className="h-4 rounded-full bg-white/5 animate-pulse w-3/4" />
-          <div className="h-4 rounded-full bg-white/5 animate-pulse w-5/6" />
+          <div className="h-4 rounded-full bg-slate-100 dark:bg-white/5 animate-pulse w-full" />
+          <div className="h-4 rounded-full bg-slate-100 dark:bg-white/5 animate-pulse w-3/4" />
+          <div className="h-4 rounded-full bg-slate-100 dark:bg-white/5 animate-pulse w-5/6" />
         </div>
       </ChartCard>
     );
@@ -89,7 +89,7 @@ function CorrelationInsights() {
     <ChartCard title="Deep Insights" subtitle="AI-powered correlations based on your data">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
         {correlations.map((corr, i) => (
-          <div key={i} className="rounded-xl bg-white/5 border border-white/10 p-4">
+          <div key={i} className="rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-bold text-brand-300">{corr.habitAName}</h4>
               <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
@@ -98,7 +98,7 @@ function CorrelationInsights() {
                 {corr.correlation > 0 ? '+' : ''}{Math.round(corr.correlation * 100)}%
               </span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">{corr.description}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{corr.description}</p>
           </div>
         ))}
       </div>
@@ -204,7 +204,7 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
 
   if (loading)
     return (
-      <div className="h-40 flex items-center justify-center text-slate-500 text-sm animate-pulse">
+      <div className="h-40 flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm animate-pulse">
         Loading year of data…
       </div>
     );
@@ -267,7 +267,7 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-2 text-xs text-slate-500">
+      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
         <span>Less</span>
         {[0, 0.25, 0.5, 0.75, 1].map(v => (
           <div key={v} className="w-3 h-3 rounded-sm" style={{ background: colorFor(v) }} />
@@ -289,10 +289,10 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
           ].map(s => (
             <div
               key={s.label}
-              className="rounded-xl p-3 text-center bg-white/3 border border-white/5"
+              className="rounded-xl p-3 text-center bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/5"
             >
-              <p className="text-xl font-bold text-white">{s.value}</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">{s.label}</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white">{s.value}</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -344,7 +344,7 @@ function Heatmap({ logs }: { logs: Record<string, number> }) {
           ))
         )}
       </svg>
-      <div className="flex items-center gap-2 mt-3 text-xs text-slate-500">
+      <div className="flex items-center gap-2 mt-3 text-xs text-slate-500 dark:text-slate-400">
         <span>Less</span>
         {[0, 0.3, 0.6, 1].map(v => (
           <div key={v} className="w-3 h-3 rounded-sm" style={{ background: colorFor(v) }} />
@@ -567,14 +567,14 @@ function BestWorstDay({ habits }: { habits: any[] }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl p-4 text-center border border-emerald-500/20 bg-emerald-500/5">
           <div className="text-2xl mb-1">🏆</div>
-          <p className="text-xs text-slate-400 mb-1">Best Day</p>
-          <p className="font-bold text-white">{best.day}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-1">Best Day</p>
+          <p className="font-bold text-slate-900 dark:text-white">{best.day}</p>
           <p className="text-emerald-400 text-sm font-bold">{best.pct}%</p>
         </div>
         <div className="rounded-xl p-4 text-center border border-red-500/20 bg-red-500/5">
           <div className="text-2xl mb-1">⚠️</div>
-          <p className="text-xs text-slate-400 mb-1">Weakest Day</p>
-          <p className="font-bold text-white">{worst.day}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-1">Weakest Day</p>
+          <p className="font-bold text-slate-900 dark:text-white">{worst.day}</p>
           <p className="text-orange-400 text-sm font-bold">{worst.pct}%</p>
         </div>
       </div>
@@ -706,12 +706,12 @@ function StatCard({
       <span className="absolute right-3 bottom-3 text-5xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
         {icon}
       </span>
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">
         {label}
       </p>
-      <p className="text-3xl font-black text-white tracking-tight mb-1">{value}</p>
+      <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">{value}</p>
       {sub && (
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider opacity-60">
+        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider opacity-60">
           {sub}
         </p>
       )}
@@ -731,8 +731,8 @@ function ChartCard({
   return (
     <div className="glass-card rounded-2xl p-6">
       <div className="mb-5">
-        <h3 className="text-base font-semibold text-white">{title}</h3>
-        {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
+        <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+        {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mt-1">{subtitle}</p>}
       </div>
       {children}
     </div>
@@ -741,7 +741,7 @@ function ChartCard({
 
 function EmptyChart() {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+    <div className="flex flex-col items-center justify-center py-12 text-slate-500 dark:text-slate-400">
       <span className="text-4xl mb-3">📊</span>
       <p className="text-sm">Not enough data yet.</p>
       <p className="text-xs mt-1">Keep logging your habits to unlock insights.</p>
@@ -756,8 +756,8 @@ function DynamicInsights({ habits }: { habits: any[] }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="glass-card rounded-2xl p-5 border-l-4 border-l-brand-500/40">
           <span className="text-2xl">🌱</span>
-          <h4 className="text-sm font-semibold text-white mt-3 mb-1">Fresh Start</h4>
-          <p className="text-xs text-slate-400 leading-relaxed">Every day is a new opportunity. Start building your streaks today!</p>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mt-3 mb-1">Fresh Start</h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 leading-relaxed">Every day is a new opportunity. Start building your streaks today!</p>
         </div>
       </div>
     );
@@ -830,8 +830,8 @@ function DynamicInsights({ habits }: { habits: any[] }) {
       {insights.map(c => (
         <div key={c.title} className="glass-card rounded-2xl p-5 border-l-4 border-l-brand-500/40">
           <span className="text-2xl">{c.icon}</span>
-          <h4 className="text-sm font-semibold text-white mt-3 mb-1">{c.title}</h4>
-          <p className="text-xs text-slate-400 leading-relaxed">{c.body}</p>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mt-3 mb-1">{c.title}</h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 leading-relaxed">{c.body}</p>
         </div>
       ))}
     </div>
@@ -890,15 +890,15 @@ export function AnalyticsPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
             Analytics
           </p>
-          <h1 className="text-3xl font-bold text-white">Your Progress Report</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Your Progress Report</h1>
+          <p className="text-slate-500 dark:text-slate-400 dark:text-slate-400 text-sm mt-1">
             Track, analyze, and improve your habits over time.
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-1 sm:gap-2 p-1 bg-transparent sm:bg-slate-800/60 sm:rounded-xl sm:border sm:border-white/5">
+      <div className="flex flex-wrap gap-1 sm:gap-2 p-1 bg-transparent sm:bg-slate-200/50 dark:bg-slate-800/60 sm:rounded-xl sm:border sm:border-slate-200 dark:border-white/5">
         {TABS.map(t => (
           <button
             key={t}
@@ -906,7 +906,7 @@ export function AnalyticsPage() {
             className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[13px] sm:text-sm font-semibold transition-all whitespace-nowrap flex-grow sm:flex-grow-0 text-center ${
               tab === t
                 ? 'bg-brand-500/20 text-brand-400 shadow-sm'
-                : 'text-slate-400 bg-slate-800/40 sm:bg-transparent hover:text-slate-200 hover:bg-white/5'
+                : 'text-slate-500 dark:text-slate-400 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/40 sm:bg-transparent hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:bg-white/5'
             }`}
           >
             {t}
@@ -1005,7 +1005,7 @@ export function AnalyticsPage() {
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                       selectedHabit?.id === h.id
                         ? 'border-brand-500/40 bg-brand-500/15 text-brand-300'
-                        : 'border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+                        : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:border-white/20'
                     }`}
                   >
                     <span>{h.icon}</span> {h.name}
@@ -1093,10 +1093,10 @@ export function AnalyticsPage() {
         <div className="space-y-6">
           <div className="glass-card rounded-2xl p-6">
             <div className="mb-5">
-              <h3 className="text-base font-semibold text-white flex items-center gap-2">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                 🟩 365-Day Activity Heatmap
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mt-1">
                 Your overall habit completion across the entire last year, just like GitHub.
               </p>
             </div>

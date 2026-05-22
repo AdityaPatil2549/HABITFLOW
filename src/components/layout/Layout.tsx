@@ -275,9 +275,9 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
     onClose();
   };
   return (
-    <div className="w-full rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
+    <div className="w-full rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/60 z-[100] overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 backdrop-blur-xl">
       {/* Profile header */}
-      <div className="px-5 py-4 border-b border-white/5">
+      <div className="px-5 py-4 border-b border-slate-200 dark:border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold text-sm">
             {profile.avatar ? (
@@ -287,8 +287,8 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-white truncate">{isGuest ? 'Guest User' : profile.name}</p>
-            <p className="text-[10px] text-slate-400">{isGuest ? 'Local Mode Only' : 'Peak Performer'}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{isGuest ? 'Guest User' : profile.name}</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">{isGuest ? 'Local Mode Only' : 'Peak Performer'}</p>
           </div>
         </div>
       </div>
@@ -306,7 +306,7 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
             <button
               key={item.label}
               onClick={() => go(item.path)}
-              className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
+              className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               <Icon size={18} className="text-slate-500" />
               {item.label}
@@ -314,7 +314,7 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
           );
         })}
       </div>
-      <div className="border-t border-white/5 py-2">
+      <div className="border-t border-slate-200 dark:border-white/5 py-2">
         {isGuest ? (
           <button
             onClick={() => {
@@ -333,7 +333,7 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
               await signOut();
               navigate('/login');
             }}
-            className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-300 hover:bg-white/5 transition-colors"
+            className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
           >
             <LogOut size={18} />
             Sign Out
