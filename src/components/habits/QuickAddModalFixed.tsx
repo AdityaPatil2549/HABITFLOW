@@ -1,4 +1,4 @@
-import { X, Plus, Flame, Check } from 'lucide-react';
+import { X, Plus, Flame, Check, Cloud } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
@@ -37,6 +37,8 @@ export function QuickAddModalFixed({ onClose }: Props) {
   const [habitType, setHabitType] = useState<HabitType>('boolean');
   const [habitFreq, setHabitFreq] = useState<HabitFrequency>('daily');
   const [habitTarget, setHabitTarget] = useState(1);
+  const [healthSyncEnabled, setHealthSyncEnabled] = useState(false);
+  const [healthMetric, setHealthMetric] = useState<'steps' | 'sleep' | 'water' | 'calories' | 'meditation'>('steps');
 
   // Task form
   const [taskTitle, setTaskTitle] = useState('');
@@ -87,6 +89,8 @@ export function QuickAddModalFixed({ onClose }: Props) {
       startDate: format(new Date(), 'yyyy-MM-dd'),
       graceDayEnabled: false,
       archived: false,
+      healthSyncEnabled,
+      healthMetric: healthSyncEnabled ? healthMetric : undefined,
     };
     const result = habitSchema.safeParse(habitData);
     if (!result.success) {
@@ -331,6 +335,55 @@ export function QuickAddModalFixed({ onClose }: Props) {
                       />
                     </motion.div>
                   )}
+
+                  {/* Health Sync Toggle */}
+                  <div className="bg-slate-950/40 border border-white/5 rounded-2xl p-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between cursor-pointer" onClick={() => setHealthSyncEnabled(!healthSyncEnabled)}>
+                      <div>
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          <Cloud size={16} className="text-brand-400" />
+                          Health Sync (Auto-Complete)
+                        </h4>
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          Automatically sync progress from Google Fit or Apple Health.
+                        </p>
+                      </div>
+                      <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-1 ${healthSyncEnabled ? 'bg-brand-500' : 'bg-slate-800'}`}>
+                        <motion.div
+                          layout
+                          className="w-4 h-4 bg-white rounded-full shadow-sm"
+                          animate={{ x: healthSyncEnabled ? 24 : 0 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      </div>
+                    </div>
+                    
+                    <AnimatePresence>
+                      {healthSyncEnabled && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="pt-2 border-t border-white/5 mt-1"
+                        >
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                            Sync Metric
+                          </label>
+                          <select
+                            className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-medium outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer"
+                            value={healthMetric}
+                            onChange={e => setHealthMetric(e.target.value as any)}
+                          >
+                            <option value="steps">Steps (Google Fit / Health)</option>
+                            <option value="sleep">Sleep Duration (hrs)</option>
+                            <option value="water">Water Intake (ml)</option>
+                            <option value="calories">Active Calories (kcal)</option>
+                            <option value="meditation">Mindful Minutes</option>
+                          </select>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
 
                 <button

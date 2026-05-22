@@ -9,6 +9,9 @@ class SoundService {
   private enabled = true;
   private hapticEnabled = true;
 
+  private ambientSource: AudioBufferSourceNode | null = null;
+  private ambientGain: GainNode | null = null;
+
   setEnabled(sound: boolean, haptic: boolean) {
     this.enabled = sound;
     this.hapticEnabled = haptic;
@@ -121,6 +124,67 @@ class SoundService {
       } catch {
         /**/
       }
+    }
+  }
+
+  // ── Ambient Soundscapes (Focus Mode) ──────────────────────────────────
+  
+  startAmbient(type: 'brown' | 'white') {
+    if (!this.enabled) return;
+    try {
+      this.stopAmbient(); // ensure any existing is stopped
+
+      const ctx = this.getCtx();
+      const bufferSize = ctx.sampleRate * 5; // 5 seconds loop
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = buffer.getChannelData(0);
+      
+      let lastOut = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        if (type === 'brown') {
+          // Brown noise filter
+          output[i] = (lastOut + 0.02 * white) / 1.02;
+          lastOut = output[i];
+          output[i] *= 3.5; // compensate gain
+        } else {
+          output[i] = white * 0.15; // lower volume for white noise
+        }
+      }
+
+      this.ambientSource = ctx.createBufferSource();
+      this.ambientSource.buffer = buffer;
+      this.ambientSource.loop = true;
+
+      this.ambientGain = ctx.createGain();
+      // Gentle fade in
+      this.ambientGain.gain.setValueAtTime(0, ctx.currentTime);
+      this.ambientGain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 2); // 2 sec fade in
+
+      this.ambientSource.connect(this.ambientGain);
+      this.ambientGain.connect(ctx.destination);
+      this.ambientSource.start();
+    } catch {
+      console.warn('Failed to start ambient noise');
+    }
+  }
+
+  stopAmbient() {
+    if (!this.ambientSource || !this.ambientGain) return;
+    try {
+      const ctx = this.getCtx();
+      // Gentle fade out
+      this.ambientGain.gain.setValueAtTime(this.ambientGain.gain.value, ctx.currentTime);
+      this.ambientGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1); // 1 sec fade out
+      
+      this.ambientSource.stop(ctx.currentTime + 1);
+      
+      // Cleanup
+      this.ambientSource = null;
+      this.ambientGain = null;
+    } catch {
+      this.ambientSource = null;
+      this.ambientGain = null;
     }
   }
 }

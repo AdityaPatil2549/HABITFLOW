@@ -18,6 +18,7 @@ import { useAuthStore } from './store/authStore';
 import { syncService } from './services/syncService';
 import { migrateLocalDataToCloud } from './services/migrationService';
 import { pushNotificationService } from './services/pushNotificationService';
+import { startHealthSyncPolling } from './services/healthSyncService';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })));
@@ -51,6 +52,11 @@ function App() {
   useEffect(() => {
     initAuth();
   }, [initAuth]);
+
+  // Start health sync background polling (checks every 60 mins by default)
+  useEffect(() => {
+    startHealthSyncPolling();
+  }, []);
 
   // Start/stop sync engine based on auth state
   useEffect(() => {

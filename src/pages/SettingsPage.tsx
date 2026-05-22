@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Calendar,
   CloudOff,
+  Activity,
 } from 'lucide-react';
 import { db, getOrCreateSettings } from '../db';
 import type { Settings, Theme } from '../types';
@@ -498,7 +499,43 @@ export function SettingsPage() {
         )}
       </section>
 
-      {/* ─── Data ─── */}
+      {/* ── Integrations ── */}
+      <section className="glass-card rounded-2xl p-6 space-y-6">
+        <h2 className="text-base font-bold text-white flex items-center gap-2">
+          <Activity size={18} className="text-brand-400" /> Integrations
+        </h2>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+            <div>
+              <p className="text-sm font-bold text-white">Google Fit / Health Connect</p>
+              <p className="text-[10px] text-slate-400 mt-1">Simulated sync engine for health habits</p>
+            </div>
+            <button
+              onClick={() => {
+                toast.success('Simulated Health Sync Connected! Auto-completion enabled.');
+              }}
+              className="px-4 py-2 bg-brand-500/20 text-brand-400 text-xs font-bold rounded-xl hover:bg-brand-500/30 transition-colors"
+            >
+              Connect
+            </button>
+          </div>
+          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl opacity-60">
+            <div>
+              <p className="text-sm font-bold text-white">Apple Health (iOS)</p>
+              <p className="text-[10px] text-slate-400 mt-1">Requires native app installation</p>
+            </div>
+            <button
+              disabled
+              className="px-4 py-2 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl"
+            >
+              Coming Soon
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Data ── */}
       <section className="glass-card rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Database size={18} className="text-brand-400" /> Data Management

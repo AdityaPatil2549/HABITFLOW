@@ -38,6 +38,11 @@ export interface Habit {
   graceDayEnabled: boolean;
   archived: boolean;
   order: number;
+  
+  // Health Integration
+  healthSyncEnabled?: boolean;
+  healthMetric?: 'steps' | 'sleep' | 'water' | 'calories' | 'meditation';
+  
   createdAt: string; // ISO
   updated_at?: string; // ISO — used by sync engine
   deleted_at?: string; // ISO — soft delete for sync

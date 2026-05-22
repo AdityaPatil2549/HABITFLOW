@@ -17,13 +17,14 @@ interface FocusState {
   duration: number; // seconds for current phase
   totalFocusSeconds: number; // seconds of actual focus time elapsed
   xpEarned: number; // XP for the current/last session
+  isStrict: boolean; // whether strict mode is enabled
 
   showPicker: boolean;
   pickerTarget: FocusTarget | null;
   openPicker: (target?: FocusTarget) => void;
   closePicker: () => void;
 
-  startFocus: (target: FocusTarget, durationMinutes?: number) => void;
+  startFocus: (target: FocusTarget, durationMinutes?: number, isStrict?: boolean) => void;
   toggleTimer: () => void;
   stopFocus: () => void;
   tick: () => void;
@@ -51,6 +52,7 @@ function persistFocus(state: Partial<FocusState>) {
       target: state.target,
       duration: state.duration,
       totalFocusSeconds: state.totalFocusSeconds,
+      isStrict: state.isStrict,
       savedAt: Date.now(),
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -85,6 +87,7 @@ function loadPersistedFocus(): Partial<FocusState> | null {
       target: data.target,
       duration: data.duration,
       totalFocusSeconds: data.totalFocusSeconds + additionalFocus,
+      isStrict: data.isStrict ?? false,
     };
   } catch {
     return null;
@@ -102,6 +105,7 @@ export const useFocusStore = create<FocusState>((set, get) => ({
   duration: restored?.duration ?? DEFAULT_FOCUS_MINUTES * 60,
   totalFocusSeconds: restored?.totalFocusSeconds ?? 0,
   xpEarned: 0,
+  isStrict: restored?.isStrict ?? false,
 
   showPicker: false,
   pickerTarget: null,
@@ -114,7 +118,7 @@ export const useFocusStore = create<FocusState>((set, get) => ({
 
   closePicker: () => set({ showPicker: false, pickerTarget: null }),
 
-  startFocus: (target, durationMinutes = DEFAULT_FOCUS_MINUTES) => {
+  startFocus: (target, durationMinutes = DEFAULT_FOCUS_MINUTES, isStrict = false) => {
     const duration = durationMinutes * 60;
     const newState = {
       isActive: true,
@@ -125,6 +129,7 @@ export const useFocusStore = create<FocusState>((set, get) => ({
       timeLeft: duration,
       totalFocusSeconds: 0,
       xpEarned: 0,
+      isStrict,
     };
     set(newState);
     persistFocus(newState);

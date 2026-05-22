@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFocusStore, calcFocusXP } from '../../store/focusStore';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { soundService } from '../../services/soundService';
-import { Play, Pause, XCircle, CheckCircle2, Coffee, Zap, Timer } from 'lucide-react';
+import { Play, Pause, XCircle, CheckCircle2, Coffee, Zap, Timer, ShieldAlert, Music, VolumeX, AlertTriangle } from 'lucide-react';
 
 const DURATION_PRESETS = [15, 25, 30, 45, 60, 90];
 
@@ -13,12 +13,13 @@ function DurationPicker({
   onCancel,
   targetTitle,
 }: {
-  onStart: (minutes: number) => void;
+  onStart: (minutes: number, isStrict: boolean) => void;
   onCancel: () => void;
   targetTitle?: string;
 }) {
   const [selected, setSelected] = useState(25);
   const [custom, setCustom] = useState('');
+  const [isStrict, setIsStrict] = useState(false);
 
   const minutes = custom ? parseInt(custom, 10) || selected : selected;
   const xpPreview = Math.max(5, minutes);
@@ -106,6 +107,33 @@ function DurationPicker({
           )}
         </div>
 
+        {/* Strict Mode Toggle */}
+        <div 
+          onClick={() => setIsStrict(!isStrict)}
+          className={`flex items-center justify-between px-4 py-3 rounded-2xl mb-6 cursor-pointer border transition-all ${
+            isStrict 
+              ? 'bg-rose-500/10 border-rose-500/30' 
+              : 'bg-white/[0.02] border-white/5'
+          }`}
+        >
+          <div>
+            <h4 className={`text-sm font-bold flex items-center gap-2 ${isStrict ? 'text-rose-400' : 'text-slate-300'}`}>
+              <ShieldAlert size={14} /> Strict Mode
+            </h4>
+            <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+              Timer fails if you leave the app for &gt;5 seconds.
+            </p>
+          </div>
+          <div className={`w-10 h-5 rounded-full transition-colors relative flex items-center px-1 ${isStrict ? 'bg-rose-500' : 'bg-slate-800'}`}>
+            <motion.div
+              layout
+              className="w-3 h-3 bg-white rounded-full shadow-sm"
+              animate={{ x: isStrict ? 20 : 0 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            />
+          </div>
+        </div>
+
         {/* XP preview */}
         <div className="flex items-center justify-center gap-2 mb-6 py-3 px-4 rounded-2xl bg-amber-500/8 border border-amber-500/15">
           <Zap size={14} className="text-amber-400" />
@@ -120,7 +148,7 @@ function DurationPicker({
 
         {/* Actions */}
         <button
-          onClick={() => onStart(minutes)}
+          onClick={() => onStart(minutes, isStrict)}
           disabled={minutes < 1 || minutes > 480}
           className="w-full py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-brand-500 to-violet-600 shadow-xl shadow-brand-500/25 active:scale-95 transition-all text-base mb-3 disabled:opacity-40"
         >
@@ -156,9 +184,55 @@ export function FocusOverlay() {
     pickerTarget,
     closePicker,
     startFocus: startFocusStore,
+    isStrict,
   } = useFocusStore();
   const { addXP } = useGamificationStore();
   const [xpAwarded, setXpAwarded] = useState(false);
+
+  // Strict Mode Logic
+  const [strictWarning, setStrictWarning] = useState(false);
+  const strictTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isActive || !isRunning || !isStrict || mode !== 'focus') return;
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        // User left the tab - start 5 second countdown
+        strictTimerRef.current = window.setTimeout(() => {
+          soundService.playUncheck();
+          stopFocus();
+          alert('💥 Strict Mode Violation: You left the focus screen for >5 seconds. Session failed.');
+        }, 5000);
+      } else {
+        // User returned
+        if (strictTimerRef.current) {
+          clearTimeout(strictTimerRef.current);
+          strictTimerRef.current = null;
+          setStrictWarning(true);
+          setTimeout(() => setStrictWarning(false), 3000);
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (strictTimerRef.current) clearTimeout(strictTimerRef.current);
+    };
+  }, [isActive, isRunning, isStrict, mode, stopFocus]);
+
+  // Ambient Audio Logic
+  const [ambientSound, setAmbientSound] = useState<'off' | 'brown' | 'white'>('off');
+  
+  useEffect(() => {
+    if (ambientSound === 'off') {
+      soundService.stopAmbient();
+    } else {
+      soundService.startAmbient(ambientSound);
+    }
+    return () => soundService.stopAmbient();
+  }, [ambientSound]);
 
   // Timer tick
   useEffect(() => {
@@ -237,6 +311,41 @@ export function FocusOverlay() {
         <div
           className={`absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-3xl opacity-[0.07] pointer-events-none ${isFocus ? 'bg-brand-400' : 'bg-emerald-400'} ${isRunning ? 'animate-pulse' : ''}`}
         />
+
+        {/* Ambient Sound Controls */}
+        <div className="absolute top-6 right-6 z-50">
+          <div className="flex bg-slate-900/50 backdrop-blur-md rounded-full border border-white/10 p-1 shadow-xl">
+            <button
+              onClick={() => setAmbientSound('off')}
+              className={`p-2 rounded-full transition-colors ${ambientSound === 'off' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              title="Sound Off"
+            >
+              <VolumeX size={16} />
+            </button>
+            <button
+              onClick={() => setAmbientSound('brown')}
+              className={`p-2 rounded-full transition-colors ${ambientSound === 'brown' ? 'bg-brand-500/20 text-brand-400' : 'text-slate-500 hover:text-slate-300'}`}
+              title="Brown Noise"
+            >
+              <Music size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Strict Warning Overlay */}
+        <AnimatePresence>
+          {strictWarning && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute top-20 z-50 bg-rose-500/90 backdrop-blur-md text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-2xl shadow-rose-500/20 border border-white/20"
+            >
+              <AlertTriangle size={20} />
+              Careful! Stay on this screen to keep your XP.
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Bottom progress bar */}
         <div className="absolute bottom-0 left-0 h-1 w-full bg-white/5">

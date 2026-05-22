@@ -50,6 +50,8 @@ const TOOLTIP_STYLE = {
   color: '#dae2fd',
   fontSize: 13,
 };
+const TOOLTIP_LABEL_STYLE = { color: '#f8fafc', fontWeight: 'bold', marginBottom: '4px' };
+const TOOLTIP_ITEM_STYLE = { color: '#dae2fd' };
 
 // ─── Correlation Insights ──────────────────────────────────────
 function CorrelationInsights() {
@@ -456,7 +458,7 @@ function TrendLine({ habits }: { habits: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
         <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
         <Area
           type="monotone"
           dataKey="completion"
@@ -498,7 +500,7 @@ function TaskThroughput({ tasks }: { tasks: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="week" tick={{ fill: '#64748b', fontSize: 11 }} />
         <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
-        <Tooltip contentStyle={TOOLTIP_STYLE} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} />
         <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
         <Bar
           dataKey="created"
@@ -580,7 +582,7 @@ function BestWorstDay({ habits }: { habits: any[] }) {
         <BarChart data={dayData}>
           <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11 }} />
           <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
-          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
           <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={48}>
             {dayData.map((d, i) => (
               <Cell
@@ -653,7 +655,7 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
           domain={[1, 5]}
           tick={{ fill: '#64748b', fontSize: 11 }}
         />
-        <Tooltip contentStyle={TOOLTIP_STYLE} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} />
         <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
         <Bar
           yAxisId="left"
