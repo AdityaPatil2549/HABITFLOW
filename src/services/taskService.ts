@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { db } from '../db';
 import type { Task, Project } from '../types';
 import { format, parseISO, addDays, addWeeks, addMonths } from 'date-fns';
+import { syncService } from './syncService';
 
 export const taskService = {
   // ─── Tasks ───────────────────────────────────────────────────
@@ -31,13 +32,17 @@ export const taskService = {
       id: nanoid(),
       order: count,
       createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     await db.tasks.add(task);
+    syncService.queuePush('tasks', task, 'upsert').catch(console.error);
     return task;
   },
 
   async update(id: string, data: Partial<Task>): Promise<void> {
-    await db.tasks.update(id, data);
+    await db.tasks.update(id, { ...data, updated_at: new Date().toISOString() });
+    const updated = await db.tasks.get(id);
+    if (updated) syncService.queuePush('tasks', updated, 'upsert').catch(console.error);
   },
 
   async complete(id: string): Promise<void> {
@@ -82,8 +87,13 @@ export const taskService = {
 
   async delete(id: string): Promise<void> {
     // Delete subtasks first
+    const subtasks = await db.tasks.where('parentId').equals(id).toArray();
+    for (const sub of subtasks) {
+      syncService.queuePush('tasks', { id: sub.id }, 'delete').catch(console.error);
+    }
     await db.tasks.where('parentId').equals(id).delete();
     await db.tasks.delete(id);
+    syncService.queuePush('tasks', { id }, 'delete').catch(console.error);
   },
 
   async reorder(ids: string[]): Promise<void> {

@@ -12,6 +12,8 @@ import {
   Database,
   Info,
   CheckCircle2,
+  Calendar,
+  CloudOff,
 } from 'lucide-react';
 import { db, getOrCreateSettings } from '../db';
 import type { Settings, Theme } from '../types';
@@ -20,6 +22,9 @@ import { notificationService } from '../services/notificationService';
 import { motion } from 'framer-motion';
 import { useGamificationStore } from '../store/gamificationStore';
 import { useToast } from '../components/common/Toast';
+import { calendarService } from '../services/calendarService';
+import { useAuthStore } from '../store/authStore';
+import { Link } from 'react-router-dom';
 
 const THEMES: { value: Theme; label: string; color: string }[] = [
   { value: 'indigo', label: 'Indigo', color: '#6366f1' },
@@ -37,6 +42,8 @@ export function SettingsPage() {
   const [exported, setExported] = useState(false);
   const [csvExported, setCsvExported] = useState(false);
   const toast = useToast();
+  const { isGuest } = useAuthStore();
+  const isCalendarConnected = calendarService.isCalendarConnected();
 
   const { userXP, loadXP } = useGamificationStore();
 
@@ -417,6 +424,78 @@ export function SettingsPage() {
             </span>
           )}
         </div>
+      </section>
+
+      {/* ─── Integrations ─── */}
+      <section className="glass-card rounded-2xl p-6 space-y-4">
+        <h2 className="text-base font-bold text-white flex items-center gap-2">
+          <Calendar size={18} className="text-brand-400" /> Integrations
+        </h2>
+        
+        {isGuest ? (
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-3 text-slate-400">
+              <CloudOff size={20} />
+              <div className="text-sm">
+                <p className="font-bold text-white">Google Calendar</p>
+                <p className="text-xs">Sign in to sync your habits to your calendar.</p>
+              </div>
+            </div>
+            <Link to="/login" className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-colors">
+              Sign In
+            </Link>
+          </div>
+        ) : !isCalendarConnected ? (
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="text-sm">
+              <p className="font-bold text-amber-400">Google Calendar Disconnected</p>
+              <p className="text-xs text-amber-400/70">Your Google session expired or calendar access was denied. Please sign in again.</p>
+            </div>
+            <Link to="/login" className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-colors whitespace-nowrap">
+              Reconnect
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                <p className="text-sm font-semibold text-white">Sync Habits to Calendar</p>
+                <p className="text-xs text-slate-500">Create recurring events for your habits.</p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={settings.googleCalendarSync !== false}
+                onClick={() => saveSetting({ googleCalendarSync: !settings.googleCalendarSync })}
+                className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.googleCalendarSync !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
+              >
+                <motion.div
+                  layout
+                  className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
+                  animate={{ x: settings.googleCalendarSync !== false ? 20 : 0 }}
+                />
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                <p className="text-sm font-semibold text-white">Log Completions to Calendar</p>
+                <p className="text-xs text-slate-500">Create daily events when you complete habits.</p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={settings.googleCalendarCompletions !== false}
+                onClick={() => saveSetting({ googleCalendarCompletions: !settings.googleCalendarCompletions })}
+                className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.googleCalendarCompletions !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
+              >
+                <motion.div
+                  layout
+                  className="w-4 h-4 bg-white rounded-full mx-1 shadow-sm"
+                  animate={{ x: settings.googleCalendarCompletions !== false ? 20 : 0 }}
+                />
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ─── Data ─── */}

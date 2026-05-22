@@ -20,6 +20,7 @@ export type Level = 'Beginner' | 'Builder' | 'Achiever' | 'Champion' | 'Grandmas
 // ─── Habit ───────────────────────────────────────────────────
 export interface Habit {
   id: string;
+  user_id?: string; // Supabase user ID (null for guest)
   name: string;
   icon: string; // emoji
   color: string; // hex or tailwind color
@@ -38,11 +39,14 @@ export interface Habit {
   archived: boolean;
   order: number;
   createdAt: string; // ISO
+  updated_at?: string; // ISO — used by sync engine
+  deleted_at?: string; // ISO — soft delete for sync
 }
 
 // ─── Habit Log ───────────────────────────────────────────────
 export interface HabitLog {
   id: string;
+  user_id?: string;
   habitId: string;
   date: string; // YYYY-MM-DD
   value: number; // 1 for boolean, actual count/duration/rating
@@ -51,6 +55,8 @@ export interface HabitLog {
   isFrozen?: boolean;
   timeStamp: string; // ISO
   createdAt: string; // ISO
+  updated_at?: string;
+  deleted_at?: string;
 }
 
 // ─── Task ────────────────────────────────────────────────────
@@ -58,6 +64,7 @@ export type RecurringRule = 'none' | 'daily' | 'weekly' | 'monthly' | 'custom';
 
 export interface Task {
   id: string;
+  user_id?: string;
   title: string;
   description?: string;
   priority: Priority;
@@ -72,6 +79,8 @@ export interface Task {
   completedAt?: string;
   order: number;
   createdAt: string;
+  updated_at?: string;
+  deleted_at?: string;
 }
 
 // ─── Project ─────────────────────────────────────────────────
@@ -89,10 +98,13 @@ export interface Project {
 // ─── Mood ────────────────────────────────────────────────────
 export interface Mood {
   id: string;
+  user_id?: string;
   date: string; // YYYY-MM-DD
   score: MoodScore;
   note?: string;
   createdAt: string;
+  updated_at?: string;
+  deleted_at?: string;
 }
 
 // ─── User XP / Gamification ──────────────────────────────────
@@ -122,6 +134,7 @@ export interface UserXP {
 // ─── Settings ────────────────────────────────────────────────
 export interface Settings {
   id: string; // always 'singleton'
+  user_id?: string;
   theme: Theme;
   darkMode: 'system' | 'dark' | 'light';
   weekStartsOnMonday: boolean;
@@ -130,6 +143,9 @@ export interface Settings {
   hapticEnabled: boolean;
   morningBriefingTime?: string; // HH:MM
   language: string;
+  googleCalendarSync?: boolean;
+  googleCalendarCompletions?: boolean;
+  updated_at?: string;
 }
 
 // ─── Computed / UI ───────────────────────────────────────────
@@ -152,4 +168,14 @@ export interface DashboardStats {
   dailyScore: number;
   topStreaks: HabitWithStreak[];
   tasksToday: Task[];
+}
+
+// ─── Sync Queue ──────────────────────────────────────────────
+export interface SyncQueueItem {
+  id?: number; // auto-incremented
+  table_name: string;
+  record_id: string;
+  operation: 'upsert' | 'delete';
+  payload: Record<string, unknown>;
+  created_at: string;
 }

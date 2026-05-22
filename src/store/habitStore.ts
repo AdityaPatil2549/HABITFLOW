@@ -4,6 +4,8 @@ import type { Habit, HabitWithStreak } from '../types';
 import { format } from 'date-fns';
 import { useGamificationStore } from './gamificationStore';
 import { soundService } from '../services/soundService';
+import { calendarService } from '../services/calendarService';
+import { getOrCreateSettings } from '../db';
 
 interface HabitStore {
   habits: HabitWithStreak[];
@@ -74,6 +76,15 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
       const h = updatedHabits.find(x => x.id === habitId);
       if (h && h.streak.current > 0) {
         await useGamificationStore.getState().awardStreakBadge(h.streak.current);
+      }
+
+      // Mark completion in Google Calendar (if enabled)
+      if (h) {
+        getOrCreateSettings().then(settings => {
+          if (settings.googleCalendarCompletions) {
+            calendarService.markHabitDoneInCalendar(h.name, h.icon, get().selectedDate).catch(console.error);
+          }
+        });
       }
     } catch (err) {
       console.error('Failed to log habit:', err);

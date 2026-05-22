@@ -2,6 +2,8 @@ import { nanoid } from 'nanoid';
 import { db } from '../db';
 import type { Habit, HabitLog, HabitWithStreak, StreakInfo } from '../types';
 import { format, subDays, parseISO } from 'date-fns';
+import { syncService } from './syncService';
+import { calendarService } from './calendarService';
 
 // ─── Habit CRUD ──────────────────────────────────────────────
 export const habitService = {
@@ -27,13 +29,22 @@ export const habitService = {
       id: nanoid(),
       order: count,
       createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     await db.habits.add(habit);
+    // Sync to cloud
+    syncService.queuePush('habits', habit, 'upsert').catch(console.error);
+    // Sync to Google Calendar
+    calendarService.syncHabitToCalendar(habit).catch(console.error);
     return habit;
   },
 
   async update(id: string, data: Partial<Habit>): Promise<void> {
-    await db.habits.update(id, data);
+    await db.habits.update(id, { ...data, updated_at: new Date().toISOString() });
+    const updated = await db.habits.get(id);
+    if (updated) {
+      syncService.queuePush('habits', updated, 'upsert').catch(console.error);
+    }
   },
 
   async archive(id: string): Promise<void> {
@@ -41,8 +52,14 @@ export const habitService = {
   },
 
   async delete(id: string): Promise<void> {
+    const habit = await db.habits.get(id);
     await db.habits.delete(id);
     await db.habitLogs.where('habitId').equals(id).delete();
+    // Sync deletion to cloud
+    if (habit) {
+      syncService.queuePush('habits', { id }, 'delete').catch(console.error);
+      calendarService.removeCalendarEvent(id).catch(console.error);
+    }
   },
 
   async reorder(ids: string[]): Promise<void> {
@@ -97,8 +114,11 @@ export const habitService = {
       isFrozen,
       timeStamp: new Date().toISOString(),
       createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     await db.habitLogs.add(log);
+    // Sync to cloud
+    syncService.queuePush('habitLogs', log, 'upsert').catch(console.error);
     return log;
   },
 

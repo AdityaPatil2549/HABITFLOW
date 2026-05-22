@@ -5,6 +5,7 @@ import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { useFocusStore } from '../../store/focusStore';
+import { useAuthStore } from '../../store/authStore';
 import { calculateStats } from '../../services/gamificationService';
 import { useToast } from '../common/Toast';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
@@ -28,6 +29,8 @@ import {
   Timer,
   Sun,
   Moon,
+  Cloud,
+  CloudOff,
 } from 'lucide-react';
 
 // ── Notification panel ─────────────────────────────────────────
@@ -525,6 +528,7 @@ export function Layout() {
   const { profile } = useProfileStore();
   const { userXP, loadXP } = useGamificationStore();
   const { isActive: focusActive, startFocus, stopFocus, openPicker } = useFocusStore();
+  const { user, isGuest, signOut } = useAuthStore();
   const toast = useToast();
   // Read persisted darkMode preference — avoid DOM-read race with App.tsx's useEffect
   const [isDark, setIsDark] = useState(() => !document.documentElement.classList.contains('light'));
@@ -787,6 +791,28 @@ export function Layout() {
               />
             )}
           </div>
+
+          {/* Sync Status / Auth */}
+          {isGuest ? (
+            <Link
+              to="/login"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-white transition-colors text-left"
+            >
+              <CloudOff size={18} />
+              <span className="flex-1">Sign in to sync</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                signOut();
+                navigate('/login');
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-emerald-400 hover:bg-white/5 transition-colors text-left"
+            >
+              <Cloud size={18} />
+              <span className="flex-1 truncate">{user?.email ?? 'Synced'}</span>
+            </button>
+          )}
         </div>
 
         <div className="px-5 pt-4 border-t border-white/5 mx-3 mt-2">
@@ -799,8 +825,8 @@ export function Layout() {
               className="w-full flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group text-left"
             >
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold overflow-hidden shadow-lg shadow-brand-500/20 flex-shrink-0">
-                {profile.avatar ? (
-                  <img src={profile.avatar} className="w-full h-full object-cover" />
+                {(user?.user_metadata?.avatar_url || profile.avatar) ? (
+                  <img src={user?.user_metadata?.avatar_url || profile.avatar} className="w-full h-full object-cover" alt="" />
                 ) : (
                   <User size={16} />
                 )}

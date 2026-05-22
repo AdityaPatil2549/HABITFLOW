@@ -14,6 +14,9 @@ import { gamificationService } from './services/gamificationService';
 import { useModalStore } from './store/modalStore';
 import { QuickAddModalFixed } from './components/habits/QuickAddModalFixed';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { useAuthStore } from './store/authStore';
+import { syncService } from './services/syncService';
+import { migrateLocalDataToCloud } from './services/migrationService';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })));
@@ -29,9 +32,31 @@ const ProfilePage = lazy(() =>
 const WeeklyReviewPage = lazy(() =>
   import('./pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage }))
 );
+const AuthPage = lazy(() =>
+  import('./pages/AuthPage').then(m => ({ default: m.AuthPage }))
+);
 
 function App() {
   const { show: showOnboarding, complete: completeOnboarding } = useOnboarding();
+  const { initialize: initAuth, user, isGuest } = useAuthStore();
+
+  // Initialize Supabase auth on app boot
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  // Start/stop sync engine based on auth state
+  useEffect(() => {
+    if (user && !isGuest) {
+      // Migrate local data to cloud (idempotent — runs once per user)
+      migrateLocalDataToCloud(user.id).catch(console.error);
+      // Start auto-sync
+      syncService.startAutoSync();
+    } else {
+      syncService.stopAutoSync();
+    }
+    return () => syncService.stopAutoSync();
+  }, [user, isGuest]);
 
   useEffect(() => {
     getOrCreateSettings().then(settings => {
@@ -73,6 +98,7 @@ function App() {
           }
         >
           <Routes>
+            <Route path="/login" element={<AuthPage />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />

@@ -1,6 +1,16 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Habit, HabitLog, Task, Project, Mood, UserXP, Settings } from '../types';
 
+// ─── Sync Queue Item ─────────────────────────────────────────
+export interface SyncQueueItem {
+  id?: number;
+  table_name: string;
+  record_id: string;
+  operation: 'upsert' | 'delete';
+  payload: any;
+  created_at: string;
+}
+
 // ─── Database Class ──────────────────────────────────────────
 class HabitFlowDB extends Dexie {
   habits!: EntityTable<Habit, 'id'>;
@@ -10,6 +20,7 @@ class HabitFlowDB extends Dexie {
   moods!: EntityTable<Mood, 'id'>;
   userXP!: EntityTable<UserXP, 'id'>;
   settings!: EntityTable<Settings, 'id'>;
+  sync_queue!: EntityTable<SyncQueueItem, 'id'>;
 
   constructor() {
     super('HabitFlowDB');
@@ -27,6 +38,11 @@ class HabitFlowDB extends Dexie {
     // v2: Add compound index for faster habit log queries by habitId+date
     this.version(2).stores({
       habitLogs: '++id, habitId, date, [habitId+date], createdAt',
+    });
+
+    // v3: Add sync_queue table for offline-first push queue
+    this.version(3).stores({
+      sync_queue: '++id, table_name, record_id, created_at',
     });
   }
 }
