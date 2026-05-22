@@ -58,7 +58,7 @@ export function AuthPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden px-4">
+    <div className="relative min-h-screen w-screen flex items-center justify-center overflow-hidden px-4">
       {/* ── Animated background orbs ────────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {orbs.map((orb, i) => (
@@ -93,7 +93,7 @@ export function AuthPage() {
         initial={{ opacity: 0, y: 32, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="glass-card rounded-2xl p-8 sm:p-10 w-full max-w-md relative z-10"
+        className="glass-card rounded-2xl p-8 sm:p-10 w-[90%] max-w-[440px] relative z-10"
       >
         {/* ── Logo / Branding ─────────────────────────────────────── */}
         <motion.div
