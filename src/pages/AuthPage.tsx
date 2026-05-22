@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
@@ -44,6 +45,13 @@ const orbs = [
 export function AuthPage() {
   const navigate = useNavigate();
   const signInWithGoogle = useAuthStore((s) => s.signInWithGoogle);
+  const user = useAuthStore((s) => s.user);
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleGoogleSignIn = async () => {
     try {
