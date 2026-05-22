@@ -74,12 +74,12 @@ const GOAL_TEMPLATES = {
 type GoalKey = keyof typeof GOAL_TEMPLATES;
 
 export function useOnboarding() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const done = localStorage.getItem(ONBOARDING_KEY);
-    if (!done) setShow(true);
-  }, []);
+  const [show, setShow] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem(ONBOARDING_KEY);
+    }
+    return false;
+  });
 
   const complete = () => {
     localStorage.setItem(ONBOARDING_KEY, 'true');

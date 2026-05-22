@@ -70,8 +70,10 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
 
   useEffect(() => {
     if (!habits.length) {
-      setLoading(false);
-      return;
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
     (async () => {
       setLoading(true);
@@ -692,75 +694,79 @@ function EmptyChart() {
 
 // ─── Dynamic Insights ──────────────────────────────────────────
 function DynamicInsights({ habits }: { habits: any[] }) {
-  const [insights, setInsights] = useState<{ icon: string; title: string; body: string }[]>([]);
-
-  useEffect(() => {
-    if (habits.length === 0) return;
-
-    const newInsights: { icon: string; title: string; body: string }[] = [];
-
-    // Insight 1: Longest active streak
-    const bestCurrent = [...habits].sort((a, b) => b.streak.current - a.streak.current)[0];
-    if (bestCurrent && bestCurrent.streak.current >= 3) {
-      newInsights.push({
-        icon: '🔥',
-        title: 'Streak Master',
-        body: `You're on a ${bestCurrent.streak.current}-day streak for "${bestCurrent.name}". Keep the momentum going!`,
-      });
-    } else {
-      newInsights.push({
-        icon: '🌱',
-        title: 'Fresh Start',
-        body: 'Every day is a new opportunity. Start building your streaks today!',
-      });
-    }
-
-    // Insight 2: Overall consistency
-    const avgComp = Math.round(
-      (habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100
+  if (habits.length === 0) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="glass-card rounded-2xl p-5 border-l-4 border-l-brand-500/40">
+          <span className="text-2xl">🌱</span>
+          <h4 className="text-sm font-semibold text-white mt-3 mb-1">Fresh Start</h4>
+          <p className="text-xs text-slate-400 leading-relaxed">Every day is a new opportunity. Start building your streaks today!</p>
+        </div>
+      </div>
     );
-    if (avgComp > 80) {
-      newInsights.push({
-        icon: '⭐',
-        title: 'Highly Consistent',
-        body: `Your 30-day completion rate is an impressive ${avgComp}%. You've built solid routines.`,
-      });
-    } else if (avgComp > 40) {
-      newInsights.push({
-        icon: '📈',
-        title: 'Steady Progress',
-        body: `Your ${avgComp}% completion rate shows good effort. Focus on your hardest habits next.`,
-      });
-    } else {
-      newInsights.push({
-        icon: '🎯',
-        title: 'Room to Grow',
-        body: `Focus on completing just one core habit daily to build momentum.`,
-      });
-    }
+  }
 
-    // Insight 3: Best Category
-    const catCounts: Record<string, number> = {};
-    habits.forEach(h => {
-      catCounts[h.category] = (catCounts[h.category] || 0) + h.completionRate30Days;
+  const insights: { icon: string; title: string; body: string }[] = [];
+
+  // Insight 1: Longest active streak
+  const bestCurrent = [...habits].sort((a, b) => b.streak.current - a.streak.current)[0];
+  if (bestCurrent && bestCurrent.streak.current >= 3) {
+    insights.push({
+      icon: '🔥',
+      title: 'Streak Master',
+      body: `You're on a ${bestCurrent.streak.current}-day streak for "${bestCurrent.name}". Keep the momentum going!`,
     });
-    const bestCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
-    if (bestCat && bestCat[1] > 0) {
-      newInsights.push({
-        icon: '🏆',
-        title: `${bestCat[0]} Champion`,
-        body: `You've been most consistent with your ${bestCat[0]} habits lately.`,
-      });
-    } else {
-      newInsights.push({
-        icon: '⚖️',
-        title: 'Find Balance',
-        body: `Try to spread your focus evenly across different areas of your life.`,
-      });
-    }
+  } else {
+    insights.push({
+      icon: '🌱',
+      title: 'Fresh Start',
+      body: 'Every day is a new opportunity. Start building your streaks today!',
+    });
+  }
 
-    setInsights(newInsights);
-  }, [habits]);
+  // Insight 2: Overall consistency
+  const avgComp = Math.round(
+    (habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100
+  );
+  if (avgComp > 80) {
+    insights.push({
+      icon: '⭐',
+      title: 'Highly Consistent',
+      body: `Your 30-day completion rate is an impressive ${avgComp}%. You've built solid routines.`,
+    });
+  } else if (avgComp > 40) {
+    insights.push({
+      icon: '📈',
+      title: 'Steady Progress',
+      body: `Your ${avgComp}% completion rate shows good effort. Focus on your hardest habits next.`,
+    });
+  } else {
+    insights.push({
+      icon: '🎯',
+      title: 'Room to Grow',
+      body: `Focus on completing just one core habit daily to build momentum.`,
+    });
+  }
+
+  // Insight 3: Best Category
+  const catCounts: Record<string, number> = {};
+  habits.forEach(h => {
+    catCounts[h.category] = (catCounts[h.category] || 0) + h.completionRate30Days;
+  });
+  const bestCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
+  if (bestCat && bestCat[1] > 0) {
+    insights.push({
+      icon: '🏆',
+      title: `${bestCat[0]} Champion`,
+      body: `You've been most consistent with your ${bestCat[0]} habits lately.`,
+    });
+  } else {
+    insights.push({
+      icon: '⚖️',
+      title: 'Find Balance',
+      body: `Try to spread your focus evenly across different areas of your life.`,
+    });
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

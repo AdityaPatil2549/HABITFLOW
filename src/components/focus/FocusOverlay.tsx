@@ -172,11 +172,19 @@ export function FocusOverlay() {
   // Award XP when focus phase ends naturally or early
   useEffect(() => {
     if (isActive && mode === 'break' && !xpAwarded && xpEarned > 0) {
-      setXpAwarded(true);
-      addXP(xpEarned);
-      soundService.playLevelUp();
+      const timer = setTimeout(() => {
+        setXpAwarded(true);
+        addXP(xpEarned);
+        soundService.playLevelUp();
+      }, 0);
+      return () => clearTimeout(timer);
     }
-    if (!isActive) setXpAwarded(false);
+    if (!isActive && xpAwarded) {
+      const timer = setTimeout(() => {
+        setXpAwarded(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
   }, [mode, isActive, xpEarned, addXP, xpAwarded]);
 
   // Handle "mark done early" — award time-based XP

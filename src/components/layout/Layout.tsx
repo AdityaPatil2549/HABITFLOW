@@ -535,6 +535,7 @@ export function Layout() {
   const mobileNotifRef = useRef<HTMLDivElement>(null);
   const desktopNotifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
+  const mobileAccountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   function toggleDark() {
@@ -585,8 +586,10 @@ export function Layout() {
         desktopNotifRef.current && !desktopNotifRef.current.contains(e.target as Node);
       if (isOutsideMobile && isOutsideDesktop) setShowNotifications(false);
 
-      if (accountRef.current && !accountRef.current.contains(e.target as Node))
+      if (accountRef.current && !accountRef.current.contains(e.target as Node) &&
+          mobileAccountRef.current && !mobileAccountRef.current.contains(e.target as Node)) {
         setShowAccount(false);
+      }
     }
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -642,6 +645,36 @@ export function Layout() {
                   setShowAllNotifications(true);
                 }}
               />
+            )}
+          </div>
+          <div className="relative ml-2" ref={mobileAccountRef}>
+            {isGuest ? (
+              <Link 
+                to="/login" 
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 text-slate-400 border border-white/10 hover:text-white transition-colors"
+              >
+                 <User size={16} />
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                   setShowAccount(v => !v);
+                   setShowNotifications(false);
+                }}
+                className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white border border-white/10 overflow-hidden shadow-lg"
+              >
+                {(user?.user_metadata?.avatar_url || profile.avatar) ? (
+                  <img src={user?.user_metadata?.avatar_url || profile.avatar} className="w-full h-full object-cover" alt="" />
+                ) : (
+                  <User size={16} />
+                )}
+              </button>
+            )}
+            
+            {showAccount && (
+              <div className="absolute right-0 top-full mt-2 w-56 z-[100]">
+                <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
+              </div>
             )}
           </div>
         </div>

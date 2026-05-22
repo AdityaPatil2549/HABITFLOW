@@ -87,7 +87,9 @@ export function Dashboard() {
           setUserName(p.name);
           setUserAvatar(p.avatar);
         }
-      } catch {}
+      } catch {
+        // Ignore localStorage reading/parsing issues
+      }
     };
     sync();
     window.addEventListener('storage', sync);
