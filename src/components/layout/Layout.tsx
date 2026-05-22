@@ -273,7 +273,7 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
     onClose();
   };
   return (
-    <div className="absolute left-full lg:left-0 top-12 lg:top-auto lg:bottom-12 ml-2 lg:ml-0 w-56 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
+    <div className="w-full rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl">
       {/* Profile header */}
       <div className="px-5 py-4 border-b border-white/5">
         <div className="flex items-center gap-3">
@@ -891,7 +891,9 @@ export function Layout() {
               </div>
             </button>
             {showAccount && (
-              <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
+              <div className="absolute left-0 bottom-full mb-4 w-56 z-[100]">
+                <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
+              </div>
             )}
           </div>
         </div>
