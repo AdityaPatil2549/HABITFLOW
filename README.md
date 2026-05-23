@@ -20,6 +20,7 @@ Best of all? **No account required.** HabitFlow is an offline-first experience�
 
 ### ✅ Conquer Your Tasks
 - **Smart Task Management**: Organize your life with projects, subtasks, and due dates.
+- **Visual Context**: Attach photos to your tasks. HabitFlow automatically compresses them to keep your app blazing fast.
 - **Priority Coding**: Instantly spot what's important with color-coded priorities (Urgent, High, Normal, Low).
 - **Recurring Tasks**: Set it and forget it for tasks you do every day, week, or month.
 
@@ -35,15 +36,20 @@ Best of all? **No account required.** HabitFlow is an offline-first experience�
 
 ### 📊 Understand Your Patterns
 - **Deep Analytics**: View your 365-day activity heatmap and weekly trend charts.
-- **Weekly Review**: Every Sunday, get a personalized, adaptive summary of your week. Find out which habits you crushed and which ones need a little more attention.
+- **AI Coach**: A built-in intelligent coach that gives you daily motivational insights and data-driven pattern recognition.
+- **Weekly Review**: Every Sunday, your AI Coach generates an adaptive summary of your week. Find out which habits you crushed and which ones need a little more attention.
+
+### ☁️ Sync Everywhere
+- **Google Calendar Integration**: Automatically sync your habits and tasks directly into your Google Calendar.
+- **Cloud Backup**: Create an account to seamlessly sync your data across all your devices using Supabase.
 
 ### 🔔 Never Miss a Beat
 - **Smart Warnings**: If a streak is in danger of breaking, HabitFlow will warn you in the evening.
 - **Custom Reminders**: Set specific push notification reminders for individual habits.
 
 ### 🔒 100% Private & Secure
-- **Offline-First**: HabitFlow works without an internet connection.
-- **Your Data is Yours**: All data is stored locally on your device. We don't track you, and we don't store your data on our servers.
+- **Offline-First Architecture**: HabitFlow works flawlessly without an internet connection. Changes are queued and synced only when you go online.
+- **Your Data is Yours**: By default, all data is stored locally on your device in IndexedDB.
 - **Export & Backup**: Easily export your data to JSON for safekeeping, or CSV for your own spreadsheet analysis.
 
 ---
