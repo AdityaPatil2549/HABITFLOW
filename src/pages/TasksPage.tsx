@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -11,13 +11,15 @@ import {
   RotateCcw,
   Target,
   Timer,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
 import { useFocusStore } from '../store/focusStore';
 import type { Task, Priority } from '../types';
 import { format, isToday, isPast } from 'date-fns';
 import { taskSchema } from '../lib/validations';
-import { cn } from '../lib/utils';
+import { cn, compressImage } from '../lib/utils';
 import { useToast } from '../components/common/Toast';
 
 const PRIORITY_CONFIG = [
@@ -61,7 +63,20 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
   const [priority, setPriority] = useState<Priority>(initialTask?.priority ?? 2);
   const [recurring, setRecurring] = useState<Task['recurring']>(initialTask?.recurring ?? 'none');
   const [label, setLabel] = useState(initialTask?.labels?.[0] ?? '');
+  const [imageAttachment, setImageAttachment] = useState(initialTask?.imageAttachment ?? '');
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageUpload(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await compressImage(file, 800, 0.6);
+      setImageAttachment(compressed);
+    } catch (err) {
+      setError('Failed to compress image');
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +91,7 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
       completed: initialTask?.completed ?? false,
       parentId: initialTask?.parentId,
       projectId: initialTask?.projectId,
+      imageAttachment: imageAttachment || undefined,
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0].message);
@@ -105,13 +121,51 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
       />
 
       {/* Description */}
-      <textarea
-        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm outline-none focus:border-brand-500/50 transition-all resize-none"
-        placeholder="Add details (optional)…"
-        rows={2}
-        value={desc}
-        onChange={e => setDesc(e.target.value)}
-      />
+      <div>
+        <textarea
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm outline-none focus:border-brand-500/50 transition-all resize-none"
+          placeholder="Add details (optional)…"
+          rows={2}
+          value={desc}
+          onChange={e => setDesc(e.target.value)}
+        />
+        
+        {/* Image Attachment Preview */}
+        {imageAttachment && (
+          <div className="relative inline-block mt-2">
+            <img 
+              src={imageAttachment} 
+              alt="Attachment preview" 
+              className="h-20 w-auto rounded-lg border border-white/10 object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => setImageAttachment('')}
+              className="absolute -top-2 -right-2 w-6 h-6 bg-slate-800 text-white rounded-full flex items-center justify-center shadow-lg border border-white/10 hover:bg-slate-700 transition-colors"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        )}
+
+        <div className="flex mt-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+          >
+            <ImageIcon size={14} />
+            Add Photo
+          </button>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+        </div>
+      </div>
 
       {/* Priority pills */}
       <div>
@@ -289,6 +343,26 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
             >
               {task.title}
             </p>
+            {task.description && (
+              <p className={cn("text-xs mt-1 leading-relaxed", task.completed ? "text-slate-600" : "text-slate-400")}>
+                {task.description}
+              </p>
+            )}
+            {task.imageAttachment && (
+              <div className="mt-2">
+                <img 
+                  src={task.imageAttachment} 
+                  alt="Attachment" 
+                  className={cn("max-h-32 rounded-lg object-cover border transition-opacity cursor-pointer hover:opacity-80", task.completed ? "border-slate-800 opacity-50 grayscale" : "border-white/10")} 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Open image in a simple new tab/window
+                    const w = window.open();
+                    if (w) w.document.write(`<img src="${task.imageAttachment}" style="max-width:100%;" />`);
+                  }}
+                />
+              </div>
+            )}
             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
               {task.dueDate && (
                 <span

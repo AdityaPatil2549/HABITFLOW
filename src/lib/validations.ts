@@ -40,6 +40,7 @@ export const habitSchema = z
 export const taskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100),
   description: z.string().optional(),
+  imageAttachment: z.string().optional(),
   priority: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
   dueDate: z.string().optional(),
   labels: z.array(z.string()),

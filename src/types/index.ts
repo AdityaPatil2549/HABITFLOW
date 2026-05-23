@@ -72,6 +72,7 @@ export interface Task {
   user_id?: string;
   title: string;
   description?: string;
+  imageAttachment?: string; // Base64 compressed image
   priority: Priority;
   dueDate?: string; // YYYY-MM-DD
   dueTime?: string; // HH:MM
