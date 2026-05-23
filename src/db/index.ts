@@ -52,6 +52,16 @@ class HabitFlowDB extends Dexie {
       shop_purchases: '++id, item_id, purchased_at',
       ai_insights: '++id, type, created_at, read',
     });
+
+    // v5: Drop ai_insights to safely change its primary key
+    this.version(5).stores({
+      ai_insights: null,
+    });
+
+    // v6: Recreate ai_insights with string UUID primary key
+    this.version(6).stores({
+      ai_insights: 'id, type, created_at, read',
+    });
   }
 }
 

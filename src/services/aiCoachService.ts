@@ -16,9 +16,10 @@ function now(): string {
   return new Date().toISOString();
 }
 
-async function generateWeeklySummary(): Promise<AIInsight> {
+async function generateWeeklySummary(): Promise<AIInsight | null> {
   const today = new Date();
   const habits = await db.habits.filter(h => !h.archived).toArray();
+  if (habits.length === 0) return null;
   const logs = await db.habitLogs.toArray();
   const logSet = new Set(logs.map(l => `${l.habitId}|${l.date}`));
 
@@ -73,11 +74,13 @@ async function generateWeeklySummary(): Promise<AIInsight> {
   return insight;
 }
 
-async function generateDailyTip(): Promise<AIInsight> {
+async function generateDailyTip(): Promise<AIInsight | null> {
   const today = new Date();
   const hour = today.getHours();
   const todayStr = format(today, 'yyyy-MM-dd');
   const habits = await db.habits.filter(h => !h.archived).toArray();
+  if (habits.length === 0) return null;
+
   const logs = await db.habitLogs.toArray();
   const logSet = new Set(logs.map(l => `${l.habitId}|${l.date}`));
 
@@ -268,12 +271,20 @@ async function getCoachInsights(): Promise<AIInsight[]> {
   }
 
   // Generate fresh insights
-  const [tip, patterns] = await Promise.all([
+  const isSunday = new Date().getDay() === 0;
+  
+  const [tip, patterns, weekly] = await Promise.all([
     generateDailyTip(),
     detectPatterns(),
+    isSunday ? generateWeeklySummary() : Promise.resolve(null),
   ]);
 
-  return [tip, ...patterns];
+  const results = [];
+  if (tip) results.push(tip);
+  if (weekly) results.push(weekly);
+  results.push(...patterns);
+
+  return results;
 }
 
 async function getRecentInsights(limit = 10): Promise<AIInsight[]> {

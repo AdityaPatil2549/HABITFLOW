@@ -27,7 +27,7 @@ export function AICoachCard() {
     aiCoachService.getCoachInsights().then(data => {
       setInsights(data);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch((err) => { console.error('AICoachError:', err); setLoading(false); });
   }, []);
 
   if (loading) {
