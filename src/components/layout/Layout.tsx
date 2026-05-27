@@ -328,10 +328,12 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
           </button>
         ) : (
           <button
-            onClick={async () => {
+            onClick={() => {
               onClose();
-              await signOut();
-              navigate('/login');
+              toast.confirm('Are you sure you want to sign out?', async () => {
+                await signOut();
+                navigate('/login');
+              }, { confirmLabel: 'Sign Out' });
             }}
             className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
           >
@@ -341,10 +343,10 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
         )}
         <button
           onClick={() => {
+            onClose();
             toast.confirm(
               'This will permanently erase ALL your habits, tasks, and progress from this device. This cannot be undone. Are you sure?',
               async () => {
-                onClose();
                 const { db } = await import('../../db');
                 await Promise.all([
                   db.habits.clear(),
@@ -827,8 +829,10 @@ export function Layout() {
             ) : (
               <button
                 onClick={() => {
-                  signOut();
-                  navigate('/login');
+                  toast.confirm('Are you sure you want to sign out?', async () => {
+                    await signOut();
+                    navigate('/login');
+                  }, { confirmLabel: 'Sign Out' });
                 }}
                 title={`Synced as ${user?.email}`}
                 className="p-2.5 rounded-xl text-emerald-400 hover:bg-white/5 transition-colors"

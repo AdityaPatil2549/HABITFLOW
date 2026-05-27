@@ -471,9 +471,9 @@ export function TasksPage() {
     })
     .sort((a, b) => a.priority - b.priority || (a.dueDate ?? '').localeCompare(b.dueDate ?? ''));
 
-  const doneToday = tasks.filter(t => t.completed && t.completedAt?.startsWith(today)).length;
-  const totalToday = tasks.filter(t => t.dueDate === today).length;
-  const urgent = tasks.filter(t => !t.completed && t.priority === 0).length;
+  const doneToday = tasks.filter(t => !t.parentId && t.completed && t.completedAt?.startsWith(today)).length;
+  const totalToday = tasks.filter(t => !t.parentId && !t.completed && t.dueDate && t.dueDate <= today).length;
+  const urgent = tasks.filter(t => !t.parentId && !t.completed && t.priority === 0).length;
 
   return (
     <div className="space-y-6">

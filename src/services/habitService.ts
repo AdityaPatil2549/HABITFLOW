@@ -98,6 +98,12 @@ export const habitService = {
     note?: string,
     isFrozen?: boolean
   ): Promise<HabitLog> {
+    const habit = await db.habits.get(habitId);
+    if (!habit) throw new Error('Habit not found');
+    if (!isFrozen && !habitService.isScheduledForDate(habit, date)) {
+      throw new Error(`Habit not scheduled for ${date}`);
+    }
+
     // Upsert: delete existing log for this day first
     await db.habitLogs
       .where('habitId')
