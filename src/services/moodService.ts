@@ -49,5 +49,4 @@ export const moodService = {
     await db.moods.delete(id);
     syncService.queuePush('moods', { id }, 'delete').catch(console.error);
   },
-  },
 };

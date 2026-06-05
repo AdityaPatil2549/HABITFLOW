@@ -65,8 +65,7 @@ export function TiltCard({
       ref={ref}
       className={`tilt-card-wrapper ${borderGlow ? 'tilt-border-glow' : ''} ${className}`}
       style={{
-        perspective: 800,
-        transformStyle: 'preserve-3d',
+        perspective: 1200,
         ...style,
       }}
       onMouseMove={handleMouseMove}
@@ -79,7 +78,6 @@ export function TiltCard({
           rotateX,
           rotateY,
           scale: isHovering ? scale : 1,
-          transformStyle: 'preserve-3d',
           width: '100%',
           height: '100%',
           position: 'relative',
