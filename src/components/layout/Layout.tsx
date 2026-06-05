@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
+import { cn } from '../../lib/utils';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { useFocusStore } from '../../store/focusStore';
 import { useAuthStore } from '../../store/authStore';
@@ -652,7 +653,20 @@ export function Layout() {
             className="h-7 sm:h-9 w-auto max-w-[140px] sm:max-w-[180px] object-contain"
           />
         </NavLink>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <button
+            onClick={() => {
+              if (focusActive) stopFocus();
+              else openPicker();
+            }}
+            aria-label="Toggle Focus Mode"
+            className={cn(
+              'flex items-center justify-center p-1.5 rounded-full transition-all',
+              focusActive ? 'text-rose-400 bg-rose-400/10' : 'text-slate-400 hover:text-brand-400 hover:bg-brand-500/10'
+            )}
+          >
+            <Timer size={22} className={focusActive ? 'animate-pulse' : ''} />
+          </button>
           <button
             onClick={() => setShowSearch(true)}
             className="text-slate-400 hover:text-white transition-colors"
@@ -955,19 +969,7 @@ export function Layout() {
         >
           <Plus size={24} className="text-white" />
         </button>
-        {/* Focus button - mobile */}
-        <button
-          onClick={() => {
-            if (focusActive) stopFocus();
-            else openPicker();
-          }}
-          className={`flex flex-col items-center gap-1 transition-colors ${
-            focusActive ? 'text-red-400' : 'text-slate-500 hover:text-brand-400'
-          }`}
-        >
-          <Timer size={20} className={focusActive ? 'animate-pulse' : ''} />
-          <span className="text-[10px] font-bold">{focusActive ? 'End' : 'Focus'}</span>
-        </button>
+
         {[
           { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
           { to: '/analytics', icon: BarChart2, label: 'Stats' },
