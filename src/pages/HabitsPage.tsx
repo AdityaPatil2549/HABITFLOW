@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { TiltCard } from '../components/ui/TiltCard';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1213,7 +1212,6 @@ export function HabitsPage() {
                         </div>
                         <div className="pl-11">
                           <Scroll3DReveal delay={index * 0.05}>
-                          <TiltCard>
                             <HabitCard
                               habit={h}
                               onLogClick={handleLogClick}
@@ -1228,7 +1226,6 @@ export function HabitsPage() {
                               }
                               onFreeze={handleUseFreeze}
                             />
-                          </TiltCard>
                           </Scroll3DReveal>
                         </div>
                       </div>
@@ -1266,14 +1263,12 @@ export function HabitsPage() {
               <div className="grid grid-cols-1 gap-3 opacity-70">
                 {unscheduled.map((h, i) => (
                   <Scroll3DReveal key={h.id} delay={i * 0.05}>
-                  <TiltCard>
                     <HabitCard
                       habit={h}
                       onLogClick={handleLogClick}
                       onEdit={setEditingHabit}
                       onDelete={deleteHabit}
                     />
-                  </TiltCard>
                   </Scroll3DReveal>
                 ))}
               </div>

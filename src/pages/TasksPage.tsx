@@ -21,7 +21,6 @@ import { format, isToday, isPast } from 'date-fns';
 import { taskSchema } from '../lib/validations';
 import { cn, compressImage } from '../lib/utils';
 import { useToast } from '../components/common/Toast';
-import { TiltCard } from '../components/ui/TiltCard';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { MagneticButton } from '../components/ui/MagneticButton';
 import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
@@ -302,7 +301,6 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
 
   return (
     <Scroll3DReveal>
-    <TiltCard>
     <div className={cn('relative')} style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : 0 }}>
       {/* Subtask connector line */}
       {depth > 0 && (
@@ -467,7 +465,6 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
         </AnimatePresence>
       </motion.div>
     </div>
-    </TiltCard>
     </Scroll3DReveal>
   );
 }
