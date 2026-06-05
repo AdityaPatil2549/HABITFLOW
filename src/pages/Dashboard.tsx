@@ -34,6 +34,8 @@ import { FloatingOrbs } from '../components/ui/FloatingOrbs';
 import { DailyQuote } from '../components/ui/DailyQuote';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
+import { SpotlightCard } from '../components/ui/SpotlightCard';
+import { TiltCard } from '../components/ui/TiltCard';
 
 const PROFILE_KEY = 'habitflow_profile';
 
@@ -195,70 +197,60 @@ export function Dashboard() {
       ` L${chartPoints[chartPoints.length - 1].x},110 Z`
     : '';
 
-  return (
-    <motion.div className="space-y-6" variants={container} initial="hidden" animate="show">
       <FloatingOrbs />
-      {/* ── Header ── */}
+      
+      {/* ── Massive Awwwards Header ── */}
       <motion.div
         variants={item}
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-white/5 pb-4 sm:pb-6"
+        className="flex flex-col gap-6 sm:gap-8 pb-10"
       >
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center shadow-xl shadow-brand-500/20 border-2 border-white/10 flex-shrink-0">
-            {userAvatar ? (
-              <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xl sm:text-2xl font-black text-white">
-                {userName[0]?.toUpperCase()}
-              </span>
-            )}
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight truncate text-gradient">
-              {greeting}, {userName} 👋
-            </h1>
-            <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-              <span className="truncate">
-                {done === scheduled.length && scheduled.length > 0
-                  ? '🎉 All habits done! Outstanding work.'
-                  : done > 0
-                    ? `${done} of ${scheduled.length} habits logged today. Keep going!`
-                    : scheduled.length > 0
-                      ? `${scheduled.length} habits scheduled — let's get started!`
-                      : 'No habits scheduled — add one to begin!'}
-              </span>
-            </p>
-          </div>
+        <div className="flex flex-col gap-2 relative">
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-none relative z-10 drop-shadow-2xl">
+            {greeting}, <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-br from-brand-400 via-brand-500 to-indigo-600">
+              {userName}
+            </span>
+          </h1>
+          
+          <p className="text-slate-400 text-lg sm:text-xl font-medium mt-4 max-w-xl">
+            {done === scheduled.length && scheduled.length > 0
+              ? '🎉 Incredible. You have conquered all habits for today.'
+              : done > 0
+                ? `${done} of ${scheduled.length} habits logged. Maintain the momentum.`
+                : scheduled.length > 0
+                  ? `You have ${scheduled.length} targets locked in for today.`
+                  : 'Your canvas is empty. Plot your trajectory.'}
+          </p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/habits')}
+            className="group relative flex items-center gap-3 px-6 py-4 rounded-2xl bg-white text-slate-950 font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.4)]"
+          >
+            <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+            <span>Engage Habit</span>
+          </button>
+          
           {xpStats && (
-            <div className="hidden sm:flex flex-col items-end gap-1 mr-4">
-              <div className="flex items-center gap-1.5">
-                <Zap size={12} className="text-amber-400" />
-                <span className="text-xs font-bold text-white">{userXP?.total ?? 0} XP</span>
-                <span className="text-[10px] text-slate-500">· Lv.{xpStats.numericLevel}</span>
+            <div className="flex flex-col items-start gap-1 ml-4 px-6 py-3 rounded-2xl vision-panel backdrop-blur-xl border border-white/10">
+              <div className="flex items-center gap-2">
+                <Zap size={16} className="text-amber-400" />
+                <span className="text-base font-bold text-white tracking-wide">{userXP?.total ?? 0} XP</span>
               </div>
-              <div className="w-28 h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div className="w-32 h-1.5 rounded-full bg-black/50 overflow-hidden">
                 <div
-                  className="xp-bar-fill h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
+                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-700"
                   style={{ width: `${xpStats.levelProgress}%` }}
                 />
               </div>
             </div>
           )}
-          <button
-            onClick={() => navigate('/habits')}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-tr from-brand-500 to-brand-600 text-white text-sm font-bold shadow-lg shadow-brand-500/20 active:scale-95 transition-all"
-          >
-            <Plus size={16} /> <span className="hidden sm:inline">New Habit</span>
-            <span className="sm:hidden">New</span>
-          </button>
         </div>
       </motion.div>
 
       {/* ── Daily Quote ── */}
-      <motion.div variants={item}>
+      <motion.div variants={item} className="mb-12">
         <DailyQuote />
       </motion.div>
 
@@ -266,44 +258,41 @@ export function Dashboard() {
       {atRiskHabits.length > 0 && (
         <motion.div
           variants={item}
-          className="flex items-center gap-4 px-5 py-4 rounded-2xl border border-amber-500/25 bg-amber-500/8"
-          style={{ boxShadow: '0 0 24px rgba(245,158,11,0.08)' }}
+          className="flex flex-col sm:flex-row sm:items-center gap-4 px-6 py-5 rounded-[2rem] border border-red-500/30 bg-red-500/10 backdrop-blur-2xl shadow-[0_0_50px_-10px_rgba(239,68,68,0.3)] mb-12"
         >
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle size={20} className="text-amber-400" />
+          <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center flex-shrink-0 animate-pulse">
+            <AlertTriangle size={24} className="text-red-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-amber-300">
+            <h3 className="text-lg font-black text-red-400 tracking-tight">
               {atRiskHabits.length === 1
-                ? `⚠️ "${atRiskHabits[0].name}" streak is at risk tonight!`
-                : `⚠️ ${atRiskHabits.length} streaks at risk — complete them before midnight!`}
-            </p>
-            <p className="text-xs text-amber-500/80 mt-0.5">
+                ? `Critical: "${atRiskHabits[0].name}" streak is at risk!`
+                : `Critical: ${atRiskHabits.length} streaks at risk today!`}
+            </h3>
+            <p className="text-sm font-medium text-red-400/80 mt-1">
               {atRiskHabits.map(h => `${h.name} (${h.streak.current}d)`).join(' · ')}
             </p>
           </div>
           <button
             onClick={() => navigate('/habits')}
-            className="flex-shrink-0 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap"
+            className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 font-bold hover:bg-red-500/30 transition-colors whitespace-nowrap border border-red-500/30"
           >
-            Go log →
+            Avert Crisis →
           </button>
         </motion.div>
       )}
 
       {/* ── AI Coach ── */}
-      <motion.div variants={item}>
+      <motion.div variants={item} className="mb-12">
         <AICoachCard />
       </motion.div>
 
       {/* ── Bento Grid ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Progress Ring Card */}
-        <Scroll3DReveal delay={0.1}>
-        
-        <motion.div
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 pb-20">
+        <TiltCard className="lg:col-span-1 h-full">
+        <SpotlightCard
           variants={item}
-          className="lg:col-span-1 glass-card rounded-3xl p-4 sm:p-6 relative overflow-hidden group"
+          className="h-full rounded-[2.5rem] p-6 sm:p-10 relative"
         >
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
             <Trophy size={100} className="text-brand-400" />
@@ -396,14 +385,13 @@ export function Dashboard() {
               </p>
             </div>
           </div>
-        </motion.div>
-        
-        </Scroll3DReveal>
+        </SpotlightCard>
+        </TiltCard>
 
         {/* REAL 7-Day Chart */}
-        <Scroll3DReveal delay={0.2}>
-        
-        <motion.div variants={item} className="lg:col-span-2 glass-card rounded-3xl p-4 sm:p-6">
+        <Scroll3DReveal delay={0.2} className="lg:col-span-2">
+        <TiltCard className="h-full">
+        <SpotlightCard variants={item} className="h-full rounded-[2.5rem] p-6 sm:p-10">
           <div className="flex items-start justify-between mb-4 sm:mb-6">
             <div>
               <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
@@ -520,16 +508,16 @@ export function Dashboard() {
               ))}
             </div>
           )}
-        </motion.div>
-        
+        </SpotlightCard>
+        </TiltCard>
         </Scroll3DReveal>
       </div>
 
-      {/* ── Today's Tasks & Habits Row ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      {/* ── Today's Tasks ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
         {/* Due Tasks */}
-        
-        <motion.div variants={item} className="glass-card rounded-3xl p-6">
+        <TiltCard className="w-full h-full">
+        <SpotlightCard variants={item} className="h-full rounded-[2.5rem] p-6 sm:p-10">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <CheckCircle2 size={16} className="text-brand-400" /> Due & Overdue
@@ -603,12 +591,12 @@ export function Dashboard() {
               </button>
             )}
           </div>
-        </motion.div>
-        
+        </SpotlightCard>
+        </TiltCard>
 
         {/* Habit Checklist */}
-        
-        <motion.div variants={item} className="glass-card rounded-3xl p-6">
+        <TiltCard className="w-full">
+        <SpotlightCard variants={item} className="rounded-[2.5rem] p-6 sm:p-10">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <Flame size={16} className="text-orange-500" /> Active Habits
@@ -726,13 +714,15 @@ export function Dashboard() {
               + {scheduled.length - 6} more habits
             </button>
           )}
-        </motion.div>
+        </SpotlightCard>
+        </TiltCard>
         
       </div>
 
       {/* ── Daily Mood Check-in ── */}
       <Scroll3DReveal delay={0.3}>
-          <motion.div variants={item} className="glass-card rounded-2xl p-4 sm:p-5">
+        <TiltCard>
+          <SpotlightCard variants={item} className="rounded-[2.5rem] p-6 sm:p-10">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
                 <Smile size={18} className="text-brand-400" />
@@ -807,7 +797,8 @@ export function Dashboard() {
                 );
               })}
             </div>
-          </motion.div>
+          </SpotlightCard>
+        </TiltCard>
       </Scroll3DReveal>
     </motion.div>
   );

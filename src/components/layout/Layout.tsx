@@ -38,6 +38,10 @@ import {
   CloudOff,
   Users,
 } from 'lucide-react';
+import { SearchOverlay } from './SearchOverlay';
+import { AccountDropdown } from './AccountDropdown';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { CursorTrail } from '../ui/CursorTrail';
 
 // ── Notification panel ─────────────────────────────────────────
 // Demo notifications — will be replaced with real event-driven notifications in a future update
@@ -640,8 +644,9 @@ export function Layout() {
       : 'text-slate-400 px-5 py-2.5 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
 
   return (
-    <div className="min-h-screen bg-transparent flex">
+    <div className="min-h-screen bg-transparent flex cursor-none sm:cursor-auto">
       <div className="noise-overlay" />
+      <CursorTrail />
       
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 glass-card-3d rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
