@@ -62,6 +62,8 @@ async function computeWeekChart(
   );
 }
 
+export default Dashboard;
+
 export function Dashboard() {
   const navigate = useNavigate();
   const { habits, loadHabits, logHabit, unlogHabit } = useHabitStore();

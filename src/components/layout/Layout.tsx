@@ -943,51 +943,54 @@ export function Layout() {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-950 border-t border-white/8 px-4 pb-[env(safe-area-inset-bottom)] h-[calc(4rem+env(safe-area-inset-bottom))] flex items-center justify-between z-50">
-        {[
-          { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
-          { to: '/habits', icon: Target, label: 'Habits' },
-        ].map(l => {
-          const Icon = l.icon;
-          return (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-1 ${isActive ? 'text-brand-400' : 'text-slate-500'}`
-              }
-            >
-              <Icon size={20} />
-              <span className="text-[10px] font-bold">{l.label}</span>
-            </NavLink>
-          );
-        })}
-        <button
-          onClick={() => setQuickAddOpen(true)}
-          aria-label="Create new entry"
-          className="relative z-[60] -mt-8 w-14 h-14 cursor-pointer bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-xl shadow-brand-500/40 border-4 border-slate-950 active:scale-95 transition-transform"
-        >
-          <Plus size={24} className="text-white" />
-        </button>
+      <nav className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50 pointer-events-none">
+        <div className="glass-card rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] pointer-events-auto">
+          {[
+            { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
+            { to: '/habits', icon: Target, label: 'Habits' },
+          ].map((l, i) => {
+            const Icon = l.icon;
+            return (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                className={({ isActive }) =>
+                  `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
+                }
+              >
+                <Icon size={22} className={i === 0 ? "mr-2" : "mr-6"} />
+              </NavLink>
+            );
+          })}
 
-        {[
-          { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
-          { to: '/analytics', icon: BarChart2, label: 'Stats' },
-        ].map(l => {
-          const Icon = l.icon;
-          return (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-1 ${isActive ? 'text-brand-400' : 'text-slate-500'}`
-              }
+          <div className="relative w-full h-full flex items-center justify-center">
+            <button
+              onClick={() => setQuickAddOpen(true)}
+              aria-label="Create new entry"
+              className="absolute -top-7 z-[60] w-[3.5rem] h-[3.5rem] cursor-pointer button-3d rounded-full flex items-center justify-center border-4 border-slate-900"
             >
-              <Icon size={20} />
-              <span className="text-[10px] font-bold">{l.label}</span>
-            </NavLink>
-          );
-        })}
+              <Plus size={26} className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" />
+            </button>
+          </div>
+
+          {[
+            { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
+            { to: '/analytics', icon: BarChart2, label: 'Stats' },
+          ].map((l, i) => {
+            const Icon = l.icon;
+            return (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                className={({ isActive }) =>
+                  `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
+                }
+              >
+                <Icon size={22} className={i === 0 ? "ml-6" : "ml-2"} />
+              </NavLink>
+            );
+          })}
+        </div>
       </nav>
 
       {/* ── Overlays ── */}
