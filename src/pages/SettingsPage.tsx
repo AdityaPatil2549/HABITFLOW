@@ -442,9 +442,9 @@ export function SettingsPage() {
                 <p className="text-xs">Sign in to sync your habits to your calendar.</p>
               </div>
             </div>
-            <Link to="/login" className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-colors">
+            <button onClick={() => useAuthStore.getState().signInWithGoogle()} className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-colors">
               Sign In
-            </Link>
+            </button>
           </div>
         ) : !isCalendarConnected ? (
           <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -452,9 +452,9 @@ export function SettingsPage() {
               <p className="font-bold text-amber-400">Google Calendar Disconnected</p>
               <p className="text-xs text-amber-400/70">Your Google session expired or calendar access was denied. Please sign in again.</p>
             </div>
-            <Link to="/login" className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-colors whitespace-nowrap">
+            <button onClick={() => useAuthStore.getState().signInWithGoogle()} className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-colors whitespace-nowrap">
               Reconnect
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="space-y-4">
