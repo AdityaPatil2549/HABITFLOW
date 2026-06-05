@@ -661,8 +661,8 @@ export function Layout() {
             }}
             aria-label="Toggle Focus Mode"
             className={cn(
-              'flex items-center justify-center p-1.5 rounded-full transition-all',
-              focusActive ? 'text-rose-400 bg-rose-400/10' : 'text-slate-400 hover:text-brand-400 hover:bg-brand-500/10'
+              'transition-colors',
+              focusActive ? 'text-rose-400' : 'text-slate-400 hover:text-white'
             )}
           >
             <Timer size={22} className={focusActive ? 'animate-pulse' : ''} />
