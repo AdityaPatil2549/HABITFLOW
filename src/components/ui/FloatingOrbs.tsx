@@ -111,7 +111,7 @@ export function FloatingOrbs() {
           powerPreference: 'low-power',
         }}
         style={{ background: 'transparent', pointerEvents: 'none' }}
-        frameloop="demand"
+        frameloop="always"
       >
         <OrbScene />
       </Canvas>
