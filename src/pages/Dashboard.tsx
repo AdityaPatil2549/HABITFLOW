@@ -197,6 +197,8 @@ export function Dashboard() {
       ` L${chartPoints[chartPoints.length - 1].x},110 Z`
     : '';
 
+  return (
+    <motion.div className="space-y-6" variants={container} initial="hidden" animate="show">
       <FloatingOrbs />
       
       {/* ── Massive Awwwards Header ── */}
