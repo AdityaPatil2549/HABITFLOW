@@ -2,6 +2,7 @@ import { db } from '@/db';
 import type { Mood, MoodScore } from '@/types';
 import { nanoid } from 'nanoid';
 import { format } from 'date-fns';
+import { syncService } from './syncService';
 
 export const moodService = {
   async getAllMoods(): Promise<Mood[]> {
@@ -25,8 +26,9 @@ export const moodService = {
     if (existing) {
       existing.score = score;
       if (note !== undefined) existing.note = note;
-      existing.createdAt = new Date().toISOString(); // update timestamp
+      existing.updated_at = new Date().toISOString(); // update timestamp
       await db.moods.put(existing);
+      syncService.queuePush('moods', existing, 'upsert').catch(console.error);
       return existing;
     }
 
@@ -36,12 +38,16 @@ export const moodService = {
       score,
       note,
       createdAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     await db.moods.add(newMood);
+    syncService.queuePush('moods', newMood, 'upsert').catch(console.error);
     return newMood;
   },
 
   async deleteMood(id: string): Promise<void> {
     await db.moods.delete(id);
+    syncService.queuePush('moods', { id }, 'delete').catch(console.error);
+  },
   },
 };

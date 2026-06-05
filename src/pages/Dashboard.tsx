@@ -729,74 +729,86 @@ export function Dashboard() {
       </div>
 
       {/* ── Daily Mood Check-in ── */}
-      <motion.div variants={item} className="glass-card rounded-2xl p-4 sm:p-5">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <div className="flex items-center gap-2">
-            <Smile size={18} className="text-brand-400" />
-            <h2 className="text-xs sm:text-sm font-bold text-white">How are you feeling today?</h2>
-          </div>
-          {todayMood && <span className="text-xs text-slate-500 font-medium">Logged ✔</span>}
-        </div>
-        <div className="grid grid-cols-5 gap-1">
-          {(
-            [
-              { score: 1, emoji: '😞', label: 'Rough', color: '#f43f5e' },
-              { score: 2, emoji: '😕', label: 'Meh', color: '#fb923c' },
-              { score: 3, emoji: '😐', label: 'Okay', color: '#facc15' },
-              { score: 4, emoji: '😊', label: 'Good', color: '#4ade80' },
-              { score: 5, emoji: '😄', label: 'Great', color: '#10b981' },
-            ] as { score: MoodScore; emoji: string; label: string; color: string }[]
-          ).map(({ score, emoji, label, color }) => {
-            const isSelected = todayMood?.score === score;
-            return (
-              <button
-                key={score}
-                disabled={savingMood}
-                onClick={async () => {
-                  setSavingMood(true);
-                  await logMood(score);
-                  setSavingMood(false);
-                }}
-                className="flex flex-col items-center group relative py-2"
-              >
-                <div
-                  className={cn(
-                    'mood-ring mb-2 sm:mb-3',
-                    isSelected && 'active animate-mood-bounce'
-                  )}
-                  style={{ '--ring-color': color + '40' } as any}
-                >
-                  <span
-                    className={cn(
-                      'text-2xl sm:text-3xl transition-all duration-300',
-                      isSelected
-                        ? 'scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
-                        : 'grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110'
-                    )}
+      <Scroll3DReveal delay={0.3}>
+        <TiltCard borderGlow>
+          <motion.div variants={item} className="glass-card rounded-2xl p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="flex items-center gap-2">
+                <Smile size={18} className="text-brand-400" />
+                <h2 className="text-xs sm:text-sm font-bold text-white">How are you feeling today?</h2>
+              </div>
+              {todayMood && <span className="text-xs text-slate-500 font-medium">Logged ✔</span>}
+            </div>
+            <div className="grid grid-cols-5 gap-1">
+              {(
+                [
+                  { score: 1, emojiUrl: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f61e/512.webp', label: 'Rough', color: '#f43f5e' },
+                  { score: 2, emojiUrl: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f615/512.webp', label: 'Meh', color: '#fb923c' },
+                  { score: 3, emojiUrl: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f610/512.webp', label: 'Okay', color: '#facc15' },
+                  { score: 4, emojiUrl: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f60a/512.webp', label: 'Good', color: '#4ade80' },
+                  { score: 5, emojiUrl: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f604/512.webp', label: 'Great', color: '#10b981' },
+                ] as { score: MoodScore; emojiUrl: string; label: string; color: string }[]
+              ).map(({ score, emojiUrl, label, color }) => {
+                const isSelected = todayMood?.score === score;
+                return (
+                  <button
+                    key={score}
+                    disabled={savingMood}
+                    onClick={async () => {
+                      setSavingMood(true);
+                      try {
+                        await logMood(score);
+                      } finally {
+                        setSavingMood(false);
+                      }
+                    }}
+                    className="flex flex-col items-center group relative py-2 z-10"
                   >
-                    {emoji}
-                  </span>
-                  {isSelected && (
-                    <motion.div
-                      layoutId="mood-glow"
-                      className="absolute inset-0 rounded-full blur-md -z-10"
-                      style={{ background: color + '30' }}
-                    />
-                  )}
-                </div>
-                <span
-                  className={cn(
-                    'text-[10px] font-bold tracking-tight transition-colors',
-                    isSelected ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'
-                  )}
-                >
-                  {label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </motion.div>
+                    <div
+                      className={cn(
+                        'mood-ring mb-2 sm:mb-3 relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center transition-transform duration-500',
+                        isSelected && 'active animate-mood-bounce'
+                      )}
+                      style={{ '--ring-color': color + '40' } as any}
+                    >
+                      {isSelected && (
+                        <motion.div
+                          layoutId="mood-glow"
+                          className="absolute inset-0 rounded-full blur-xl"
+                          style={{ background: color + '50' }}
+                        />
+                      )}
+                      <img
+                        src={emojiUrl}
+                        alt={label}
+                        className={cn(
+                          'relative z-10 w-10 h-10 sm:w-12 sm:h-12 object-contain transition-all duration-300',
+                          isSelected
+                            ? 'scale-110 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]'
+                            : 'saturate-0 opacity-40 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-110 group-hover:drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] group-active:scale-95'
+                        )}
+                        style={
+                          isSelected
+                            ? { filter: `drop-shadow(0 0 16px ${color}80)` }
+                            : {}
+                        }
+                      />
+                    </div>
+                    <span
+                      className={cn(
+                        'text-[10px] sm:text-xs font-bold tracking-tight transition-colors relative z-10',
+                        isSelected ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'
+                      )}
+                    >
+                      {label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        </TiltCard>
+      </Scroll3DReveal>
     </motion.div>
   );
 }
