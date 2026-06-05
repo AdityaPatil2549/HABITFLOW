@@ -38,9 +38,6 @@ import {
   CloudOff,
   Users,
 } from 'lucide-react';
-import { SearchOverlay } from './SearchOverlay';
-import { AccountDropdown } from './AccountDropdown';
-import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { CursorTrail } from '../ui/CursorTrail';
 
 // ── Notification panel ─────────────────────────────────────────
