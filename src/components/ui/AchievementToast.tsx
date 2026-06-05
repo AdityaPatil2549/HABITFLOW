@@ -144,7 +144,7 @@ interface QueuedAchievement {
   type: 'milestone' | 'badge' | 'level_up';
 }
 
-let achievementQueue: QueuedAchievement[] = [];
+const achievementQueue: QueuedAchievement[] = [];
 let showCallback: ((a: QueuedAchievement | null) => void) | null = null;
 
 export function queueAchievement(achievement: Omit<QueuedAchievement, 'id'>) {
@@ -171,7 +171,7 @@ export function useAchievementToast() {
     showCallback = setCurrent;
     // Show any queued achievement
     if (achievementQueue.length > 0) {
-      setCurrent(achievementQueue[0]);
+      setTimeout(() => setCurrent(achievementQueue[0]), 0);
     }
     return () => { showCallback = null; };
   }, []);

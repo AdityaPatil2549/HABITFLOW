@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { nlpParserService } from '@/services/nlpParserService';
 import type { ParsedHabitIntent, Habit } from '@/types';
-import { Wand2, Clock, Calendar, Target, Tag, Check, X } from 'lucide-react';
+import { Wand2, Clock, Calendar, Target, Tag, Check, X, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -31,6 +31,50 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [hasRecognition, setHasRecognition] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    // Initialize Web Speech API
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setInput(transcript);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      setTimeout(() => setHasRecognition(true), 0);
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      setInput('');
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
 
   const parsed = useMemo<ParsedHabitIntent | null>(() => {
     if (input.trim().length < 3) return null;
@@ -85,16 +129,27 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
       </div>
 
       {/* Input */}
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-3 relative">
         <input
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder='Try: "Read 20 pages every night at 9 PM"'
           autoFocus
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/40 transition-all"
+          className="w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/40 transition-all"
           onKeyDown={e => { if (e.key === 'Enter' && parsed) handleCreate(); }}
         />
+        {hasRecognition && (
+          <button
+            onClick={toggleListening}
+            className={`absolute right-6 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all ${
+              isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'hover:bg-white/10 text-slate-400 hover:text-white'
+            }`}
+            title={isListening ? 'Stop listening' : 'Start listening'}
+          >
+            <Mic size={16} />
+          </button>
+        )}
       </div>
 
       {/* Preview */}

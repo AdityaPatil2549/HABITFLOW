@@ -474,19 +474,17 @@ function TrendLine({ habits }: { habits: any[] }) {
 
 // ─── 30-day Mood Trend ─────────────────────────────────────────
 function MoodTrend({ moods }: { moods: any[] }) {
-  const [data, setData] = useState<any[]>([]);
-  useEffect(() => {
+  const data = useMemo(() => {
     const days = Array.from({ length: 30 }, (_, i) =>
       format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
     );
-    const rows = days.map(date => {
+    return days.map(date => {
       const moodLog = moods.find(m => m.date === date);
       return {
         date: date.slice(5),
         mood: moodLog ? moodLog.score : null,
       };
     });
-    setData(rows);
   }, [moods]);
 
   return (

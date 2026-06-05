@@ -1,5 +1,5 @@
 import confetti from 'canvas-confetti';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { motion, useSpring, useMotionValue, animate } from 'framer-motion';
 
 /**
@@ -117,18 +117,25 @@ export function CompletionPulse({
  * Rising particle effect — small glowing dots that float upward and fade.
  */
 export function RisingParticles({ active, color = '#6366f1' }: { active: boolean; color?: string }) {
+  const [particles] = useState(() => {
+    return Array.from({ length: 6 }).map(() => ({
+      x: `${20 + Math.random() * 60}%`,
+      duration: 1 + Math.random() * 0.6,
+    }));
+  });
+
   if (!active) return null;
 
   return (
     <div className="rising-particles-container" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 20 }}>
-      {Array.from({ length: 6 }).map((_, i) => (
+      {particles.map((p, i) => (
         <motion.div
           key={i}
           className="rising-particle"
           initial={{
             opacity: 0.8,
             scale: 0.5,
-            x: `${20 + Math.random() * 60}%`,
+            x: p.x,
             y: '80%',
           }}
           animate={{
@@ -137,7 +144,7 @@ export function RisingParticles({ active, color = '#6366f1' }: { active: boolean
             y: '-20%',
           }}
           transition={{
-            duration: 1 + Math.random() * 0.6,
+            duration: p.duration,
             delay: i * 0.08,
             ease: 'easeOut',
           }}

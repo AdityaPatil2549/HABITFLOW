@@ -10,10 +10,14 @@ class NotificationService {
     if (this.checkInterval) return;
 
     // Check every minute
-    this.checkInterval = window.setInterval(() => this.checkReminders(), 60_000);
+    this.checkInterval = window.setInterval(() => {
+      this.checkReminders();
+      this.checkSmartNotifications();
+    }, 60_000);
 
     // Initial check
     this.checkReminders();
+    this.checkSmartNotifications();
   }
 
   stop() {
@@ -79,13 +83,85 @@ class NotificationService {
     }
   }
 
-  private sendNotification(habitName: string, _icon: string) {
-    new Notification(`Time for your habit: ${habitName}`, {
-      body: `Don't forget to ${habitName.toLowerCase()} to keep your streak!`,
-      icon: '/pwa-192x192.png',
-      badge: '/pwa-192x192.png',
-      silent: false,
+  private async checkSmartNotifications() {
+    try {
+      const settings = await getOrCreateSettings();
+      if (!settings.notificationsEnabled) return;
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+      const now = new Date();
+      const today = format(now, 'yyyy-MM-dd');
+      const currentHour = now.getHours();
+      
+      const habits = await db.habits.filter(h => !h.archived).toArray();
+      if (habits.length === 0) return;
+
+      // 1. Morning Briefing (Between 7 AM and 11 AM)
+      const briefingKey = `morning-briefing-${today}`;
+      if (currentHour >= 7 && currentHour <= 11 && !this.notifiedToday.has(briefingKey)) {
+        const pending = await this.getPendingHabitsForToday(habits, today);
+        if (pending.length > 0) {
+          this.sendNotification(
+            `Good morning! You have ${pending.length} habits to complete today.`, 
+            '🌅'
+          );
+          this.notifiedToday.add(briefingKey);
+        }
+      }
+
+      // 2. Streak Saver (Between 6 PM and 11 PM)
+      const streakSaverKey = `streak-saver-${today}`;
+      if (currentHour >= 18 && currentHour <= 23 && !this.notifiedToday.has(streakSaverKey)) {
+        const pending = await this.getPendingHabitsForToday(habits, today);
+        const atRisk = pending.find(h => h.streak.current >= 3);
+        
+        if (atRisk) {
+          this.sendNotification(
+            `You're about to lose your ${atRisk.streak.current}-day "${atRisk.name}" streak! 1 hour left.`,
+            '🚨'
+          );
+          this.notifiedToday.add(streakSaverKey);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check smart notifications:', error);
+    }
+  }
+
+  private async getPendingHabitsForToday(habits: any[], today: string) {
+    const logs = await db.habitLogs.where('date').equals(today).toArray();
+    const currentDay = new Date().getDay();
+
+    return habits.filter(habit => {
+      // Check frequency days
+      if (habit.frequency?.type === 'specific_days' && !habit.frequency.days?.includes(currentDay)) {
+        return false;
+      }
+      
+      const log = logs.find(l => l.habitId === habit.id);
+      if (!log) return true;
+      return log.value < (habit.type === 'boolean' ? 1 : habit.targetValue);
     });
+  }
+
+  private sendNotification(title: string, _icon: string) {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(reg => {
+        if (reg && reg.showNotification) {
+          reg.showNotification(title, {
+            icon: '/pwa-192x192.png',
+            badge: '/pwa-192x192.png',
+            silent: false,
+          });
+        }
+      });
+    } else {
+      new Notification(title, {
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        silent: false,
+      });
+    }
   }
 
   // Used to test the functionality from the settings page

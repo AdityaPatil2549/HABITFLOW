@@ -491,7 +491,14 @@ export function TasksPage() {
       if (view === 'Completed') return t.completed;
       return !t.completed;
     })
-    .sort((a, b) => a.priority - b.priority || (a.dueDate ?? '').localeCompare(b.dueDate ?? ''));
+    .sort((a, b) => {
+      if (view === 'Completed') {
+        const dateA = a.completedAt ?? '';
+        const dateB = b.completedAt ?? '';
+        return dateB.localeCompare(dateA);
+      }
+      return a.priority - b.priority || (a.dueDate ?? '').localeCompare(b.dueDate ?? '');
+    });
 
   const doneToday = tasks.filter(t => !t.parentId && t.completed && t.completedAt?.startsWith(today)).length;
   const totalToday = tasks.filter(t => !t.parentId && !t.completed && t.dueDate && t.dueDate <= today).length;

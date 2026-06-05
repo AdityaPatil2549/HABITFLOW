@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Quote } from 'lucide-react';
 
@@ -56,8 +56,10 @@ const QUOTES = [
 ];
 
 export function DailyQuote() {
-  const quote = useMemo(() => {
-    return QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  const [quote, setQuote] = useState(QUOTES[0]);
+
+  useEffect(() => {
+    setTimeout(() => setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]), 0);
   }, []);
 
   return (
