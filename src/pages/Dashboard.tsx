@@ -28,6 +28,9 @@ import type { MoodScore } from '../types';
 import { cn } from '../lib/utils';
 import { AICoachCard } from '../components/coach/AICoachCard';
 import { NLPQuickAdd } from '../components/habits/NLPQuickAdd';
+import { TiltCard } from '../components/ui/TiltCard';
+import { useCompletionEffects } from '../components/ui/CompletionEffects';
+import { FloatingOrbs } from '../components/ui/FloatingOrbs';
 
 const PROFILE_KEY = 'habitflow_profile';
 
@@ -62,6 +65,7 @@ export function Dashboard() {
   const { tasks, loadTasks, completeTask } = useTaskStore();
   const { userXP, loadXP } = useGamificationStore();
   const { todayMood, loadMoods, logMood } = useMoodStore();
+  const { fireConfetti } = useCompletionEffects();
   const [userName, setUserName] = useState(() => {
     try {
       const raw = localStorage.getItem(PROFILE_KEY);
@@ -188,6 +192,7 @@ export function Dashboard() {
 
   return (
     <motion.div className="space-y-6" variants={container} initial="hidden" animate="show">
+      <FloatingOrbs />
       {/* ── Header ── */}
       <motion.div
         variants={item}
@@ -284,6 +289,7 @@ export function Dashboard() {
       {/* ── Bento Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Progress Ring Card */}
+        <TiltCard borderGlow>
         <motion.div
           variants={item}
           className="lg:col-span-1 glass-card rounded-3xl p-4 sm:p-6 relative overflow-hidden group"
@@ -374,8 +380,10 @@ export function Dashboard() {
             </div>
           </div>
         </motion.div>
+        </TiltCard>
 
         {/* REAL 7-Day Chart */}
+        <TiltCard borderGlow>
         <motion.div variants={item} className="lg:col-span-2 glass-card rounded-3xl p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4 sm:mb-6">
             <div>
@@ -494,11 +502,13 @@ export function Dashboard() {
             </div>
           )}
         </motion.div>
+        </TiltCard>
       </div>
 
       {/* ── Today's Tasks & Habits Row ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Due Tasks */}
+        <TiltCard borderGlow>
         <motion.div variants={item} className="glass-card rounded-3xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -574,8 +584,10 @@ export function Dashboard() {
             )}
           </div>
         </motion.div>
+        </TiltCard>
 
         {/* Habit Checklist */}
+        <TiltCard borderGlow>
         <motion.div variants={item} className="glass-card rounded-3xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -642,6 +654,7 @@ export function Dashboard() {
                       if (logDebounceRef.current.has(h.id)) return;
                       logDebounceRef.current.add(h.id);
                       const action = isDone ? unlogHabit(h.id) : logHabit(h.id, 1);
+                      if (!isDone) fireConfetti();
                       Promise.resolve(action).finally(() => logDebounceRef.current.delete(h.id));
                     }}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer group flex items-center gap-3 ${
@@ -694,6 +707,7 @@ export function Dashboard() {
             </button>
           )}
         </motion.div>
+        </TiltCard>
       </div>
 
       {/* ── Daily Mood Check-in ── */}

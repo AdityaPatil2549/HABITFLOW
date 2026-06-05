@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Sparkles, RefreshCw, Calendar, CloudUpload } from 'lucide-react';
+import { FloatingOrbs } from '../components/ui/FloatingOrbs';
 
 const features = [
   { icon: RefreshCw, label: 'Cross-device sync' },
@@ -91,6 +92,7 @@ export function AuthPage() {
 
   return (
     <div className="relative min-h-screen w-screen flex items-center justify-center overflow-hidden px-4">
+      <FloatingOrbs />
       {/* ── Animated background orbs ────────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {orbs.map((orb, i) => (

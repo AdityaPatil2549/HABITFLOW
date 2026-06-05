@@ -21,6 +21,8 @@ import { format, isToday, isPast } from 'date-fns';
 import { taskSchema } from '../lib/validations';
 import { cn, compressImage } from '../lib/utils';
 import { useToast } from '../components/common/Toast';
+import { TiltCard } from '../components/ui/TiltCard';
+import { useCompletionEffects } from '../components/ui/CompletionEffects';
 
 const PRIORITY_CONFIG = [
   {
@@ -271,6 +273,7 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
   const { tasks, deleteTask, completeTask, uncompleteTask } = useTaskStore();
   const { openPicker } = useFocusStore();
   const toast = useToast();
+  const { fireConfetti } = useCompletionEffects();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const subtasks = tasks.filter(t => t.parentId === task.id);
@@ -296,6 +299,7 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
     );
 
   return (
+    <TiltCard>
     <div className={cn('relative')} style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : 0 }}>
       {/* Subtask connector line */}
       {depth > 0 && (
@@ -319,7 +323,14 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
         <div className="flex items-center gap-4 px-5 py-4">
           {/* Check */}
           <motion.button
-            onClick={() => (task.completed ? uncompleteTask(task.id) : completeTask(task.id))}
+            onClick={() => {
+              if (task.completed) {
+                uncompleteTask(task.id);
+              } else {
+                completeTask(task.id);
+                fireConfetti();
+              }
+            }}
             whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.9 }}
             className={cn(
@@ -444,6 +455,7 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
         </AnimatePresence>
       </motion.div>
     </div>
+    </TiltCard>
   );
 }
 

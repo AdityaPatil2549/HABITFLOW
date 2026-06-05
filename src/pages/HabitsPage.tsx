@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
+import { TiltCard } from '../components/ui/TiltCard';
+import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -705,6 +707,7 @@ export function HabitsPage() {
   const prevDoneRef = useRef(0);
 
   const toast = useToast();
+  const { fireConfetti } = useCompletionEffects();
 
   const handleUseFreeze = async (habit: HabitWithStreak) => {
     if ((userXP?.streakFreezes ?? 0) <= 0) {
@@ -807,6 +810,7 @@ export function HabitsPage() {
       unlogHabit(hab.id);
     } else if (hab.type === 'boolean') {
       logHabit(hab.id, 1);
+      fireConfetti();
     } else {
       setSelectedLog(hab);
     }
@@ -1191,20 +1195,22 @@ export function HabitsPage() {
                           <GripVertical size={16} />
                         </div>
                         <div className="pl-11">
-                          <HabitCard
-                            habit={h}
-                            onLogClick={handleLogClick}
-                            onEdit={setEditingHabit}
-                            onDelete={deleteHabit}
-                            canFreeze={
-                              isToday &&
-                              (!h.todayLog || h.todayLog.value === 0) &&
-                              !h.todayLog?.isFrozen &&
-                              h.streak.current > 0 &&
-                              (userXP?.streakFreezes ?? 0) > 0
-                            }
-                            onFreeze={handleUseFreeze}
-                          />
+                          <TiltCard>
+                            <HabitCard
+                              habit={h}
+                              onLogClick={handleLogClick}
+                              onEdit={setEditingHabit}
+                              onDelete={deleteHabit}
+                              canFreeze={
+                                isToday &&
+                                (!h.todayLog || h.todayLog.value === 0) &&
+                                !h.todayLog?.isFrozen &&
+                                h.streak.current > 0 &&
+                                (userXP?.streakFreezes ?? 0) > 0
+                              }
+                              onFreeze={handleUseFreeze}
+                            />
+                          </TiltCard>
                         </div>
                       </div>
                     )}
@@ -1240,13 +1246,14 @@ export function HabitsPage() {
               </div>
               <div className="grid grid-cols-1 gap-3 opacity-70">
                 {unscheduled.map(h => (
-                  <HabitCard
-                    key={h.id}
-                    habit={h}
-                    onLogClick={handleLogClick}
-                    onEdit={setEditingHabit}
-                    onDelete={deleteHabit}
-                  />
+                  <TiltCard key={h.id}>
+                    <HabitCard
+                      habit={h}
+                      onLogClick={handleLogClick}
+                      onEdit={setEditingHabit}
+                      onDelete={deleteHabit}
+                    />
+                  </TiltCard>
                 ))}
               </div>
             </div>
