@@ -178,6 +178,7 @@ class SyncService {
   private isSyncing = false;
   private onlineHandler: (() => void) | null = null;
   private focusHandler: (() => void) | null = null;
+  private realtimeChannel: import('@supabase/supabase-js').RealtimeChannel | null = null;
 
   // ── Queue a change for push ────────────────────────────────────
   async queuePush(
@@ -418,6 +419,22 @@ class SyncService {
     if (navigator.onLine) {
       this.fullSync().catch(console.error);
     }
+
+    // Set up Supabase Realtime for instant cross-device sync
+    if (isSupabaseConfigured()) {
+      this.realtimeChannel = supabase.channel('schema-db-changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public' },
+          (payload) => {
+            console.log('[SyncService] Realtime change detected:', payload);
+            if (!this.isSyncing) {
+              this.fullSync().catch(console.error);
+            }
+          }
+        )
+        .subscribe();
+    }
   }
 
   stopAutoSync(): void {
@@ -434,6 +451,11 @@ class SyncService {
     if (this.focusHandler) {
       window.removeEventListener('focus', this.focusHandler);
       this.focusHandler = null;
+    }
+
+    if (this.realtimeChannel) {
+      supabase.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
     }
   }
 

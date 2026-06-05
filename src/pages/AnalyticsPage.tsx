@@ -472,6 +472,50 @@ function TrendLine({ habits }: { habits: any[] }) {
   );
 }
 
+// ─── 30-day Mood Trend ─────────────────────────────────────────
+function MoodTrend({ moods }: { moods: any[] }) {
+  const [data, setData] = useState<any[]>([]);
+  useEffect(() => {
+    const days = Array.from({ length: 30 }, (_, i) =>
+      format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
+    );
+    const rows = days.map(date => {
+      const moodLog = moods.find(m => m.date === date);
+      return {
+        date: date.slice(5),
+        mood: moodLog ? moodLog.score : null,
+      };
+    });
+    setData(rows);
+  }, [moods]);
+
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <AreaChart data={data}>
+        <defs>
+          <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+        <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
+        <YAxis domain={[1, 5]} tick={{ fill: '#64748b', fontSize: 11 }} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} formatter={(v: any) => [`${v}/5`, 'Mood Score']} />
+        <Area
+          type="monotone"
+          dataKey="mood"
+          stroke="#10b981"
+          strokeWidth={2.5}
+          fill="url(#moodGrad)"
+          dot={{ r: 4, fill: '#10b981' }}
+          connectNulls
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
 // ─── Task Throughput ───────────────────────────────────────────
 function TaskThroughput({ tasks }: { tasks: any[] }) {
   const data = useMemo(() => {
@@ -882,6 +926,14 @@ export function AnalyticsPage() {
     : 0;
   const tasksDone = tasks.filter(t => t.completed).length;
 
+  const avgMood = useMemo(() => {
+    if (!moods.length) return null;
+    const recent = moods.filter(m => new Date(m.date) >= subDays(new Date(), 30));
+    if (!recent.length) return null;
+    const sum = recent.reduce((s, m) => s + m.score, 0);
+    return (sum / recent.length).toFixed(1);
+  }, [moods]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -918,7 +970,7 @@ export function AnalyticsPage() {
       {tab === 'Overview' && (
         <div className="space-y-6">
           {/* KPI row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             <StatCard
               icon="🔥"
               label="Active Habits"
@@ -947,6 +999,13 @@ export function AnalyticsPage() {
               sub="completion rate"
               colorClass="kpi-card-indigo"
             />
+            <StatCard
+              icon="✨"
+              label="Avg Mood"
+              value={avgMood ? `${avgMood}/5` : '—'}
+              sub="last 30 days"
+              colorClass="kpi-card-emerald"
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -963,6 +1022,13 @@ export function AnalyticsPage() {
             subtitle="Daily habit completion rate over the last month"
           >
             {habits.length > 0 ? <TrendLine habits={habits} /> : <EmptyChart />}
+          </ChartCard>
+
+          <ChartCard
+            title="30-Day Mood Trend"
+            subtitle="Your daily mood score (1-5) over the last month"
+          >
+            {moods.length > 0 ? <MoodTrend moods={moods} /> : <EmptyChart />}
           </ChartCard>
         </div>
       )}
