@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
@@ -80,6 +80,17 @@ function OrbScene() {
 }
 
 export function FloatingOrbs() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (isMobile) return null;
+
   return (
     <div
       className="floating-orbs-container"
@@ -95,12 +106,12 @@ export function FloatingOrbs() {
         camera={{ position: [0, 0, 5], fov: 45 }}
         dpr={[1, 1.5]}
         gl={{
-          antialias: true,
+          antialias: false,
           alpha: true,
           powerPreference: 'low-power',
         }}
-        style={{ background: 'transparent' }}
-        frameloop="always"
+        style={{ background: 'transparent', pointerEvents: 'none' }}
+        frameloop="demand"
       >
         <OrbScene />
       </Canvas>
