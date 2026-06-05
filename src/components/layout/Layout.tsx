@@ -640,9 +640,11 @@ export function Layout() {
       : 'text-slate-400 px-5 py-2.5 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/10 via-slate-950 to-slate-950 flex">
+    <div className="min-h-screen bg-transparent flex">
+      <div className="noise-overlay" />
+      
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
-      <nav className="lg:hidden fixed top-0 w-full z-40 bg-slate-950 border-b border-white/8 flex items-center justify-between px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))]">
+      <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 glass-card-3d rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
         <NavLink
           to="/dashboard"
           className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
@@ -925,16 +927,16 @@ export function Layout() {
       </aside>
 
       {/* ── Main content ── */}
-      <main className="flex-1 lg:ml-64 w-full max-w-full overflow-hidden">
+      <main className="flex-1 lg:ml-64 w-full max-w-[100vw] overflow-x-hidden">
         {/* On mobile, add padding to clear the top nav. On all screens, add bottom padding to clear mobile nav if visible. */}
-        <div className="pt-20 lg:pt-8 pb-28 lg:pb-8 px-3 sm:px-4 md:px-8 max-w-7xl mx-auto">
+        <div className="pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-8 pb-32 lg:pb-8 px-3 sm:px-4 md:px-8 max-w-7xl mx-auto min-h-screen">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 15, scale: 0.99 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -15, scale: 0.99 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: 15, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -15, filter: 'blur(8px)' }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
             >
               <Outlet />
             </motion.div>
@@ -944,7 +946,7 @@ export function Layout() {
 
       {/* ── Mobile Bottom Nav ── */}
       <nav className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50">
-        <div className="glass-card rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]">
+        <div className="glass-card-3d rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center">
           {[
             { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
             { to: '/habits', icon: Target, label: 'Habits' },
