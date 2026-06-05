@@ -418,15 +418,15 @@ function HabitCard({
         />
       </div>
 
-      <div className="p-3 sm:p-5 relative z-10">
-        <div className="flex items-center gap-3 sm:gap-4 mb-1 sm:mb-4">
+      <div className="p-2 sm:p-5 relative z-10">
+        <div className="flex items-center gap-2.5 sm:gap-4 mb-1 sm:mb-4">
           {/* Check button */}
           <motion.button
             onClick={() => onLogClick(habit)}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className={cn(
-              'w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center text-2xl flex-shrink-0 transition-all',
+              'w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-2xl border-2 flex items-center justify-center text-2xl flex-shrink-0 transition-all',
               done && 'animate-check-pop'
             )}
             style={
@@ -441,12 +441,12 @@ function HabitCard({
                 : { borderColor: `${c}40`, background: `${c}08` }
             }
           >
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-white">
+            <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-white">
               {done ? (
                 habit.todayLog?.isFrozen ? (
-                  <Snowflake size={20} className="sm:w-6 sm:h-6" />
+                  <Snowflake size={16} className="sm:w-6 sm:h-6" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-5 h-5 sm:w-6 sm:h-6" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4 sm:w-6 sm:h-6" strokeLinecap="round" strokeLinejoin="round">
                     <motion.path
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
@@ -456,7 +456,7 @@ function HabitCard({
                   </svg>
                 )
               ) : (
-                <IconRenderer name={habit.icon} size={20} color={c} />
+                <IconRenderer name={habit.icon} size={16} color={c} />
               )}
             </div>
           </motion.button>
@@ -465,7 +465,7 @@ function HabitCard({
           <div className="flex-1 min-w-0">
             <button
               className={cn(
-                'font-bold text-base truncate w-full text-left hover:text-brand-300 transition-all block',
+                'font-bold text-sm sm:text-base truncate w-full text-left hover:text-brand-300 transition-all block',
                 done ? 'line-through text-slate-500' : 'text-white'
               )}
               onClick={() => {
