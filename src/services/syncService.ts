@@ -331,7 +331,7 @@ class SyncService {
       if (!localRow) {
         // No local copy — insert
         // Remove sync-only fields before storing in Dexie
-        const { userId: _uid, deletedAt: _del, updatedAt: _upd, ...cleanRow } = dexieRow;
+        const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
         await table.add(cleanRow).catch(() => {
           // Might fail if ID collision — try put instead
           return table.put(cleanRow);
@@ -341,7 +341,7 @@ class SyncService {
         // Compare updated_at: remote wins if newer
         const localUpdatedAt = (localRow as any).updatedAt ?? (localRow as any).createdAt ?? '';
         if (remoteUpdatedAt > localUpdatedAt) {
-          const { userId: _uid, deletedAt: _del, updatedAt: _upd, ...cleanRow } = dexieRow;
+          const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
           await table.put(cleanRow);
           merged++;
         }
@@ -369,6 +369,11 @@ class SyncService {
       for (const tableName of SYNCABLE_TABLES) {
         const count = await this.pullChanges(tableName);
         totalPulled += count;
+      }
+
+      // If we pulled new data, notify the app to reload stores
+      if (totalPulled > 0) {
+        window.dispatchEvent(new CustomEvent('habitflow-sync-pulled'));
       }
 
       // Push queued changes

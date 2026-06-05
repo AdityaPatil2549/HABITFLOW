@@ -19,6 +19,9 @@ import { syncService } from './services/syncService';
 import { migrateLocalDataToCloud } from './services/migrationService';
 import { pushNotificationService } from './services/pushNotificationService';
 import { startHealthSyncPolling } from './services/healthSyncService';
+import { useHabitStore } from './store/habitStore';
+import { useTaskStore } from './store/taskStore';
+import { useMoodStore } from './store/moodStore';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })));
@@ -97,6 +100,17 @@ function App() {
   useEffect(() => {
     notificationService.start();
     return () => notificationService.stop();
+  }, []);
+
+  // Listen for sync events to reload the UI when background changes arrive
+  useEffect(() => {
+    const handleSync = () => {
+      useHabitStore.getState().loadHabits();
+      useTaskStore.getState().loadTasks();
+      useMoodStore.getState().loadMoods();
+    };
+    window.addEventListener('habitflow-sync-pulled', handleSync);
+    return () => window.removeEventListener('habitflow-sync-pulled', handleSync);
   }, []);
 
   async function handleOnboardingComplete() {
