@@ -114,6 +114,7 @@ export async function getOrCreateSettings(): Promise<Settings> {
     soundEnabled: true,
     hapticEnabled: true,
     language: 'en',
+    dashboardLayout: ['header', 'stats', 'tasks', 'habits', 'mood'],
   };
   await db.settings.add(defaults);
   return defaults;

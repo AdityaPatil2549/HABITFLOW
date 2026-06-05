@@ -45,6 +45,7 @@ import { useFocusStore } from '../store/focusStore';
 import { TemplatesLibrary } from '../components/habits/TemplatesLibrary';
 import { useToast } from '../components/common/Toast';
 import { db } from '../db';
+import { exportHabitToCalendar } from '../lib/calendarSync';
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const CATEGORIES = [
@@ -606,6 +607,13 @@ function HabitCard({
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors"
                   >
                     <Timer size={11} /> Focus
+                  </button>
+                  <button
+                    onClick={() => exportHabitToCalendar(habit)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors"
+                    title="Export .ics to your Calendar"
+                  >
+                    <CalendarDays size={11} /> Sync
                   </button>
                   <button
                     onClick={() => onEdit(habit)}

@@ -152,6 +152,7 @@ export interface Settings {
   language: string;
   googleCalendarSync?: boolean;
   googleCalendarCompletions?: boolean;
+  dashboardLayout?: string[];
   updated_at?: string;
 }
 

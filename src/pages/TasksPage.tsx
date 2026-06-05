@@ -24,6 +24,7 @@ import { useToast } from '../components/common/Toast';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { MagneticButton } from '../components/ui/MagneticButton';
 import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
+import { exportTaskToCalendar } from '../lib/calendarSync';
 
 const PRIORITY_CONFIG = [
   {
@@ -423,13 +424,22 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
           {/* Actions */}
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {!task.completed && (
-              <button
-                onClick={() => openPicker({ id: task.id, title: task.title, type: 'task' })}
-                className="w-8 h-8 rounded-full hover:bg-brand-500/20 text-slate-500 hover:text-brand-400 transition-colors flex items-center justify-center"
-                title="Start Focus"
-              >
-                <Timer size={14} />
-              </button>
+              <>
+                <button
+                  onClick={() => openPicker({ id: task.id, title: task.title, type: 'task' })}
+                  className="w-8 h-8 rounded-full hover:bg-brand-500/20 text-slate-500 hover:text-brand-400 transition-colors flex items-center justify-center"
+                  title="Start Focus"
+                >
+                  <Timer size={14} />
+                </button>
+                <button
+                  onClick={() => exportTaskToCalendar(task)}
+                  className="w-8 h-8 rounded-full hover:bg-amber-500/20 text-slate-500 hover:text-amber-400 transition-colors flex items-center justify-center"
+                  title="Export to Calendar"
+                >
+                  <Calendar size={14} />
+                </button>
+              </>
             )}
             {subtasks.length > 0 && (
               <button

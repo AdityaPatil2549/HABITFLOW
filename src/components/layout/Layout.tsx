@@ -35,8 +35,8 @@ import {
   Sun,
   Moon,
   Cloud,
-  CloudOff,
   Users,
+  Flower2,
 } from 'lucide-react';
 import { CursorTrail } from '../ui/CursorTrail';
 
@@ -435,6 +435,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
     { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
     { icon: BarChart2, label: 'Analytics', path: '/analytics' },
     { icon: CheckCircle2, label: 'Weekly Review', path: '/review' },
+    { icon: Flower2, label: 'Garden', path: '/garden' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -749,6 +750,7 @@ export function Layout() {
             { to: '/habits', icon: Target, label: 'Habits' },
             { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
             { to: '/analytics', icon: BarChart2, label: 'Analytics' },
+            { to: '/garden', icon: Flower2, label: 'Garden' },
             { to: '/review', icon: CheckCircle2, label: 'Weekly Review' },
             { to: '/squad', icon: Users, label: 'Squad' },
           ].map(l => {

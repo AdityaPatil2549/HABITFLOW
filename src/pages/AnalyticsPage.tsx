@@ -6,6 +6,7 @@ import { db } from '../db';
 import { cn } from '../lib/utils';
 import { motion } from 'framer-motion';
 import { correlationService } from '../services/correlationService';
+import { ExportReportButton } from '../components/ui/ExportReportButton';
 import type { CorrelationResult } from '../types';
 import {
   ResponsiveContainer,
@@ -950,6 +951,9 @@ export function AnalyticsPage() {
           <p className="text-slate-500 dark:text-slate-400 dark:text-slate-400 text-sm mt-1">
             Track, analyze, and improve your habits over time.
           </p>
+        </div>
+        <div className="hidden sm:block">
+          <ExportReportButton />
         </div>
       </div>
 
