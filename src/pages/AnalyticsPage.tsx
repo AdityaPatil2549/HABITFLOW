@@ -39,6 +39,8 @@ import {
 } from 'date-fns';
 import { habitService } from '../services/habitService';
 import { IconRenderer } from '../components/common/IconRenderer';
+import { FloatingOrbs } from '../components/ui/FloatingOrbs';
+import { TiltCard } from '../components/ui/TiltCard';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap'] as const;
@@ -739,12 +741,12 @@ function StatCard({
   iconColor?: string;
 }) {
   return (
-    <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
-      className={cn(
-        'glass-card rounded-2xl p-6 text-center relative overflow-hidden group',
-        colorClass
-      )}
+    <TiltCard className="h-full w-full block">
+      <motion.div
+        className={cn(
+          'glass-card rounded-2xl p-6 text-center relative overflow-hidden group h-full',
+          colorClass
+        )}
     >
       <span className="absolute right-3 bottom-3 text-5xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
         {icon}
@@ -758,7 +760,8 @@ function StatCard({
           {sub}
         </p>
       )}
-    </motion.div>
+      </motion.div>
+    </TiltCard>
   );
 }
 
@@ -772,8 +775,9 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="glass-card rounded-2xl p-6">
-      <div className="mb-5">
+    <div className="glass-card-3d rounded-2xl p-6 relative overflow-hidden group">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <div className="mb-5 relative z-10">
         <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
         {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mt-1">{subtitle}</p>}
       </div>
@@ -934,9 +938,10 @@ export function AnalyticsPage() {
   }, [moods]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8 pb-32 relative">
+      <FloatingOrbs />
       {/* Header */}
-      <div className="flex items-end justify-between">
+      <div className="relative z-10 flex items-end justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
             Analytics
@@ -949,16 +954,17 @@ export function AnalyticsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-1 sm:gap-2 p-1 bg-transparent sm:bg-slate-200/50 dark:bg-slate-800/60 sm:rounded-xl sm:border sm:border-slate-200 dark:border-white/5">
+      <div className="flex flex-wrap gap-2 p-1 bg-transparent sm:bg-slate-800/60 sm:rounded-2xl sm:border sm:border-white/5">
         {TABS.map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[13px] sm:text-sm font-semibold transition-all whitespace-nowrap flex-grow sm:flex-grow-0 text-center ${
+            className={cn(
+              'px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl font-bold text-[13px] sm:text-sm transition-all whitespace-nowrap flex-grow sm:flex-grow-0 text-center border',
               tab === t
-                ? 'bg-brand-500/20 text-brand-400 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/40 sm:bg-transparent hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:bg-white/5'
-            }`}
+                ? 'button-3d text-white border-brand-400'
+                : 'glass-card-3d text-slate-400 border-white/5 hover:text-white hover:border-white/20 hover:-translate-y-1'
+            )}
           >
             {t}
           </button>
@@ -1067,10 +1073,10 @@ export function AnalyticsPage() {
                   <button
                     key={h.id}
                     onClick={() => setSelectedHabitId(h.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
                       selectedHabit?.id === h.id
-                        ? 'border-brand-500/40 bg-brand-500/15 text-brand-300'
-                        : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:border-white/20'
+                        ? 'button-3d border-brand-500/50 text-white'
+                        : 'glass-card-3d border-white/5 text-slate-400 hover:text-white hover:-translate-y-1'
                     }`}
                   >
                     <span><IconRenderer name={h.icon} size={16} /></span> {h.name}
