@@ -31,6 +31,9 @@ import { NLPQuickAdd } from '../components/habits/NLPQuickAdd';
 import { TiltCard } from '../components/ui/TiltCard';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { FloatingOrbs } from '../components/ui/FloatingOrbs';
+import { DailyQuote } from '../components/ui/DailyQuote';
+import { AnimatedNumber } from '../components/ui/AnimatedNumber';
+import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
 
 const PROFILE_KEY = 'habitflow_profile';
 
@@ -209,7 +212,7 @@ export function Dashboard() {
             )}
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight truncate">
+            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight truncate text-gradient">
               {greeting}, {userName} 👋
             </h1>
             <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1 flex items-center gap-2">
@@ -252,6 +255,11 @@ export function Dashboard() {
         </div>
       </motion.div>
 
+      {/* ── Daily Quote ── */}
+      <motion.div variants={item}>
+        <DailyQuote />
+      </motion.div>
+
       {/* ── Streak At-Risk Warning ── */}
       {atRiskHabits.length > 0 && (
         <motion.div
@@ -289,6 +297,7 @@ export function Dashboard() {
       {/* ── Bento Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Progress Ring Card */}
+        <Scroll3DReveal delay={0.1}>
         <TiltCard borderGlow>
         <motion.div
           variants={item}
@@ -348,9 +357,9 @@ export function Dashboard() {
               <motion.span
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
-                className="text-4xl sm:text-5xl font-black text-white tracking-tighter"
+                className="text-4xl sm:text-5xl font-black text-white tracking-tighter flex items-baseline"
               >
-                {pct}
+                <AnimatedNumber value={pct} />
                 <span className="text-xl sm:text-2xl text-slate-500 ml-0.5">%</span>
               </motion.span>
               <span className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1">
@@ -364,25 +373,33 @@ export function Dashboard() {
               <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                 Done
               </p>
-              <p className="text-base sm:text-lg font-bold text-emerald-400">{done}</p>
+              <p className="text-base sm:text-lg font-bold text-emerald-400">
+                <AnimatedNumber value={done} />
+              </p>
             </div>
             <div className="text-center border-x border-white/5">
               <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                 Left
               </p>
-              <p className="text-base sm:text-lg font-bold text-white">{remaining}</p>
+              <p className="text-base sm:text-lg font-bold text-white">
+                <AnimatedNumber value={remaining} />
+              </p>
             </div>
             <div className="text-center">
               <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                 Total
               </p>
-              <p className="text-base sm:text-lg font-bold text-white">{scheduled.length}</p>
+              <p className="text-base sm:text-lg font-bold text-white">
+                <AnimatedNumber value={scheduled.length} />
+              </p>
             </div>
           </div>
         </motion.div>
         </TiltCard>
+        </Scroll3DReveal>
 
         {/* REAL 7-Day Chart */}
+        <Scroll3DReveal delay={0.2}>
         <TiltCard borderGlow>
         <motion.div variants={item} className="lg:col-span-2 glass-card rounded-3xl p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4 sm:mb-6">
@@ -503,6 +520,7 @@ export function Dashboard() {
           )}
         </motion.div>
         </TiltCard>
+        </Scroll3DReveal>
       </div>
 
       {/* ── Today's Tasks & Habits Row ── */}

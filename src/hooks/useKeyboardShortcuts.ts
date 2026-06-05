@@ -2,6 +2,21 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToastStore } from '../components/common/Toast';
 
+export const SHORTCUT_DEFINITIONS = [
+  { key: '1', description: 'Go to Dashboard' },
+  { key: '2', description: 'Go to Habits' },
+  { key: '3', description: 'Go to Tasks' },
+  { key: '4', description: 'Go to Analytics' },
+  { key: '5', description: 'Go to Focus' },
+  { key: '6', description: 'Go to Profile' },
+  { key: 'n', description: 'New habit' },
+  { key: 't', description: 'New task' },
+  { key: 'f', description: 'Toggle Focus timer' },
+  { key: 'Cmd+K', description: 'Search' },
+  { key: '?', shift: true, description: 'Show keyboard shortcuts' },
+  { key: 'Escape', description: 'Close any open modal/dialog' },
+];
+
 /**
  * Global keyboard shortcuts for HabitFlow.
  * Must be mounted once inside BrowserRouter (Layout).
@@ -13,6 +28,7 @@ export function useKeyboardShortcuts(options: {
   onSearch?: () => void;
   onToggleFocus?: () => void;
   onEscape?: () => void;
+  onShowShortcuts?: () => void;
 }) {
   const navigate = useNavigate();
 
@@ -40,6 +56,12 @@ export function useKeyboardShortcuts(options: {
 
       // ESC: always active — read from store to avoid stale closure
       if (e.key === 'Escape') {
+        // Also close native dialogs if open
+        const openDialog = document.querySelector('dialog[open]') as HTMLDialogElement | null;
+        if (openDialog && e.target !== openDialog) {
+          // Native dialogs handle esc themselves, but we want to catch if needed
+        }
+
         const store = useToastStore.getState();
         if (store.confirm) {
           store.confirm.onCancel?.();
@@ -51,7 +73,15 @@ export function useKeyboardShortcuts(options: {
 
       // Single-key shortcuts — don't fire when typing or with modifiers
       if (isTyping) return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      
+      // Handle Shift+?
+      if (e.shiftKey && e.key === '?') {
+        e.preventDefault();
+        cb.current.onShowShortcuts?.();
+        return;
+      }
+
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
 
       switch (e.key) {
         case 'n':
@@ -69,20 +99,22 @@ export function useKeyboardShortcuts(options: {
           e.preventDefault();
           cb.current.onToggleFocus?.();
           break;
-        case 'h':
-        case 'H':
-          navigate('/habits');
-          break;
-        case 'd':
-        case 'D':
+        case '1':
           navigate('/dashboard');
           break;
-        case 'a':
-        case 'A':
+        case '2':
+          navigate('/habits');
+          break;
+        case '3':
+          navigate('/tasks');
+          break;
+        case '4':
           navigate('/analytics');
           break;
-        case 'p':
-        case 'P':
+        case '5':
+          navigate('/focus');
+          break;
+        case '6':
           navigate('/profile');
           break;
       }

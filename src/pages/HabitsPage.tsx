@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { TiltCard } from '../components/ui/TiltCard';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
+import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -14,9 +15,10 @@ import {
   Snowflake,
   GripVertical,
   Timer,
-  Bell,
   BarChart2,
   ChevronLeft,
+  BookOpen,
+  Bell,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useHabitStore } from '../store/habitStore';
@@ -34,6 +36,8 @@ import {
 } from 'date-fns';
 import { habitSchema } from '../lib/validations';
 import { LogHabitModal } from '../components/habits/LogHabitModal';
+import { HabitJournal } from '../components/habits/HabitJournal';
+import { MagneticButton } from '../components/ui/MagneticButton';
 import { cn } from '../lib/utils';
 import { IconRenderer, HABIT_ICONS } from '../components/common/IconRenderer';
 import { habitService } from '../services/habitService';
@@ -443,7 +447,14 @@ function HabitCard({
                 habit.todayLog?.isFrozen ? (
                   <Snowflake size={24} />
                 ) : (
-                  '✓'
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-6 h-6" strokeLinecap="round" strokeLinejoin="round">
+                    <motion.path
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      d="M20 6L9 17l-5-5"
+                    />
+                  </svg>
                 )
               ) : (
                 <IconRenderer name={habit.icon} size={24} color={c} />
@@ -704,6 +715,7 @@ export function HabitsPage() {
   const [selectedLog, setSelectedLog] = useState<HabitWithStreak | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
   const prevDoneRef = useRef(0);
 
   const toast = useToast();
@@ -846,7 +858,7 @@ export function HabitsPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
             Habit Tracker
           </p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">My Habits</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white text-gradient">My Habits</h1>
           <p className="text-slate-400 text-sm mt-1">
             {isToday ? (
               <>
@@ -891,6 +903,13 @@ export function HabitsPage() {
               <CalendarDays size={12} /> Calendar
             </button>
           </div>
+          <button
+            onClick={() => setShowJournal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors text-sm font-medium ml-2 mr-2"
+          >
+            <BookOpen size={16} />
+            <span className="hidden sm:inline">Journal</span>
+          </button>
           <motion.button
             onClick={() => setShowTemplates(true)}
             whileHover={{ scale: 1.04 }}
@@ -899,19 +918,17 @@ export function HabitsPage() {
           >
             ✨ Templates
           </motion.button>
-          <motion.button
+          <MagneticButton
             onClick={() => setShowAdd(v => !v)}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            className="flex items-center gap-2 px-4 sm:px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0 ml-auto sm:ml-0"
+            intensity={0.4}
+            className="flex items-center gap-2 px-4 sm:px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0 ml-auto sm:ml-0 active:scale-95 transition-transform shadow-xl shadow-brand-500/40"
             style={{
               background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
-              boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.35)',
             }}
           >
             <Plus size={16} /> <span className="hidden sm:inline">Add Habit</span>
             <span className="sm:hidden">Add</span>
-          </motion.button>
+          </MagneticButton>
         </div>
       </div>
 
@@ -1195,6 +1212,7 @@ export function HabitsPage() {
                           <GripVertical size={16} />
                         </div>
                         <div className="pl-11">
+                          <Scroll3DReveal delay={index * 0.05}>
                           <TiltCard>
                             <HabitCard
                               habit={h}
@@ -1211,6 +1229,7 @@ export function HabitsPage() {
                               onFreeze={handleUseFreeze}
                             />
                           </TiltCard>
+                          </Scroll3DReveal>
                         </div>
                       </div>
                     )}
@@ -1245,8 +1264,9 @@ export function HabitsPage() {
                 </span>
               </div>
               <div className="grid grid-cols-1 gap-3 opacity-70">
-                {unscheduled.map(h => (
-                  <TiltCard key={h.id}>
+                {unscheduled.map((h, i) => (
+                  <Scroll3DReveal key={h.id} delay={i * 0.05}>
+                  <TiltCard>
                     <HabitCard
                       habit={h}
                       onLogClick={handleLogClick}
@@ -1254,6 +1274,7 @@ export function HabitsPage() {
                       onDelete={deleteHabit}
                     />
                   </TiltCard>
+                  </Scroll3DReveal>
                 ))}
               </div>
             </div>
@@ -1397,6 +1418,7 @@ export function HabitsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <HabitJournal isOpen={showJournal} onClose={() => setShowJournal(false)} />
     </div>
   );
 }

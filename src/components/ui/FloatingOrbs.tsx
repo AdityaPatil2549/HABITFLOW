@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
@@ -36,6 +36,26 @@ function Orb({ position, color, size, speed }: { position: [number, number, numb
 }
 
 function OrbScene() {
+  const groupRef = useRef<THREE.Group>(null);
+  const mouse = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  useFrame(() => {
+    if (!groupRef.current) return;
+    const targetX = mouse.current.x * 1.5;
+    const targetY = mouse.current.y * 1.5;
+    groupRef.current.position.x += (targetX - groupRef.current.position.x) * 0.03;
+    groupRef.current.position.y += (targetY - groupRef.current.position.y) * 0.03;
+  });
+
   const orbs = useMemo(
     () => [
       { position: [-2.5, 1, -3] as [number, number, number], color: '#6366f1', size: 0.8, speed: 0.4 },
@@ -48,14 +68,14 @@ function OrbScene() {
   );
 
   return (
-    <>
+    <group ref={groupRef}>
       <ambientLight intensity={0.3} />
       <pointLight position={[5, 5, 5]} intensity={0.6} color="#c0c1ff" />
       <pointLight position={[-5, -3, 3]} intensity={0.4} color="#6366f1" />
       {orbs.map((orb, i) => (
         <Orb key={i} {...orb} />
       ))}
-    </>
+    </group>
   );
 }
 

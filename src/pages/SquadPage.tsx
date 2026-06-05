@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { squadService } from '@/services/squadService';
 import type { Squad, SquadMember } from '@/types';
 import { Users, Trophy, Flame, Copy, Plus, LogIn, LogOut, Crown, Shield, UserPlus, X } from 'lucide-react';
@@ -146,94 +147,102 @@ export function SquadPage() {
         </div>
 
         {/* Create Modal */}
-        <AnimatePresence>
-          {showCreate && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-              onClick={() => setShowCreate(false)}
-            >
+        {createPortal(
+          <AnimatePresence>
+            {showCreate && (
               <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                onClick={e => e.stopPropagation()}
-                className="w-full max-w-sm rounded-2xl bg-slate-900 border border-white/10 p-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                onClick={() => setShowCreate(false)}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-white">Create Squad</h3>
-                  <button onClick={() => setShowCreate(false)} className="text-slate-400 hover:text-white">
-                    <X size={18} />
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  value={squadName}
-                  onChange={e => setSquadName(e.target.value)}
-                  placeholder="Squad name..."
-                  maxLength={30}
-                  autoFocus
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4"
-                  onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
-                />
-                <button
-                  onClick={handleCreate}
-                  disabled={!squadName.trim() || loading}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold disabled:opacity-50 transition-all active:scale-95"
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  onClick={e => e.stopPropagation()}
+                  className="w-[384px] max-w-[90vw] rounded-2xl bg-slate-900 border border-white/10 p-6 flex flex-col"
+                  style={{ minWidth: '300px' }}
                 >
-                  {loading ? 'Creating...' : 'Create Squad'}
-                </button>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-white">Create Squad</h3>
+                    <button onClick={() => setShowCreate(false)} className="text-slate-400 hover:text-white">
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={squadName}
+                    onChange={e => setSquadName(e.target.value)}
+                    placeholder="Squad name..."
+                    maxLength={30}
+                    autoFocus
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4"
+                    onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
+                  />
+                  <button
+                    onClick={handleCreate}
+                    disabled={!squadName.trim() || loading}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold disabled:opacity-50 transition-all active:scale-95"
+                  >
+                    {loading ? 'Creating...' : 'Create Squad'}
+                  </button>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
 
         {/* Join Modal */}
-        <AnimatePresence>
-          {showJoin && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-              onClick={() => setShowJoin(false)}
-            >
+        {createPortal(
+          <AnimatePresence>
+            {showJoin && (
               <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                onClick={e => e.stopPropagation()}
-                className="w-full max-w-sm rounded-2xl bg-slate-900 border border-white/10 p-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                onClick={() => setShowJoin(false)}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-white">Join Squad</h3>
-                  <button onClick={() => setShowJoin(false)} className="text-slate-400 hover:text-white">
-                    <X size={18} />
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  value={inviteCode}
-                  onChange={e => setInviteCode(e.target.value.toUpperCase())}
-                  placeholder="Enter 6-character code..."
-                  maxLength={6}
-                  autoFocus
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4 text-center tracking-[0.3em] font-mono text-lg"
-                  onKeyDown={e => { if (e.key === 'Enter') handleJoin(); }}
-                />
-                <button
-                  onClick={handleJoin}
-                  disabled={inviteCode.length !== 6 || loading}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold disabled:opacity-50 transition-all active:scale-95"
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  onClick={e => e.stopPropagation()}
+                  className="w-[384px] max-w-[90vw] rounded-2xl bg-slate-900 border border-white/10 p-6 flex flex-col"
+                  style={{ minWidth: '300px' }}
                 >
-                  {loading ? 'Joining...' : 'Join Squad'}
-                </button>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-white">Join Squad</h3>
+                    <button onClick={() => setShowJoin(false)} className="text-slate-400 hover:text-white">
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={inviteCode}
+                    onChange={e => setInviteCode(e.target.value.toUpperCase())}
+                    placeholder="Enter 6-character code..."
+                    maxLength={6}
+                    autoFocus
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4 text-center tracking-[0.3em] font-mono text-lg"
+                    onKeyDown={e => { if (e.key === 'Enter') handleJoin(); }}
+                  />
+                  <button
+                    onClick={handleJoin}
+                    disabled={inviteCode.length !== 6 || loading}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold disabled:opacity-50 transition-all active:scale-95"
+                  >
+                    {loading ? 'Joining...' : 'Join Squad'}
+                  </button>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
       </div>
     );
   }

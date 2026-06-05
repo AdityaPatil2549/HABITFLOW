@@ -115,6 +115,47 @@ class SoundService {
     }
   }
 
+  /** Soft, low-pitched pop for hovering over interactive elements */
+  playHover() {
+    if (!this.enabled) return;
+    try {
+      this.playTone(300, 0.03, 'sine', 0.03);
+    } catch {
+      /* */
+    }
+  }
+
+  /** Quick, airy sweep for page transitions or opening modals */
+  playTransition() {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.getCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'sine';
+      
+      const start = ctx.currentTime;
+      const end = start + 0.15;
+
+      // Sweep frequency up
+      osc.frequency.setValueAtTime(400, start);
+      osc.frequency.exponentialRampToValueAtTime(800, end);
+
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.08, start + 0.05);
+      gain.gain.linearRampToValueAtTime(0.001, end);
+
+      osc.start(start);
+      osc.stop(end);
+    } catch {
+      /* */
+    }
+  }
+
   /** Device haptic feedback */
   haptic(pattern: number | number[] = [30]) {
     if (!this.hapticEnabled) return;

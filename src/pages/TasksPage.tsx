@@ -23,6 +23,8 @@ import { cn, compressImage } from '../lib/utils';
 import { useToast } from '../components/common/Toast';
 import { TiltCard } from '../components/ui/TiltCard';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
+import { MagneticButton } from '../components/ui/MagneticButton';
+import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
 
 const PRIORITY_CONFIG = [
   {
@@ -299,6 +301,7 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
     );
 
   return (
+    <Scroll3DReveal>
     <TiltCard>
     <div className={cn('relative')} style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : 0 }}>
       {/* Subtask connector line */}
@@ -341,7 +344,16 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
             )}
             style={!task.completed ? { color: pc.color, borderColor: `${pc.color}60` } : {}}
           >
-            {task.completed && <CheckCircle2 size={14} />}
+            {task.completed && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-3.5 h-3.5" strokeLinecap="round" strokeLinejoin="round">
+                <motion.path
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  d="M20 6L9 17l-5-5"
+                />
+              </svg>
+            )}
           </motion.button>
 
           {/* Content */}
@@ -456,6 +468,7 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
       </motion.div>
     </div>
     </TiltCard>
+    </Scroll3DReveal>
   );
 }
 
@@ -495,25 +508,23 @@ export function TasksPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
             Task Manager
           </p>
-          <h1 className="text-3xl font-bold text-white">My Tasks</h1>
+          <h1 className="text-3xl font-bold text-white text-gradient">My Tasks</h1>
           <p className="text-slate-400 text-sm mt-1">
             {doneToday > 0
               ? `${doneToday} completed today — great work! 🎉`
               : 'Stay focused and crush your goals.'}
           </p>
         </div>
-        <motion.button
+        <MagneticButton
           onClick={() => setShowAdd(v => !v)}
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.96 }}
-          className="hidden md:flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0"
+          intensity={0.4}
+          className="hidden md:flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0 active:scale-95 transition-transform shadow-xl shadow-brand-500/40"
           style={{
             background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
-            boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.35)',
           }}
         >
           <Plus size={16} /> New Task
-        </motion.button>
+        </MagneticButton>
       </div>
 
       {/* KPI row */}
@@ -603,13 +614,14 @@ export function TasksPage() {
               : 'Tasks you complete will appear here.'}
           </p>
           {view !== 'Completed' && (
-            <button
+            <MagneticButton
               onClick={() => setShowAdd(true)}
-              className="mt-6 px-6 py-2.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2"
+              intensity={0.4}
+              className="mt-6 px-6 py-2.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg shadow-brand-500/30"
               style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
             >
               + Add Task
-            </button>
+            </MagneticButton>
           )}
         </div>
       ) : (

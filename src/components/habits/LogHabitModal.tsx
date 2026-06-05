@@ -69,7 +69,7 @@ export function LogHabitModal({ habit, onClose }: Props) {
     >
       <AnimatePresence>
         <motion.div
-          className="relative bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-xs shadow-2xl mx-4"
+          className="relative bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-xs shadow-2xl mx-4 modal-glow"
           initial={{ scale: 0.95, opacity: 0, y: 10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 10 }}

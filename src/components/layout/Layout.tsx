@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
@@ -11,6 +12,9 @@ import { useToast } from '../common/Toast';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useModalStore } from '../../store/modalStore';
 import { IconRenderer } from '../common/IconRenderer';
+import { ShortcutsModal } from '../ui/ShortcutsModal';
+import { AchievementToast, useAchievementToast } from '../ui/AchievementToast';
+import { soundService } from '../../services/soundService';
 import {
   Search,
   Bell,
@@ -552,6 +556,7 @@ export function Layout() {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const [notes, setNotes] = useState(DEMO_NOTIFICATIONS);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
   const { profile } = useProfileStore();
@@ -566,6 +571,8 @@ export function Layout() {
   const accountRef = useRef<HTMLDivElement>(null);
   const mobileAccountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { current: achievement, dismiss: dismissAchievement } = useAchievementToast();
 
   function toggleDark() {
     const root = document.documentElement;
@@ -592,10 +599,12 @@ export function Layout() {
       setQuickAddOpen(true);
     },
     onNewTask: () => navigate('/tasks'),
+    onShowShortcuts: () => setShowShortcuts(v => !v),
     onEscape: () => {
       setShowSearch(false);
       setShowNotifications(false);
       setShowAccount(false);
+      setShowShortcuts(false);
     },
   });
 
@@ -723,10 +732,17 @@ export function Layout() {
             { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
             { to: '/analytics', icon: BarChart2, label: 'Analytics' },
             { to: '/review', icon: CheckCircle2, label: 'Weekly Review' },
+            { to: '/squad', icon: Users, label: 'Squad' },
           ].map(l => {
             const Icon = l.icon;
             return (
-              <NavLink key={l.to} to={l.to} className={navLinkClass}>
+              <NavLink 
+                key={l.to} 
+                to={l.to} 
+                className={navLinkClass}
+                onMouseEnter={() => soundService.playHover()}
+                onClick={() => soundService.playTransition()}
+              >
                 <Icon size={18} />
                 <span>{l.label}</span>
               </NavLink>
@@ -895,10 +911,20 @@ export function Layout() {
       </aside>
 
       {/* ── Main content ── */}
-      <main className="flex-1 lg:ml-64 w-full max-w-full">
+      <main className="flex-1 lg:ml-64 w-full max-w-full overflow-hidden">
         {/* On mobile, add padding to clear the top nav. On all screens, add bottom padding to clear mobile nav if visible. */}
         <div className="pt-20 lg:pt-8 pb-28 lg:pb-8 px-3 sm:px-4 md:px-8 max-w-7xl mx-auto">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 15, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -15, scale: 0.99 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
 
@@ -969,6 +995,16 @@ export function Layout() {
           onClose={() => setShowAllNotifications(false)}
           notes={notes}
           setNotes={setNotes}
+        />
+      )}
+      <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      {achievement && (
+        <AchievementToast
+          title={achievement.title}
+          description={achievement.description}
+          icon={achievement.icon}
+          type={achievement.type}
+          onClose={dismissAchievement}
         />
       )}
     </div>

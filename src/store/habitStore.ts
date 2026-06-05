@@ -68,18 +68,13 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
       soundService.haptic([30]);
       await get().loadHabits();
 
-      // Award XP
-      await useGamificationStore.getState().addXP(10);
-
-      // Check streaks for badges
-      const updatedHabits = get().habits;
-      const h = updatedHabits.find(x => x.id === habitId);
-      if (h && h.streak.current > 0) {
-        await useGamificationStore.getState().awardStreakBadge(h.streak.current);
-      }
-
       // Mark completion in Google Calendar (if enabled)
+      const h = get().habits.find(x => x.id === habitId);
+      
       if (h) {
+        // Record completion for Gamification (XP, level up, milestones)
+        await useGamificationStore.getState().recordHabitCompletion(habitId, h.streak.current);
+        
         getOrCreateSettings().then(settings => {
           if (settings.googleCalendarCompletions) {
             calendarService.markHabitDoneInCalendar(h.name, h.icon, get().selectedDate).catch(console.error);
