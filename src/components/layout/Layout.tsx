@@ -943,8 +943,8 @@ export function Layout() {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50 pointer-events-none">
-        <div className="glass-card rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] pointer-events-auto">
+      <nav className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50">
+        <div className="glass-card rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)]">
           {[
             { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
             { to: '/habits', icon: Target, label: 'Habits' },
