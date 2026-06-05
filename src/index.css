@@ -189,18 +189,25 @@
 .gap-sm  { gap: 8px; }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  /* 3D Border & Inner Bevels */
+  background: rgba(15, 23, 42, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  border-left: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    inset 1px 1px 1px rgba(255, 255, 255, 0.15),
-    inset -1px -1px 2px rgba(0, 0, 0, 0.4),
-    0 10px 30px -5px rgba(0, 0, 0, 0.6),
-    0 4px 10px -2px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 768px) {
+  .glass-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    /* 3D Border & Inner Bevels */
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      inset 1px 1px 1px rgba(255, 255, 255, 0.15),
+      inset -1px -1px 2px rgba(0, 0, 0, 0.4),
+      0 10px 30px -5px rgba(0, 0, 0, 0.6),
+      0 4px 10px -2px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .button-3d {
@@ -819,14 +826,20 @@ body {
 
 /* ── Enhanced Glass Card Hover (3D lift) ───────────────────────── */
 .glass-card-3d {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(15, 23, 42, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1.25rem;
   transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 768px) {
+  .glass-card-3d {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+  }
 }
 .glass-card-3d:hover {
   box-shadow:
