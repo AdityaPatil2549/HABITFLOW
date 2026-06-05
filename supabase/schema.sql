@@ -246,3 +246,36 @@ create trigger moods_updated_at before update on public.moods
   for each row execute procedure public.update_updated_at();
 create trigger profiles_updated_at before update on public.profiles
   for each row execute procedure public.update_updated_at();
+
+
+-- --- Squads --------------------------------------------------
+create table if not exists public.squads (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  invite_code text not null unique,
+  owner_id uuid references auth.users on delete cascade not null,
+  created_at timestamptz default now()
+);
+
+alter table public.squads enable row level security;
+
+create policy "Users can view all squads" on public.squads for select using (true);
+create policy "Users can insert squads" on public.squads for insert with check (auth.uid() = owner_id);
+create policy "Owner can delete squad" on public.squads for delete using (auth.uid() = owner_id);
+
+-- --- Squad Members -------------------------------------------
+create table if not exists public.squad_members (
+  squad_id uuid references public.squads(id) on delete cascade not null,
+  user_id uuid references auth.users on delete cascade not null,
+  streak integer not null default 0,
+  completion_today integer not null default 0,
+  joined_at timestamptz default now(),
+  primary key (squad_id, user_id)
+);
+
+alter table public.squad_members enable row level security;
+
+create policy "Users can view squad members" on public.squad_members for select using (true);
+create policy "Users can join squads" on public.squad_members for insert with check (auth.uid() = user_id);
+create policy "Users can update their own progress" on public.squad_members for update using (auth.uid() = user_id);
+create policy "Users can leave squads" on public.squad_members for delete using (auth.uid() = user_id);

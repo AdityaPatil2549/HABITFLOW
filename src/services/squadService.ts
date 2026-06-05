@@ -1,10 +1,10 @@
 /**
  * Squad Service — Social Accountability Groups
- * Uses localStorage for squad data (works in guest mode too).
+ * Uses Supabase for real-time multiplayer squads.
  */
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import type { Squad, SquadMember } from '@/types';
 
-const STORAGE_KEY = 'habitflow_squads';
 const MY_SQUAD_KEY = 'habitflow_my_squad_id';
 
 function generateInviteCode(): string {
@@ -14,19 +14,6 @@ function generateInviteCode(): string {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
   return code;
-}
-
-function getAllSquads(): Squad[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAllSquads(squads: Squad[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(squads));
 }
 
 function getMySquadId(): string | null {
@@ -43,30 +30,62 @@ async function createSquad(
   userId: string,
   displayName: string,
   avatarUrl?: string
-): Promise<Squad> {
-  const squad: Squad = {
-    id: crypto.randomUUID(),
-    name,
-    invite_code: generateInviteCode(),
-    members: [
-      {
-        user_id: userId,
-        display_name: displayName,
-        avatar_url: avatarUrl,
-        streak: 0,
-        completion_today: 0,
-        joined_at: new Date().toISOString(),
-      },
-    ],
-    created_at: new Date().toISOString(),
-    owner_id: userId,
-  };
+): Promise<Squad | null> {
+  if (!isSupabaseConfigured()) {
+    console.error('[SquadService] Supabase not configured');
+    return null;
+  }
 
-  const squads = getAllSquads();
-  squads.push(squad);
-  saveAllSquads(squads);
-  setMySquadId(squad.id);
-  return squad;
+  const inviteCode = generateInviteCode();
+  
+  // 1. Insert Squad
+  const { data: squadData, error: squadError } = await supabase
+    .from('squads')
+    .insert({
+      name,
+      invite_code: inviteCode,
+      owner_id: userId
+    })
+    .select()
+    .single();
+
+  if (squadError || !squadData) {
+    console.error('[SquadService] Error creating squad:', squadError);
+    return null;
+  }
+
+  // 2. Insert Owner as Member
+  const { error: memberError } = await supabase
+    .from('squad_members')
+    .insert({
+      squad_id: squadData.id,
+      user_id: userId,
+      streak: 0,
+      completion_today: 0
+    });
+
+  if (memberError) {
+    console.error('[SquadService] Error adding owner to squad:', memberError);
+    return null;
+  }
+
+  setMySquadId(squadData.id);
+  
+  return {
+    id: squadData.id,
+    name: squadData.name,
+    invite_code: squadData.invite_code,
+    owner_id: squadData.owner_id,
+    created_at: squadData.created_at,
+    members: [{
+      user_id: userId,
+      display_name: displayName,
+      avatar_url: avatarUrl,
+      streak: 0,
+      completion_today: 0,
+      joined_at: new Date().toISOString()
+    }]
+  };
 }
 
 async function joinSquad(
@@ -75,74 +94,128 @@ async function joinSquad(
   displayName: string,
   avatarUrl?: string
 ): Promise<Squad | null> {
-  const squads = getAllSquads();
-  const squad = squads.find(s => s.invite_code.toUpperCase() === inviteCode.toUpperCase());
-  if (!squad) return null;
+  if (!isSupabaseConfigured()) return null;
 
-  // Check if already a member
-  if (squad.members.some(m => m.user_id === userId)) {
-    setMySquadId(squad.id);
-    return squad;
+  // 1. Find Squad
+  const { data: squadData, error: squadError } = await supabase
+    .from('squads')
+    .select('id')
+    .ilike('invite_code', inviteCode.trim())
+    .single();
+
+  if (squadError || !squadData) {
+    console.error('[SquadService] Invalid invite code or squad not found');
+    return null;
   }
 
-  // Max 5 members
-  if (squad.members.length >= 5) return null;
+  // 2. Count members
+  const { count, error: countError } = await supabase
+    .from('squad_members')
+    .select('*', { count: 'exact', head: true })
+    .eq('squad_id', squadData.id);
 
-  const member: SquadMember = {
-    user_id: userId,
-    display_name: displayName,
-    avatar_url: avatarUrl,
-    streak: 0,
-    completion_today: 0,
-    joined_at: new Date().toISOString(),
-  };
+  if (countError || (count !== null && count >= 5)) {
+    console.error('[SquadService] Squad is full');
+    return null;
+  }
 
-  squad.members.push(member);
-  saveAllSquads(squads);
-  setMySquadId(squad.id);
-  return squad;
+  // 3. Insert Member (ignores if already exists due to PK)
+  const { error: insertError } = await supabase
+    .from('squad_members')
+    .upsert({
+      squad_id: squadData.id,
+      user_id: userId,
+    });
+
+  if (insertError) {
+    console.error('[SquadService] Error joining squad:', insertError);
+    return null;
+  }
+
+  setMySquadId(squadData.id);
+  return await getMySquad();
 }
 
 async function leaveSquad(squadId: string, userId: string): Promise<void> {
-  const squads = getAllSquads();
-  const idx = squads.findIndex(s => s.id === squadId);
-  if (idx === -1) return;
+  if (!isSupabaseConfigured()) return;
 
-  const squad = squads[idx];
-  squad.members = squad.members.filter(m => m.user_id !== userId);
+  const { error } = await supabase
+    .from('squad_members')
+    .delete()
+    .eq('squad_id', squadId)
+    .eq('user_id', userId);
 
-  // If empty or owner left, delete squad
-  if (squad.members.length === 0 || squad.owner_id === userId) {
-    squads.splice(idx, 1);
+  if (error) {
+    console.error('[SquadService] Error leaving squad:', error);
+    return;
   }
 
-  saveAllSquads(squads);
+  // Cleanup local
   setMySquadId(null);
 }
 
-function getMySquad(): Squad | null {
+async function getMySquad(): Promise<Squad | null> {
+  if (!isSupabaseConfigured()) return null;
   const id = getMySquadId();
   if (!id) return null;
-  const squads = getAllSquads();
-  return squads.find(s => s.id === id) || null;
+
+  // Query squad and members + profiles
+  const { data: squadData, error: squadError } = await supabase
+    .from('squads')
+    .select(`
+      id, name, invite_code, owner_id, created_at,
+      squad_members (
+        user_id, streak, completion_today, joined_at,
+        profiles (
+          name, avatar_url
+        )
+      )
+    `)
+    .eq('id', id)
+    .single();
+
+  if (squadError || !squadData) {
+    console.error('[SquadService] Error fetching squad:', squadError);
+    // Maybe they got kicked out, or squad deleted
+    setMySquadId(null);
+    return null;
+  }
+
+  const members: SquadMember[] = (squadData.squad_members as any[] || []).map(m => ({
+    user_id: m.user_id,
+    display_name: m.profiles?.name || 'Anonymous',
+    avatar_url: m.profiles?.avatar_url,
+    streak: m.streak,
+    completion_today: m.completion_today,
+    joined_at: m.joined_at
+  }));
+
+  return {
+    id: squadData.id,
+    name: squadData.name,
+    invite_code: squadData.invite_code,
+    owner_id: squadData.owner_id,
+    created_at: squadData.created_at,
+    members
+  };
 }
 
-function updateMyProgress(
+async function updateMyProgress(
   squadId: string,
   userId: string,
   streak: number,
   completionToday: number
-): void {
-  const squads = getAllSquads();
-  const squad = squads.find(s => s.id === squadId);
-  if (!squad) return;
+): Promise<void> {
+  if (!isSupabaseConfigured()) return;
 
-  const member = squad.members.find(m => m.user_id === userId);
-  if (!member) return;
-
-  member.streak = streak;
-  member.completion_today = completionToday;
-  saveAllSquads(squads);
+  await supabase
+    .from('squad_members')
+    .update({
+      streak,
+      completion_today: completionToday
+    })
+    .eq('squad_id', squadId)
+    .eq('user_id', userId);
 }
 
 export const squadService = {

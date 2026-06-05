@@ -20,7 +20,8 @@ export function SquadPage() {
   const { user } = useAuthStore();
   const { profile } = useProfileStore();
   const toast = useToast();
-  const [squad, setSquad] = useState<Squad | null>(() => squadService.getMySquad());
+  const [squad, setSquad] = useState<Squad | null>(null);
+  const [loadingSquad, setLoadingSquad] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [squadName, setSquadName] = useState('');
@@ -34,6 +35,12 @@ export function SquadPage() {
 
   useEffect(() => {
     document.title = 'Squad — HabitFlow';
+    async function loadSquad() {
+      const s = await squadService.getMySquad();
+      setSquad(s);
+      setLoadingSquad(false);
+    }
+    loadSquad();
   }, []);
 
   async function handleCreate() {
@@ -82,6 +89,14 @@ export function SquadPage() {
   const sortedMembers = squad
     ? [...squad.members].sort((a, b) => b.streak - a.streak)
     : [];
+
+  if (loadingSquad) {
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        <div className="w-8 h-8 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!squad) {
     return (
