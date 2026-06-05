@@ -28,7 +28,7 @@ import type { MoodScore } from '../types';
 import { cn } from '../lib/utils';
 import { AICoachCard } from '../components/coach/AICoachCard';
 import { NLPQuickAdd } from '../components/habits/NLPQuickAdd';
-import { TiltCard } from '../components/ui/TiltCard';
+
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { FloatingOrbs } from '../components/ui/FloatingOrbs';
 import { DailyQuote } from '../components/ui/DailyQuote';
@@ -298,7 +298,7 @@ export function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Progress Ring Card */}
         <Scroll3DReveal delay={0.1}>
-        <TiltCard borderGlow>
+        
         <motion.div
           variants={item}
           className="lg:col-span-1 glass-card rounded-3xl p-4 sm:p-6 relative overflow-hidden group"
@@ -395,12 +395,12 @@ export function Dashboard() {
             </div>
           </div>
         </motion.div>
-        </TiltCard>
+        
         </Scroll3DReveal>
 
         {/* REAL 7-Day Chart */}
         <Scroll3DReveal delay={0.2}>
-        <TiltCard borderGlow>
+        
         <motion.div variants={item} className="lg:col-span-2 glass-card rounded-3xl p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4 sm:mb-6">
             <div>
@@ -519,14 +519,14 @@ export function Dashboard() {
             </div>
           )}
         </motion.div>
-        </TiltCard>
+        
         </Scroll3DReveal>
       </div>
 
       {/* ── Today's Tasks & Habits Row ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Due Tasks */}
-        <TiltCard borderGlow>
+        
         <motion.div variants={item} className="glass-card rounded-3xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -602,10 +602,10 @@ export function Dashboard() {
             )}
           </div>
         </motion.div>
-        </TiltCard>
+        
 
         {/* Habit Checklist */}
-        <TiltCard borderGlow>
+        
         <motion.div variants={item} className="glass-card rounded-3xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -725,12 +725,11 @@ export function Dashboard() {
             </button>
           )}
         </motion.div>
-        </TiltCard>
+        
       </div>
 
       {/* ── Daily Mood Check-in ── */}
       <Scroll3DReveal delay={0.3}>
-        <TiltCard borderGlow>
           <motion.div variants={item} className="glass-card rounded-2xl p-4 sm:p-5">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
@@ -807,7 +806,6 @@ export function Dashboard() {
               })}
             </div>
           </motion.div>
-        </TiltCard>
       </Scroll3DReveal>
     </motion.div>
   );
