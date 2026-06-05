@@ -38,6 +38,7 @@ import {
   subYears,
 } from 'date-fns';
 import { habitService } from '../services/habitService';
+import { IconRenderer } from '../components/common/IconRenderer';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap'] as const;
@@ -766,7 +767,7 @@ function ChartCard({
   subtitle,
   children,
 }: {
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   children: React.ReactNode;
 }) {
@@ -1072,7 +1073,7 @@ export function AnalyticsPage() {
                         : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:border-white/20'
                     }`}
                   >
-                    <span>{h.icon}</span> {h.name}
+                    <span><IconRenderer name={h.icon} size={16} /></span> {h.name}
                   </button>
                 ))}
               </div>
@@ -1107,8 +1108,8 @@ export function AnalyticsPage() {
                   </div>
 
                   <ChartCard
-                    title={`${selectedHabit.icon} ${selectedHabit.name} — Completion Heatmap`}
-                    subtitle="Last 26 weeks"
+                    title={<span className="flex items-center gap-2"><IconRenderer name={selectedHabit.icon} size={20} /> {selectedHabit.name} — Completion Heatmap</span>}
+                    subtitle="Last 90 days of habit tracking"
                   >
                     <Heatmap logs={heatmapData} />
                   </ChartCard>
