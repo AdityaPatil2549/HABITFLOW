@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Camera,
@@ -26,6 +26,9 @@ import { getOrCreateSettings } from '../db';
 import { useToast } from '../components/common/Toast';
 import { soundService } from '../services/soundService';
 import { calculateStats } from '../services/gamificationService';
+import { TiltCard } from '../components/ui/TiltCard';
+
+const GamificationBackground = lazy(() => import('../components/gamification/GamificationBackground'));
 
 // All achievable badges (catalogue) — icon + label must match what gamificationService awards
 const BADGE_CATALOGUE = [
@@ -134,6 +137,10 @@ export function ProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-24 relative">
+      <Suspense fallback={null}>
+        <GamificationBackground />
+      </Suspense>
+
       {/* Settings / Edit Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -148,7 +155,8 @@ export function ProfilePage() {
       </div>
 
       {/* Profile card */}
-      <div className="glass-card rounded-2xl p-6">
+      <TiltCard borderGlow tiltIntensity={3}>
+        <div className="glass-card rounded-2xl p-6 relative z-10 bg-black/20 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row items-start gap-6">
           {/* Avatar */}
           <div
@@ -288,7 +296,8 @@ export function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </TiltCard>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -318,21 +327,24 @@ export function ProfilePage() {
             color: '#f59e0b',
           },
         ].map(s => (
-          <div key={s.label} className="glass-card rounded-2xl p-4 text-center">
-            <div
-              className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center"
-              style={{ background: `${s.color}18`, color: s.color }}
-            >
-              {s.icon}
+          <TiltCard key={s.label} tiltIntensity={12}>
+            <div className="glass-card rounded-2xl p-4 text-center h-full bg-black/20 backdrop-blur-md border border-white/10">
+              <div
+                className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center"
+                style={{ background: `${s.color}18`, color: s.color }}
+              >
+                {s.icon}
+              </div>
+              <p className="text-xl font-bold text-white">{s.value}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
             </div>
-            <p className="text-xl font-bold text-white">{s.value}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
-          </div>
+          </TiltCard>
         ))}
       </div>
 
       {/* Streak Freezes */}
-      <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
+      <TiltCard tiltIntensity={4}>
+        <div className="glass-card rounded-2xl p-6 relative overflow-hidden bg-black/20 backdrop-blur-md border border-white/10">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           <Snowflake size={120} />
         </div>
@@ -374,10 +386,12 @@ export function ProfilePage() {
             Buy for 500 XP
           </button>
         </div>
-      </div>
+        </div>
+      </TiltCard>
 
       {/* Theme Shop */}
-      <div className="glass-card rounded-2xl p-6">
+      <TiltCard tiltIntensity={2}>
+        <div className="glass-card rounded-2xl p-6 bg-black/20 backdrop-blur-md border border-white/10">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <Palette size={18} className="text-brand-400" /> Premium Themes
@@ -439,10 +453,12 @@ export function ProfilePage() {
             );
           })}
         </div>
-      </div>
+        </div>
+      </TiltCard>
 
-      <div className="glass-card rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-5">
+      <TiltCard tiltIntensity={2}>
+        <div className="glass-card rounded-2xl p-6 bg-black/20 backdrop-blur-md border border-white/10">
+          <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-white">Badges & Achievements</h2>
           <span className="text-xs text-slate-500">
             {userXP?.badgesEarned?.length ?? 0} of {BADGE_CATALOGUE.length} earned
@@ -476,7 +492,8 @@ export function ProfilePage() {
             );
           })}
         </div>
-      </div>
+        </div>
+      </TiltCard>
 
       {/* Quick links */}
       <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row gap-3">

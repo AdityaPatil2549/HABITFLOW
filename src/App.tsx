@@ -40,7 +40,6 @@ const WeeklyReviewPage = lazy(() =>
 const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })));
 const ShopPage = lazy(() => import('./pages/ShopPage').then(m => ({ default: m.ShopPage })));
 const SquadPage = lazy(() => import('./pages/SquadPage').then(m => ({ default: m.SquadPage })));
-const GardenPage = lazy(() => import('./pages/GardenPage').then(m => ({ default: m.GardenPage })));
 
 function App() {
   const { show: showOnboarding, complete: completeOnboarding } = useOnboarding();
@@ -140,7 +139,6 @@ function App() {
               <Route path="review" element={<WeeklyReviewPage />} />
               <Route path="shop" element={<ShopPage />} />
               <Route path="squad" element={<SquadPage />} />
-              <Route path="garden" element={<GardenPage />} />
             </Route>
           </Routes>
         </Suspense>

@@ -22,6 +22,11 @@ export function useCompletionEffects() {
     // Clear any pending confetti
     if (confettiRef.current) clearTimeout(confettiRef.current);
 
+    // Haptic feedback (Vibration API)
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([30, 50, 30]);
+    }
+
     // First burst — fast small particles
     confetti({
       particleCount: 40,

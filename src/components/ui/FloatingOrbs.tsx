@@ -1,7 +1,35 @@
-import { useRef, useMemo, useEffect, useState } from 'react';
+import { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float } from '@react-three/drei';
+import { Float, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
+
+function CursorLight() {
+  const lightRef = useRef<THREE.PointLight>(null);
+  
+  useFrame((state) => {
+    if (!lightRef.current) return;
+    // state.pointer is normalized between -1 and 1
+    // We map this to 3D space. With camera at Z=5 and fov=45, 
+    // the visible width at Z=0 is approx 8 units
+    const targetX = state.pointer.x * 5;
+    const targetY = state.pointer.y * 5;
+    
+    // Smoothly interpolate the light position
+    lightRef.current.position.x += (targetX - lightRef.current.position.x) * 0.1;
+    lightRef.current.position.y += (targetY - lightRef.current.position.y) * 0.1;
+  });
+
+  return (
+    <pointLight 
+      ref={lightRef} 
+      position={[0, 0, 2]} 
+      intensity={2.5} 
+      color="#ffffff" 
+      distance={8}
+      decay={2}
+    />
+  );
+}
 
 function Orb({
   position,
@@ -47,57 +75,22 @@ function Orb({
 
 function OrbScene() {
   const groupRef = useRef<THREE.Group>(null);
-  const mouse = useRef({ x: 0, y: 0 });
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  useFrame(() => {
+  useFrame((state) => {
     if (!groupRef.current) return;
-    const targetX = mouse.current.x * 1.5;
-    const targetY = mouse.current.y * 1.5;
+    const targetX = state.pointer.x * 1.5;
+    const targetY = state.pointer.y * 1.5;
     groupRef.current.position.x += (targetX - groupRef.current.position.x) * 0.03;
     groupRef.current.position.y += (targetY - groupRef.current.position.y) * 0.03;
   });
 
   const orbs = useMemo(
     () => [
-      {
-        position: [-2.5, 1, -3] as [number, number, number],
-        color: '#6366f1',
-        size: 0.8,
-        speed: 0.4,
-      },
-      {
-        position: [2.2, -0.5, -4] as [number, number, number],
-        color: '#8b5cf6',
-        size: 1.1,
-        speed: 0.3,
-      },
-      {
-        position: [0, 1.5, -5] as [number, number, number],
-        color: '#06b6d4',
-        size: 0.6,
-        speed: 0.5,
-      },
-      {
-        position: [-1.5, -1.2, -3.5] as [number, number, number],
-        color: '#10b981',
-        size: 0.5,
-        speed: 0.35,
-      },
-      {
-        position: [3, 0.8, -6] as [number, number, number],
-        color: '#a78bfa',
-        size: 1.3,
-        speed: 0.25,
-      },
+      { position: [-2.5, 1, -3] as [number, number, number], color: '#6366f1', size: 0.8, speed: 0.4 },
+      { position: [2.2, -0.5, -4] as [number, number, number], color: '#8b5cf6', size: 1.1, speed: 0.3 },
+      { position: [0, 1.5, -5] as [number, number, number], color: '#06b6d4', size: 0.6, speed: 0.5 },
+      { position: [-1.5, -1.2, -3.5] as [number, number, number], color: '#10b981', size: 0.5, speed: 0.35 },
+      { position: [3, 0.8, -6] as [number, number, number], color: '#a78bfa', size: 1.3, speed: 0.25 },
     ],
     []
   );
@@ -107,6 +100,20 @@ function OrbScene() {
       <ambientLight intensity={0.3} />
       <pointLight position={[5, 5, 5]} intensity={0.6} color="#c0c1ff" />
       <pointLight position={[-5, -3, 3]} intensity={0.4} color="#6366f1" />
+      
+      <CursorLight />
+      
+      {/* 3D Global Particles */}
+      <Sparkles 
+        count={60} 
+        scale={12} 
+        size={2.5} 
+        speed={0.4} 
+        opacity={0.2} 
+        color="#a78bfa" 
+        noise={1}
+      />
+
       {orbs.map((orb, i) => (
         <Orb key={i} {...orb} />
       ))}

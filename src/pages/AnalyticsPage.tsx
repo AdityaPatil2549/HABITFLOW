@@ -40,22 +40,27 @@ import {
 } from 'date-fns';
 import { habitService } from '../services/habitService';
 import { IconRenderer } from '../components/common/IconRenderer';
-import { FloatingOrbs } from '../components/ui/FloatingOrbs';
+
 import { TiltCard } from '../components/ui/TiltCard';
+import { Skeleton } from '../components/ui/Skeleton';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap'] as const;
 type TabType = (typeof TABS)[number];
 
 const TOOLTIP_STYLE = {
-  background: 'rgba(15,23,42,0.95)',
-  border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: 12,
+  background: 'rgba(15,23,42,0.85)',
+  backdropFilter: 'blur(16px)',
+  WebkitBackdropFilter: 'blur(16px)',
+  border: '1px solid rgba(255,255,255,0.15)',
+  borderRadius: '16px',
   color: '#dae2fd',
-  fontSize: 13,
+  fontSize: '13px',
+  boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.5)',
+  padding: '12px 16px',
 };
-const TOOLTIP_LABEL_STYLE = { color: '#f8fafc', fontWeight: 'bold', marginBottom: '4px' };
-const TOOLTIP_ITEM_STYLE = { color: '#dae2fd' };
+const TOOLTIP_LABEL_STYLE = { color: '#f8fafc', fontWeight: 800, marginBottom: '6px', fontSize: '14px' };
+const TOOLTIP_ITEM_STYLE = { color: '#dae2fd', fontWeight: 600 };
 
 // ─── Correlation Insights ──────────────────────────────────────
 function CorrelationInsights() {
@@ -76,9 +81,9 @@ function CorrelationInsights() {
     return (
       <ChartCard title="Deep Insights" subtitle="Analyzing patterns in your habit data...">
         <div className="flex flex-col space-y-3 p-4">
-          <div className="h-4 rounded-full bg-slate-100 dark:bg-white/5 animate-pulse w-full" />
-          <div className="h-4 rounded-full bg-slate-100 dark:bg-white/5 animate-pulse w-3/4" />
-          <div className="h-4 rounded-full bg-slate-100 dark:bg-white/5 animate-pulse w-5/6" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-5/6" />
         </div>
       </ChartCard>
     );
@@ -184,7 +189,7 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
   }, [habits]);
 
   function colorFor(val: number) {
-    if (val === 0) return 'rgba(255,255,255,0.04)';
+    if (val === 0) return 'var(--heatmap-empty)';
     if (val < 0.25) return '#166534';
     if (val < 0.5) return '#16a34a';
     if (val < 0.75) return '#22c55e';
@@ -221,8 +226,8 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
 
   if (loading)
     return (
-      <div className="h-40 flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm animate-pulse">
-        Loading year of data…
+      <div className="h-40 w-full rounded-2xl overflow-hidden">
+        <Skeleton className="w-full h-full" />
       </div>
     );
 
@@ -335,7 +340,7 @@ function Heatmap({ logs }: { logs: Record<string, number> }) {
     }
   });
   function colorFor(val: number) {
-    if (val === 0) return 'rgba(255,255,255,0.04)';
+    if (val === 0) return 'var(--heatmap-empty)';
     if (val < 0.4) return 'var(--color-brand-300, rgba(99,102,241,0.3))';
     if (val < 0.7) return 'var(--color-brand-400, rgba(99,102,241,0.6))';
     return 'var(--color-brand-500, #6366f1)';
@@ -468,8 +473,8 @@ function TrendLine({ habits }: { habits: any[] }) {
       <AreaChart data={data}>
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
+            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.6} />
+            <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -514,8 +519,8 @@ function MoodTrend({ moods }: { moods: any[] }) {
       <AreaChart data={data}>
         <defs>
           <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+            <stop offset="5%" stopColor="#10b981" stopOpacity={0.6} />
+            <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -724,8 +729,8 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
       <ComposedChart data={data}>
         <defs>
           <linearGradient id="compGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.4} />
-            <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
+            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.6} />
+            <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -818,18 +823,25 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="glass-card-3d rounded-2xl p-6 relative overflow-hidden group">
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="glass-card-3d rounded-2xl p-6 relative overflow-hidden group"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500" />
       <div className="mb-5 relative z-10">
-        <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+        <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight">{title}</h3>
         {subtitle && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mt-1">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
             {subtitle}
           </p>
         )}
       </div>
-      {children}
-    </div>
+      <div className="relative z-10">
+        {children}
+      </div>
+    </motion.div>
   );
 }
 
@@ -843,99 +855,84 @@ function EmptyChart() {
   );
 }
 
-// ─── Dynamic Insights ──────────────────────────────────────────
+// ─── AI Insight Synthesizer ──────────────────────────────────────
 function DynamicInsights({ habits }: { habits: any[] }) {
   if (habits.length === 0) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-card rounded-2xl p-5 border-l-4 border-l-brand-500/40">
-          <span className="text-2xl">🌱</span>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mt-3 mb-1">
-            Fresh Start
-          </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 leading-relaxed">
-            Every day is a new opportunity. Start building your streaks today!
-          </p>
+      <div className="glass-card-3d rounded-2xl p-6 relative overflow-hidden h-full flex flex-col justify-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 to-transparent opacity-50" />
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-brand-500/20 flex items-center justify-center text-2xl animate-pulse">
+            🌱
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-brand-400 uppercase tracking-widest mb-1">
+              AI Synthesis
+            </h4>
+            <p className="text-sm text-slate-300 font-medium leading-relaxed">
+              Every day is a new opportunity. Start building your habits to generate insights!
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
-  const insights: { icon: string; title: string; body: string }[] = [];
+  const insights: string[] = [];
 
-  // Insight 1: Longest active streak
   const bestCurrent = [...habits].sort((a, b) => b.streak.current - a.streak.current)[0];
   if (bestCurrent && bestCurrent.streak.current >= 3) {
-    insights.push({
-      icon: '🔥',
-      title: 'Streak Master',
-      body: `You're on a ${bestCurrent.streak.current}-day streak for "${bestCurrent.name}". Keep the momentum going!`,
-    });
-  } else {
-    insights.push({
-      icon: '🌱',
-      title: 'Fresh Start',
-      body: 'Every day is a new opportunity. Start building your streaks today!',
-    });
+    insights.push(`You're on a powerful ${bestCurrent.streak.current}-day streak for "${bestCurrent.name}".`);
   }
 
-  // Insight 2: Overall consistency
   const avgComp = Math.round(
     (habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100
   );
   if (avgComp > 80) {
-    insights.push({
-      icon: '⭐',
-      title: 'Highly Consistent',
-      body: `Your 30-day completion rate is an impressive ${avgComp}%. You've built solid routines.`,
-    });
+    insights.push(`Your overall consistency is an impressive ${avgComp}%.`);
   } else if (avgComp > 40) {
-    insights.push({
-      icon: '📈',
-      title: 'Steady Progress',
-      body: `Your ${avgComp}% completion rate shows good effort. Focus on your hardest habits next.`,
-    });
-  } else {
-    insights.push({
-      icon: '🎯',
-      title: 'Room to Grow',
-      body: `Focus on completing just one core habit daily to build momentum.`,
-    });
+    insights.push(`You maintain a steady ${avgComp}% completion rate.`);
   }
 
-  // Insight 3: Best Category
   const catCounts: Record<string, number> = {};
   habits.forEach(h => {
     catCounts[h.category] = (catCounts[h.category] || 0) + h.completionRate30Days;
   });
   const bestCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
   if (bestCat && bestCat[1] > 0) {
-    insights.push({
-      icon: '🏆',
-      title: `${bestCat[0]} Champion`,
-      body: `You've been most consistent with your ${bestCat[0]} habits lately.`,
-    });
-  } else {
-    insights.push({
-      icon: '⚖️',
-      title: 'Find Balance',
-      body: `Try to spread your focus evenly across different areas of your life.`,
-    });
+    insights.push(`You've been highly focused on your ${bestCat[0]} routines.`);
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {insights.map(c => (
-        <div key={c.title} className="glass-card rounded-2xl p-5 border-l-4 border-l-brand-500/40">
-          <span className="text-2xl">{c.icon}</span>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mt-3 mb-1">
-            {c.title}
+    <div className="glass-card-3d rounded-2xl p-6 md:p-8 relative overflow-hidden h-full">
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 via-transparent to-transparent opacity-50" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3" />
+      
+      <div className="relative z-10 flex flex-col h-full justify-center">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-brand-500/20">
+            <span className="text-sm">✨</span>
+            <div className="absolute inset-0 rounded-full border border-brand-500/50 animate-[spin_3s_linear_infinite]" />
+          </div>
+          <h4 className="text-xs font-black text-brand-400 uppercase tracking-[0.2em]">
+            HabitFlow AI Analysis
           </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 leading-relaxed">
-            {c.body}
-          </p>
         </div>
-      ))}
+        
+        <div className="space-y-3">
+          {insights.map((text, i) => (
+            <motion.p
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.4 + 0.2, duration: 0.6, ease: 'easeOut' }}
+              className="text-[15px] text-slate-700 dark:text-slate-200 font-medium leading-relaxed"
+            >
+              {text}
+            </motion.p>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1001,7 +998,7 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-32 relative">
-      <FloatingOrbs />
+
       {/* Header */}
       <div className="relative z-10 flex items-end justify-between">
         <div>
@@ -1041,52 +1038,55 @@ export function AnalyticsPage() {
       {/* ── Overview ── */}
       {tab === 'Overview' && (
         <div className="space-y-6">
-          {/* KPI row */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-            <StatCard
-              icon="🔥"
-              label="Active Habits"
-              value={habits.filter(h => !h.archived).length}
-              sub="tracking now"
-              colorClass="kpi-card-amber"
-            />
-            <StatCard
-              icon="🏆"
-              label="Best Streak"
-              value={bestStreak ? `${bestStreak}d` : '—'}
-              sub="all time"
-              colorClass="kpi-card-indigo"
-            />
-            <StatCard
-              icon="✅"
-              label="Tasks Done"
-              value={tasksDone}
-              sub={`of ${tasks.length} total`}
-              colorClass="kpi-card-emerald"
-            />
-            <StatCard
-              icon="📈"
-              label="30d Avg"
-              value={avgCompletion ? `${avgCompletion}%` : '—'}
-              sub="completion rate"
-              colorClass="kpi-card-indigo"
-            />
-            <StatCard
-              icon="✨"
-              label="Avg Mood"
-              value={avgMood ? `${avgMood}/5` : '—'}
-              sub="last 30 days"
-              colorClass="kpi-card-emerald"
-            />
+          {/* Top Bento Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <DynamicInsights habits={habits} />
+            </div>
+            <div className="lg:col-span-1 grid grid-cols-2 gap-4">
+              <StatCard
+                icon="🏆"
+                label="Best Streak"
+                value={bestStreak ? `${bestStreak}d` : '—'}
+                sub="all time"
+                colorClass="kpi-card-indigo"
+              />
+              <StatCard
+                icon="📈"
+                label="30d Avg"
+                value={avgCompletion ? `${avgCompletion}%` : '—'}
+                sub="completion rate"
+                colorClass="kpi-card-emerald"
+              />
+              <StatCard
+                icon="🔥"
+                label="Active Habits"
+                value={habits.filter(h => !h.archived).length}
+                sub="tracking now"
+                colorClass="kpi-card-amber"
+              />
+              <StatCard
+                icon="✨"
+                label="Avg Mood"
+                value={avgMood ? `${avgMood}/5` : '—'}
+                sub="last 30 days"
+                colorClass="kpi-card-indigo"
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard title="Weekly Pattern" subtitle="Completion rate by day of week">
-              <WeeklyRadar habits={habits} />
-            </ChartCard>
-            <ChartCard title="Best & Weakest Days" subtitle="Based on last 90 days of data">
-              {habits.length > 0 ? <BestWorstDay habits={habits} /> : <EmptyChart />}
-            </ChartCard>
+          {/* Bottom Bento Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <ChartCard title="Weekly Pattern" subtitle="Completion rate by day of week">
+                <WeeklyRadar habits={habits} />
+              </ChartCard>
+            </div>
+            <div className="lg:col-span-2">
+              <ChartCard title="Best & Weakest Days" subtitle="Based on last 90 days of data">
+                {habits.length > 0 ? <BestWorstDay habits={habits} /> : <EmptyChart />}
+              </ChartCard>
+            </div>
           </div>
 
           <ChartCard
@@ -1157,23 +1157,30 @@ export function AnalyticsPage() {
               {selectedHabit && (
                 <>
                   {/* Date range selector */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
-                      Date Range:
-                    </span>
-                    {([7, 30, 90] as const).map(days => (
-                      <button
-                        key={days}
-                        onClick={() => setPerHabitDays(days)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                          perHabitDays === days
-                            ? 'button-3d border-brand-500/50 text-white'
-                            : 'glass-card-3d border-white/5 text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        {days}d
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex bg-slate-900/40 p-1 rounded-xl border border-white/5 relative shadow-inner">
+                      {([7, 30, 90] as const).map(days => (
+                        <button
+                          key={days}
+                          onClick={() => setPerHabitDays(days)}
+                          className={`relative z-10 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                            perHabitDays === days
+                              ? 'text-white'
+                              : 'text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          {perHabitDays === days && (
+                            <motion.div
+                              layoutId="timeframe-pill"
+                              className="absolute inset-0 bg-brand-500/80 rounded-lg shadow-sm"
+                              style={{ zIndex: -1 }}
+                              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                          )}
+                          {days} Days
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -21,6 +21,10 @@ import { useAuthStore } from '@/store/authStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useToast } from '@/components/common/Toast';
 import { soundService } from '@/services/soundService';
+import { TiltCard } from '@/components/ui/TiltCard';
+import { lazy, Suspense } from 'react';
+
+const GamificationBackground = lazy(() => import('@/components/gamification/GamificationBackground'));
 
 /** Get or create a stable anonymous guest ID stored in localStorage */
 function getGuestId(): string {
@@ -133,6 +137,7 @@ export function SquadPage() {
   if (loadingSquad) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
+        <Suspense fallback={null}><GamificationBackground /></Suspense>
         <div className="w-8 h-8 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
       </div>
     );
@@ -140,7 +145,8 @@ export function SquadPage() {
 
   if (!squad) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 relative pb-10">
+        <Suspense fallback={null}><GamificationBackground /></Suspense>
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Squad</h1>
           <p className="text-sm text-slate-400 mt-1">Accountability through community</p>
@@ -150,34 +156,37 @@ export function SquadPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-transparent border border-blue-500/20 p-8 text-center"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/5 to-transparent animate-[shimmer_3s_infinite] pointer-events-none" />
-          <div className="relative">
-            <div className="text-6xl mb-4">👥</div>
-            <h2 className="text-xl font-bold text-white mb-2">Better Together</h2>
-            <p className="text-sm text-slate-300 w-full max-w-[400px] mx-auto mb-6 leading-relaxed">
-              You're <span className="text-brand-400 font-bold">65% more likely</span> to reach your
-              goals with an accountability partner. Create or join a squad of up to 5 people.
-            </p>
+          <TiltCard tiltIntensity={5}>
+            <div className="relative overflow-hidden rounded-2xl bg-black/20 backdrop-blur-md border border-blue-500/30 p-8 text-center shadow-2xl shadow-blue-500/10">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/5 to-transparent animate-[shimmer_3s_infinite] pointer-events-none" />
+              <div className="relative">
+                <div className="text-6xl mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">👥</div>
+                <h2 className="text-xl font-bold text-white mb-2">Better Together</h2>
+                <p className="text-sm text-slate-300 w-full max-w-[400px] mx-auto mb-6 leading-relaxed">
+                  You're <span className="text-brand-400 font-bold">65% more likely</span> to reach your
+                  goals with an accountability partner. Create or join a squad of up to 5 people.
+                </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={() => setShowCreate(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold hover:shadow-lg hover:shadow-brand-500/20 transition-all active:scale-95"
-              >
-                <Plus size={18} />
-                Create a Squad
-              </button>
-              <button
-                onClick={() => setShowJoin(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all active:scale-95"
-              >
-                <LogIn size={18} />
-                Join a Squad
-              </button>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold hover:shadow-lg hover:shadow-brand-500/20 transition-all active:scale-95"
+                  >
+                    <Plus size={18} />
+                    Create a Squad
+                  </button>
+                  <button
+                    onClick={() => setShowJoin(true)}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all active:scale-95"
+                  >
+                    <LogIn size={18} />
+                    Join a Squad
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          </TiltCard>
         </motion.div>
 
         {/* How it works */}
@@ -192,11 +201,14 @@ export function SquadPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.1 }}
-              className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center"
             >
-              <div className="text-3xl mb-3">{item.icon}</div>
-              <h3 className="text-sm font-bold text-white mb-1">{item.title}</h3>
-              <p className="text-xs text-slate-400">{item.desc}</p>
+              <TiltCard tiltIntensity={6} className="h-full">
+                <div className="rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 p-5 text-center h-full">
+                  <div className="text-3xl mb-3 drop-shadow-md">{item.icon}</div>
+                  <h3 className="text-sm font-bold text-white mb-1">{item.title}</h3>
+                  <p className="text-xs text-slate-400">{item.desc}</p>
+                </div>
+              </TiltCard>
             </motion.div>
           ))}
         </div>
@@ -314,7 +326,8 @@ export function SquadPage() {
 
   // ─── In a Squad ────────────────────────────────────────────
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative pb-10">
+      <Suspense fallback={null}><GamificationBackground /></Suspense>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -362,11 +375,13 @@ export function SquadPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className={`relative overflow-hidden rounded-2xl border ${
-                idx < 3 ? `bg-gradient-to-r ${medalColor}` : 'bg-white/5 border-white/10'
-              } p-4`}
             >
-              <div className="flex items-center gap-4">
+              <TiltCard tiltIntensity={8}>
+                <div className={`relative overflow-hidden rounded-2xl border ${
+                  idx < 3 ? `bg-gradient-to-r ${medalColor}` : 'bg-black/20 backdrop-blur-md border-white/10'
+                } p-4`}
+                >
+                  <div className="flex items-center gap-4">
                 {/* Rank */}
                 <div className="text-2xl w-8 text-center flex-shrink-0">
                   {medal || <span className="text-sm text-slate-500 font-bold">#{idx + 1}</span>}
@@ -438,6 +453,8 @@ export function SquadPage() {
                   </span>
                 </div>
               </div>
+                </div>
+              </TiltCard>
             </motion.div>
           );
         })}

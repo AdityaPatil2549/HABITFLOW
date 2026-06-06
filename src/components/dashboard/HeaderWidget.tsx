@@ -9,6 +9,7 @@ import { habitService } from '../../services/habitService';
 import { format } from 'date-fns';
 import { DailyQuote } from '../ui/DailyQuote';
 import { AICoachCard } from '../coach/AICoachCard';
+import { MagneticButton } from '../ui/MagneticButton';
 
 const PROFILE_KEY = 'habitflow_profile';
 
@@ -87,16 +88,17 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
         </div>
 
         <div className="flex items-center gap-4">
-          <button
+          <MagneticButton
             onClick={() => navigate('/habits')}
             className="group relative flex items-center gap-3 px-6 py-4 rounded-2xl bg-white text-slate-950 font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.4)]"
+            intensity={0.2}
           >
             <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
             <span>Engage Habit</span>
-          </button>
+          </MagneticButton>
 
           {xpStats && (
-            <div className="flex flex-col items-start gap-1 ml-4 px-6 py-3 rounded-2xl vision-panel backdrop-blur-xl border border-white/10">
+            <div data-tour="stats-widget" className="flex flex-col items-start gap-1 ml-4 px-6 py-3 rounded-2xl vision-panel backdrop-blur-xl border border-white/10">
               <div className="flex items-center gap-2">
                 <Zap size={16} className="text-amber-400" />
                 <span className="text-base font-bold text-white tracking-wide">
@@ -136,12 +138,13 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
               {atRiskHabits.map(h => `${h.name} (${h.streak.current}d)`).join(' · ')}
             </p>
           </div>
-          <button
+          <MagneticButton
             onClick={() => navigate('/habits')}
             className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 font-bold hover:bg-red-500/30 transition-colors whitespace-nowrap border border-red-500/30"
+            intensity={0.2}
           >
             Avert Crisis →
-          </button>
+          </MagneticButton>
         </motion.div>
       )}
 

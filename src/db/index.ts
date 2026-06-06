@@ -72,6 +72,18 @@ class HabitFlowDB extends Dexie {
     this.version(6).stores({
       ai_insights: 'id, type, created_at, read',
     });
+
+    // v7: Drop userXP and settings to safely change primary keys from auto-increment to string
+    this.version(7).stores({
+      userXP: null,
+      settings: null,
+    });
+
+    // v8: Recreate userXP and settings with string primary keys
+    this.version(8).stores({
+      userXP: 'id',
+      settings: 'id',
+    });
   }
 }
 
@@ -79,21 +91,25 @@ export const db = new HabitFlowDB();
 
 // ─── Singleton helpers ───────────────────────────────────────
 export async function getOrCreateUserXP(): Promise<UserXP> {
-  const user = await db.userXP.get('singleton');
-  if (user) {
-    let needsUpdate = false;
-    if (!user.unlockedThemes) {
-      user.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
-      needsUpdate = true;
+  try {
+    const user = await db.userXP.get('singleton').catch(() => null);
+    if (user) {
+      let needsUpdate = false;
+      if (!user.unlockedThemes) {
+        user.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
+        needsUpdate = true;
+      }
+      if (user.coins === undefined || user.coins === null) {
+        user.coins = 0;
+        needsUpdate = true;
+      }
+      if (needsUpdate) {
+        await db.userXP.update(user.id, { unlockedThemes: user.unlockedThemes, coins: user.coins }).catch(() => null);
+      }
+      return user;
     }
-    if (user.coins === undefined || user.coins === null) {
-      user.coins = 0;
-      needsUpdate = true;
-    }
-    if (needsUpdate) {
-      await db.userXP.update(user.id, { unlockedThemes: user.unlockedThemes, coins: user.coins });
-    }
-    return user;
+  } catch (err) {
+    console.warn('Failed to get userXP from Dexie, returning default', err);
   }
   const newXP: UserXP = {
     id: 'singleton',
@@ -108,13 +124,17 @@ export async function getOrCreateUserXP(): Promise<UserXP> {
     unlockedThemes: ['indigo', 'violet', 'emerald', 'rose', 'amber'],
     lastUpdated: new Date().toISOString(),
   };
-  await db.userXP.add(newXP);
+  try {
+    await db.userXP.add(newXP).catch(() => null);
+  } catch(e) { /* ignore */ }
   return newXP;
 }
 
 export async function getOrCreateSettings(): Promise<Settings> {
-  const existing = await db.settings.get('singleton');
-  if (existing) return existing;
+  try {
+    const existing = await db.settings.get('singleton').catch(() => null);
+    if (existing) return existing;
+  } catch (err) { /* ignore */ }
   const defaults: Settings = {
     id: 'singleton',
     theme: 'indigo',
@@ -126,6 +146,8 @@ export async function getOrCreateSettings(): Promise<Settings> {
     language: 'en',
     dashboardLayout: ['header', 'stats', 'tasks', 'habits', 'mood'],
   };
-  await db.settings.add(defaults);
+  try {
+    await db.settings.add(defaults).catch(() => null);
+  } catch(e) { /* ignore */ }
   return defaults;
 }

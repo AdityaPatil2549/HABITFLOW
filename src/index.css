@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
 @theme {
   --color-on-surface-variant: #c7c4d7;
@@ -621,6 +622,7 @@ body {
   --color-surface-dim: #f1f5f9;
   --color-on-surface: #0f172a;
   --color-outline: #64748b;
+  --heatmap-empty: rgba(0, 0, 0, 0.05);
   --color-outline-variant: #cbd5e1;
 
   --bg-base: #f8fafc;
@@ -1132,7 +1134,7 @@ body {
   width: 8px;
   height: 8px;
 }
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
 
 @tailwind base;
 @tailwind components;
@@ -1147,6 +1149,7 @@ body {
     /* Base Colors - Obsidian/Slate Base */
     --color-bg-base: #020617; /* Slate 950 */
     --color-bg-surface: rgba(15, 23, 42, 0.4); /* Slate 900 with alpha */
+    --heatmap-empty: rgba(255, 255, 255, 0.04);
     --color-bg-elevated: rgba(30, 41, 59, 0.6);
     
     /* Text */
@@ -1432,3 +1435,38 @@ body {
 .light body {
   background-color: #f8fafc;
 }
+
+/* ── Neon Rotating Border (Urgent Tasks) ───────────────────────── */
+@keyframes neon-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.neon-urgent-glow {
+  position: relative;
+  isolation: isolate;
+}
+
+.neon-urgent-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 17px;
+  overflow: hidden;
+  z-index: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    #ef4444 60deg,
+    #f97316 100deg,
+    #fbbf24 130deg,
+    transparent 180deg
+  );
+  animation: neon-spin 2.2s linear infinite;
+}
+
+.neon-urgent-glow > * {
+  position: relative;
+  z-index: 1;
+}
+

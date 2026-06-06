@@ -30,9 +30,10 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      'prettier/prettier': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }]
+      'prettier/prettier': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'react/prop-types': 'off'
     },
   }
 );

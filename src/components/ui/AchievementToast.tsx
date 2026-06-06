@@ -1,7 +1,59 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Star, Flame, X } from 'lucide-react';
 import { useCompletionEffects } from './CompletionEffects';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Float, Octahedron, Sparkles } from '@react-three/drei';
+import * as THREE from 'three';
+
+function AnimatedTrophy() {
+  const groupRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = state.clock.getElapsedTime() * 1.2;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <Float speed={2.5} rotationIntensity={0.5} floatIntensity={1.5}>
+        <Octahedron args={[1.2, 0]}>
+          <meshStandardMaterial 
+            color="#fbbf24" 
+            metalness={0.8} 
+            roughness={0.15}
+            emissive="#fbbf24"
+            emissiveIntensity={0.4}
+          />
+        </Octahedron>
+        <Octahedron args={[0.7, 0]}>
+          <meshStandardMaterial 
+            color="#ffffff" 
+            metalness={1} 
+            roughness={0}
+            emissive="#ffffff"
+            emissiveIntensity={0.8}
+          />
+        </Octahedron>
+      </Float>
+    </group>
+  );
+}
+
+function Celebration3D() {
+  return (
+    <div className="h-40 w-full mb-4 relative flex items-center justify-center">
+      <Canvas camera={{ position: [0, 0, 5], fov: 45 }} dpr={[1, 1.5]}>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[5, 5, 5]} intensity={2} color="#ffffff" />
+        <pointLight position={[-5, -5, -5]} intensity={1} color="#ec4899" />
+        <Sparkles count={40} scale={4} size={3} speed={0.8} opacity={0.5} color="#fbbf24" />
+        <AnimatedTrophy />
+      </Canvas>
+    </div>
+  );
+}
 
 interface AchievementToastProps {
   title: string;
@@ -94,15 +146,18 @@ export function AchievementToast({
                     : 'Badge Earned!'}
               </motion.div>
 
-              {/* Icon */}
-              <motion.div
-                className="text-7xl mb-4"
-                initial={{ scale: 0, rotate: -30 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 12 }}
-              >
-                {icon}
-              </motion.div>
+              {type === 'level_up' ? (
+                <Celebration3D />
+              ) : (
+                <motion.div
+                  className="text-7xl mb-4"
+                  initial={{ scale: 0, rotate: -30 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 12 }}
+                >
+                  {icon}
+                </motion.div>
+              )}
 
               {/* Title */}
               <motion.h2

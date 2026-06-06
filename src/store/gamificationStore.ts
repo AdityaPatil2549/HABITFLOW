@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { gamificationService } from '@/services/gamificationService';
 import type { UserXP } from '@/types';
 import { queueAchievement, checkStreakMilestone } from '@/components/ui/AchievementToast';
+import { soundService } from '@/services/soundService';
+import { triggerConfetti, triggerLevelUpConfetti } from '@/lib/confetti';
 
 interface GamificationState {
   userXP: UserXP | null;
@@ -40,17 +42,28 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
 
     // Level Up / Badge toasts
     result.badgesUnlocked.forEach(badge => {
+      const isLevelUp = badge.id.startsWith('level');
+      if (isLevelUp) {
+        soundService.playLevelUp();
+        triggerLevelUpConfetti();
+      } else {
+        soundService.playBadge();
+        triggerConfetti();
+      }
+      
       queueAchievement({
         title: badge.name,
         description: badge.description,
         icon: badge.icon,
-        type: badge.id.startsWith('level') ? 'level_up' : 'badge',
+        type: isLevelUp ? 'level_up' : 'badge',
       });
     });
 
     // Check custom streak milestones
     const milestone = checkStreakMilestone(streak);
     if (milestone) {
+      soundService.playBadge();
+      triggerConfetti();
       queueAchievement({
         title: milestone.title,
         description: milestone.description,

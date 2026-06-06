@@ -17,6 +17,10 @@ import {
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/common/Toast';
 import { soundService } from '@/services/soundService';
+import { TiltCard } from '@/components/ui/TiltCard';
+import { lazy, Suspense } from 'react';
+
+const GamificationBackground = lazy(() => import('@/components/gamification/GamificationBackground'));
 
 const CATEGORY_TABS = [
   { id: 'all', label: 'All', icon: ShoppingBag },
@@ -107,7 +111,11 @@ export function ShopPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative pb-10">
+      <Suspense fallback={null}>
+        <GamificationBackground />
+      </Suspense>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -161,59 +169,63 @@ export function ShopPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className={`relative rounded-2xl bg-white/5 border ${rarity.border} overflow-hidden group hover:bg-white/8 transition-all ${rarity.glow ? `shadow-xl ${rarity.glow}` : ''}`}
+              className="h-full"
             >
-              {/* Legendary shimmer */}
-              {item.rarity === 'legendary' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
-              )}
+              <TiltCard tiltIntensity={12} className="h-full block">
+                <div className={`relative h-full rounded-2xl bg-black/20 backdrop-blur-md border ${rarity.border} overflow-hidden group hover:bg-white/10 transition-all ${rarity.glow ? `shadow-xl ${rarity.glow}` : ''}`}>
+                  {/* Legendary shimmer */}
+                  {item.rarity === 'legendary' && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
+                  )}
 
-              <div className="relative p-4 flex flex-col items-center text-center">
-                {/* Rarity badge */}
-                <span
-                  className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${rarity.badge}`}
-                >
-                  {item.rarity}
-                </span>
+                  <div className="relative p-4 flex flex-col items-center text-center">
+                    {/* Rarity badge */}
+                    <span
+                      className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${rarity.badge}`}
+                    >
+                      {item.rarity}
+                    </span>
 
-                {/* Icon */}
-                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">
-                  {item.icon}
-                </div>
+                    {/* Icon */}
+                    <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">
+                      {item.icon}
+                    </div>
 
-                {/* Name & Description */}
-                <h3 className="text-sm font-bold text-white mb-1">{item.name}</h3>
-                <p className="text-[10px] text-slate-400 leading-relaxed mb-3 line-clamp-2">
-                  {item.description}
-                </p>
+                    {/* Name & Description */}
+                    <h3 className="text-sm font-bold text-white mb-1">{item.name}</h3>
+                    <p className="text-[10px] text-slate-400 leading-relaxed mb-3 line-clamp-2">
+                      {item.description}
+                    </p>
 
-                {/* Price / Status */}
-                {owned ? (
-                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-bold">
-                    <Check size={14} />
-                    Owned
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handlePurchase(item)}
-                    disabled={!canAfford || isPurchasing}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-                      canAfford
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-lg hover:shadow-amber-500/20'
-                        : 'bg-white/5 text-slate-500 cursor-not-allowed'
-                    }`}
-                  >
-                    {isPurchasing ? (
-                      <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : !canAfford ? (
-                      <Lock size={12} />
+                    {/* Price / Status */}
+                    {owned ? (
+                      <div className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-bold">
+                        <Check size={14} />
+                        Owned
+                      </div>
                     ) : (
-                      <Coins size={12} />
+                      <button
+                        onClick={() => handlePurchase(item)}
+                        disabled={!canAfford || isPurchasing}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                          canAfford
+                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-lg hover:shadow-amber-500/20'
+                            : 'bg-white/5 text-slate-500 cursor-not-allowed'
+                        }`}
+                      >
+                        {isPurchasing ? (
+                          <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : !canAfford ? (
+                          <Lock size={12} />
+                        ) : (
+                          <Coins size={12} />
+                        )}
+                        {item.price}
+                      </button>
                     )}
-                    {item.price}
-                  </button>
-                )}
-              </div>
+                  </div>
+                </div>
+              </TiltCard>
             </motion.div>
           );
         })}
@@ -224,34 +236,37 @@ export function ShopPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-2xl bg-white/5 border border-white/10 p-5"
       >
-        <div className="flex items-center gap-2 mb-4">
-          <Gift size={18} className="text-amber-400" />
-          <h3 className="text-sm font-bold text-white">How to Earn Coins</h3>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Complete habit', coins: COIN_RATES.HABIT_COMPLETE, icon: '✅' },
-            { label: 'All daily habits', coins: COIN_RATES.ALL_DAILY_COMPLETE, icon: '🏆' },
-            { label: '7-day streak', coins: COIN_RATES.STREAK_7, icon: '🔥' },
-            { label: 'Complete task', coins: COIN_RATES.TASK_COMPLETE, icon: '📋' },
-            { label: '30-day streak', coins: COIN_RATES.STREAK_30, icon: '💎' },
-            { label: '100-day streak', coins: COIN_RATES.STREAK_100, icon: '👑' },
-            { label: 'Perfect week', coins: COIN_RATES.PERFECT_WEEK, icon: '⭐' },
-          ].map(item => (
-            <div
-              key={item.label}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/3 border border-white/5"
-            >
-              <span className="text-lg">{item.icon}</span>
-              <div>
-                <p className="text-[10px] text-slate-400">{item.label}</p>
-                <p className="text-xs font-bold text-amber-400">+{item.coins}</p>
-              </div>
+        <TiltCard tiltIntensity={3}>
+          <div className="rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Gift size={18} className="text-amber-400" />
+              <h3 className="text-sm font-bold text-white">How to Earn Coins</h3>
             </div>
-          ))}
-        </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Complete habit', coins: COIN_RATES.HABIT_COMPLETE, icon: '✅' },
+                { label: 'All daily habits', coins: COIN_RATES.ALL_DAILY_COMPLETE, icon: '🏆' },
+                { label: '7-day streak', coins: COIN_RATES.STREAK_7, icon: '🔥' },
+                { label: 'Complete task', coins: COIN_RATES.TASK_COMPLETE, icon: '📋' },
+                { label: '30-day streak', coins: COIN_RATES.STREAK_30, icon: '💎' },
+                { label: '100-day streak', coins: COIN_RATES.STREAK_100, icon: '👑' },
+                { label: 'Perfect week', coins: COIN_RATES.PERFECT_WEEK, icon: '⭐' },
+              ].map(item => (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/3 border border-white/5"
+                >
+                  <span className="text-lg">{item.icon}</span>
+                  <div>
+                    <p className="text-[10px] text-slate-400">{item.label}</p>
+                    <p className="text-xs font-bold text-amber-400">+{item.coins}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </TiltCard>
       </motion.div>
     </div>
   );

@@ -1,15 +1,17 @@
 import { Outlet, NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
+import { FloatingOrbs } from '../ui/FloatingOrbs';
 import { cn } from '../../lib/utils';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { useFocusStore } from '../../store/focusStore';
 import { useAuthStore } from '../../store/authStore';
 import { calculateStats } from '../../services/gamificationService';
 import { useToast } from '../common/Toast';
+import { CommandMenu } from '../common/CommandMenu';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useModalStore } from '../../store/modalStore';
 import { IconRenderer } from '../common/IconRenderer';
@@ -40,7 +42,7 @@ import {
   Flower2,
 } from 'lucide-react';
 import { CursorTrail } from '../ui/CursorTrail';
-
+import { OnboardingTour } from '../ui/OnboardingTour';
 // ── Notification panel ─────────────────────────────────────────
 // Demo notifications — will be replaced with real event-driven notifications in a future update
 const DEMO_NOTIFICATIONS = [
@@ -281,30 +283,60 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
     navigate(path);
     onClose();
   };
+
+  const menuVariants = {
+    hidden: { opacity: 0, rotateX: -15, y: -20, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      rotateX: 0, 
+      y: 0, 
+      scale: 1,
+      transition: { 
+        type: "spring" as const, stiffness: 300, damping: 24,
+        staggerChildren: 0.05,
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 }
+  };
+
   return (
-    <div className="w-full rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/60 z-[100] overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 backdrop-blur-xl">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.1 } }}
+      variants={menuVariants}
+      style={{ transformOrigin: 'top right', perspective: 1000 }}
+      className="w-full rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-3xl"
+    >
       {/* Profile header */}
-      <div className="px-5 py-4 border-b border-slate-200 dark:border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold text-sm">
+      <div className="px-5 py-5 border-b border-white/10 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="flex items-center gap-3 relative z-10">
+          <div className="w-12 h-12 rounded-2xl overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform duration-300">
             {profile.avatar ? (
               <img src={profile.avatar} className="w-full h-full object-cover" />
             ) : (
-              profile.name[0]
+              profile.name[0]?.toUpperCase()
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+            <p className="text-base font-bold text-white truncate group-hover:text-brand-400 transition-colors">
               {isGuest ? 'Guest User' : profile.name}
             </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            <p className="text-[10px] font-semibold tracking-wide uppercase text-slate-400 mt-0.5 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               {isGuest ? 'Local Mode Only' : 'Peak Performer'}
             </p>
           </div>
         </div>
       </div>
+
       {/* Menu items */}
-      <div className="py-2">
+      <div className="p-2 space-y-1">
         {[
           { icon: Zap, label: 'Rewards Shop', path: '/shop' },
           { icon: Users, label: 'Squad', path: '/squad' },
@@ -314,31 +346,43 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
         ].map(item => {
           const Icon = item.icon;
           return (
-            <button
+            <motion.button
+              variants={itemVariants}
               key={item.label}
               onClick={() => go(item.path)}
-              className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-colors"
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors group"
             >
-              <Icon size={18} className="text-slate-500" />
+              <div className="w-8 h-8 rounded-lg bg-slate-800/50 border border-white/5 flex items-center justify-center group-hover:bg-brand-500/20 group-hover:border-brand-500/30 group-hover:text-brand-400 transition-colors shadow-sm">
+                <Icon size={16} />
+              </div>
               {item.label}
-            </button>
+            </motion.button>
           );
         })}
       </div>
-      <div className="border-t border-slate-200 dark:border-white/5 py-2">
+
+      <div className="border-t border-white/10 p-2 space-y-1 bg-black/20">
         {isGuest ? (
-          <button
+          <motion.button
+            variants={itemVariants}
             onClick={() => {
               onClose();
               navigate('/login');
             }}
-            className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm font-bold text-brand-400 hover:bg-brand-500/10 transition-colors"
+            whileHover={{ scale: 1.02, x: 4 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-bold text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 transition-all group"
           >
-            <Cloud size={18} />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-brand-400">
+              <Cloud size={18} className="group-hover:scale-110 transition-transform" />
+            </div>
             Sign in to Sync Data
-          </button>
+          </motion.button>
         ) : (
-          <button
+          <motion.button
+            variants={itemVariants}
             onClick={() => {
               onClose();
               toast.confirm(
@@ -350,13 +394,18 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
                 { confirmLabel: 'Sign Out' }
               );
             }}
-            className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+            whileHover={{ scale: 1.02, x: 4 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-colors group"
           >
-            <LogOut size={18} />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+              <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" />
+            </div>
             Sign Out
-          </button>
+          </motion.button>
         )}
-        <button
+        <motion.button
+          variants={itemVariants}
           onClick={() => {
             onClose();
             toast.confirm(
@@ -378,13 +427,17 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
               { confirmLabel: 'Erase Everything', cancelLabel: 'Keep My Data', danger: true }
             );
           }}
-          className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+          whileHover={{ scale: 1.02, x: 4 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors group"
         >
-          <LogOut size={18} className="text-red-500/70" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <LogOut size={16} className="text-red-500/70 group-hover:scale-110 transition-transform" />
+          </div>
           Reset All Data
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -444,7 +497,6 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
     { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
     { icon: BarChart2, label: 'Analytics', path: '/analytics' },
     { icon: CheckCircle2, label: 'Weekly Review', path: '/review' },
-    { icon: Flower2, label: 'Garden', path: '/garden' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -661,6 +713,7 @@ export function Layout() {
       <div className="bg-mesh-blob" />
       <div className="noise-overlay" />
       <CursorTrail />
+      <FloatingOrbs />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 glass-card-3d rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
@@ -749,7 +802,7 @@ export function Layout() {
       </nav>
 
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-      <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
+      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
         <div className="px-6 mb-8 flex items-center justify-between">
           <NavLink
             to="/dashboard"
@@ -770,7 +823,6 @@ export function Layout() {
             { to: '/habits', icon: Target, label: 'Habits' },
             { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
             { to: '/analytics', icon: BarChart2, label: 'Analytics' },
-            { to: '/garden', icon: Flower2, label: 'Garden' },
             { to: '/review', icon: CheckCircle2, label: 'Weekly Review' },
             { to: '/squad', icon: Users, label: 'Squad' },
           ].map(l => {
@@ -970,7 +1022,9 @@ export function Layout() {
               exit={{ opacity: 0, y: -15, filter: 'blur(8px)' }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              <Outlet />
+              <Suspense fallback={<div className="flex items-center justify-center h-[50vh] text-slate-500 font-medium">Loading...</div>}>
+                <Outlet />
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -988,6 +1042,7 @@ export function Layout() {
               <NavLink
                 key={l.to}
                 to={l.to}
+                onClick={() => soundService.playTransition()}
                 className={({ isActive }) =>
                   `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
                 }
@@ -999,7 +1054,10 @@ export function Layout() {
 
           <div className="relative w-full h-full flex items-center justify-center">
             <button
-              onClick={() => setQuickAddOpen(true)}
+              onClick={() => {
+                soundService.playTransition();
+                setQuickAddOpen(true);
+              }}
               aria-label="Create new entry"
               className="absolute -top-7 z-[60] w-[3.5rem] h-[3.5rem] cursor-pointer button-3d rounded-full flex items-center justify-center border-4 border-slate-900"
             >
@@ -1016,6 +1074,7 @@ export function Layout() {
               <NavLink
                 key={l.to}
                 to={l.to}
+                onClick={() => soundService.playTransition()}
                 className={({ isActive }) =>
                   `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
                 }
@@ -1037,6 +1096,7 @@ export function Layout() {
         />
       )}
       <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      <CommandMenu />
       {achievement && (
         <AchievementToast
           title={achievement.title}
@@ -1046,6 +1106,7 @@ export function Layout() {
           onClose={dismissAchievement}
         />
       )}
+      <OnboardingTour />
     </div>
   );
 }

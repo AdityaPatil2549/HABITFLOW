@@ -328,6 +328,23 @@ export function FocusOverlay() {
           className={`absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-3xl opacity-[0.07] pointer-events-none ${isFocus ? 'bg-brand-400' : 'bg-emerald-400'} ${isRunning ? 'animate-pulse' : ''}`}
         />
 
+        {/* Zen Breathing Circle */}
+        {isFocus && isRunning && (
+          <motion.div
+            className="absolute top-1/2 left-1/2 w-[500px] h-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full border-[2px] border-white/5 pointer-events-none z-0"
+            style={{ filter: 'blur(2px)' }}
+            animate={{
+              scale: [0.8, 1.4, 0.8],
+              opacity: [0, 0.2, 0],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        )}
+
         {/* Ambient Sound Controls */}
         <div className="absolute top-6 right-6 z-50">
           <div className="flex bg-slate-900/50 backdrop-blur-md rounded-full border border-white/10 p-1 shadow-xl">
