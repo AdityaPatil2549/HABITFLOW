@@ -439,7 +439,7 @@ function BottomSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed bottom-0 left-0 w-full z-50 rounded-t-3xl max-h-[92vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 w-full min-w-full z-50 rounded-t-3xl max-h-[92vh] overflow-y-auto"
             style={{
               background: 'linear-gradient(180deg, rgba(12,8,28,0.98) 0%, rgba(5,3,15,0.99) 100%)',
               border: `1px solid ${accentColor ? accentColor + '25' : 'rgba(255,255,255,0.1)'}`,
@@ -451,7 +451,7 @@ function BottomSheet({
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-white/20" />
             </div>
-            <div className="w-full px-5 pb-10 max-w-lg mx-auto">
+            <div className="w-full min-w-[320px] sm:max-w-lg px-5 pb-10 mx-auto">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   {accentIcon && (
