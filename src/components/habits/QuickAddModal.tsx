@@ -5,6 +5,7 @@ import { useTaskStore } from '../../store/taskStore';
 import type { HabitType, HabitFrequency, Priority } from '../../types';
 import { format } from 'date-fns';
 import { IconRenderer, HABIT_ICONS } from '../common/IconRenderer';
+import { DynamicIcon } from '../ui/DynamicIcon';
 
 const CATEGORIES = [
   { name: 'Health', icon: '🍎' },
@@ -158,7 +159,9 @@ export function QuickAddModal({ onClose }: Props) {
                           : 'bg-white/5 border-white/5 text-slate-500 hover:text-white hover:border-white/10'
                       }`}
                     >
-                      <span>{c.icon}</span>
+                      <DynamicIcon tiltIntensity={25} size={20} interactive={true}>
+                        <span className="block">{c.icon}</span>
+                      </DynamicIcon>
                       {c.name}
                     </button>
                   ))}

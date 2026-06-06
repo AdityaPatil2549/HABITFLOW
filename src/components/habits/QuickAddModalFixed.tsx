@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { IconRenderer, HABIT_ICONS } from '../common/IconRenderer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { habitSchema } from '../../lib/validations';
+import { DynamicIcon } from '../ui/DynamicIcon';
 
 const CATEGORIES = [
   { name: 'Health', icon: '🍎' },
@@ -249,7 +250,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
                               : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/10'
                           }`}
                         >
-                          <span className="text-sm">{c.icon}</span>
+                          <DynamicIcon tiltIntensity={25} size={20} interactive={true}>
+                            <span className="text-sm block">{c.icon}</span>
+                          </DynamicIcon>
                           {c.name}
                         </button>
                       );
