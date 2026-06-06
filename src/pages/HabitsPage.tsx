@@ -450,7 +450,7 @@ function BottomSheet({
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-white/20" />
             </div>
-            <div className="px-5 pb-10 max-w-lg mx-auto">
+            <div className="w-full px-5 pb-10 max-w-lg mx-auto">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   {accentIcon && (
