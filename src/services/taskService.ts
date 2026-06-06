@@ -49,10 +49,16 @@ export const taskService = {
     const task = await db.tasks.get(id);
     if (!task) return;
 
+    const now = new Date().toISOString();
     await db.tasks.update(id, {
       completed: true,
-      completedAt: new Date().toISOString(),
+      completedAt: now,
+      updated_at: now,
     });
+
+    // Queue sync to Supabase
+    const updated = await db.tasks.get(id);
+    if (updated) syncService.queuePush('tasks', updated, 'upsert').catch(console.error);
 
     // Spawn next recurrence
     if (task.recurring !== 'none') {
@@ -82,7 +88,10 @@ export const taskService = {
   },
 
   async uncomplete(id: string): Promise<void> {
-    await db.tasks.update(id, { completed: false, completedAt: undefined });
+    const now = new Date().toISOString();
+    await db.tasks.update(id, { completed: false, completedAt: undefined, updated_at: now });
+    const updated = await db.tasks.get(id);
+    if (updated) syncService.queuePush('tasks', updated, 'upsert').catch(console.error);
   },
 
   async delete(id: string): Promise<void> {

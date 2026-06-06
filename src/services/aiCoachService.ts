@@ -259,25 +259,40 @@ async function detectPatterns(): Promise<AIInsight[]> {
 }
 
 async function getCoachInsights(): Promise<AIInsight[]> {
-  // Check if we already generated insights in the last 12 hours
-  const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
-  const recent = await db.ai_insights
-    .where('created_at')
-    .above(cutoff)
-    .toArray();
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const CACHE_KEY = 'habitflow_ai_coach_generated_date';
+  const lastGenerated = localStorage.getItem(CACHE_KEY);
 
-  if (recent.length > 0) {
-    return recent.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  // If we already generated insights today, return from DB
+  if (lastGenerated === today) {
+    const all = await db.ai_insights.toArray();
+    if (all.length > 0) {
+      return all.sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 20);
+    }
   }
 
+  // Prune old insights older than 30 days to prevent unbounded growth
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const oldInsights = await db.ai_insights.where('created_at').below(thirtyDaysAgo).toArray();
+  for (const old of oldInsights) {
+    await db.ai_insights.delete(old.id);
+  }
+
+  // Check if a weekly summary was generated in the past 7 days
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const recentWeekly = await db.ai_insights
+    .filter(i => i.type === 'weekly_summary' && i.created_at > sevenDaysAgo)
+    .count();
+  const shouldGenerateWeekly = recentWeekly === 0;
+
   // Generate fresh insights
-  const isSunday = new Date().getDay() === 0;
-  
   const [tip, patterns, weekly] = await Promise.all([
     generateDailyTip(),
     detectPatterns(),
-    isSunday ? generateWeeklySummary() : Promise.resolve(null),
+    shouldGenerateWeekly ? generateWeeklySummary() : Promise.resolve(null),
   ]);
+
+  localStorage.setItem(CACHE_KEY, today);
 
   const results = [];
   if (tip) results.push(tip);

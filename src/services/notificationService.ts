@@ -130,15 +130,17 @@ class NotificationService {
 
   private async getPendingHabitsForToday(habits: any[], today: string) {
     const logs = await db.habitLogs.where('date').equals(today).toArray();
-    const currentDay = new Date().getDay();
+    const currentDay = new Date().getDay(); // 0 = Sunday, 6 = Saturday
 
     return habits.filter(habit => {
-      // Check frequency days
-      if (habit.frequency?.type === 'specific_days' && !habit.frequency.days?.includes(currentDay)) {
-        return false;
+      // Check frequency: weekly habits only fire on their scheduled days
+      if (habit.frequency === 'weekly' && Array.isArray(habit.frequencyDays)) {
+        if (!habit.frequencyDays.includes(currentDay)) {
+          return false;
+        }
       }
       
-      const log = logs.find(l => l.habitId === habit.id);
+      const log = logs.find((l: any) => l.habitId === habit.id);
       if (!log) return true;
       return log.value < (habit.type === 'boolean' ? 1 : habit.targetValue);
     });

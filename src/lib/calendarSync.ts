@@ -1,6 +1,6 @@
 import { format, addHours } from 'date-fns';
-import { Habit } from '../types/habit';
-import { Task } from '../types/task';
+import type { Habit } from '../types';
+import type { Task } from '../types';
 
 function generateIcsString(
   title: string,
@@ -44,10 +44,11 @@ export function exportHabitToCalendar(habit: Habit) {
   // Assume user wants to do this habit right now for 1 hour
   const start = new Date();
   const end = addHours(start, 1);
+  const streakInfo = (habit as any).streak?.current ?? 0;
   
   const ics = generateIcsString(
     `Habit: ${habit.name}`,
-    `HabitFlow reminder to complete your habit: ${habit.name}\\nStreak: ${habit.streak.current} days`,
+    `HabitFlow reminder to complete your habit: ${habit.name}\\nStreak: ${streakInfo} days`,
     start,
     end
   );
@@ -59,10 +60,11 @@ export function exportTaskToCalendar(task: Task) {
   const start = task.dueDate ? new Date(task.dueDate) : new Date();
   // If there's a due date, assume it's due at that time, default to 1 hour duration
   const end = addHours(start, 1);
+  const statusLabel = task.completed ? 'Completed' : 'Pending';
   
   const ics = generateIcsString(
     `Task: ${task.title}`,
-    `HabitFlow Task Deadline: ${task.title}\\nStatus: ${task.status}`,
+    `HabitFlow Task Deadline: ${task.title}\\nStatus: ${statusLabel}`,
     start,
     end
   );

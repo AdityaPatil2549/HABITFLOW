@@ -378,9 +378,15 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
                   className={cn("max-h-32 rounded-lg object-cover border transition-opacity cursor-pointer hover:opacity-80", task.completed ? "border-slate-800 opacity-50 grayscale" : "border-white/10")} 
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Open image in a simple new tab/window
-                    const w = window.open();
-                    if (w) w.document.write(`<img src="${task.imageAttachment}" style="max-width:100%;" />`);
+                    // Open image safely via blob URL (avoids document.write CSP issues)
+                    fetch(task.imageAttachment!)
+                      .then(r => r.blob())
+                      .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const win = window.open(url, '_blank');
+                        if (win) win.onunload = () => URL.revokeObjectURL(url);
+                      })
+                      .catch(() => window.open(task.imageAttachment, '_blank'));
                   }}
                 />
               </div>

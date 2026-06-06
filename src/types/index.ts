@@ -152,6 +152,7 @@ export interface Settings {
   language: string;
   googleCalendarSync?: boolean;
   googleCalendarCompletions?: boolean;
+  healthSyncEnabled?: boolean; // opt-in for health sync polling
   dashboardLayout?: string[];
   updated_at?: string;
 }

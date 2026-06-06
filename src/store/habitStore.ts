@@ -88,6 +88,13 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
   },
 
   applyFreeze: async habitId => {
+    const FREEZE_COST = 10; // coins per freeze use
+    const { spendCoins } = await import('../services/coinService').then(m => ({ spendCoins: m.coinService.spendCoins }));
+    const afforded = await spendCoins(FREEZE_COST);
+    if (!afforded) {
+      console.warn('[HabitStore] Not enough coins to apply streak freeze');
+      return; // Let the UI handle the message via consumeFreeze in gamificationStore
+    }
     await habitService.logCompletion(habitId, get().selectedDate, -1, 'Used Streak Freeze', true);
     await get().loadHabits();
   },

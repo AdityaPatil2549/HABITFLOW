@@ -9,6 +9,17 @@ import { useProfileStore } from '@/store/profileStore';
 import { useToast } from '@/components/common/Toast';
 import { soundService } from '@/services/soundService';
 
+/** Get or create a stable anonymous guest ID stored in localStorage */
+function getGuestId(): string {
+  const KEY = 'habitflow_guest_id';
+  let id = localStorage.getItem(KEY);
+  if (!id) {
+    id = 'guest_' + crypto.randomUUID();
+    localStorage.setItem(KEY, id);
+  }
+  return id;
+}
+
 const MEDAL_ICONS = ['🥇', '🥈', '🥉'];
 const MEDAL_COLORS = [
   'from-amber-400/20 to-amber-500/10 border-amber-400/30',
@@ -29,7 +40,7 @@ export function SquadPage() {
   const [loading, setLoading] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
 
-  const userId = user?.id || 'guest_' + profile.name;
+  const userId = user?.id || getGuestId();
   const displayName = user?.user_metadata?.full_name || profile.name || 'Anonymous';
   const avatarUrl = user?.user_metadata?.avatar_url || profile.avatar;
 

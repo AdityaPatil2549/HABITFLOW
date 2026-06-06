@@ -59,9 +59,13 @@ function App() {
     initAuth();
   }, [initAuth]);
 
-  // Start health sync background polling (checks every 60 mins by default)
+  // Health sync polling — only starts if the user has opted in via Settings
   useEffect(() => {
-    startHealthSyncPolling();
+    getOrCreateSettings().then(settings => {
+      if (settings.healthSyncEnabled) {
+        startHealthSyncPolling();
+      }
+    });
   }, []);
 
   // Start/stop sync engine based on auth state
