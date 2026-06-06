@@ -83,7 +83,7 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-5 pb-3 border-b border-white/5">
@@ -110,12 +110,14 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               <Filter size={14} className="text-slate-500" />
               <select
                 value={filterHabit}
-                onChange={(e) => setFilterHabit(e.target.value)}
+                onChange={e => setFilterHabit(e.target.value)}
                 className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white w-full outline-none focus:border-indigo-500/50"
               >
                 <option value="all">All Habits</option>
                 {habits.map(h => (
-                  <option key={h.id} value={h.id}>{h.icon} {h.name}</option>
+                  <option key={h.id} value={h.id}>
+                    {h.icon} {h.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -129,7 +131,9 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               <div className="text-center py-10">
                 <MessageSquare size={40} className="mx-auto text-slate-600 mb-3" />
                 <p className="text-slate-400 font-medium">No journal entries yet</p>
-                <p className="text-slate-600 text-sm mt-1">Add notes when logging your habits to see them here</p>
+                <p className="text-slate-600 text-sm mt-1">
+                  Add notes when logging your habits to see them here
+                </p>
               </div>
             ) : (
               groupedEntries.map(([date, dayEntries]) => (
@@ -154,7 +158,9 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-sm font-semibold text-white">{entry.habitName}</span>
+                            <span className="text-sm font-semibold text-white">
+                              {entry.habitName}
+                            </span>
                             {entry.mood && (
                               <span className="text-xs">
                                 {['😢', '😕', '😐', '🙂', '😊'][entry.mood - 1]}

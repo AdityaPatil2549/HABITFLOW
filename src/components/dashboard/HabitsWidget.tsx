@@ -26,8 +26,8 @@ export function HabitsWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   return (
     <div className="w-full relative group widget-container">
       {dragHandleProps && (
-        <div 
-          {...dragHandleProps} 
+        <div
+          {...dragHandleProps}
           className="absolute top-2 right-2 z-50 p-2 text-white/20 hover:text-white/60 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg backdrop-blur-md"
         >
           <GripHorizontal size={20} />

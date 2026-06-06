@@ -137,7 +137,7 @@ class SoundService {
       gain.connect(ctx.destination);
 
       osc.type = 'sine';
-      
+
       const start = ctx.currentTime;
       const end = start + 0.15;
 
@@ -169,7 +169,7 @@ class SoundService {
   }
 
   // ── Ambient Soundscapes (Focus Mode) ──────────────────────────────────
-  
+
   startAmbient(type: 'brown' | 'white') {
     if (!this.enabled) return;
     try {
@@ -179,7 +179,7 @@ class SoundService {
       const bufferSize = ctx.sampleRate * 5; // 5 seconds loop
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const output = buffer.getChannelData(0);
-      
+
       let lastOut = 0;
       for (let i = 0; i < bufferSize; i++) {
         const white = Math.random() * 2 - 1;
@@ -217,9 +217,9 @@ class SoundService {
       // Gentle fade out
       this.ambientGain.gain.setValueAtTime(this.ambientGain.gain.value, ctx.currentTime);
       this.ambientGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1); // 1 sec fade out
-      
+
       this.ambientSource.stop(ctx.currentTime + 1);
-      
+
       // Cleanup
       this.ambientSource = null;
       this.ambientGain = null;

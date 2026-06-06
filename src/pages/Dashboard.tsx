@@ -23,7 +23,7 @@ export function Dashboard() {
       // If it's an array and not empty, use it, else default
       if (s.dashboardLayout && Array.isArray(s.dashboardLayout) && s.dashboardLayout.length > 0) {
         // Map any old 'chart' back to 'performance' if needed, depending on existing DB
-        setLayout(s.dashboardLayout.map(id => id === 'chart' ? 'performance' : id));
+        setLayout(s.dashboardLayout.map(id => (id === 'chart' ? 'performance' : id)));
       }
     };
     loadLayout();
@@ -34,9 +34,9 @@ export function Dashboard() {
     const newLayout = Array.from(layout);
     const [reorderedItem] = newLayout.splice(result.source.index, 1);
     newLayout.splice(result.destination.index, 0, reorderedItem);
-    
+
     setLayout(newLayout);
-    
+
     const s = await getOrCreateSettings();
     await db.settings.update(s.id, { dashboardLayout: newLayout });
   };
@@ -71,7 +71,7 @@ export function Dashboard() {
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="dashboard">
-          {(provided) => (
+          {provided => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
@@ -79,7 +79,7 @@ export function Dashboard() {
             >
               {layout.map((id, index) => (
                 <Draggable key={id} draggableId={id} index={index}>
-                  {(provided) => {
+                  {provided => {
                     // For the grid layout to stay intact during drag, we wrap the widget in a div that keeps its column span.
                     // The widgets themselves define their spans (e.g., lg:col-span-3), but here we might need to handle it.
                     // Actually, the widget components have the lg:col-span-x classes on their outer divs.
@@ -101,7 +101,10 @@ export function Dashboard() {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         className={spanClass}
-                        style={{ ...provided.draggableProps.style, zIndex: (provided.draggableProps.style as any)?.zIndex || 1 }}
+                        style={{
+                          ...provided.draggableProps.style,
+                          zIndex: (provided.draggableProps.style as any)?.zIndex || 1,
+                        }}
                       >
                         {renderWidget(id, provided.dragHandleProps)}
                       </div>

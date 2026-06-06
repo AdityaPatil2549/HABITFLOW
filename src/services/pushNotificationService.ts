@@ -1,11 +1,11 @@
 /**
  * Push Notification Service for HabitFlow PWA
- * 
+ *
  * Enhances the existing notification service with true Web Push API support.
  * Falls back gracefully to the existing Notification API when push is unavailable.
  */
 
-const VAPID_PUBLIC_KEY = ''; // Set this when you have a VAPID key pair
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
 class PushNotificationService {
   private swRegistration: ServiceWorkerRegistration | null = null;
@@ -45,6 +45,7 @@ class PushNotificationService {
       try {
         const subscription = await this.swRegistration.pushManager.subscribe({
           userVisibleOnly: true,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           applicationServerKey: this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any,
         });
 
@@ -79,12 +80,10 @@ class PushNotificationService {
    * Send a local notification immediately.
    * Works even without push subscription.
    */
-  async sendLocalNotification(
-    title: string,
-    options?: NotificationOptions
-  ): Promise<void> {
+  async sendLocalNotification(title: string, options?: NotificationOptions): Promise<void> {
     if (!this.isEnabled()) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const defaultOptions: any = {
       icon: '/pwa-192x192.png',
       badge: '/pwa-192x192.png',
@@ -206,10 +205,7 @@ class PushNotificationService {
 
   private saveSubscription(subscription: PushSubscription): void {
     try {
-      localStorage.setItem(
-        'habitflow_push_subscription',
-        JSON.stringify(subscription.toJSON())
-      );
+      localStorage.setItem('habitflow_push_subscription', JSON.stringify(subscription.toJSON()));
     } catch {
       console.warn('Could not save push subscription to localStorage');
     }

@@ -17,20 +17,26 @@ async function computeWeekChart(
     return { date: format(d, 'yyyy-MM-dd'), day: format(d, 'EEE') };
   });
 
-  return Promise.all(
-    days.map(async ({ date, day }) => {
-      const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
-      if (!scheduled.length) return { day, date, pct: 0 };
-      const logs = await db.habitLogs.where('date').equals(date).toArray();
-      const done = logs.filter(l => {
-        const habit = scheduled.find(h => h.id === l.habitId);
-        if (!habit) return false;
-        if (habit.type === 'boolean') return l.value >= 1;
-        return l.value >= habit.targetValue;
-      }).length;
-      return { day, date, pct: Math.round((done / scheduled.length) * 100) };
-    })
-  );
+  const startDate = days[0].date;
+  const endDate = days[6].date;
+  
+  // Single DB query for all logs in the date range
+  const allLogs = await db.habitLogs.where('date').between(startDate, endDate, true, true).toArray();
+
+  return days.map(({ date, day }) => {
+    const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
+    if (!scheduled.length) return { day, date, pct: 0 };
+    
+    const logsForDate = allLogs.filter(l => l.date === date);
+    const done = logsForDate.filter(l => {
+      const habit = scheduled.find(h => h.id === l.habitId);
+      if (!habit) return false;
+      if (habit.type === 'boolean') return l.value >= 1;
+      return l.value >= habit.targetValue;
+    }).length;
+    
+    return { day, date, pct: Math.round((done / scheduled.length) * 100) };
+  });
 }
 
 export function PerformanceWidget({ dragHandleProps }: { dragHandleProps?: any }) {
@@ -53,7 +59,9 @@ export function PerformanceWidget({ dragHandleProps }: { dragHandleProps?: any }
       }
     };
     loadChart();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [habits]);
 
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -63,13 +71,14 @@ export function PerformanceWidget({ dragHandleProps }: { dragHandleProps?: any }
   const prevAvg = prev.length ? prev.reduce((s, d) => s + d.pct, 0) / prev.length : 0;
   const trendDelta = Math.round(recentAvg - prevAvg);
 
-  const chartPoints = weekChart.length === 7
-    ? weekChart.map((d, i) => {
-        const x = (i / 6) * 380 + 10;
-        const y = 110 - (d.pct / 100) * 100;
-        return { x, y, ...d };
-      })
-    : [];
+  const chartPoints =
+    weekChart.length === 7
+      ? weekChart.map((d, i) => {
+          const x = (i / 6) * 380 + 10;
+          const y = 110 - (d.pct / 100) * 100;
+          return { x, y, ...d };
+        })
+      : [];
 
   const polyline = chartPoints.map(p => `${p.x},${p.y}`).join(' ');
   const areaPath = chartPoints.length
@@ -83,8 +92,8 @@ export function PerformanceWidget({ dragHandleProps }: { dragHandleProps?: any }
   return (
     <div className="h-full relative group widget-container">
       {dragHandleProps && (
-        <div 
-          {...dragHandleProps} 
+        <div
+          {...dragHandleProps}
           className="absolute top-2 right-2 z-50 p-2 text-white/20 hover:text-white/60 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg backdrop-blur-md"
         >
           <GripHorizontal size={20} />

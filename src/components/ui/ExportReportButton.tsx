@@ -13,20 +13,20 @@ export function ExportReportButton() {
     if (!templateRef.current) return;
     try {
       setIsExporting(true);
-      
+
       // html-to-image needs the element to be visible, so we briefly show it, render, then hide
       const el = templateRef.current;
       el.style.display = 'block';
-      
+
       const dataUrl = await htmlToImage.toPng(el, { quality: 1.0, pixelRatio: 2 });
-      
+
       el.style.display = 'none';
 
       const link = document.createElement('a');
       link.download = `HabitFlow_Weekly_Report_${new Date().toISOString().split('T')[0]}.png`;
       link.href = dataUrl;
       link.click();
-      
+
       toast.success('Weekly report exported successfully!');
     } catch (err) {
       console.error('Export failed', err);

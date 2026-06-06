@@ -3,11 +3,21 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 
-function Orb({ position, color, size, speed }: { position: [number, number, number]; color: string; size: number; speed: number }) {
+function Orb({
+  position,
+  color,
+  size,
+  speed,
+}: {
+  position: [number, number, number];
+  color: string;
+  size: number;
+  speed: number;
+}) {
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);
 
-  useFrame((state) => {
+  useFrame(state => {
     if (!meshRef.current) return;
     const t = state.clock.getElapsedTime() * speed;
     meshRef.current.position.y = position[1] + Math.sin(t) * 0.4;
@@ -58,11 +68,36 @@ function OrbScene() {
 
   const orbs = useMemo(
     () => [
-      { position: [-2.5, 1, -3] as [number, number, number], color: '#6366f1', size: 0.8, speed: 0.4 },
-      { position: [2.2, -0.5, -4] as [number, number, number], color: '#8b5cf6', size: 1.1, speed: 0.3 },
-      { position: [0, 1.5, -5] as [number, number, number], color: '#06b6d4', size: 0.6, speed: 0.5 },
-      { position: [-1.5, -1.2, -3.5] as [number, number, number], color: '#10b981', size: 0.5, speed: 0.35 },
-      { position: [3, 0.8, -6] as [number, number, number], color: '#a78bfa', size: 1.3, speed: 0.25 },
+      {
+        position: [-2.5, 1, -3] as [number, number, number],
+        color: '#6366f1',
+        size: 0.8,
+        speed: 0.4,
+      },
+      {
+        position: [2.2, -0.5, -4] as [number, number, number],
+        color: '#8b5cf6',
+        size: 1.1,
+        speed: 0.3,
+      },
+      {
+        position: [0, 1.5, -5] as [number, number, number],
+        color: '#06b6d4',
+        size: 0.6,
+        speed: 0.5,
+      },
+      {
+        position: [-1.5, -1.2, -3.5] as [number, number, number],
+        color: '#10b981',
+        size: 0.5,
+        speed: 0.35,
+      },
+      {
+        position: [3, 0.8, -6] as [number, number, number],
+        color: '#a78bfa',
+        size: 1.3,
+        speed: 0.25,
+      },
     ],
     []
   );

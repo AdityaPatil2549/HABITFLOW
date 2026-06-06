@@ -432,7 +432,7 @@ export function SettingsPage() {
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Calendar size={18} className="text-brand-400" /> Integrations
         </h2>
-        
+
         {isGuest ? (
           <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3 text-slate-400">
@@ -442,7 +442,10 @@ export function SettingsPage() {
                 <p className="text-xs">Sign in to sync your habits to your calendar.</p>
               </div>
             </div>
-            <button onClick={() => useAuthStore.getState().signInWithGoogle()} className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-colors">
+            <button
+              onClick={() => useAuthStore.getState().signInWithGoogle()}
+              className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-colors"
+            >
               Sign In
             </button>
           </div>
@@ -450,9 +453,14 @@ export function SettingsPage() {
           <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="text-sm">
               <p className="font-bold text-amber-400">Google Calendar Disconnected</p>
-              <p className="text-xs text-amber-400/70">Your Google session expired or calendar access was denied. Please sign in again.</p>
+              <p className="text-xs text-amber-400/70">
+                Your Google session expired or calendar access was denied. Please sign in again.
+              </p>
             </div>
-            <button onClick={() => useAuthStore.getState().signInWithGoogle()} className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-colors whitespace-nowrap">
+            <button
+              onClick={() => useAuthStore.getState().signInWithGoogle()}
+              className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-colors whitespace-nowrap"
+            >
               Reconnect
             </button>
           </div>
@@ -476,16 +484,20 @@ export function SettingsPage() {
                 />
               </button>
             </div>
-            
+
             <div className="flex items-center justify-between pt-2">
               <div>
                 <p className="text-sm font-semibold text-white">Log Completions to Calendar</p>
-                <p className="text-xs text-slate-500">Create daily events when you complete habits.</p>
+                <p className="text-xs text-slate-500">
+                  Create daily events when you complete habits.
+                </p>
               </div>
               <button
                 role="switch"
                 aria-checked={settings.googleCalendarCompletions !== false}
-                onClick={() => saveSetting({ googleCalendarCompletions: !settings.googleCalendarCompletions })}
+                onClick={() =>
+                  saveSetting({ googleCalendarCompletions: !settings.googleCalendarCompletions })
+                }
                 className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.googleCalendarCompletions !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
               >
                 <motion.div
@@ -509,7 +521,9 @@ export function SettingsPage() {
           <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
             <div>
               <p className="text-sm font-bold text-white">Google Fit / Health Connect</p>
-              <p className="text-[10px] text-slate-400 mt-1">Simulated sync engine for health habits</p>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Simulated sync engine for health habits
+              </p>
             </div>
             <button
               onClick={() => {

@@ -24,6 +24,9 @@ interface HabitStore {
   reorderHabits: (orderedIds: string[]) => Promise<void>;
 }
 
+// Serializes concurrent reorder DB writes (race condition fix)
+let reorderLock: Promise<unknown> = Promise.resolve();
+
 export const useHabitStore = create<HabitStore>((set, get) => ({
   habits: [],
   loading: false,
@@ -70,14 +73,16 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
 
       // Mark completion in Google Calendar (if enabled)
       const h = get().habits.find(x => x.id === habitId);
-      
+
       if (h) {
         // Record completion for Gamification (XP, level up, milestones)
         await useGamificationStore.getState().recordHabitCompletion(habitId, h.streak.current);
-        
+
         getOrCreateSettings().then(settings => {
           if (settings.googleCalendarCompletions) {
-            calendarService.markHabitDoneInCalendar(h.name, h.icon, get().selectedDate).catch(console.error);
+            calendarService
+              .markHabitDoneInCalendar(h.name, h.icon, get().selectedDate)
+              .catch(console.error);
           }
         });
       }
@@ -89,7 +94,9 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
 
   applyFreeze: async habitId => {
     const FREEZE_COST = 10; // coins per freeze use
-    const { spendCoins } = await import('../services/coinService').then(m => ({ spendCoins: m.coinService.spendCoins }));
+    const { spendCoins } = await import('../services/coinService').then(m => ({
+      spendCoins: m.coinService.spendCoins,
+    }));
     const afforded = await spendCoins(FREEZE_COST);
     if (!afforded) {
       console.warn('[HabitStore] Not enough coins to apply streak freeze');
@@ -105,7 +112,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
   },
 
   reorderHabits: async orderedIds => {
-    // Optimistic update
+    // Optimistic update (instant UI feedback)
     const current = get().habits;
     const reordered = orderedIds
       .map((id, idx) => {
@@ -115,7 +122,9 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
       .filter(Boolean) as typeof current;
     set({ habits: reordered });
 
-    // Persist to DB
-    await habitService.reorder(orderedIds);
+    // Serialize DB writes: queue on module-level lock to prevent race conditions
+    // from rapid back-to-back drag operations
+    reorderLock = reorderLock.then(() => habitService.reorder(orderedIds)).catch(console.error);
+    await reorderLock;
   },
 }));

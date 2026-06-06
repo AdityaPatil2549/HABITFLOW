@@ -13,7 +13,13 @@ const features = [
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
         fill="#4285F4"
@@ -45,9 +51,9 @@ const orbs = [
 
 export function AuthPage() {
   const navigate = useNavigate();
-  const signInWithGoogle = useAuthStore((s) => s.signInWithGoogle);
-  const user = useAuthStore((s) => s.user);
-  const loading = useAuthStore((s) => s.loading);
+  const signInWithGoogle = useAuthStore(s => s.signInWithGoogle);
+  const user = useAuthStore(s => s.user);
+  const loading = useAuthStore(s => s.loading);
 
   // Detect if we're in an OAuth callback (URL has ?code= param)
   const isOAuthCallback = window.location.search.includes('code=');
@@ -136,7 +142,8 @@ export function AuthPage() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5"
+          <div
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5"
             style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
           >
             <Sparkles className="w-8 h-8 text-white" />

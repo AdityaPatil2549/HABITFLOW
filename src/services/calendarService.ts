@@ -10,7 +10,6 @@ import type { Habit } from '@/types';
 
 // ─── Constants ───────────────────────────────────────────────
 const CALENDAR_API = 'https://www.googleapis.com/calendar/v3';
-const SUPABASE_AUTH_KEY = 'sb-kujjbwzujcbrxtiujxls-auth-token';
 const EVENT_MAP_KEY = 'habitflow_calendar_events';
 
 /** Map numeric day (0 = Sun … 6 = Sat) to RFC-5545 day abbreviation. */
@@ -26,21 +25,18 @@ const DAY_MAP: Record<number, string> = {
 
 // ─── Helpers ─────────────────────────────────────────────────
 
+import { useAuthStore } from '../store/authStore';
+
 /**
- * Retrieve the Google OAuth access token that Supabase stored in
- * localStorage after the user signed in with the Google provider.
+ * Retrieve the Google OAuth access token that Supabase obtained.
  */
 function getGoogleToken(): string | null {
   try {
-    const raw = localStorage.getItem(SUPABASE_AUTH_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    // Supabase stores the session either directly or nested under a key
-    const token: unknown =
-      parsed?.provider_token ?? parsed?.session?.provider_token ?? null;
+    const session = useAuthStore.getState().session;
+    const token = session?.provider_token;
     return typeof token === 'string' && token.length > 0 ? token : null;
   } catch {
-    console.warn('[calendarService] Failed to read Google token from localStorage');
+    console.warn('[calendarService] Failed to read Google token from auth store');
     return null;
   }
 }
@@ -83,7 +79,7 @@ function buildRRule(habit: Habit): string {
     case 'weekly': {
       const days =
         habit.frequencyDays && habit.frequencyDays.length > 0
-          ? habit.frequencyDays.map((d) => DAY_MAP[d] ?? 'MO').join(',')
+          ? habit.frequencyDays.map(d => DAY_MAP[d] ?? 'MO').join(',')
           : 'MO,TU,WE,TH,FR,SA,SU';
       return `RRULE:FREQ=WEEKLY;BYDAY=${days}`;
     }
@@ -124,7 +120,6 @@ async function syncHabitToCalendar(habit: Habit): Promise<string | null> {
 
   const timeZone = getTimeZone();
   const startTime = habit.reminderTime ?? '09:00';
-  const [hours, minutes] = startTime.split(':').map(Number);
 
   // Build start / end DateTimes (30-minute event)
   const startDate = new Date(`${habit.startDate}T${startTime}:00`);
@@ -134,7 +129,7 @@ async function syncHabitToCalendar(habit: Habit): Promise<string | null> {
   const fmt = (d: Date) => {
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-      d.getHours(),
+      d.getHours()
     )}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   };
 
@@ -159,10 +154,7 @@ async function syncHabitToCalendar(habit: Habit): Promise<string | null> {
     });
 
     if (!res.ok) {
-      console.warn(
-        `[calendarService] Failed to create event (${res.status}):`,
-        await res.text(),
-      );
+      console.warn(`[calendarService] Failed to create event (${res.status}):`, await res.text());
       return null;
     }
 
@@ -188,7 +180,7 @@ async function syncHabitToCalendar(habit: Habit): Promise<string | null> {
 async function markHabitDoneInCalendar(
   habitName: string,
   habitIcon: string,
-  date: string, // YYYY-MM-DD
+  date: string // YYYY-MM-DD
 ): Promise<void> {
   const token = getGoogleToken();
   if (!token) {
@@ -213,7 +205,7 @@ async function markHabitDoneInCalendar(
     if (!res.ok) {
       console.warn(
         `[calendarService] Failed to create completion event (${res.status}):`,
-        await res.text(),
+        await res.text()
       );
     }
   } catch (err) {
@@ -244,14 +236,11 @@ async function removeCalendarEvent(habitId: string): Promise<void> {
       {
         method: 'DELETE',
         headers: authHeaders(token),
-      },
+      }
     );
 
     if (!res.ok && res.status !== 410 /* already gone */) {
-      console.warn(
-        `[calendarService] Failed to delete event (${res.status}):`,
-        await res.text(),
-      );
+      console.warn(`[calendarService] Failed to delete event (${res.status}):`, await res.text());
     }
 
     // Remove from local map regardless
@@ -268,7 +257,7 @@ async function removeCalendarEvent(habitId: string): Promise<void> {
  */
 async function getCalendarEvents(
   startDate: string, // YYYY-MM-DD
-  endDate: string,   // YYYY-MM-DD
+  endDate: string // YYYY-MM-DD
 ): Promise<GoogleCalendarEvent[]> {
   const token = getGoogleToken();
   if (!token) {
@@ -287,19 +276,13 @@ async function getCalendarEvents(
   });
 
   try {
-    const res = await fetch(
-      `${CALENDAR_API}/calendars/primary/events?${params.toString()}`,
-      {
-        method: 'GET',
-        headers: authHeaders(token),
-      },
-    );
+    const res = await fetch(`${CALENDAR_API}/calendars/primary/events?${params.toString()}`, {
+      method: 'GET',
+      headers: authHeaders(token),
+    });
 
     if (!res.ok) {
-      console.warn(
-        `[calendarService] Failed to fetch events (${res.status}):`,
-        await res.text(),
-      );
+      console.warn(`[calendarService] Failed to fetch events (${res.status}):`, await res.text());
       return [];
     }
 

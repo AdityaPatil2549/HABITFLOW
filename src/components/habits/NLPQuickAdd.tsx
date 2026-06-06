@@ -25,8 +25,12 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
-  health: '💪', mindfulness: '🧘', learning: '📚',
-  productivity: '⚡', social: '👋', general: '✨',
+  health: '💪',
+  mindfulness: '🧘',
+  learning: '📚',
+  productivity: '⚡',
+  social: '👋',
+  general: '✨',
 };
 
 export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
@@ -37,7 +41,8 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
 
   useEffect(() => {
     // Initialize Web Speech API
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
@@ -81,17 +86,21 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
     return nlpParserService.parseHabitIntent(input);
   }, [input]);
 
-  const confidenceColor =
-    !parsed ? 'bg-slate-500/20' :
-    parsed.confidence >= 0.7 ? 'bg-emerald-500/20' :
-    parsed.confidence >= 0.4 ? 'bg-amber-500/20' :
-    'bg-red-500/20';
+  const confidenceColor = !parsed
+    ? 'bg-slate-500/20'
+    : parsed.confidence >= 0.7
+      ? 'bg-emerald-500/20'
+      : parsed.confidence >= 0.4
+        ? 'bg-amber-500/20'
+        : 'bg-red-500/20';
 
-  const confidenceText =
-    !parsed ? '' :
-    parsed.confidence >= 0.7 ? 'text-emerald-400' :
-    parsed.confidence >= 0.4 ? 'text-amber-400' :
-    'text-red-400';
+  const confidenceText = !parsed
+    ? ''
+    : parsed.confidence >= 0.7
+      ? 'text-emerald-400'
+      : parsed.confidence >= 0.4
+        ? 'text-amber-400'
+        : 'text-red-400';
 
   function handleCreate() {
     if (!parsed) return;
@@ -137,13 +146,17 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
           placeholder='Try: "Read 20 pages every night at 9 PM"'
           autoFocus
           className="w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/40 transition-all"
-          onKeyDown={e => { if (e.key === 'Enter' && parsed) handleCreate(); }}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && parsed) handleCreate();
+          }}
         />
         {hasRecognition && (
           <button
             onClick={toggleListening}
             className={`absolute right-6 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all ${
-              isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'hover:bg-white/10 text-slate-400 hover:text-white'
+              isListening
+                ? 'bg-red-500/20 text-red-400 animate-pulse'
+                : 'hover:bg-white/10 text-slate-400 hover:text-white'
             }`}
             title={isListening ? 'Stop listening' : 'Start listening'}
           >
@@ -171,14 +184,17 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
 
               {/* Pills */}
               <div className="flex flex-wrap gap-2">
-                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold ${CATEGORY_COLORS[parsed.category || 'general']}`}>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold ${CATEGORY_COLORS[parsed.category || 'general']}`}
+                >
                   <Tag size={10} />
                   {parsed.category || 'general'}
                 </span>
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-blue-500/20 text-blue-400">
                   <Calendar size={10} />
                   {FREQ_LABELS[parsed.frequency]}
-                  {parsed.frequencyDays && ` (${parsed.frequencyDays.map(d => ['Su','Mo','Tu','We','Th','Fr','Sa'][d]).join(', ')})`}
+                  {parsed.frequencyDays &&
+                    ` (${parsed.frequencyDays.map(d => ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][d]).join(', ')})`}
                   {parsed.frequencyInterval && ` (every ${parsed.frequencyInterval} days)`}
                 </span>
                 {parsed.reminderTime && (

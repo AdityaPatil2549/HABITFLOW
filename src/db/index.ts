@@ -1,5 +1,15 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Habit, HabitLog, Task, Project, Mood, UserXP, Settings, ShopPurchase, AIInsight } from '../types';
+import type {
+  Habit,
+  HabitLog,
+  Task,
+  Project,
+  Mood,
+  UserXP,
+  Settings,
+  ShopPurchase,
+  AIInsight,
+} from '../types';
 
 // ─── Sync Queue Item ─────────────────────────────────────────
 export interface SyncQueueItem {

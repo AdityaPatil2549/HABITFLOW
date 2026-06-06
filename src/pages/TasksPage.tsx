@@ -133,13 +133,13 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
           value={desc}
           onChange={e => setDesc(e.target.value)}
         />
-        
+
         {/* Image Attachment Preview */}
         {imageAttachment && (
           <div className="relative inline-block mt-2">
-            <img 
-              src={imageAttachment} 
-              alt="Attachment preview" 
+            <img
+              src={imageAttachment}
+              alt="Attachment preview"
               className="h-20 w-auto rounded-lg border border-white/10 object-cover"
             />
             <button
@@ -302,185 +302,204 @@ function TaskItem({ task, depth = 0 }: { task: Task; depth?: number }) {
 
   return (
     <Scroll3DReveal>
-    <div className={cn('relative')} style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : 0 }}>
-      {/* Subtask connector line */}
-      {depth > 0 && (
-        <div className="absolute -left-4 top-0 bottom-0 flex items-center" style={{ width: '1px' }}>
-          <div className="w-px h-full bg-white/10" />
-          <div className="absolute top-1/2 -translate-y-1/2 w-3 h-px bg-white/10" />
-        </div>
-      )}
-      <motion.div
-        layout
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        className={cn(
-          'group relative rounded-2xl transition-all border-l-4 overflow-hidden',
-          task.completed ? 'glass-card opacity-60 grayscale-[0.5]' : 'glass-card shadow-lg'
-        )}
-        style={{ borderLeftColor: task.completed ? 'transparent' : pc.color }}
-        whileHover={!task.completed ? { y: -2, boxShadow: `0 12px 24px ${pc.color}15` } : {}}
-      >
-        <div className="flex items-center gap-4 px-5 py-4">
-          {/* Check */}
-          <motion.button
-            onClick={() => {
-              if (task.completed) {
-                uncompleteTask(task.id);
-              } else {
-                completeTask(task.id);
-                fireConfetti();
-              }
-            }}
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
-            className={cn(
-              'flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
-              task.completed
-                ? 'bg-emerald-500 border-emerald-500 text-white animate-check-pop'
-                : 'border-slate-600 hover:border-white/40'
-            )}
-            style={!task.completed ? { color: pc.color, borderColor: `${pc.color}60` } : {}}
+      <div className={cn('relative')} style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : 0 }}>
+        {/* Subtask connector line */}
+        {depth > 0 && (
+          <div
+            className="absolute -left-4 top-0 bottom-0 flex items-center"
+            style={{ width: '1px' }}
           >
-            {task.completed && (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-3.5 h-3.5" strokeLinecap="round" strokeLinejoin="round">
-                <motion.path
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  d="M20 6L9 17l-5-5"
-                />
-              </svg>
-            )}
-          </motion.button>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <p
+            <div className="w-px h-full bg-white/10" />
+            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-px bg-white/10" />
+          </div>
+        )}
+        <motion.div
+          layout
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className={cn(
+            'group relative rounded-2xl transition-all border-l-4 overflow-hidden',
+            task.completed ? 'glass-card opacity-60 grayscale-[0.5]' : 'glass-card shadow-lg'
+          )}
+          style={{ borderLeftColor: task.completed ? 'transparent' : pc.color }}
+          whileHover={!task.completed ? { y: -2, boxShadow: `0 12px 24px ${pc.color}15` } : {}}
+        >
+          <div className="flex items-center gap-4 px-5 py-4">
+            {/* Check */}
+            <motion.button
+              onClick={() => {
+                if (task.completed) {
+                  uncompleteTask(task.id);
+                } else {
+                  completeTask(task.id);
+                  fireConfetti();
+                }
+              }}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
               className={cn(
-                'text-sm font-bold tracking-tight',
-                task.completed ? 'line-through text-slate-500' : 'text-white'
+                'flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
+                task.completed
+                  ? 'bg-emerald-500 border-emerald-500 text-white animate-check-pop'
+                  : 'border-slate-600 hover:border-white/40'
               )}
+              style={!task.completed ? { color: pc.color, borderColor: `${pc.color}60` } : {}}
             >
-              {task.title}
-            </p>
-            {task.description && (
-              <p className={cn("text-xs mt-1 leading-relaxed", task.completed ? "text-slate-600" : "text-slate-400")}>
-                {task.description}
+              {task.completed && (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  className="w-3.5 h-3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <motion.path
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    d="M20 6L9 17l-5-5"
+                  />
+                </svg>
+              )}
+            </motion.button>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <p
+                className={cn(
+                  'text-sm font-bold tracking-tight',
+                  task.completed ? 'line-through text-slate-500' : 'text-white'
+                )}
+              >
+                {task.title}
               </p>
-            )}
-            {task.imageAttachment && (
-              <div className="mt-2">
-                <img 
-                  src={task.imageAttachment} 
-                  alt="Attachment" 
-                  className={cn("max-h-32 rounded-lg object-cover border transition-opacity cursor-pointer hover:opacity-80", task.completed ? "border-slate-800 opacity-50 grayscale" : "border-white/10")} 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Open image safely via blob URL (avoids document.write CSP issues)
-                    fetch(task.imageAttachment!)
-                      .then(r => r.blob())
-                      .then(blob => {
-                        const url = URL.createObjectURL(blob);
-                        const win = window.open(url, '_blank');
-                        if (win) win.onunload = () => URL.revokeObjectURL(url);
-                      })
-                      .catch(() => window.open(task.imageAttachment, '_blank'));
-                  }}
-                />
-              </div>
-            )}
-            <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
-              {task.dueDate && (
-                <span
+              {task.description && (
+                <p
                   className={cn(
-                    'flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider',
-                    isOverdue ? 'text-red-400' : 'text-slate-500'
+                    'text-xs mt-1 leading-relaxed',
+                    task.completed ? 'text-slate-600' : 'text-slate-400'
                   )}
                 >
-                  <Calendar size={10} /> {task.dueDate}
-                </span>
+                  {task.description}
+                </p>
               )}
-              {task.labels.map(l => (
-                <span
-                  key={l}
-                  className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20"
+              {task.imageAttachment && (
+                <div className="mt-2">
+                  <img
+                    src={task.imageAttachment}
+                    alt="Attachment"
+                    className={cn(
+                      'max-h-32 rounded-lg object-cover border transition-opacity cursor-pointer hover:opacity-80',
+                      task.completed ? 'border-slate-800 opacity-50 grayscale' : 'border-white/10'
+                    )}
+                    onClick={e => {
+                      e.stopPropagation();
+                      // Open image safely via blob URL (avoids document.write CSP issues)
+                      fetch(task.imageAttachment!)
+                        .then(r => r.blob())
+                        .then(blob => {
+                          const url = URL.createObjectURL(blob);
+                          const win = window.open(url, '_blank');
+                          if (win) win.onunload = () => URL.revokeObjectURL(url);
+                        })
+                        .catch(() => window.open(task.imageAttachment, '_blank'));
+                    }}
+                  />
+                </div>
+              )}
+              <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
+                {task.dueDate && (
+                  <span
+                    className={cn(
+                      'flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider',
+                      isOverdue ? 'text-red-400' : 'text-slate-500'
+                    )}
+                  >
+                    <Calendar size={10} /> {task.dueDate}
+                  </span>
+                )}
+                {task.labels.map(l => (
+                  <span
+                    key={l}
+                    className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20"
+                  >
+                    {l}
+                  </span>
+                ))}
+                {task.recurring !== 'none' && (
+                  <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                    <RotateCcw size={8} /> {task.recurring}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Priority badge */}
+            <span
+              className="hidden sm:flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-xl flex-shrink-0 border transition-all"
+              style={{ background: `${pc.color}10`, color: pc.color, borderColor: `${pc.color}20` }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: pc.color }} />
+              {pc.label}
+            </span>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {!task.completed && (
+                <>
+                  <button
+                    onClick={() => openPicker({ id: task.id, title: task.title, type: 'task' })}
+                    className="w-8 h-8 rounded-full hover:bg-brand-500/20 text-slate-500 hover:text-brand-400 transition-colors flex items-center justify-center"
+                    title="Start Focus"
+                  >
+                    <Timer size={14} />
+                  </button>
+                  <button
+                    onClick={() => exportTaskToCalendar(task)}
+                    className="w-8 h-8 rounded-full hover:bg-amber-500/20 text-slate-500 hover:text-amber-400 transition-colors flex items-center justify-center"
+                    title="Export to Calendar"
+                  >
+                    <Calendar size={14} />
+                  </button>
+                </>
+              )}
+              {subtasks.length > 0 && (
+                <button
+                  onClick={() => setExpanded(v => !v)}
+                  className="w-8 h-8 rounded-full hover:bg-white/10 text-slate-500 flex items-center justify-center"
                 >
-                  {l}
-                </span>
-              ))}
-              {task.recurring !== 'none' && (
-                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                  <RotateCcw size={8} /> {task.recurring}
-                </span>
+                  {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                </button>
               )}
+              <button
+                onClick={() => setEditing(true)}
+                className="w-8 h-8 rounded-full hover:bg-white/10 text-slate-500 hover:text-white transition-colors flex items-center justify-center"
+              >
+                <Edit2 size={14} />
+              </button>
+              <button
+                onClick={() => {
+                  toast.confirm(
+                    `Delete "${task.title}"${subtasks.length > 0 ? ' and its subtasks' : ''}? This cannot be undone.`,
+                    () => deleteTask(task.id),
+                    { confirmLabel: 'Delete', danger: true }
+                  );
+                }}
+                className="w-8 h-8 rounded-full hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors flex items-center justify-center"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
 
-          {/* Priority badge */}
-          <span
-            className="hidden sm:flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-xl flex-shrink-0 border transition-all"
-            style={{ background: `${pc.color}10`, color: pc.color, borderColor: `${pc.color}20` }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: pc.color }} />
-            {pc.label}
-          </span>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {!task.completed && (
-              <>
-                <button
-                  onClick={() => openPicker({ id: task.id, title: task.title, type: 'task' })}
-                  className="w-8 h-8 rounded-full hover:bg-brand-500/20 text-slate-500 hover:text-brand-400 transition-colors flex items-center justify-center"
-                  title="Start Focus"
-                >
-                  <Timer size={14} />
-                </button>
-                <button
-                  onClick={() => exportTaskToCalendar(task)}
-                  className="w-8 h-8 rounded-full hover:bg-amber-500/20 text-slate-500 hover:text-amber-400 transition-colors flex items-center justify-center"
-                  title="Export to Calendar"
-                >
-                  <Calendar size={14} />
-                </button>
-              </>
-            )}
-            {subtasks.length > 0 && (
-              <button
-                onClick={() => setExpanded(v => !v)}
-                className="w-8 h-8 rounded-full hover:bg-white/10 text-slate-500 flex items-center justify-center"
-              >
-                {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </button>
-            )}
-            <button
-              onClick={() => setEditing(true)}
-              className="w-8 h-8 rounded-full hover:bg-white/10 text-slate-500 hover:text-white transition-colors flex items-center justify-center"
-            >
-              <Edit2 size={14} />
-            </button>
-            <button
-              onClick={() => {
-                toast.confirm(
-                  `Delete "${task.title}"${subtasks.length > 0 ? ' and its subtasks' : ''}? This cannot be undone.`,
-                  () => deleteTask(task.id),
-                  { confirmLabel: 'Delete', danger: true }
-                );
-              }}
-              className="w-8 h-8 rounded-full hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors flex items-center justify-center"
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        </div>
-
-        <AnimatePresence>
-          {expanded && subtasks.map(st => <TaskItem key={st.id} task={st} depth={depth + 1} />)}
-        </AnimatePresence>
-      </motion.div>
-    </div>
+          <AnimatePresence>
+            {expanded && subtasks.map(st => <TaskItem key={st.id} task={st} depth={depth + 1} />)}
+          </AnimatePresence>
+        </motion.div>
+      </div>
     </Scroll3DReveal>
   );
 }
@@ -516,8 +535,12 @@ export function TasksPage() {
       return a.priority - b.priority || (a.dueDate ?? '').localeCompare(b.dueDate ?? '');
     });
 
-  const doneToday = tasks.filter(t => !t.parentId && t.completed && t.completedAt?.startsWith(today)).length;
-  const totalToday = tasks.filter(t => !t.parentId && !t.completed && t.dueDate && t.dueDate <= today).length;
+  const doneToday = tasks.filter(
+    t => !t.parentId && t.completed && t.completedAt?.startsWith(today)
+  ).length;
+  const totalToday = tasks.filter(
+    t => !t.parentId && !t.completed && t.dueDate && t.dueDate <= today
+  ).length;
   const urgent = tasks.filter(t => !t.parentId && !t.completed && t.priority === 0).length;
 
   return (

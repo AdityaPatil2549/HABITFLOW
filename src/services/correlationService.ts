@@ -13,7 +13,9 @@ function pearsonCorrelation(xs: number[], ys: number[]): number {
   if (n < 5) return 0; // Not enough data
   const meanX = xs.reduce((a, b) => a + b, 0) / n;
   const meanY = ys.reduce((a, b) => a + b, 0) / n;
-  let num = 0, denX = 0, denY = 0;
+  let num = 0,
+    denX = 0,
+    denY = 0;
   for (let i = 0; i < n; i++) {
     const dx = xs[i] - meanX;
     const dy = ys[i] - meanY;
@@ -30,7 +32,7 @@ async function analyzeHabitMoodCorrelation(): Promise<CorrelationResult[]> {
   const today = new Date();
   const habits = await db.habits.filter(h => !h.archived).toArray();
   const moods = await db.moods.toArray();
-  
+
   if (moods.length < 5 || habits.length === 0) return results;
 
   const moodMap = new Map<string, number>();
@@ -92,7 +94,7 @@ async function analyzeHabitDayOfWeek(): Promise<CorrelationResult[]> {
       if (logSet.has(`${habit.id}|${d}`)) dayCompletions[dow]++;
     }
 
-    const rates = dayCompletions.map((c, i) => dayTotals[i] > 0 ? c / dayTotals[i] : 0);
+    const rates = dayCompletions.map((c, i) => (dayTotals[i] > 0 ? c / dayTotals[i] : 0));
     const bestDay = rates.indexOf(Math.max(...rates));
     const worstDay = rates.indexOf(Math.min(...rates));
     const bestRate = Math.round(rates[bestDay] * 100);
@@ -129,7 +131,10 @@ async function analyzeHabitPairCorrelation(): Promise<CorrelationResult[]> {
 
   const habitVectors = new Map<string, number[]>();
   for (const habit of habits) {
-    habitVectors.set(habit.id, dates.map(d => logSet.has(`${habit.id}|${d}`) ? 1 : 0));
+    habitVectors.set(
+      habit.id,
+      dates.map(d => (logSet.has(`${habit.id}|${d}`) ? 1 : 0))
+    );
   }
 
   // Compare each pair

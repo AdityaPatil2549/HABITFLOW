@@ -447,11 +447,19 @@ function HabitCard({
                 habit.todayLog?.isFrozen ? (
                   <Snowflake size={16} className="sm:w-6 sm:h-6" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4 sm:w-6 sm:h-6" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    className="w-4 h-4 sm:w-6 sm:h-6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <motion.path
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
                       d="M20 6L9 17l-5-5"
                     />
                   </svg>
@@ -1143,146 +1151,148 @@ export function HabitsPage() {
         <>
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <HabitSkeleton key={i} />
-          ))}
-        </div>
-      ) : habits.length === 0 ? (
-        <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-20 text-center w-full">
-          <span className="text-5xl mb-4">🌱</span>
-          <h3 className="text-lg font-semibold text-white mb-2">No habits yet</h3>
-          <p className="text-slate-400 text-sm max-w-[320px] px-4 mb-6 leading-relaxed">
-            Add your first habit and start building a powerful daily routine.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={() => setShowTemplates(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
-            >
-              ✨ Browse Templates
-            </button>
-            <button
-              onClick={() => setShowAdd(true)}
-              className="px-5 py-2.5 rounded-xl font-bold text-sm text-white"
-              style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
-            >
-              + Create Custom
-            </button>
-          </div>
-        </div>
-      ) : visible.length === 0 ? (
-        <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-14 text-center">
-          <span className="text-4xl mb-3">🎉</span>
-          <h3 className="text-base font-semibold text-white mb-1">
-            {activeCategory !== 'All'
-              ? `No ${activeCategory} habits scheduled`
-              : 'No habits scheduled for this day'}
-          </h3>
-          <p className="text-slate-500 text-sm">
-            {activeCategory !== 'All' ? (
-              <button
-                onClick={() => setActiveCategory('All')}
-                className="text-brand-400 hover:text-brand-300 transition-colors"
-              >
-                Show all categories
-              </button>
-            ) : (
-              'Try selecting a different date or check "All My Habits" below.'
-            )}
-          </p>
-        </div>
-      ) : (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="habits-list" direction="vertical">
-            {provided => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="grid grid-cols-1 gap-2 sm:gap-4"
-              >
-                {visible.map((h, index) => (
-                  <Draggable key={h.id} draggableId={h.id} index={index}>
-                    {(dragProvided, snapshot) => (
-                      <div
-                        ref={dragProvided.innerRef}
-                        {...dragProvided.draggableProps}
-                        className={cn(
-                          'relative',
-                          snapshot.isDragging && 'z-50 opacity-90 scale-[1.02]'
-                        )}
-                      >
-                        {/* Drag handle */}
-                        <div
-                          {...dragProvided.dragHandleProps}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-lg text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing transition-colors"
-                        >
-                          <GripVertical size={16} />
-                        </div>
-                        <div className="pl-11">
-                          <Scroll3DReveal delay={index * 0.05}>
-                            <HabitCard
-                              habit={h}
-                              onLogClick={handleLogClick}
-                              onEdit={setEditingHabit}
-                              onDelete={deleteHabit}
-                              canFreeze={
-                                isToday &&
-                                (!h.todayLog || h.todayLog.value === 0) &&
-                                !h.todayLog?.isFrozen &&
-                                h.streak.current > 0 &&
-                                (userXP?.streakFreezes ?? 0) > 0
-                              }
-                              onFreeze={handleUseFreeze}
-                            />
-                          </Scroll3DReveal>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      )}
-
-      {/* ── All My Habits (always visible regardless of schedule) ── */}
-      {!loading &&
-        habits.filter(h => !h.archived).length > 0 &&
-        (() => {
-          const allActive = habits.filter(h => !h.archived);
-          const scheduledIds = new Set(scheduled.map(h => h.id));
-          const unscheduled = allActive.filter(h => !scheduledIds.has(h.id));
-          if (unscheduled.length === 0) return null;
-          return (
-            <div className="mt-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
-                  <Archive size={12} className="text-slate-500" />
-                </div>
-                <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                  Not Scheduled Today
-                </h2>
-                <span className="text-[10px] text-slate-600 font-bold">
-                  {unscheduled.length} habit{unscheduled.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 gap-3 opacity-70">
-                {unscheduled.map((h, i) => (
-                  <Scroll3DReveal key={h.id} delay={i * 0.05}>
-                    <HabitCard
-                      habit={h}
-                      onLogClick={handleLogClick}
-                      onEdit={setEditingHabit}
-                      onDelete={deleteHabit}
-                    />
-                  </Scroll3DReveal>
-                ))}
+              {[1, 2, 3, 4].map(i => (
+                <HabitSkeleton key={i} />
+              ))}
+            </div>
+          ) : habits.length === 0 ? (
+            <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-20 text-center w-full">
+              <span className="text-5xl mb-4">🌱</span>
+              <h3 className="text-lg font-semibold text-white mb-2">No habits yet</h3>
+              <p className="text-slate-400 text-sm max-w-[320px] px-4 mb-6 leading-relaxed">
+                Add your first habit and start building a powerful daily routine.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setShowTemplates(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
+                >
+                  ✨ Browse Templates
+                </button>
+                <button
+                  onClick={() => setShowAdd(true)}
+                  className="px-5 py-2.5 rounded-xl font-bold text-sm text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
+                  }}
+                >
+                  + Create Custom
+                </button>
               </div>
             </div>
-          );
-        })()}
+          ) : visible.length === 0 ? (
+            <div className="glass-card rounded-2xl flex flex-col items-center justify-center py-14 text-center">
+              <span className="text-4xl mb-3">🎉</span>
+              <h3 className="text-base font-semibold text-white mb-1">
+                {activeCategory !== 'All'
+                  ? `No ${activeCategory} habits scheduled`
+                  : 'No habits scheduled for this day'}
+              </h3>
+              <p className="text-slate-500 text-sm">
+                {activeCategory !== 'All' ? (
+                  <button
+                    onClick={() => setActiveCategory('All')}
+                    className="text-brand-400 hover:text-brand-300 transition-colors"
+                  >
+                    Show all categories
+                  </button>
+                ) : (
+                  'Try selecting a different date or check "All My Habits" below.'
+                )}
+              </p>
+            </div>
+          ) : (
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="habits-list" direction="vertical">
+                {provided => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="grid grid-cols-1 gap-2 sm:gap-4"
+                  >
+                    {visible.map((h, index) => (
+                      <Draggable key={h.id} draggableId={h.id} index={index}>
+                        {(dragProvided, snapshot) => (
+                          <div
+                            ref={dragProvided.innerRef}
+                            {...dragProvided.draggableProps}
+                            className={cn(
+                              'relative',
+                              snapshot.isDragging && 'z-50 opacity-90 scale-[1.02]'
+                            )}
+                          >
+                            {/* Drag handle */}
+                            <div
+                              {...dragProvided.dragHandleProps}
+                              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-lg text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing transition-colors"
+                            >
+                              <GripVertical size={16} />
+                            </div>
+                            <div className="pl-11">
+                              <Scroll3DReveal delay={index * 0.05}>
+                                <HabitCard
+                                  habit={h}
+                                  onLogClick={handleLogClick}
+                                  onEdit={setEditingHabit}
+                                  onDelete={deleteHabit}
+                                  canFreeze={
+                                    isToday &&
+                                    (!h.todayLog || h.todayLog.value === 0) &&
+                                    !h.todayLog?.isFrozen &&
+                                    h.streak.current > 0 &&
+                                    (userXP?.streakFreezes ?? 0) > 0
+                                  }
+                                  onFreeze={handleUseFreeze}
+                                />
+                              </Scroll3DReveal>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          )}
+
+          {/* ── All My Habits (always visible regardless of schedule) ── */}
+          {!loading &&
+            habits.filter(h => !h.archived).length > 0 &&
+            (() => {
+              const allActive = habits.filter(h => !h.archived);
+              const scheduledIds = new Set(scheduled.map(h => h.id));
+              const unscheduled = allActive.filter(h => !scheduledIds.has(h.id));
+              if (unscheduled.length === 0) return null;
+              return (
+                <div className="mt-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
+                      <Archive size={12} className="text-slate-500" />
+                    </div>
+                    <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                      Not Scheduled Today
+                    </h2>
+                    <span className="text-[10px] text-slate-600 font-bold">
+                      {unscheduled.length} habit{unscheduled.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 opacity-70">
+                    {unscheduled.map((h, i) => (
+                      <Scroll3DReveal key={h.id} delay={i * 0.05}>
+                        <HabitCard
+                          habit={h}
+                          onLogClick={handleLogClick}
+                          onEdit={setEditingHabit}
+                          onDelete={deleteHabit}
+                        />
+                      </Scroll3DReveal>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
         </>
       )}
 

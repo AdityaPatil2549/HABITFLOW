@@ -10,7 +10,13 @@ interface MagneticButtonProps {
   style?: CSSProperties;
 }
 
-export function MagneticButton({ children, className = '', onClick, intensity = 0.3, style }: MagneticButtonProps) {
+export function MagneticButton({
+  children,
+  className = '',
+  onClick,
+  intensity = 0.3,
+  style,
+}: MagneticButtonProps) {
   const ref = useRef<HTMLButtonElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 

@@ -1,5 +1,6 @@
 import { db, getOrCreateSettings } from '../db';
 import { format } from 'date-fns';
+import { Habit, HabitLog } from '../types';
 
 class NotificationService {
   private checkInterval: number | null = null;
@@ -92,17 +93,32 @@ class NotificationService {
       const now = new Date();
       const today = format(now, 'yyyy-MM-dd');
       const currentHour = now.getHours();
-      
+
       const habits = await db.habits.filter(h => !h.archived).toArray();
       if (habits.length === 0) return;
 
-      // 1. Morning Briefing (Between 7 AM and 11 AM)
+      // Parse configurable briefing time (default: 7 AM–11 AM)
+      let briefingStartHour = 7;
+      let briefingEndHour = 11;
+      if (settings.morningBriefingTime) {
+        const [h] = settings.morningBriefingTime.split(':').map(Number);
+        if (!isNaN(h)) {
+          briefingStartHour = Math.max(0, h - 1);
+          briefingEndHour = Math.min(23, h + 1);
+        }
+      }
+
+      // 1. Morning Briefing (configurable window, default 7–11 AM)
       const briefingKey = `morning-briefing-${today}`;
-      if (currentHour >= 7 && currentHour <= 11 && !this.notifiedToday.has(briefingKey)) {
+      if (
+        currentHour >= briefingStartHour &&
+        currentHour <= briefingEndHour &&
+        !this.notifiedToday.has(briefingKey)
+      ) {
         const pending = await this.getPendingHabitsForToday(habits, today);
         if (pending.length > 0) {
           this.sendNotification(
-            `Good morning! You have ${pending.length} habits to complete today.`, 
+            `Good morning! You have ${pending.length} habits to complete today.`,
             '🌅'
           );
           this.notifiedToday.add(briefingKey);
@@ -114,7 +130,7 @@ class NotificationService {
       if (currentHour >= 18 && currentHour <= 23 && !this.notifiedToday.has(streakSaverKey)) {
         const pending = await this.getPendingHabitsForToday(habits, today);
         const atRisk = pending.find(h => h.streak.current >= 3);
-        
+
         if (atRisk) {
           this.sendNotification(
             `You're about to lose your ${atRisk.streak.current}-day "${atRisk.name}" streak! 1 hour left.`,
@@ -128,6 +144,7 @@ class NotificationService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async getPendingHabitsForToday(habits: any[], today: string) {
     const logs = await db.habitLogs.where('date').equals(today).toArray();
     const currentDay = new Date().getDay(); // 0 = Sunday, 6 = Saturday
@@ -139,7 +156,8 @@ class NotificationService {
           return false;
         }
       }
-      
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const log = logs.find((l: any) => l.habitId === habit.id);
       if (!log) return true;
       return log.value < (habit.type === 'boolean' ? 1 : habit.targetValue);

@@ -96,7 +96,7 @@ export const gamificationService = {
     return userXP;
   },
 
-  async recordHabitCompletion(habitId: string): Promise<{
+  async recordHabitCompletion(_habitId: string): Promise<{
     xpGained: number;
     coinsGained: number;
     newTotal: number;
@@ -107,7 +107,7 @@ export const gamificationService = {
 
     // Add XP & Coins
     const userXP = await this.addXP(XP_PER_HABIT);
-    
+
     // Squad Sync
     try {
       const mySquadId = localStorage.getItem('habitflow_my_squad_id');

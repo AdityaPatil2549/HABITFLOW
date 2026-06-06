@@ -21,21 +21,28 @@ interface EditLayoutModalProps {
   onLayoutChange: (layout: string[]) => void;
 }
 
-export function EditLayoutModal({ isOpen, onClose, currentLayout, onLayoutChange }: EditLayoutModalProps) {
+export function EditLayoutModal({
+  isOpen,
+  onClose,
+  currentLayout,
+  onLayoutChange,
+}: EditLayoutModalProps) {
   const [items, setItems] = useState<string[]>(currentLayout);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-  useEffect(() => {
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setItems(currentLayout);
     }
-  }, [isOpen, currentLayout]);
+  }
 
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
     const newItems = Array.from(items);
     const [reorderedItem] = newItems.splice(result.source.index, 1);
     newItems.splice(result.destination.index, 0, reorderedItem);
-    
+
     setItems(newItems);
   };
 
@@ -81,12 +88,8 @@ export function EditLayoutModal({ isOpen, onClose, currentLayout, onLayoutChange
 
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="dashboard-layout">
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="space-y-3"
-                  >
+                {provided => (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
                     {items.map((item, index) => (
                       <Draggable key={item} draggableId={item} index={index}>
                         {(provided, snapshot) => (
@@ -94,13 +97,13 @@ export function EditLayoutModal({ isOpen, onClose, currentLayout, onLayoutChange
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             className={`flex items-center gap-4 p-4 rounded-2xl border ${
-                              snapshot.isDragging 
-                                ? 'bg-brand-500/20 border-brand-500/50 shadow-xl scale-105 z-50' 
+                              snapshot.isDragging
+                                ? 'bg-brand-500/20 border-brand-500/50 shadow-xl scale-105 z-50'
                                 : 'bg-white/5 border-white/10 hover:border-white/20'
                             } transition-colors`}
                             style={provided.draggableProps.style}
                           >
-                            <div 
+                            <div
                               {...provided.dragHandleProps}
                               className="text-slate-500 hover:text-white cursor-grab active:cursor-grabbing p-1"
                             >

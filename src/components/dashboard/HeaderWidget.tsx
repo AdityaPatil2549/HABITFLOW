@@ -16,7 +16,7 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   const navigate = useNavigate();
   const { habits } = useHabitStore();
   const { userXP } = useGamificationStore();
-  
+
   const [userName, setUserName] = useState(() => {
     try {
       const raw = localStorage.getItem(PROFILE_KEY);
@@ -33,7 +33,9 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
         if (raw) {
           setUserName(JSON.parse(raw).name);
         }
-      } catch {}
+      } catch {
+        // ignore parse errors
+      }
     };
     window.addEventListener('storage', sync);
     window.addEventListener('profile-updated', sync);
@@ -57,8 +59,8 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   return (
     <div className="flex flex-col gap-6 sm:gap-8 relative group widget-container">
       {dragHandleProps && (
-        <div 
-          {...dragHandleProps} 
+        <div
+          {...dragHandleProps}
           className="absolute -top-6 right-0 z-50 p-2 text-white/20 hover:text-white/60 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg backdrop-blur-md"
         >
           <GripHorizontal size={20} />
@@ -92,12 +94,14 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
             <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
             <span>Engage Habit</span>
           </button>
-          
+
           {xpStats && (
             <div className="flex flex-col items-start gap-1 ml-4 px-6 py-3 rounded-2xl vision-panel backdrop-blur-xl border border-white/10">
               <div className="flex items-center gap-2">
                 <Zap size={16} className="text-amber-400" />
-                <span className="text-base font-bold text-white tracking-wide">{userXP?.total ?? 0} XP</span>
+                <span className="text-base font-bold text-white tracking-wide">
+                  {userXP?.total ?? 0} XP
+                </span>
               </div>
               <div className="w-32 h-1.5 rounded-full bg-black/50 overflow-hidden">
                 <div

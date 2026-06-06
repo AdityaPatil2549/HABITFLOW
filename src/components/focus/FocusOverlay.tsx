@@ -3,7 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useFocusStore, calcFocusXP } from '../../store/focusStore';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { soundService } from '../../services/soundService';
-import { Play, Pause, XCircle, CheckCircle2, Coffee, Zap, Timer, ShieldAlert, Music, VolumeX, AlertTriangle } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  XCircle,
+  CheckCircle2,
+  Coffee,
+  Zap,
+  Timer,
+  ShieldAlert,
+  Music,
+  VolumeX,
+  AlertTriangle,
+} from 'lucide-react';
 
 const DURATION_PRESETS = [15, 25, 30, 45, 60, 90];
 
@@ -108,28 +120,30 @@ function DurationPicker({
         </div>
 
         {/* Strict Mode Toggle */}
-        <div 
+        <div
           onClick={() => setIsStrict(!isStrict)}
           className={`flex items-center justify-between px-4 py-3 rounded-2xl mb-6 cursor-pointer border transition-all ${
-            isStrict 
-              ? 'bg-rose-500/10 border-rose-500/30' 
-              : 'bg-white/[0.02] border-white/5'
+            isStrict ? 'bg-rose-500/10 border-rose-500/30' : 'bg-white/[0.02] border-white/5'
           }`}
         >
           <div>
-            <h4 className={`text-sm font-bold flex items-center gap-2 ${isStrict ? 'text-rose-400' : 'text-slate-300'}`}>
+            <h4
+              className={`text-sm font-bold flex items-center gap-2 ${isStrict ? 'text-rose-400' : 'text-slate-300'}`}
+            >
               <ShieldAlert size={14} /> Strict Mode
             </h4>
             <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
               Timer fails if you leave the app for &gt;5 seconds.
             </p>
           </div>
-          <div className={`w-10 h-5 rounded-full transition-colors relative flex items-center px-1 ${isStrict ? 'bg-rose-500' : 'bg-slate-800'}`}>
+          <div
+            className={`w-10 h-5 rounded-full transition-colors relative flex items-center px-1 ${isStrict ? 'bg-rose-500' : 'bg-slate-800'}`}
+          >
             <motion.div
               layout
               className="w-3 h-3 bg-white rounded-full shadow-sm"
               animate={{ x: isStrict ? 20 : 0 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
           </div>
         </div>
@@ -202,7 +216,9 @@ export function FocusOverlay() {
         strictTimerRef.current = window.setTimeout(() => {
           soundService.playUncheck();
           stopFocus();
-          alert('💥 Strict Mode Violation: You left the focus screen for >5 seconds. Session failed.');
+          alert(
+            '💥 Strict Mode Violation: You left the focus screen for >5 seconds. Session failed.'
+          );
         }, 5000);
       } else {
         // User returned
@@ -224,7 +240,7 @@ export function FocusOverlay() {
 
   // Ambient Audio Logic
   const [ambientSound, setAmbientSound] = useState<'off' | 'brown' | 'white'>('off');
-  
+
   useEffect(() => {
     if (ambientSound === 'off') {
       soundService.stopAmbient();

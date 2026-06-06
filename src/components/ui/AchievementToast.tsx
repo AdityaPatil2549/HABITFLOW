@@ -6,12 +6,18 @@ import { useCompletionEffects } from './CompletionEffects';
 interface AchievementToastProps {
   title: string;
   description: string;
-  icon: string;       // emoji
+  icon: string; // emoji
   type: 'milestone' | 'badge' | 'level_up';
   onClose: () => void;
 }
 
-export function AchievementToast({ title, description, icon, type, onClose }: AchievementToastProps) {
+export function AchievementToast({
+  title,
+  description,
+  icon,
+  type,
+  onClose,
+}: AchievementToastProps) {
   const { fireConfetti } = useCompletionEffects();
   const [progress, setProgress] = useState(100);
 
@@ -60,12 +66,9 @@ export function AchievementToast({ title, description, icon, type, onClose }: Ac
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.8, y: -30, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
-          <div
-            className="rounded-3xl p-1 shadow-2xl"
-            style={{ background: bgGradient }}
-          >
+          <div className="rounded-3xl p-1 shadow-2xl" style={{ background: bgGradient }}>
             <div className="bg-slate-900/95 backdrop-blur-xl rounded-[22px] p-8 text-center">
               {/* Close button */}
               <button
@@ -84,7 +87,11 @@ export function AchievementToast({ title, description, icon, type, onClose }: Ac
                 transition={{ delay: 0.2, type: 'spring', stiffness: 400 }}
               >
                 <TypeIcon size={12} />
-                {type === 'level_up' ? 'Level Up!' : type === 'milestone' ? 'Milestone!' : 'Badge Earned!'}
+                {type === 'level_up'
+                  ? 'Level Up!'
+                  : type === 'milestone'
+                    ? 'Milestone!'
+                    : 'Badge Earned!'}
               </motion.div>
 
               {/* Icon */}
@@ -173,7 +180,9 @@ export function useAchievementToast() {
     if (achievementQueue.length > 0) {
       setTimeout(() => setCurrent(achievementQueue[0]), 0);
     }
-    return () => { showCallback = null; };
+    return () => {
+      showCallback = null;
+    };
   }, []);
 
   const dismiss = () => {
@@ -186,16 +195,56 @@ export function useAchievementToast() {
 
 // ── Streak Milestone Definitions ─────────────────────────────
 export const STREAK_MILESTONES = [
-  { days: 7,   icon: '🔥', title: '1 Week Streak!', description: "You've shown up for 7 days straight. The habit is forming!" },
-  { days: 14,  icon: '⚡', title: '2 Week Warrior!', description: "14 days of consistency. You're building real momentum." },
-  { days: 21,  icon: '💪', title: '21 Day Breakthrough!', description: "They say it takes 21 days to form a habit. You just did it!" },
-  { days: 30,  icon: '🏅', title: '30 Day Champion!', description: "A full month of dedication. You're in the top 1% of habit builders." },
-  { days: 60,  icon: '💎', title: '60 Day Diamond!', description: "Two months of pure discipline. This habit is part of who you are." },
-  { days: 90,  icon: '👑', title: '90 Day Legend!', description: "A quarter of a year. Your consistency is legendary." },
-  { days: 180, icon: '🌟', title: 'Half Year Hero!', description: "6 months! You've proven this isn't a phase — it's a lifestyle." },
-  { days: 365, icon: '🏆', title: 'ONE YEAR!', description: "365 days. An entire year. You are extraordinary." },
+  {
+    days: 7,
+    icon: '🔥',
+    title: '1 Week Streak!',
+    description: "You've shown up for 7 days straight. The habit is forming!",
+  },
+  {
+    days: 14,
+    icon: '⚡',
+    title: '2 Week Warrior!',
+    description: "14 days of consistency. You're building real momentum.",
+  },
+  {
+    days: 21,
+    icon: '💪',
+    title: '21 Day Breakthrough!',
+    description: 'They say it takes 21 days to form a habit. You just did it!',
+  },
+  {
+    days: 30,
+    icon: '🏅',
+    title: '30 Day Champion!',
+    description: "A full month of dedication. You're in the top 1% of habit builders.",
+  },
+  {
+    days: 60,
+    icon: '💎',
+    title: '60 Day Diamond!',
+    description: 'Two months of pure discipline. This habit is part of who you are.',
+  },
+  {
+    days: 90,
+    icon: '👑',
+    title: '90 Day Legend!',
+    description: 'A quarter of a year. Your consistency is legendary.',
+  },
+  {
+    days: 180,
+    icon: '🌟',
+    title: 'Half Year Hero!',
+    description: "6 months! You've proven this isn't a phase — it's a lifestyle.",
+  },
+  {
+    days: 365,
+    icon: '🏆',
+    title: 'ONE YEAR!',
+    description: '365 days. An entire year. You are extraordinary.',
+  },
 ];
 
-export function checkStreakMilestone(streak: number): typeof STREAK_MILESTONES[0] | null {
+export function checkStreakMilestone(streak: number): (typeof STREAK_MILESTONES)[0] | null {
   return STREAK_MILESTONES.find(m => m.days === streak) ?? null;
 }

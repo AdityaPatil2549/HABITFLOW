@@ -24,10 +24,16 @@ export function AICoachCard() {
   const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
-    aiCoachService.getCoachInsights().then(data => {
-      setInsights(data);
-      setLoading(false);
-    }).catch((err) => { console.error('AICoachError:', err); setLoading(false); });
+    aiCoachService
+      .getCoachInsights()
+      .then(data => {
+        setInsights(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('AICoachError:', err);
+        setLoading(false);
+      });
   }, []);
 
   if (loading) {
@@ -68,7 +74,9 @@ export function AICoachCard() {
           </div>
           <div>
             <h3 className="text-sm font-bold text-white">AI Coach</h3>
-            <p className="text-xs text-slate-400">Complete a few habits to unlock personalized insights!</p>
+            <p className="text-xs text-slate-400">
+              Complete a few habits to unlock personalized insights!
+            </p>
           </div>
         </div>
       </motion.div>
@@ -96,7 +104,9 @@ export function AICoachCard() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-white">AI Coach</h3>
-              <p className="text-[10px] text-purple-400/60 uppercase tracking-wider font-semibold">Personalized for you</p>
+              <p className="text-[10px] text-purple-400/60 uppercase tracking-wider font-semibold">
+                Personalized for you
+              </p>
             </div>
           </div>
           {insights.length > 1 && (

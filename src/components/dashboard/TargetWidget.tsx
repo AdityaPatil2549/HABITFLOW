@@ -11,7 +11,7 @@ import { TiltCard } from '../ui/TiltCard';
 export function TargetWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   const { habits } = useHabitStore();
   const today = format(new Date(), 'yyyy-MM-dd');
-  
+
   const scheduled = habits.filter(h => !h.archived && habitService.isScheduledForDate(h, today));
   const done = scheduled.filter(h => !!h.todayLog && h.todayLog.value >= 1).length;
   const remaining = scheduled.length - done;
@@ -25,18 +25,15 @@ export function TargetWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   return (
     <div className="h-full relative group widget-container">
       {dragHandleProps && (
-        <div 
-          {...dragHandleProps} 
+        <div
+          {...dragHandleProps}
           className="absolute top-2 right-2 z-50 p-2 text-white/20 hover:text-white/60 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg backdrop-blur-md"
         >
           <GripHorizontal size={20} />
         </div>
       )}
       <TiltCard borderGlow className="h-full">
-        <SpotlightCard
-          variants={item}
-          className="h-full rounded-[2.5rem] p-6 sm:p-10 relative"
-        >
+        <SpotlightCard variants={item} className="h-full rounded-[2.5rem] p-6 sm:p-10 relative">
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
             <Trophy size={100} className="text-brand-400" />
           </div>

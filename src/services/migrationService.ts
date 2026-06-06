@@ -96,11 +96,10 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────
-function toSupabaseRow(
-  supabaseTable: string,
-  record: Record<string, any>,
-): Record<string, any> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toSupabaseRow(supabaseTable: string, record: Record<string, any>): Record<string, any> {
   const mapping = COLUMN_MAP[supabaseTable] ?? {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: Record<string, any> = {};
   for (const [key, value] of Object.entries(record)) {
     const mappedKey = mapping[key] ?? key;
@@ -133,9 +132,7 @@ export interface MigrationProgress {
  *
  * This is idempotent: if it has already run for this user, it returns immediately.
  */
-export async function migrateLocalDataToCloud(
-  userId: string,
-): Promise<MigrationProgress> {
+export async function migrateLocalDataToCloud(userId: string): Promise<MigrationProgress> {
   const progress: MigrationProgress = { total: 0, synced: 0 };
 
   if (!isSupabaseConfigured()) {
@@ -176,12 +173,13 @@ export async function migrateLocalDataToCloud(
     const supabaseTable = DEXIE_TO_SUPABASE[dexieTableName];
 
     // Convert all records to Supabase format with user_id
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = records.map((record: Record<string, any>) =>
       toSupabaseRow(supabaseTable, {
         ...record,
         user_id: userId,
         updated_at: now,
-      }),
+      })
     );
 
     // Batch upsert in chunks of 100 to avoid payload limits
@@ -190,24 +188,16 @@ export async function migrateLocalDataToCloud(
       const batch = rows.slice(i, i + BATCH_SIZE);
 
       try {
-        const { error } = await supabase
-          .from(supabaseTable)
-          .upsert(batch, { onConflict: 'id' });
+        const { error } = await supabase.from(supabaseTable).upsert(batch, { onConflict: 'id' });
 
         if (error) {
-          console.error(
-            `[MigrationService] Failed to migrate batch for ${supabaseTable}:`,
-            error,
-          );
+          console.error(`[MigrationService] Failed to migrate batch for ${supabaseTable}:`, error);
           // Continue with next batch — partial migration is better than none
         } else {
           progress.synced += batch.length;
         }
       } catch (err) {
-        console.error(
-          `[MigrationService] Network error migrating ${supabaseTable}:`,
-          err,
-        );
+        console.error(`[MigrationService] Network error migrating ${supabaseTable}:`, err);
       }
     }
   }
@@ -218,7 +208,7 @@ export async function migrateLocalDataToCloud(
   }
 
   console.info(
-    `[MigrationService] Migration complete: ${progress.synced}/${progress.total} records synced.`,
+    `[MigrationService] Migration complete: ${progress.synced}/${progress.total} records synced.`
   );
 
   return progress;

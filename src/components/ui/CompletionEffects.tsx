@@ -80,11 +80,7 @@ export function AnimatedXPCounter({
     duration: 1.2,
   });
 
-  return (
-    <motion.span className={className}>
-      {springValue}
-    </motion.span>
-  );
+  return <motion.span className={className}>{springValue}</motion.span>;
 }
 
 /**
@@ -116,7 +112,13 @@ export function CompletionPulse({
 /**
  * Rising particle effect — small glowing dots that float upward and fade.
  */
-export function RisingParticles({ active, color = '#6366f1' }: { active: boolean; color?: string }) {
+export function RisingParticles({
+  active,
+  color = '#6366f1',
+}: {
+  active: boolean;
+  color?: string;
+}) {
   const [particles] = useState(() => {
     return Array.from({ length: 6 }).map(() => ({
       x: `${20 + Math.random() * 60}%`,
@@ -127,7 +129,16 @@ export function RisingParticles({ active, color = '#6366f1' }: { active: boolean
   if (!active) return null;
 
   return (
-    <div className="rising-particles-container" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 20 }}>
+    <div
+      className="rising-particles-container"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+        zIndex: 20,
+      }}
+    >
       {particles.map((p, i) => (
         <motion.div
           key={i}

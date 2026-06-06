@@ -1,7 +1,19 @@
 import { useState, useEffect } from 'react';
 import { coinService, COIN_RATES } from '@/services/coinService';
 import type { ShopItem, ShopPurchase } from '@/types';
-import { Coins, Crown, Palette, Package, Sparkles, Check, Lock, ShoppingBag, Gift, Zap, Star } from 'lucide-react';
+import {
+  Coins,
+  Crown,
+  Palette,
+  Package,
+  Sparkles,
+  Check,
+  Lock,
+  ShoppingBag,
+  Gift,
+  Zap,
+  Star,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/common/Toast';
 import { soundService } from '@/services/soundService';
@@ -16,9 +28,21 @@ const CATEGORY_TABS = [
 
 const RARITY_STYLES: Record<string, { border: string; glow: string; badge: string }> = {
   common: { border: 'border-slate-500/30', glow: '', badge: 'bg-slate-500/20 text-slate-400' },
-  rare: { border: 'border-blue-500/30', glow: 'shadow-blue-500/10', badge: 'bg-blue-500/20 text-blue-400' },
-  epic: { border: 'border-purple-500/30', glow: 'shadow-purple-500/15', badge: 'bg-purple-500/20 text-purple-400' },
-  legendary: { border: 'border-amber-400/40', glow: 'shadow-amber-400/20', badge: 'bg-amber-400/20 text-amber-400' },
+  rare: {
+    border: 'border-blue-500/30',
+    glow: 'shadow-blue-500/10',
+    badge: 'bg-blue-500/20 text-blue-400',
+  },
+  epic: {
+    border: 'border-purple-500/30',
+    glow: 'shadow-purple-500/15',
+    badge: 'bg-purple-500/20 text-purple-400',
+  },
+  legendary: {
+    border: 'border-amber-400/40',
+    glow: 'shadow-amber-400/20',
+    badge: 'bg-amber-400/20 text-amber-400',
+  },
 };
 
 export function ShopPage() {
@@ -62,6 +86,20 @@ export function ShopPage() {
       soundService.playLevelUp();
       toast.success(`🎉 Unlocked ${item.name}!`);
       await loadData();
+
+      // Apply theme instantly if it's a theme item
+      if (item.category === 'theme' && item.preview) {
+        const root = document.documentElement;
+        if (item.preview === 'indigo') {
+          root.removeAttribute('data-theme');
+        } else {
+          root.setAttribute('data-theme', item.preview);
+        }
+        // Persist to Settings so it survives page reload
+        const { db, getOrCreateSettings } = await import('@/db');
+        const s = await getOrCreateSettings();
+        await db.settings.update(s.id, { theme: item.preview as any });
+      }
     } else {
       toast.error('Purchase failed');
     }
@@ -73,7 +111,9 @@ export function ShopPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Rewards Shop</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            Rewards Shop
+          </h1>
           <p className="text-sm text-slate-400 mt-1">Earn coins, unlock premium content</p>
         </div>
         <motion.div
@@ -130,7 +170,9 @@ export function ShopPage() {
 
               <div className="relative p-4 flex flex-col items-center text-center">
                 {/* Rarity badge */}
-                <span className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${rarity.badge}`}>
+                <span
+                  className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${rarity.badge}`}
+                >
                   {item.rarity}
                 </span>
 
@@ -141,7 +183,9 @@ export function ShopPage() {
 
                 {/* Name & Description */}
                 <h3 className="text-sm font-bold text-white mb-1">{item.name}</h3>
-                <p className="text-[10px] text-slate-400 leading-relaxed mb-3 line-clamp-2">{item.description}</p>
+                <p className="text-[10px] text-slate-400 leading-relaxed mb-3 line-clamp-2">
+                  {item.description}
+                </p>
 
                 {/* Price / Status */}
                 {owned ? (
@@ -196,7 +240,10 @@ export function ShopPage() {
             { label: '100-day streak', coins: COIN_RATES.STREAK_100, icon: '👑' },
             { label: 'Perfect week', coins: COIN_RATES.PERFECT_WEEK, icon: '⭐' },
           ].map(item => (
-            <div key={item.label} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/3 border border-white/5">
+            <div
+              key={item.label}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/3 border border-white/5"
+            >
               <span className="text-lg">{item.icon}</span>
               <div>
                 <p className="text-[10px] text-slate-400">{item.label}</p>

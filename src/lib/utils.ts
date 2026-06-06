@@ -7,7 +7,7 @@ export async function compressImage(file: File, maxWidth = 800, quality = 0.6): 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = (event) => {
+    reader.onload = event => {
       const img = new Image();
       img.src = event.target?.result as string;
       img.onload = () => {
@@ -26,9 +26,8 @@ export async function compressImage(file: File, maxWidth = 800, quality = 0.6): 
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
         resolve(dataUrl);
       };
-      img.onerror = (err) => reject(err);
+      img.onerror = err => reject(err);
     };
-    reader.onerror = (err) => reject(err);
+    reader.onerror = err => reject(err);
   });
 }
-

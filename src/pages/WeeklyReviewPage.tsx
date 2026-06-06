@@ -35,6 +35,7 @@ export function WeeklyReviewPage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
   const [loading, setLoading] = useState(true);
+  const [weeklyHabitsDone, setWeeklyHabitsDone] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -45,6 +46,30 @@ export function WeeklyReviewPage() {
       getOrCreateSettings().then(s => setTheme(s.theme || 'indigo')),
     ]).finally(() => setLoading(false));
   }, [loadHabits, loadTasks]);
+
+  // Accurately count habits done this week by querying actual logs
+  useEffect(() => {
+    if (loading || !habits.length) return;
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+    const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+    const startStr = format(weekStart, 'yyyy-MM-dd');
+    const endStr = format(weekEnd, 'yyyy-MM-dd');
+
+    import('../db').then(({ db }) => {
+      db.habitLogs
+        .where('date')
+        .between(startStr, endStr, true, true)
+        .filter(l => l.value >= 1 && !l.isFrozen)
+        .toArray()
+        .then(logs => {
+          // Count unique habits completed at least once this week
+          const uniqueHabitsDone = new Set(logs.map(l => l.habitId)).size;
+          setWeeklyHabitsDone(uniqueHabitsDone);
+        })
+        .catch(() => setWeeklyHabitsDone(0));
+    });
+  }, [loading, habits]);
 
   useEffect(() => {
     document.title = 'Weekly Review — HabitFlow';
@@ -109,9 +134,8 @@ export function WeeklyReviewPage() {
           <div className="text-center relative mb-10 z-10">
             {(() => {
               const activeHabits = habits.filter(h => !h.archived);
-              const weeklyDone = activeHabits.filter(
-                h => h.streak.current >= 1 || h.completionRate30Days * 30 >= 1
-              ).length;
+              // weeklyHabitsDone is accurately computed from real DB logs (this week's completions)
+              const weeklyDone = weeklyHabitsDone;
               const pct = activeHabits.length
                 ? Math.round((weeklyDone / activeHabits.length) * 100)
                 : 0;

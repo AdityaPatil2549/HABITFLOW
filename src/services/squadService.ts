@@ -37,14 +37,14 @@ async function createSquad(
   }
 
   const inviteCode = generateInviteCode();
-  
+
   // 1. Insert Squad
   const { data: squadData, error: squadError } = await supabase
     .from('squads')
     .insert({
       name,
       invite_code: inviteCode,
-      owner_id: userId
+      owner_id: userId,
     })
     .select()
     .single();
@@ -55,14 +55,12 @@ async function createSquad(
   }
 
   // 2. Insert Owner as Member
-  const { error: memberError } = await supabase
-    .from('squad_members')
-    .insert({
-      squad_id: squadData.id,
-      user_id: userId,
-      streak: 0,
-      completion_today: 0
-    });
+  const { error: memberError } = await supabase.from('squad_members').insert({
+    squad_id: squadData.id,
+    user_id: userId,
+    streak: 0,
+    completion_today: 0,
+  });
 
   if (memberError) {
     console.error('[SquadService] Error adding owner to squad:', memberError);
@@ -70,29 +68,31 @@ async function createSquad(
   }
 
   setMySquadId(squadData.id);
-  
+
   return {
     id: squadData.id,
     name: squadData.name,
     invite_code: squadData.invite_code,
     owner_id: squadData.owner_id,
     created_at: squadData.created_at,
-    members: [{
-      user_id: userId,
-      display_name: displayName,
-      avatar_url: avatarUrl,
-      streak: 0,
-      completion_today: 0,
-      joined_at: new Date().toISOString()
-    }]
+    members: [
+      {
+        user_id: userId,
+        display_name: displayName,
+        avatar_url: avatarUrl,
+        streak: 0,
+        completion_today: 0,
+        joined_at: new Date().toISOString(),
+      },
+    ],
   };
 }
 
 async function joinSquad(
   inviteCode: string,
   userId: string,
-  displayName: string,
-  avatarUrl?: string
+  _displayName: string,
+  _avatarUrl?: string
 ): Promise<Squad | null> {
   if (!isSupabaseConfigured()) return null;
 
@@ -120,12 +120,10 @@ async function joinSquad(
   }
 
   // 3. Insert Member (ignores if already exists due to PK)
-  const { error: insertError } = await supabase
-    .from('squad_members')
-    .upsert({
-      squad_id: squadData.id,
-      user_id: userId,
-    });
+  const { error: insertError } = await supabase.from('squad_members').upsert({
+    squad_id: squadData.id,
+    user_id: userId,
+  });
 
   if (insertError) {
     console.error('[SquadService] Error joining squad:', insertError);
@@ -162,7 +160,8 @@ async function getMySquad(): Promise<Squad | null> {
   // Query squad and members + profiles
   const { data: squadData, error: squadError } = await supabase
     .from('squads')
-    .select(`
+    .select(
+      `
       id, name, invite_code, owner_id, created_at,
       squad_members (
         user_id, streak, completion_today, joined_at,
@@ -170,7 +169,8 @@ async function getMySquad(): Promise<Squad | null> {
           name, avatar_url
         )
       )
-    `)
+    `
+    )
     .eq('id', id)
     .single();
 
@@ -181,13 +181,14 @@ async function getMySquad(): Promise<Squad | null> {
     return null;
   }
 
-  const members: SquadMember[] = (squadData.squad_members as any[] || []).map(m => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const members: SquadMember[] = ((squadData.squad_members as any[]) || []).map(m => ({
     user_id: m.user_id,
     display_name: m.profiles?.name || 'Anonymous',
     avatar_url: m.profiles?.avatar_url,
     streak: m.streak,
     completion_today: m.completion_today,
-    joined_at: m.joined_at
+    joined_at: m.joined_at,
   }));
 
   return {
@@ -196,7 +197,7 @@ async function getMySquad(): Promise<Squad | null> {
     invite_code: squadData.invite_code,
     owner_id: squadData.owner_id,
     created_at: squadData.created_at,
-    members
+    members,
   };
 }
 
@@ -212,7 +213,7 @@ async function updateMyProgress(
     .from('squad_members')
     .update({
       streak,
-      completion_today: completionToday
+      completion_today: completionToday,
     })
     .eq('squad_id', squadId)
     .eq('user_id', userId);

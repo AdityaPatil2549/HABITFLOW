@@ -294,8 +294,12 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{isGuest ? 'Guest User' : profile.name}</p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">{isGuest ? 'Local Mode Only' : 'Peak Performer'}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+              {isGuest ? 'Guest User' : profile.name}
+            </p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              {isGuest ? 'Local Mode Only' : 'Peak Performer'}
+            </p>
           </div>
         </div>
       </div>
@@ -337,10 +341,14 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
           <button
             onClick={() => {
               onClose();
-              toast.confirm('Are you sure you want to sign out?', async () => {
-                await signOut();
-                navigate('/login');
-              }, { confirmLabel: 'Sign Out' });
+              toast.confirm(
+                'Are you sure you want to sign out?',
+                async () => {
+                  await signOut();
+                  navigate('/login');
+                },
+                { confirmLabel: 'Sign Out' }
+              );
             }}
             className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
           >
@@ -628,8 +636,12 @@ export function Layout() {
         desktopNotifRef.current && !desktopNotifRef.current.contains(e.target as Node);
       if (isOutsideMobile && isOutsideDesktop) setShowNotifications(false);
 
-      if (accountRef.current && !accountRef.current.contains(e.target as Node) &&
-          mobileAccountRef.current && !mobileAccountRef.current.contains(e.target as Node)) {
+      if (
+        accountRef.current &&
+        !accountRef.current.contains(e.target as Node) &&
+        mobileAccountRef.current &&
+        !mobileAccountRef.current.contains(e.target as Node)
+      ) {
         setShowAccount(false);
       }
     }
@@ -643,10 +655,13 @@ export function Layout() {
       : 'text-slate-400 px-5 py-2.5 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
 
   return (
-    <div className="min-h-screen bg-transparent flex cursor-none sm:cursor-auto">
+    <div className="min-h-screen flex cursor-none sm:cursor-auto text-slate-50 relative z-0">
+      {/* Premium VisionOS Background Elements */}
+      <div className="bg-mesh" />
+      <div className="bg-mesh-blob" />
       <div className="noise-overlay" />
       <CursorTrail />
-      
+
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 glass-card-3d rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
         <NavLink
@@ -708,18 +723,22 @@ export function Layout() {
           <div className="relative ml-2" ref={mobileAccountRef}>
             <button
               onClick={() => {
-                 setShowAccount(v => !v);
-                 setShowNotifications(false);
+                setShowAccount(v => !v);
+                setShowNotifications(false);
               }}
               className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white border border-white/10 overflow-hidden shadow-lg"
             >
-              {(user?.user_metadata?.avatar_url || profile.avatar) ? (
-                <img src={user?.user_metadata?.avatar_url || profile.avatar} className="w-full h-full object-cover" alt="" />
+              {user?.user_metadata?.avatar_url || profile.avatar ? (
+                <img
+                  src={user?.user_metadata?.avatar_url || profile.avatar}
+                  className="w-full h-full object-cover"
+                  alt=""
+                />
               ) : (
                 <User size={16} />
               )}
             </button>
-            
+
             {showAccount && (
               <div className="absolute right-0 top-full mt-2 w-56 z-[100]">
                 <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
@@ -757,9 +776,9 @@ export function Layout() {
           ].map(l => {
             const Icon = l.icon;
             return (
-              <NavLink 
-                key={l.to} 
-                to={l.to} 
+              <NavLink
+                key={l.to}
+                to={l.to}
                 className={navLinkClass}
                 onMouseEnter={() => soundService.playHover()}
                 onClick={() => soundService.playTransition()}
@@ -866,10 +885,14 @@ export function Layout() {
             ) : (
               <button
                 onClick={() => {
-                  toast.confirm('Are you sure you want to sign out?', async () => {
-                    await signOut();
-                    navigate('/login');
-                  }, { confirmLabel: 'Sign Out' });
+                  toast.confirm(
+                    'Are you sure you want to sign out?',
+                    async () => {
+                      await signOut();
+                      navigate('/login');
+                    },
+                    { confirmLabel: 'Sign Out' }
+                  );
                 }}
                 title={`Synced as ${user?.email}`}
                 className="p-2.5 rounded-xl text-emerald-400 hover:bg-white/5 transition-colors"
@@ -890,8 +913,12 @@ export function Layout() {
               className="w-full flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group text-left"
             >
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold overflow-hidden shadow-lg shadow-brand-500/20 flex-shrink-0">
-                {(user?.user_metadata?.avatar_url || profile.avatar) ? (
-                  <img src={user?.user_metadata?.avatar_url || profile.avatar} className="w-full h-full object-cover" alt="" />
+                {user?.user_metadata?.avatar_url || profile.avatar ? (
+                  <img
+                    src={user?.user_metadata?.avatar_url || profile.avatar}
+                    className="w-full h-full object-cover"
+                    alt=""
+                  />
                 ) : (
                   <User size={16} />
                 )}
@@ -965,7 +992,7 @@ export function Layout() {
                   `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
                 }
               >
-                <Icon size={22} className={i === 0 ? "mr-2" : "mr-6"} />
+                <Icon size={22} className={i === 0 ? 'mr-2' : 'mr-6'} />
               </NavLink>
             );
           })}
@@ -993,7 +1020,7 @@ export function Layout() {
                   `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
                 }
               >
-                <Icon size={22} className={i === 0 ? "ml-6" : "ml-2"} />
+                <Icon size={22} className={i === 0 ? 'ml-6' : 'ml-2'} />
               </NavLink>
             );
           })}

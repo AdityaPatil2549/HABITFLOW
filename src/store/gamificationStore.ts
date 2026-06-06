@@ -37,7 +37,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
 
   recordHabitCompletion: async (habitId: string, streak: number) => {
     const result = await gamificationService.recordHabitCompletion(habitId);
-    
+
     // Level Up / Badge toasts
     result.badgesUnlocked.forEach(badge => {
       queueAchievement({

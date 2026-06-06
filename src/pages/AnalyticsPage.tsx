@@ -63,10 +63,13 @@ function CorrelationInsights() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    correlationService.getAllCorrelations().then(data => {
-      setCorrelations(data);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    correlationService
+      .getAllCorrelations()
+      .then(data => {
+        setCorrelations(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -93,16 +96,26 @@ function CorrelationInsights() {
     <ChartCard title="Deep Insights" subtitle="AI-powered correlations based on your data">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
         {correlations.map((corr, i) => (
-          <div key={i} className="rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4">
+          <div
+            key={i}
+            className="rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4"
+          >
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-bold text-brand-300">{corr.habitAName}</h4>
-              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                corr.correlation > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
-              }`}>
-                {corr.correlation > 0 ? '+' : ''}{Math.round(corr.correlation * 100)}%
+              <span
+                className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                  corr.correlation > 0
+                    ? 'bg-emerald-500/20 text-emerald-400'
+                    : 'bg-red-500/20 text-red-400'
+                }`}
+              >
+                {corr.correlation > 0 ? '+' : ''}
+                {Math.round(corr.correlation * 100)}%
               </span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{corr.description}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {corr.description}
+            </p>
           </div>
         ))}
       </div>
@@ -462,7 +475,12 @@ function TrendLine({ habits }: { habits: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
         <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
-        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          itemStyle={TOOLTIP_ITEM_STYLE}
+          labelStyle={TOOLTIP_LABEL_STYLE}
+          formatter={(v: any) => [`${v}%`, 'Completion']}
+        />
         <Area
           type="monotone"
           dataKey="completion"
@@ -503,7 +521,12 @@ function MoodTrend({ moods }: { moods: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
         <YAxis domain={[1, 5]} tick={{ fill: '#64748b', fontSize: 11 }} />
-        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} formatter={(v: any) => [`${v}/5`, 'Mood Score']} />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          itemStyle={TOOLTIP_ITEM_STYLE}
+          labelStyle={TOOLTIP_LABEL_STYLE}
+          formatter={(v: any) => [`${v}/5`, 'Mood Score']}
+        />
         <Area
           type="monotone"
           dataKey="mood"
@@ -546,7 +569,11 @@ function TaskThroughput({ tasks }: { tasks: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="week" tick={{ fill: '#64748b', fontSize: 11 }} />
         <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
-        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          itemStyle={TOOLTIP_ITEM_STYLE}
+          labelStyle={TOOLTIP_LABEL_STYLE}
+        />
         <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
         <Bar
           dataKey="created"
@@ -613,13 +640,17 @@ function BestWorstDay({ habits }: { habits: any[] }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl p-4 text-center border border-emerald-500/20 bg-emerald-500/5">
           <div className="text-2xl mb-1">🏆</div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-1">Best Day</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-1">
+            Best Day
+          </p>
           <p className="font-bold text-slate-900 dark:text-white">{best.day}</p>
           <p className="text-emerald-400 text-sm font-bold">{best.pct}%</p>
         </div>
         <div className="rounded-xl p-4 text-center border border-red-500/20 bg-red-500/5">
           <div className="text-2xl mb-1">⚠️</div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-1">Weakest Day</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-1">
+            Weakest Day
+          </p>
           <p className="font-bold text-slate-900 dark:text-white">{worst.day}</p>
           <p className="text-orange-400 text-sm font-bold">{worst.pct}%</p>
         </div>
@@ -628,7 +659,12 @@ function BestWorstDay({ habits }: { habits: any[] }) {
         <BarChart data={dayData}>
           <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11 }} />
           <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
-          <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} formatter={(v: any) => [`${v}%`, 'Completion']} />
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+            formatter={(v: any) => [`${v}%`, 'Completion']}
+          />
           <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={48}>
             {dayData.map((d, i) => (
               <Cell
@@ -701,7 +737,11 @@ function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }
           domain={[1, 5]}
           tick={{ fill: '#64748b', fontSize: 11 }}
         />
-        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} labelStyle={TOOLTIP_LABEL_STYLE} />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          itemStyle={TOOLTIP_ITEM_STYLE}
+          labelStyle={TOOLTIP_LABEL_STYLE}
+        />
         <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
         <Bar
           yAxisId="left"
@@ -748,19 +788,21 @@ function StatCard({
           'glass-card rounded-2xl p-6 text-center relative overflow-hidden group h-full',
           colorClass
         )}
-    >
-      <span className="absolute right-3 bottom-3 text-5xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
-        {icon}
-      </span>
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">
-        {label}
-      </p>
-      <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">{value}</p>
-      {sub && (
-        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider opacity-60">
-          {sub}
+      >
+        <span className="absolute right-3 bottom-3 text-5xl opacity-10 rotate-12 group-hover:rotate-0 group-hover:scale-110 transition-transform duration-500">
+          {icon}
+        </span>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-2">
+          {label}
         </p>
-      )}
+        <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
+          {value}
+        </p>
+        {sub && (
+          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider opacity-60">
+            {sub}
+          </p>
+        )}
       </motion.div>
     </TiltCard>
   );
@@ -780,7 +822,11 @@ function ChartCard({
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <div className="mb-5 relative z-10">
         <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
-        {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mt-1">{subtitle}</p>}
+        {subtitle && (
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mt-1">
+            {subtitle}
+          </p>
+        )}
       </div>
       {children}
     </div>
@@ -804,8 +850,12 @@ function DynamicInsights({ habits }: { habits: any[] }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="glass-card rounded-2xl p-5 border-l-4 border-l-brand-500/40">
           <span className="text-2xl">🌱</span>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mt-3 mb-1">Fresh Start</h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 leading-relaxed">Every day is a new opportunity. Start building your streaks today!</p>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mt-3 mb-1">
+            Fresh Start
+          </h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 leading-relaxed">
+            Every day is a new opportunity. Start building your streaks today!
+          </p>
         </div>
       </div>
     );
@@ -878,8 +928,12 @@ function DynamicInsights({ habits }: { habits: any[] }) {
       {insights.map(c => (
         <div key={c.title} className="glass-card rounded-2xl p-5 border-l-4 border-l-brand-500/40">
           <span className="text-2xl">{c.icon}</span>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mt-3 mb-1">{c.title}</h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 leading-relaxed">{c.body}</p>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mt-3 mb-1">
+            {c.title}
+          </h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 leading-relaxed">
+            {c.body}
+          </p>
         </div>
       ))}
     </div>
@@ -894,6 +948,7 @@ export function AnalyticsPage() {
   const [tab, setTab] = useState<TabType>('Overview');
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const [heatmapData, setHeatmapData] = useState<Record<string, number>>({});
+  const [perHabitDays, setPerHabitDays] = useState<7 | 30 | 90>(30);
 
   useEffect(() => {
     loadHabits();
@@ -909,8 +964,14 @@ export function AnalyticsPage() {
 
   useEffect(() => {
     if (!selectedHabit) return;
+    const cutoff = format(subDays(new Date(), perHabitDays), 'yyyy-MM-dd');
+    const today = format(new Date(), 'yyyy-MM-dd');
     (async () => {
-      const logs = await db.habitLogs.where('habitId').equals(selectedHabit.id).toArray();
+      const logs = await db.habitLogs
+        .where('habitId')
+        .equals(selectedHabit.id)
+        .and(l => l.date >= cutoff && l.date <= today)
+        .toArray();
       const map: Record<string, number> = {};
       logs.forEach(l => {
         map[l.date] =
@@ -922,7 +983,7 @@ export function AnalyticsPage() {
       });
       setHeatmapData(map);
     })();
-  }, [selectedHabit]);
+  }, [selectedHabit, perHabitDays]);
 
   const bestStreak = habits.length ? Math.max(...habits.map(h => h.streak.best)) : 0;
   const avgCompletion = habits.length
@@ -947,7 +1008,9 @@ export function AnalyticsPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
             Analytics
           </p>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Your Progress Report</h1>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Your Progress Report
+          </h1>
           <p className="text-slate-500 dark:text-slate-400 dark:text-slate-400 text-sm mt-1">
             Track, analyze, and improve your habits over time.
           </p>
@@ -1083,13 +1146,36 @@ export function AnalyticsPage() {
                         : 'glass-card-3d border-white/5 text-slate-400 hover:text-white hover:-translate-y-1'
                     }`}
                   >
-                    <span><IconRenderer name={h.icon} size={16} /></span> {h.name}
+                    <span>
+                      <IconRenderer name={h.icon} size={16} />
+                    </span>{' '}
+                    {h.name}
                   </button>
                 ))}
               </div>
 
               {selectedHabit && (
                 <>
+                  {/* Date range selector */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                      Date Range:
+                    </span>
+                    {([7, 30, 90] as const).map(days => (
+                      <button
+                        key={days}
+                        onClick={() => setPerHabitDays(days)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                          perHabitDays === days
+                            ? 'button-3d border-brand-500/50 text-white'
+                            : 'glass-card-3d border-white/5 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {days}d
+                      </button>
+                    ))}
+                  </div>
+
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <StatCard
                       icon="🔥"
@@ -1105,8 +1191,12 @@ export function AnalyticsPage() {
                     />
                     <StatCard
                       icon="📈"
-                      label="30d Completion"
-                      value={`${Math.round(selectedHabit.completionRate30Days * 100)}%`}
+                      label={`${perHabitDays}d Completion`}
+                      value={`${Math.round(
+                        (Object.values(heatmapData).filter(v => v >= 1).length /
+                          Math.max(1, perHabitDays)) *
+                          100
+                      )}%`}
                       colorClass="kpi-card-indigo"
                     />
                     <StatCard
@@ -1118,8 +1208,13 @@ export function AnalyticsPage() {
                   </div>
 
                   <ChartCard
-                    title={<span className="flex items-center gap-2"><IconRenderer name={selectedHabit.icon} size={20} /> {selectedHabit.name} — Completion Heatmap</span>}
-                    subtitle="Last 90 days of habit tracking"
+                    title={
+                      <span className="flex items-center gap-2">
+                        <IconRenderer name={selectedHabit.icon} size={20} /> {selectedHabit.name} —
+                        Completion Heatmap
+                      </span>
+                    }
+                    subtitle={`Last ${perHabitDays} days of habit tracking`}
                   >
                     <Heatmap logs={heatmapData} />
                   </ChartCard>

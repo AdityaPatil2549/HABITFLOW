@@ -73,7 +73,7 @@ export function useKeyboardShortcuts(options: {
 
       // Single-key shortcuts — don't fire when typing or with modifiers
       if (isTyping) return;
-      
+
       // Handle Shift+?
       if (e.shiftKey && e.key === '?') {
         e.preventDefault();

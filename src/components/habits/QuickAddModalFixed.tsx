@@ -38,7 +38,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
   const [habitFreq, setHabitFreq] = useState<HabitFrequency>('daily');
   const [habitTarget, setHabitTarget] = useState(1);
   const [healthSyncEnabled, setHealthSyncEnabled] = useState(false);
-  const [healthMetric, setHealthMetric] = useState<'steps' | 'sleep' | 'water' | 'calories' | 'meditation'>('steps');
+  const [healthMetric, setHealthMetric] = useState<
+    'steps' | 'sleep' | 'water' | 'calories' | 'meditation'
+  >('steps');
 
   // Task form
   const [taskTitle, setTaskTitle] = useState('');
@@ -338,7 +340,10 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                   {/* Health Sync Toggle */}
                   <div className="bg-slate-950/40 border border-white/5 rounded-2xl p-4 flex flex-col gap-3">
-                    <div className="flex items-center justify-between cursor-pointer" onClick={() => setHealthSyncEnabled(!healthSyncEnabled)}>
+                    <div
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => setHealthSyncEnabled(!healthSyncEnabled)}
+                    >
                       <div>
                         <h4 className="text-sm font-bold text-white flex items-center gap-2">
                           <Cloud size={16} className="text-brand-400" />
@@ -348,16 +353,18 @@ export function QuickAddModalFixed({ onClose }: Props) {
                           Automatically sync progress from Google Fit or Apple Health.
                         </p>
                       </div>
-                      <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-1 ${healthSyncEnabled ? 'bg-brand-500' : 'bg-slate-800'}`}>
+                      <div
+                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-1 ${healthSyncEnabled ? 'bg-brand-500' : 'bg-slate-800'}`}
+                      >
                         <motion.div
                           layout
                           className="w-4 h-4 bg-white rounded-full shadow-sm"
                           animate={{ x: healthSyncEnabled ? 24 : 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                         />
                       </div>
                     </div>
-                    
+
                     <AnimatePresence>
                       {healthSyncEnabled && (
                         <motion.div

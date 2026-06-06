@@ -5,21 +5,110 @@
 import type { ParsedHabitIntent } from '@/types';
 
 const DAY_MAP: Record<string, number> = {
-  sunday: 0, sun: 0,
-  monday: 1, mon: 1,
-  tuesday: 2, tue: 2, tues: 2,
-  wednesday: 3, wed: 3,
-  thursday: 4, thu: 4, thur: 4, thurs: 4,
-  friday: 5, fri: 5,
-  saturday: 6, sat: 6,
+  sunday: 0,
+  sun: 0,
+  monday: 1,
+  mon: 1,
+  tuesday: 2,
+  tue: 2,
+  tues: 2,
+  wednesday: 3,
+  wed: 3,
+  thursday: 4,
+  thu: 4,
+  thur: 4,
+  thurs: 4,
+  friday: 5,
+  fri: 5,
+  saturday: 6,
+  sat: 6,
 };
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
-  health: ['exercise', 'walk', 'run', 'gym', 'sleep', 'water', 'stretch', 'workout', 'pushup', 'push-up', 'squat', 'plank', 'swim', 'bike', 'cycling', 'jog', 'cardio', 'weight', 'eat', 'diet', 'vitamin', 'hydrate', 'drink'],
-  mindfulness: ['meditate', 'meditation', 'journal', 'breathe', 'breathing', 'yoga', 'pray', 'prayer', 'gratitude', 'reflect', 'mindful', 'calm'],
-  learning: ['read', 'study', 'learn', 'practice', 'code', 'coding', 'program', 'write', 'draw', 'paint', 'language', 'lesson', 'course', 'book', 'page', 'chapter'],
-  productivity: ['work', 'clean', 'organize', 'plan', 'review', 'inbox', 'email', 'declutter', 'tidy', 'budget', 'save', 'invest', 'task'],
-  social: ['call', 'meet', 'connect', 'friend', 'family', 'text', 'message', 'chat', 'visit', 'network'],
+  health: [
+    'exercise',
+    'walk',
+    'run',
+    'gym',
+    'sleep',
+    'water',
+    'stretch',
+    'workout',
+    'pushup',
+    'push-up',
+    'squat',
+    'plank',
+    'swim',
+    'bike',
+    'cycling',
+    'jog',
+    'cardio',
+    'weight',
+    'eat',
+    'diet',
+    'vitamin',
+    'hydrate',
+    'drink',
+  ],
+  mindfulness: [
+    'meditate',
+    'meditation',
+    'journal',
+    'breathe',
+    'breathing',
+    'yoga',
+    'pray',
+    'prayer',
+    'gratitude',
+    'reflect',
+    'mindful',
+    'calm',
+  ],
+  learning: [
+    'read',
+    'study',
+    'learn',
+    'practice',
+    'code',
+    'coding',
+    'program',
+    'write',
+    'draw',
+    'paint',
+    'language',
+    'lesson',
+    'course',
+    'book',
+    'page',
+    'chapter',
+  ],
+  productivity: [
+    'work',
+    'clean',
+    'organize',
+    'plan',
+    'review',
+    'inbox',
+    'email',
+    'declutter',
+    'tidy',
+    'budget',
+    'save',
+    'invest',
+    'task',
+  ],
+  social: [
+    'call',
+    'meet',
+    'connect',
+    'friend',
+    'family',
+    'text',
+    'message',
+    'chat',
+    'visit',
+    'network',
+  ],
 };
 
 const TIME_WORDS: Record<string, string> = {
@@ -34,11 +123,49 @@ const TIME_WORDS: Record<string, string> = {
   midnight: '00:00',
   'before bed': '22:00',
   'after work': '18:00',
-  'lunch': '12:30',
+  lunch: '12:30',
 };
 
 const DURATION_UNITS = ['minute', 'minutes', 'min', 'mins', 'hour', 'hours', 'hr', 'hrs'];
-const COUNT_UNITS = ['page', 'pages', 'step', 'steps', 'glass', 'glasses', 'cup', 'cups', 'rep', 'reps', 'set', 'sets', 'time', 'times', 'chapter', 'chapters', 'word', 'words', 'mile', 'miles', 'km', 'kilometer', 'kilometers', 'liter', 'liters', 'pushup', 'pushups', 'push-up', 'push-ups', 'squat', 'squats', 'situp', 'situps', 'sit-up', 'sit-ups', 'calorie', 'calories'];
+const COUNT_UNITS = [
+  'page',
+  'pages',
+  'step',
+  'steps',
+  'glass',
+  'glasses',
+  'cup',
+  'cups',
+  'rep',
+  'reps',
+  'set',
+  'sets',
+  'time',
+  'times',
+  'chapter',
+  'chapters',
+  'word',
+  'words',
+  'mile',
+  'miles',
+  'km',
+  'kilometer',
+  'kilometers',
+  'liter',
+  'liters',
+  'pushup',
+  'pushups',
+  'push-up',
+  'push-ups',
+  'squat',
+  'squats',
+  'situp',
+  'situps',
+  'sit-up',
+  'sit-ups',
+  'calorie',
+  'calories',
+];
 
 function parseHabitIntent(input: string): ParsedHabitIntent {
   const text = input.trim().toLowerCase();
@@ -66,7 +193,10 @@ function parseHabitIntent(input: string): ParsedHabitIntent {
   // "on mondays and fridays" / "every monday"
   if (!frequencyParsed) {
     const dayPattern = Object.keys(DAY_MAP).join('|');
-    const dayRegex = new RegExp(`(?:on|every)\\s+((?:(?:${dayPattern})(?:\\s*(?:,|and|&)\\s*)?)+)`, 'i');
+    const dayRegex = new RegExp(
+      `(?:on|every)\\s+((?:(?:${dayPattern})(?:\\s*(?:,|and|&)\\s*)?)+)`,
+      'i'
+    );
     const dayMatch = text.match(dayRegex);
     if (dayMatch) {
       const matched = dayMatch[1].toLowerCase();
@@ -137,7 +267,10 @@ function parseHabitIntent(input: string): ParsedHabitIntent {
   if (durationMatch) {
     type = 'duration';
     targetValue = parseInt(durationMatch[1]);
-    const matchedUnit = durationMatch[0].replace(/\d+\s*/, '').trim().toLowerCase();
+    const matchedUnit = durationMatch[0]
+      .replace(/\d+\s*/, '')
+      .trim()
+      .toLowerCase();
     if (['hour', 'hours', 'hr', 'hrs'].includes(matchedUnit)) {
       targetValue *= 60;
     }
@@ -177,10 +310,16 @@ function parseHabitIntent(input: string): ParsedHabitIntent {
   let name = input.trim();
 
   // Remove frequency phrases
-  name = name.replace(/\b(?:every\s+(?:other\s+)?(?:day|\d+\s*days?)|daily|weekly|each\s+day)\b/gi, '');
+  name = name.replace(
+    /\b(?:every\s+(?:other\s+)?(?:day|\d+\s*days?)|daily|weekly|each\s+day)\b/gi,
+    ''
+  );
   // Remove day names with on/every
   const dayNames = Object.keys(DAY_MAP).join('|');
-  name = name.replace(new RegExp(`\\b(?:on|every)\\s+(?:(?:${dayNames})(?:\\s*(?:,|and|&)\\s*)?)+`, 'gi'), '');
+  name = name.replace(
+    new RegExp(`\\b(?:on|every)\\s+(?:(?:${dayNames})(?:\\s*(?:,|and|&)\\s*)?)+`, 'gi'),
+    ''
+  );
   // Remove time phrases
   name = name.replace(/\bat\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b/gi, '');
   for (const word of Object.keys(TIME_WORDS)) {
@@ -188,12 +327,18 @@ function parseHabitIntent(input: string): ParsedHabitIntent {
   }
   // Remove quantity + unit
   if (quantityParsed) {
-    name = name.replace(new RegExp(`\\b\\d+\\s*(?:${[...DURATION_UNITS, ...COUNT_UNITS].join('|')})\\b`, 'gi'), '');
+    name = name.replace(
+      new RegExp(`\\b\\d+\\s*(?:${[...DURATION_UNITS, ...COUNT_UNITS].join('|')})\\b`, 'gi'),
+      ''
+    );
     name = name.replace(/\bfor\s+\b/gi, '');
     name = name.replace(/\bof\s+\b/gi, '');
   }
   // Clean up
-  name = name.replace(/\s+/g, ' ').replace(/^[\s,.-]+|[\s,.-]+$/g, '').trim();
+  name = name
+    .replace(/\s+/g, ' ')
+    .replace(/^[\s,.-]+|[\s,.-]+$/g, '')
+    .trim();
   // Capitalize first letter
   if (name.length > 0) name = name[0].toUpperCase() + name.slice(1);
   if (!name) {

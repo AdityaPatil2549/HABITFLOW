@@ -9,7 +9,7 @@ function generateIcsString(
   endDate: Date
 ): string {
   const formatDate = (date: Date) => format(date, "yyyyMMdd'T'HHmmss");
-  
+
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -24,7 +24,7 @@ function generateIcsString(
     `DESCRIPTION:${description}`,
     'STATUS:CONFIRMED',
     'END:VEVENT',
-    'END:VCALENDAR'
+    'END:VCALENDAR',
   ].join('\n');
 }
 
@@ -45,14 +45,14 @@ export function exportHabitToCalendar(habit: Habit) {
   const start = new Date();
   const end = addHours(start, 1);
   const streakInfo = (habit as any).streak?.current ?? 0;
-  
+
   const ics = generateIcsString(
     `Habit: ${habit.name}`,
     `HabitFlow reminder to complete your habit: ${habit.name}\\nStreak: ${streakInfo} days`,
     start,
     end
   );
-  
+
   downloadIcs(`habit-${habit.id}`, ics);
 }
 
@@ -61,13 +61,13 @@ export function exportTaskToCalendar(task: Task) {
   // If there's a due date, assume it's due at that time, default to 1 hour duration
   const end = addHours(start, 1);
   const statusLabel = task.completed ? 'Completed' : 'Pending';
-  
+
   const ics = generateIcsString(
     `Task: ${task.title}`,
     `HabitFlow Task Deadline: ${task.title}\\nStatus: ${statusLabel}`,
     start,
     end
   );
-  
+
   downloadIcs(`task-${task.id}`, ics);
 }

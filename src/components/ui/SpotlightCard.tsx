@@ -49,10 +49,7 @@ export function SpotlightCard({ children, className, onClick, ...rest }: Props) 
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      className={cn(
-        'relative overflow-hidden vision-panel cursor-pointer group',
-        className
-      )}
+      className={cn('relative overflow-hidden vision-panel cursor-pointer group', className)}
       whileHover={{ scale: 0.99 }}
       whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
@@ -66,11 +63,9 @@ export function SpotlightCard({ children, className, onClick, ...rest }: Props) 
           background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(99,102,241,0.1), transparent 40%)`,
         }}
       />
-      
+
       {/* Content wrapper to ensure it sits above the spotlight */}
-      <div className="relative z-10 w-full h-full">
-        {children}
-      </div>
+      <div className="relative z-10 w-full h-full">{children}</div>
     </motion.div>
   );
 }

@@ -15,7 +15,7 @@ interface AuthState {
 // Hold the subscription reference outside the store so we can unsubscribe on re-init
 let authSubscription: { unsubscribe: () => void } | null = null;
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>(set => ({
   user: null,
   session: null,
   loading: true,
@@ -30,7 +30,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
 
       // Restore existing session
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       set({
         session,
         user: session?.user ?? null,
@@ -39,16 +41,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
 
       // Listen for future auth changes (sign-in, sign-out, token refresh)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          set({
-            session,
-            user: session?.user ?? null,
-            isGuest: !session,
-            loading: false,
-          });
-        },
-      );
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        set({
+          session,
+          user: session?.user ?? null,
+          isGuest: !session,
+          loading: false,
+        });
+      });
 
       authSubscription = subscription;
     } catch (error) {

@@ -26,7 +26,7 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
@@ -65,7 +65,11 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
 
             {/* Footer hint */}
             <div className="mt-4 pt-3 border-t border-white/5 text-center">
-              <p className="text-xs text-slate-500">Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-400 font-mono">?</kbd> anytime to toggle this</p>
+              <p className="text-xs text-slate-500">
+                Press{' '}
+                <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-400 font-mono">?</kbd>{' '}
+                anytime to toggle this
+              </p>
             </div>
           </motion.div>
         </motion.div>

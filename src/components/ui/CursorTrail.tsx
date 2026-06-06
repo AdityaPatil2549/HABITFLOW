@@ -32,7 +32,7 @@ export function CursorTrail() {
 
     window.addEventListener('mousemove', updateMousePosition);
     document.addEventListener('mouseleave', handleMouseLeave);
-    
+
     return () => {
       window.removeEventListener('mousemove', updateMousePosition);
       document.removeEventListener('mouseleave', handleMouseLeave);
@@ -46,14 +46,14 @@ export function CursorTrail() {
       {/* The main sharp dot that follows exactly */}
       <motion.div
         className="fixed top-0 left-0 w-2 h-2 bg-brand-400 rounded-full pointer-events-none z-[9999] mix-blend-screen"
-        animate={{ 
-          x: mousePosition.x - 4, 
+        animate={{
+          x: mousePosition.x - 4,
           y: mousePosition.y - 4,
-          opacity: isVisible ? 1 : 0 
+          opacity: isVisible ? 1 : 0,
         }}
         transition={{ type: 'tween', ease: 'linear', duration: 0 }}
       />
-      
+
       {/* The large trailing glowing aura */}
       <motion.div
         className="fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-[9998]"

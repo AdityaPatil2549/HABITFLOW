@@ -23,9 +23,7 @@ const DEXIE_TO_SUPABASE: Record<string, string> = {
   settings: 'settings',
 };
 
-const SUPABASE_TO_DEXIE: Record<string, string> = Object.fromEntries(
-  Object.entries(DEXIE_TO_SUPABASE).map(([k, v]) => [v, k]),
-);
+
 
 // All Dexie table names that participate in sync
 const SYNCABLE_TABLES = Object.keys(DEXIE_TO_SUPABASE);
@@ -110,14 +108,15 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
 const REVERSE_COLUMN_MAP: Record<string, Record<string, string>> = {};
 for (const [table, mapping] of Object.entries(COLUMN_MAP)) {
   REVERSE_COLUMN_MAP[table] = Object.fromEntries(
-    Object.entries(mapping).map(([camel, snake]) => [snake, camel]),
+    Object.entries(mapping).map(([camel, snake]) => [snake, camel])
   );
 }
 
 // ─── Column Mapping Helpers ─────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toSupabaseRow(supabaseTable: string, record: Record<string, any>): Record<string, any> {
   const mapping = COLUMN_MAP[supabaseTable] ?? {};
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     const mappedKey = mapping[key] ?? key;
     result[mappedKey] = value;
@@ -125,9 +124,10 @@ function toSupabaseRow(supabaseTable: string, record: Record<string, any>): Reco
   return result;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toDexieRow(supabaseTable: string, record: Record<string, any>): Record<string, any> {
   const mapping = REVERSE_COLUMN_MAP[supabaseTable] ?? {};
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     const mappedKey = mapping[key] ?? key;
     result[mappedKey] = value;
@@ -152,20 +152,6 @@ function getDexieTable(dexieTableName: string) {
   return (db as any)[dexieTableName] as import('dexie').Table;
 }
 
-function getUserId(): string | null {
-  // Lazily check auth state without importing the store at module level
-  // to avoid circular dependency issues. The Supabase client caches session.
-  try {
-    const raw = localStorage.getItem('sb-session');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return parsed?.user?.id ?? null;
-    }
-  } catch {
-    // ignore
-  }
-  return null;
-}
 
 async function getAuthUserId(): Promise<string | null> {
   const { data } = await supabase.auth.getUser();
@@ -181,10 +167,11 @@ class SyncService {
   private realtimeChannel: import('@supabase/supabase-js').RealtimeChannel | null = null;
 
   // ── Queue a change for push ────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async queuePush(
     tableName: string,
     record: Record<string, any>,
-    operation: 'upsert' | 'delete',
+    operation: 'upsert' | 'delete'
   ): Promise<void> {
     if (!isSupabaseConfigured()) return;
 
@@ -256,8 +243,8 @@ class SyncService {
 
         // Collect all queue IDs for this (table, record) so we remove dupes too
         const allIdsForKey = items
-          .filter((i) => i.table_name === item.table_name && i.record_id === item.record_id)
-          .map((i) => i.id!)
+          .filter(i => i.table_name === item.table_name && i.record_id === item.record_id)
+          .map(i => i.id!)
           .filter(Boolean);
         succeeded.push(...allIdsForKey);
       } catch (err) {
@@ -340,7 +327,9 @@ class SyncService {
         merged++;
       } else {
         // Compare updated_at: remote wins if newer
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const localUpdatedAt = (localRow as any).updatedAt ?? (localRow as any).createdAt ?? '';
+        const remoteUpdatedAt = remoteRow.updated_at ?? remoteRow.created_at ?? '';
         if (remoteUpdatedAt > localUpdatedAt) {
           const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
           await table.put(cleanRow);
@@ -422,17 +411,14 @@ class SyncService {
 
     // Set up Supabase Realtime for instant cross-device sync
     if (isSupabaseConfigured()) {
-      this.realtimeChannel = supabase.channel('schema-db-changes')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public' },
-          (payload) => {
-            console.log('[SyncService] Realtime change detected:', payload);
-            if (!this.isSyncing) {
-              this.fullSync().catch(console.error);
-            }
+      this.realtimeChannel = supabase
+        .channel('schema-db-changes')
+        .on('postgres_changes', { event: '*', schema: 'public' }, payload => {
+          console.log('[SyncService] Realtime change detected:', payload);
+          if (!this.isSyncing) {
+            this.fullSync().catch(console.error);
           }
-        )
+        })
         .subscribe();
     }
   }

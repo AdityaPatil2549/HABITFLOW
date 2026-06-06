@@ -5,9 +5,9 @@ interface ParallaxSectionProps {
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
-  speed?: number;        // multiplier: 0.3 = slow, 1.5 = fast, negative = reverse
+  speed?: number; // multiplier: 0.3 = slow, 1.5 = fast, negative = reverse
   direction?: 'vertical' | 'horizontal';
-  offset?: number;       // extra px offset
+  offset?: number; // extra px offset
 }
 
 export function ParallaxSection({

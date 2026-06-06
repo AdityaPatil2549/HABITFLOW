@@ -20,7 +20,9 @@ async function generateWeeklySummary(): Promise<AIInsight | null> {
   const today = new Date();
   const habits = await db.habits.filter(h => !h.archived).toArray();
   if (habits.length === 0) return null;
-  const logs = await db.habitLogs.toArray();
+  const todayStr = format(today, 'yyyy-MM-dd');
+  const thirtyDaysAgoStr = format(subDays(today, 30), 'yyyy-MM-dd');
+  const logs = await db.habitLogs.where('date').between(thirtyDaysAgoStr, todayStr, true, true).toArray();
   const logSet = new Set(logs.map(l => `${l.habitId}|${l.date}`));
 
   let totalPossible = 0;
@@ -41,8 +43,8 @@ async function generateWeeklySummary(): Promise<AIInsight | null> {
   }
 
   const pct = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
-  const best = [...habitStats].sort((a, b) => (b.completed / b.total) - (a.completed / a.total))[0];
-  const worst = [...habitStats].sort((a, b) => (a.completed / a.total) - (b.completed / b.total))[0];
+  const best = [...habitStats].sort((a, b) => b.completed / b.total - a.completed / a.total)[0];
+  const worst = [...habitStats].sort((a, b) => a.completed / a.total - b.completed / b.total)[0];
 
   let body: string;
   if (pct >= 80) {
@@ -80,8 +82,8 @@ async function generateDailyTip(): Promise<AIInsight | null> {
   const todayStr = format(today, 'yyyy-MM-dd');
   const habits = await db.habits.filter(h => !h.archived).toArray();
   if (habits.length === 0) return null;
-
-  const logs = await db.habitLogs.toArray();
+  const thirtyDaysAgoStr = format(subDays(today, 30), 'yyyy-MM-dd');
+  const logs = await db.habitLogs.where('date').between(thirtyDaysAgoStr, todayStr, true, true).toArray();
   const logSet = new Set(logs.map(l => `${l.habitId}|${l.date}`));
 
   const completedToday = habits.filter(h => logSet.has(`${h.id}|${todayStr}`)).length;
@@ -90,8 +92,8 @@ async function generateDailyTip(): Promise<AIInsight | null> {
 
   // Find streaks at risk (completed yesterday but not today)
   const yesterday = format(subDays(today, 1), 'yyyy-MM-dd');
-  const atRisk = habits.filter(h =>
-    logSet.has(`${h.id}|${yesterday}`) && !logSet.has(`${h.id}|${todayStr}`)
+  const atRisk = habits.filter(
+    h => logSet.has(`${h.id}|${yesterday}`) && !logSet.has(`${h.id}|${todayStr}`)
   );
 
   let title: string;
@@ -128,7 +130,7 @@ async function generateDailyTip(): Promise<AIInsight | null> {
     // Evening tips
     if (pct === 100) {
       title = 'Perfect Day!';
-      body = 'You completed every single habit today. That\'s what consistency looks like! 🏆';
+      body = "You completed every single habit today. That's what consistency looks like! 🏆";
       icon = '✨';
     } else if (atRisk.length > 0) {
       title = 'Last Chance';
@@ -159,11 +161,16 @@ async function detectPatterns(): Promise<AIInsight[]> {
   const insights: AIInsight[] = [];
   const today = new Date();
   const habits = await db.habits.filter(h => !h.archived).toArray();
-  const logs = await db.habitLogs.toArray();
+  const todayStr = format(today, 'yyyy-MM-dd');
+  const thirtyDaysAgoStr = format(subDays(today, 30), 'yyyy-MM-dd');
+  const logs = await db.habitLogs.where('date').between(thirtyDaysAgoStr, todayStr, true, true).toArray();
   const logSet = new Set(logs.map(l => `${l.habitId}|${l.date}`));
 
   // Pattern 1: Weekend vs weekday performance
-  let weekdayDone = 0, weekdayTotal = 0, weekendDone = 0, weekendTotal = 0;
+  let weekdayDone = 0,
+    weekdayTotal = 0,
+    weekendDone = 0,
+    weekendTotal = 0;
   for (let i = 0; i < 30; i++) {
     const date = subDays(today, i);
     const d = format(date, 'yyyy-MM-dd');
@@ -215,7 +222,7 @@ async function detectPatterns(): Promise<AIInsight[]> {
       if (logSet.has(`${habit.id}|${d}`)) dayCounts[dow]++;
     }
   }
-  const dayRates = dayCounts.map((c, i) => dayTotals[i] > 0 ? c / dayTotals[i] : 0);
+  const dayRates = dayCounts.map((c, i) => (dayTotals[i] > 0 ? c / dayTotals[i] : 0));
   const bestDayIdx = dayRates.indexOf(Math.max(...dayRates));
   const bestDayRate = Math.round(dayRates[bestDayIdx] * 100);
   if (bestDayRate > 60) {

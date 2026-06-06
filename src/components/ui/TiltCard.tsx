@@ -5,10 +5,10 @@ interface TiltCardProps {
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
-  tiltIntensity?: number;   // degrees of max tilt (default 8)
-  glareOpacity?: number;    // max glare opacity (default 0.15)
-  scale?: number;           // hover scale (default 1.02)
-  borderGlow?: boolean;     // animated gradient border
+  tiltIntensity?: number; // degrees of max tilt (default 8)
+  glareOpacity?: number; // max glare opacity (default 0.15)
+  scale?: number; // hover scale (default 1.02)
+  borderGlow?: boolean; // animated gradient border
 }
 
 export function TiltCard({
