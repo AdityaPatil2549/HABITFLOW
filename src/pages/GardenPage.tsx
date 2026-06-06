@@ -8,19 +8,24 @@ import {
   useCallback,
   useRef,
 } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, Stars, ContactShadows } from '@react-three/drei';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { Environment, Stars, ContactShadows, CameraControls } from '@react-three/drei';
 import { EffectComposer, Bloom, DepthOfField } from '@react-three/postprocessing';
 import { useHabitStore } from '../store/habitStore';
+import { useModalStore } from '../store/modalStore';
 import { HabitPlant } from '../components/garden/HabitPlant';
 import { FloatingIsland } from '../components/garden/FloatingIsland';
 import { Fireflies } from '../components/garden/Fireflies';
 import { Clouds } from '../components/garden/Clouds';
 import { Butterflies } from '../components/garden/Butterflies';
 import { CenterCrystal } from '../components/garden/CenterCrystal';
+import { Aurora } from '../components/garden/Aurora';
+import { IslandMist } from '../components/garden/IslandMist';
+import { SteppingStones } from '../components/garden/SteppingStones';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { HabitWithStreak } from '../types';
 import { format } from 'date-fns';
+
 
 // ── Error boundary ─────────────────────────────────────────────────────
 class CanvasErrorBoundary extends Component<
@@ -450,28 +455,79 @@ function StatsSidebar({ habits }: { habits: HabitWithStreak[] }) {
   );
 }
 
-// ── 3D scene ───────────────────────────────────────────────────────────
+// ── Camera fly-to rig ─────────────────────────────────────────────────────
+function CameraRig({
+  selectedPos,
+  autoRotate,
+}: {
+  selectedPos: [number, number, number] | null;
+  autoRotate: boolean;
+}) {
+  const controlsRef = useRef<CameraControls>(null);
+
+  useEffect(() => {
+    if (!controlsRef.current) return;
+    if (selectedPos) {
+      const [x, y, z] = selectedPos;
+      const dist = Math.sqrt(x * x + z * z);
+      const angle = Math.atan2(x, z);
+      // Orbit to a position facing the plant from outside
+      const camX = x + Math.sin(angle) * 5;
+      const camZ = z + Math.cos(angle) * 5;
+      void controlsRef.current.setLookAt(camX, y + 4, camZ, x, y + 1.5, z, true);
+    } else {
+      void controlsRef.current.setLookAt(0, 7, 14, 0, 1, 0, true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPos]);
+
+  // Manual auto-rotate via azimuth in useFrame
+  useFrame((_, delta) => {
+    if (!controlsRef.current || !autoRotate) return;
+    void controlsRef.current.rotate(0.003 * delta * 60, 0, false);
+  });
+
+  return (
+    <CameraControls
+      ref={controlsRef}
+      makeDefault
+      minPolarAngle={0.2}
+      maxPolarAngle={Math.PI / 2 - 0.05}
+      minDistance={5}
+      maxDistance={30}
+      polarRotateSpeed={0.6}
+      azimuthRotateSpeed={0.6}
+      truckSpeed={0}
+    />
+  );
+}
+
+// ── 3D scene ─────────────────────────────────────────────────────
 function GardenScene({
   habits,
   selectedId,
   onSelect,
   completionRate,
   autoRotate,
+  plantPositions,
 }: {
   habits: HabitWithStreak[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   completionRate: number;
   autoRotate: boolean;
+  plantPositions: [number, number, number][];
 }) {
   const activeHabits = habits.filter(h => !h.archived);
-  const plantPositions = useMemo(
-    () => activeHabits.map((_, i) => getPlantPosition(i, activeHabits.length)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeHabits.length]
-  );
 
-  // Dynamic sky color based on completion rate: midnight blue → warm violet → deep teal
+  // Find selected plant world position for camera fly-to
+  const selectedPos = useMemo<[number, number, number] | null>(() => {
+    if (!selectedId) return null;
+    const idx = activeHabits.findIndex(h => h.id === selectedId);
+    return idx >= 0 ? plantPositions[idx] : null;
+  }, [selectedId, activeHabits, plantPositions]);
+
+  // Dynamic sky color based on completion rate
   const skyHue = Math.round(200 + completionRate * 60);
   const skyColor = `hsl(${skyHue}, 70%, 8%)`;
 
@@ -480,14 +536,13 @@ function GardenScene({
     () =>
       activeHabits
         .filter(h => (h.streak?.current ?? 0) >= 3)
-        .map((_, i) => getPlantPosition(i, activeHabits.length)),
+        .map((_, i) => plantPositions[i]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeHabits.length]
   );
 
   return (
     <>
-      {/* Dynamic sky color */}
       <color attach="background" args={[skyColor]} />
 
       {/* Lighting */}
@@ -508,26 +563,25 @@ function GardenScene({
       <pointLight position={[0, -4, 0]} intensity={0.4} color="#2d6a4f" />
       <pointLight position={[-8, 6, 8]} intensity={0.5} color="#ffb347" />
 
-      {/* Atmosphere */}
+      {/* Sky & atmosphere */}
       <Stars radius={120} depth={60} count={3000} factor={4} saturation={0.2} fade speed={0.4} />
+      <Aurora />
       <Clouds />
+
+      {/* Island + mist */}
+      <FloatingIsland />
+      <IslandMist />
       <Fireflies />
 
-      {/* Island */}
-      <FloatingIsland />
-
-      {/* Center crystal */}
+      {/* Island content */}
       <group position={[0, 0.5, 0]}>
+        {/* Stepping stones */}
+        <SteppingStones plantPositions={plantPositions} />
+
+        {/* Center crystal */}
         <CenterCrystal completionRate={completionRate} />
-      </group>
 
-      {/* Butterflies (only when we have thriving plants) */}
-      {thrivingPositions.length > 0 && (
-        <Butterflies plantPositions={thrivingPositions} />
-      )}
-
-      {/* Plants */}
-      <group position={[0, 0.5, 0]}>
+        {/* Plants */}
         {activeHabits.map((habit, index) => (
           <HabitPlant
             key={habit.id}
@@ -539,7 +593,11 @@ function GardenScene({
         ))}
       </group>
 
-      {/* Contact shadows */}
+      {/* Butterflies */}
+      {thrivingPositions.length > 0 && (
+        <Butterflies plantPositions={thrivingPositions} />
+      )}
+
       <ContactShadows
         position={[0, -0.1, 0]}
         resolution={1024}
@@ -552,19 +610,11 @@ function GardenScene({
 
       <Environment preset="night" />
 
-      <OrbitControls
-        autoRotate={autoRotate}
-        autoRotateSpeed={0.35}
-        maxPolarAngle={Math.PI / 2 - 0.05}
-        minPolarAngle={0.2}
-        minDistance={6}
-        maxDistance={28}
-        enablePan={false}
-        target={[0, 1, 0]}
-      />
+      {/* Camera rig with fly-to */}
+      <CameraRig selectedPos={selectedPos} autoRotate={autoRotate} />
 
       <EffectComposer>
-        <Bloom intensity={1.5} luminanceThreshold={0.45} luminanceSmoothing={0.8} mipmapBlur />
+        <Bloom intensity={1.6} luminanceThreshold={0.42} luminanceSmoothing={0.8} mipmapBlur />
         <DepthOfField focusDistance={0} focalLength={0.06} bokehScale={2.2} height={480} />
       </EffectComposer>
     </>
@@ -574,9 +624,17 @@ function GardenScene({
 // ── Page ───────────────────────────────────────────────────────────────
 export function GardenPage() {
   const { habits, loadHabits, logHabit, unlogHabit } = useHabitStore();
+  const { setQuickAddOpen } = useModalStore();
   const [ready, setReady] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
+
+  const activeHabits = useMemo(() => habits.filter(h => !h.archived), [habits]);
+
+  // Compute plant positions once, shared between React UI and 3D scene
+  const plantPositions = useMemo<[number, number, number][]>(
+    () => activeHabits.map((_, i) => getPlantPosition(i, activeHabits.length)),
+    [activeHabits.length]
+  );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -586,9 +644,7 @@ export function GardenPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const activeHabits = habits.filter(h => !h.archived);
-
-  // Daily completion rate for crystal + sky
+  // Daily completion rate
   const today = format(new Date(), 'yyyy-MM-dd');
   const completionRate = useMemo(() => {
     if (activeHabits.length === 0) return 0;
@@ -612,6 +668,7 @@ export function GardenPage() {
     if (!selectedId) return;
     await logHabit(selectedId, 1);
     await loadHabits();
+    // Keep panel open so user can see the celebration
   }, [selectedId, logHabit, loadHabits]);
 
   const handleUnlog = useCallback(async () => {
@@ -622,10 +679,7 @@ export function GardenPage() {
 
   const handleClose = useCallback(() => setSelectedId(null), []);
 
-  // Close panel when clicking empty canvas area
-  const handleCanvasClick = useCallback(() => {
-    // Only deselect if event came from canvas background
-  }, []);
+
 
   return (
     <motion.div
@@ -705,30 +759,63 @@ export function GardenPage() {
         )}
       </AnimatePresence>
 
+      {/* ── Plant a Seed button ── */}
+      {ready && (
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          onClick={() => setQuickAddOpen(true)}
+          className="absolute bottom-6 left-6 z-10"
+          style={{
+            background: 'rgba(8,11,20,0.85)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(52,211,153,0.35)',
+            borderRadius: '16px',
+            padding: '10px 18px',
+            color: '#34d399',
+            fontWeight: 700,
+            fontSize: 13,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontFamily: 'Outfit, Inter, sans-serif',
+            boxShadow: '0 0 18px rgba(52,211,153,0.15)',
+            transition: 'all 0.2s',
+          }}
+          whileHover={{ scale: 1.05, boxShadow: '0 0 28px rgba(52,211,153,0.35)' }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <span style={{ fontSize: 16 }}>🌱</span>
+          Plant a Seed
+        </motion.button>
+      )}
+
       {/* ── Right sidebar ── */}
+
       {ready && <StatsSidebar habits={habits} />}
 
       {/* ── 3D Canvas ── */}
-      <div ref={canvasRef} className="absolute inset-0" onClick={handleCanvasClick}>
-        <CanvasErrorBoundary>
-          <Canvas
-            shadows
-            dpr={[1, 1.5]}
-            camera={{ position: [0, 7, 14], fov: 42 }}
-            gl={{ antialias: true, alpha: false }}
-          >
-            <Suspense fallback={null}>
-              <GardenScene
-                habits={habits}
-                selectedId={selectedId}
-                onSelect={handleSelect}
-                completionRate={completionRate}
-                autoRotate={selectedId === null}
-              />
-            </Suspense>
-          </Canvas>
-        </CanvasErrorBoundary>
-      </div>
+      <CanvasErrorBoundary>
+        <Canvas
+          shadows
+          dpr={[1, 1.5]}
+          camera={{ position: [0, 7, 14], fov: 42 }}
+          gl={{ antialias: true, alpha: false }}
+        >
+          <Suspense fallback={null}>
+            <GardenScene
+              habits={habits}
+              selectedId={selectedId}
+              onSelect={handleSelect}
+              completionRate={completionRate}
+              autoRotate={selectedId === null}
+              plantPositions={plantPositions}
+            />
+          </Suspense>
+        </Canvas>
+      </CanvasErrorBoundary>
 
       {/* ── Habit detail panel ── */}
       <AnimatePresence>

@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo, useCallback } from 'react';
+import { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Float, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -330,6 +330,131 @@ function BigTree({
   );
 }
 
+// ── Legendary Tree (30+ streak) ────────────────────────────────────────
+function LegendaryTree({
+  color,
+  hovered,
+  selected,
+}: {
+  color: string;
+  hovered: boolean;
+  selected: boolean;
+}) {
+  const glowRef = useRef<THREE.Mesh>(null);
+  const orbRef = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    if (glowRef.current) {
+      (glowRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+        (selected ? 1.4 : hovered ? 1.0 : 0.55) + Math.sin(t * 2.5) * 0.25;
+    }
+    if (orbRef.current) {
+      orbRef.current.rotation.y = t * 0.6;
+    }
+  });
+
+  return (
+    <group>
+      {/* Massive golden trunk */}
+      <mesh position={[0, 2.5, 0]} castShadow>
+        <cylinderGeometry args={[0.22, 0.42, 5.0, 8]} />
+        <meshStandardMaterial color="#4a3000" roughness={0.85} flatShading />
+      </mesh>
+      {/* Root buttresses */}
+      {[0, 1, 2, 3, 4].map(i => {
+        const a = (i / 5) * Math.PI * 2;
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(a) * 0.35, 0.6, Math.sin(a) * 0.35]}
+            rotation={[0, a, -0.6]}
+            castShadow
+          >
+            <cylinderGeometry args={[0.06, 0.16, 1.0, 5]} />
+            <meshStandardMaterial color="#3d2800" roughness={0.9} flatShading />
+          </mesh>
+        );
+      })}
+      {/* 5 staggered branch layers */}
+      {[0, 1, 2, 3, 4].map(layer => {
+        const bCount = 3 + layer;
+        const bHeight = 1.2 + layer * 0.9;
+        return Array.from({ length: bCount }, (_, j) => {
+          const angle = (j / bCount) * Math.PI * 2 + layer * 0.4;
+          return (
+            <group key={`${layer}-${j}`}>
+              <mesh
+                position={[Math.cos(angle) * 0.3, bHeight, Math.sin(angle) * 0.3]}
+                rotation={[Math.sin(angle) * 0.7, angle, -0.65]}
+                castShadow
+              >
+                <cylinderGeometry args={[0.04, 0.09, 0.85, 5]} />
+                <meshStandardMaterial color="#4a3000" roughness={0.88} flatShading />
+              </mesh>
+              <Float speed={1.0 + layer * 0.2} floatIntensity={0.1}>
+                <BranchCluster
+                  position={[Math.cos(angle) * 0.72, bHeight + 0.3, Math.sin(angle) * 0.72]}
+                  color={color}
+                  radius={0.45 + layer * 0.05}
+                  hovered={hovered}
+                  selected={selected}
+                />
+              </Float>
+            </group>
+          );
+        });
+      })}
+      {/* Glowing golden crown */}
+      <Float speed={1.2} floatIntensity={0.35}>
+        <mesh ref={glowRef} position={[0, 5.8, 0]} castShadow>
+          <icosahedronGeometry args={[1.7, 1]} />
+          <meshStandardMaterial
+            color="#ffd700"
+            emissive="#ffaa00"
+            emissiveIntensity={0.6}
+            roughness={0.4}
+            metalness={0.3}
+            flatShading
+          />
+        </mesh>
+        {/* 4 satellite gem clusters */}
+        {[0, 1, 2, 3].map(i => {
+          const a = (i / 4) * Math.PI * 2;
+          return (
+            <mesh key={i} position={[Math.cos(a) * 1.2, 5.5, Math.sin(a) * 1.2]} castShadow>
+              <icosahedronGeometry args={[0.55, 0]} />
+              <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={selected ? 1.2 : hovered ? 0.9 : 0.4}
+                roughness={0.5}
+                flatShading
+              />
+            </mesh>
+          );
+        })}
+        {/* Orbiting golden ring */}
+        <group ref={orbRef} position={[0, 5.8, 0]}>
+          <mesh>
+            <torusGeometry args={[2.0, 0.06, 8, 48]} />
+            <meshStandardMaterial
+              color="#ffd700"
+              emissive="#ffd700"
+              emissiveIntensity={0.9}
+              roughness={0.2}
+              metalness={0.6}
+              transparent
+              opacity={0.75}
+            />
+          </mesh>
+        </group>
+      </Float>
+      {/* Crown light */}
+      <pointLight position={[0, 6.5, 0]} intensity={1.2} color="#ffcc44" distance={6} />
+    </group>
+  );
+}
+
 function WitheredPlant({ height }: { height: number }) {
   return (
     <group>
@@ -362,10 +487,28 @@ export function HabitPlant({
   const group = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const [sparkActive, setSparkActive] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
+  const celebrateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const streak = habit.streak?.current ?? 0;
   const rawColor = habit.color || '#10b981';
   const isMissed = !habit.todayLog && streak === 0 && !!habit.createdAt;
+
+  // Watch for todayLog becoming truthy → trigger celebration bounce
+  const prevLogged = useRef(!!habit.todayLog);
+  useEffect(() => {
+    const nowLogged = !!habit.todayLog;
+    if (!prevLogged.current && nowLogged) {
+      setCelebrating(true);
+      setSparkActive(true);
+      if (celebrateTimer.current) clearTimeout(celebrateTimer.current);
+      celebrateTimer.current = setTimeout(() => {
+        setCelebrating(false);
+        setSparkActive(false);
+      }, 1200);
+    }
+    prevLogged.current = nowLogged;
+  }, [habit.todayLog]);
 
   let labelY: number;
   let plant: React.ReactNode;
@@ -382,9 +525,12 @@ export function HabitPlant({
   } else if (streak < 10) {
     labelY = 3.2;
     plant = <SmallTree color={rawColor} hovered={hovered} selected={selected} />;
-  } else {
+  } else if (streak < 30) {
     labelY = 5.4;
     plant = <BigTree color={rawColor} hovered={hovered} selected={selected} />;
+  } else {
+    labelY = 7.8;
+    plant = <LegendaryTree color={rawColor} hovered={hovered} selected={selected} />;
   }
 
   const handleClick = useCallback(() => {
@@ -393,7 +539,10 @@ export function HabitPlant({
     setTimeout(() => setSparkActive(false), 900);
   }, [habit.id, onSelect]);
 
-  useFrame(state => {
+  const celebrateScale = useRef(1);
+  const celebrateVelocity = useRef(0);
+
+  useFrame((state, delta) => {
     if (!group.current) return;
     const t = state.clock.elapsedTime;
     if (!isMissed) {
@@ -406,8 +555,18 @@ export function HabitPlant({
     const targetY = selected ? 0.35 : hovered ? 0.25 : 0;
     group.current.position.y += (targetY - group.current.position.y) * 0.08;
 
+    // Celebration bounce (spring physics)
+    if (celebrating) {
+      celebrateVelocity.current += (1.3 - celebrateScale.current) * 40 * delta;
+      celebrateVelocity.current *= 0.75;
+      celebrateScale.current += celebrateVelocity.current * delta;
+    } else {
+      celebrateScale.current += (1.0 - celebrateScale.current) * 0.15;
+    }
+    group.current.scale.setScalar(celebrateScale.current);
+
     // Selected ring pulse
-    if (selected && group.current.children.length > 0) {
+    if (selected) {
       const ring = group.current.getObjectByName('selectRing');
       if (ring) {
         ring.rotation.y = t * 1.2;
@@ -425,7 +584,9 @@ export function HabitPlant({
           ? 'Sapling 🌿'
           : streak < 10
             ? 'Young Tree 🌳'
-            : 'Ancient Tree 🌲';
+            : streak < 30
+              ? 'Ancient Tree 🌲'
+              : 'Legendary Tree 🌟';
 
   return (
     <group
