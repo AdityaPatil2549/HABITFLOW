@@ -16,6 +16,7 @@ import {
   Trash2,
   Edit2,
   CheckCircle2,
+  Cloud,
   ChevronRight,
   CalendarDays,
   Snowflake,
@@ -45,6 +46,7 @@ import { habitSchema } from '../lib/validations';
 import { LogHabitModal } from '../components/habits/LogHabitModal';
 import { HabitJournal } from '../components/habits/HabitJournal';
 import { MagneticButton } from '../components/ui/MagneticButton';
+import { DynamicIcon } from '../components/ui/DynamicIcon';
 import { cn } from '../lib/utils';
 import { IconRenderer, HABIT_ICONS } from '../components/common/IconRenderer';
 import { habitService } from '../services/habitService';
@@ -170,6 +172,8 @@ function HabitForm({
   const [target, setTarget]     = useState(initialHabit?.targetValue ?? 1);
   const [grace, setGrace]       = useState(initialHabit?.graceDayEnabled ?? false);
   const [reminderTime, setReminderTime] = useState(initialHabit?.reminderTime ?? '');
+  const [healthSyncEnabled, setHealthSyncEnabled] = useState(false);
+  const [healthMetric, setHealthMetric] = useState<string>('steps');
   const [error, setError]       = useState<string | null>(null);
 
   const toggleDay = (d: number) =>
@@ -206,196 +210,267 @@ function HabitForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">{error}</p>
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl">{error}</p>
       )}
 
-      {/* Name + emoji */}
+      {/* Choose Identity (Icon Grid) */}
       <div>
-        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Name & Icon</p>
-        <div className="flex gap-3">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 cursor-pointer transition-all hover:scale-105 active:scale-95"
-            style={{ background: color + '15', border: `2px solid ${color}30`, color: color }}
-          >
-            <IconRenderer name={icon} size={24} />
-          </div>
-          <input
-            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-base font-medium outline-none focus:border-brand-500/50 transition-all"
-            placeholder="Habit name…"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            autoFocus
-            required
-          />
-        </div>
-        <div className="flex flex-wrap gap-2 mt-3 bg-white/5 rounded-2xl p-3 border border-white/5">
-          {HABIT_ICONS.map(item => (
-            <button
-              key={item.name}
-              type="button"
-              onClick={() => setIcon(item.name)}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${icon === item.name ? 'bg-brand-500 text-white shadow-lg' : 'text-slate-500 hover:bg-white/10 hover:text-white'}`}
-            >
-              <item.icon size={18} />
-            </button>
-          ))}
+        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+          Choose Identity
+        </label>
+        <div className="grid grid-cols-5 gap-2 bg-slate-950/30 rounded-2xl p-3 border border-white/5 shadow-inner">
+          {HABIT_ICONS.map(item => {
+            const isActive = icon === item.name;
+            return (
+              <button
+                key={item.name}
+                type="button"
+                onClick={() => setIcon(item.name)}
+                className={`relative h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ${
+                  isActive
+                    ? 'text-white'
+                    : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="habitFormIconBg"
+                    className="absolute inset-0 rounded-xl shadow-lg"
+                    style={{ background: color, boxShadow: `0 4px 15px ${color}60` }}
+                  />
+                )}
+                <item.icon size={20} className="relative z-10" />
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Color + Category */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {/* Color Theme */}
         <div>
-          <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Color</p>
-          <div className="flex gap-2 flex-wrap">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+            Color Theme
+          </label>
+          <div className="flex gap-2.5 flex-wrap bg-slate-950/20 p-3 rounded-2xl border border-white/5">
             {COLORS.map(c => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(c)}
-                className={`w-8 h-8 rounded-full transition-all ${color === c ? 'scale-125' : 'hover:scale-110'}`}
-                style={{ background: c, boxShadow: color === c ? `0 0 10px ${c}80` : 'none' }}
+                className={`w-8 h-8 rounded-full transition-all border-2 ${color === c ? 'scale-110 border-white/60' : 'border-transparent hover:scale-105'}`}
+                style={{ background: c, boxShadow: color === c ? `0 0 12px ${c}80` : 'none' }}
               />
             ))}
           </div>
         </div>
-        <div className="col-span-2 sm:col-span-1">
-          <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Category</p>
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map(c => (
-              <button
-                key={c.name}
-                type="button"
-                onClick={() => setCategory(c.name)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                  category === c.name
-                    ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
-                    : 'bg-white/5 border-white/5 text-slate-500 hover:text-white hover:border-white/10'
-                }`}
-              >
-                <span>{c.icon}</span>{c.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* Type */}
-      <div>
-        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Habit Type</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {(
-            [
-              ['boolean', '✅ Yes/No'],
-              ['count',   '🔢 Count'],
-              ['duration','⏱ Duration'],
-              ['rating',  '⭐ Rating'],
-            ] as const
-          ).map(([v, l]) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setType(v as HabitType)}
-              className={`py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all ${type === v ? 'text-brand-300 scale-[1.03]' : 'border-white/8 text-slate-400 hover:border-white/20'}`}
-              style={type === v ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.1)' } : {}}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Frequency */}
-      <div>
-        <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">Frequency</p>
-        <div className="flex gap-2 mb-2">
-          {(['daily', 'weekly'] as const).map(f => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFreq(f)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${freq === f ? 'text-brand-300' : 'border-white/8 text-slate-400'}`}
-              style={freq === f ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.1)' } : {}}
-            >
-              {f === 'daily' ? '📅 Every day' : '📆 Specific days'}
-            </button>
-          ))}
-        </div>
-        {freq === 'weekly' && (
-          <div className="flex gap-1.5">
-            {DAYS.map((d, i) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => toggleDay(i)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${freqDays.includes(i) ? 'text-brand-300' : 'border-white/8 text-slate-500'}`}
-                style={freqDays.includes(i) ? { borderColor: 'rgba(129,140,248,0.4)', background: 'rgba(129,140,248,0.15)' } : {}}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {type !== 'boolean' && (
+        {/* Category */}
         <div>
-          <p className="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wider">
-            Daily Target {type === 'duration' ? '(minutes)' : type === 'rating' ? '(out of 5)' : '(count)'}
-          </p>
-          <input
-            type="number"
-            min={1}
-            max={type === 'rating' ? 5 : undefined}
-            value={target}
-            onChange={e => setTarget(Number(e.target.value))}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all"
-          />
+          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+            Category
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map(c => {
+              const isActive = category === c.name;
+              return (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => setCategory(c.name)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300 border ${
+                    isActive
+                      ? 'shadow-inner'
+                      : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                  style={isActive ? { background: `${color}25`, borderColor: color, color: '#fff', boxShadow: `inset 0 0 10px ${color}10` } : {}}
+                >
+                  <DynamicIcon tiltIntensity={25} size={18} interactive={true}>
+                    <span className="text-sm block">{c.icon}</span>
+                  </DynamicIcon>
+                  {c.name}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      )}
-
-      <label className="flex items-center gap-3 cursor-pointer py-1">
-        <div
-          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${grace ? 'border-brand-500 bg-brand-500' : 'border-white/20'}`}
-          onClick={() => setGrace(v => !v)}
-        >
-          {grace && <CheckCircle2 size={12} className="text-white" />}
-        </div>
-        <span className="text-sm text-slate-300">
-          Enable grace day <span className="text-slate-500">(1 free miss/week)</span>
-        </span>
-      </label>
-
-      {/* Reminder time */}
-      <div className="flex items-center gap-3 py-1 rounded-xl bg-white/3 border border-white/5 px-4">
-        <Bell size={16} className="text-brand-400 flex-shrink-0" />
-        <span className="text-sm text-slate-300 flex-1">Daily reminder</span>
-        <input
-          type="time"
-          value={reminderTime}
-          onChange={e => setReminderTime(e.target.value)}
-          className="bg-transparent text-sm text-white outline-none cursor-pointer [color-scheme:dark]"
-        />
-        {reminderTime && (
-          <button type="button" onClick={() => setReminderTime('')} className="text-slate-500 hover:text-white transition-colors text-xs">✕</button>
-        )}
       </div>
 
-      <div className="flex gap-3 pt-1">
+      <div className="space-y-6 bg-slate-950/20 p-4 rounded-3xl border border-white/5 shadow-inner">
+        {/* Habit Name */}
+        <div>
+          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+            Habit Name
+          </label>
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-transform group-focus-within:scale-110">
+              <div 
+                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-inner"
+                style={{ background: `${color}20`, color: color, border: `1px solid ${color}40` }}
+              >
+                <IconRenderer name={icon} size={18} />
+              </div>
+            </div>
+            <input
+              className="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-16 pr-4 py-4 text-white placeholder-slate-600 text-base font-bold outline-none focus:border-brand-500/50 focus:bg-slate-950/60 transition-all shadow-inner"
+              placeholder="e.g. Read 20 pages"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              autoFocus
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+              Type
+            </label>
+            <select
+              className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-semibold outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer"
+              value={type}
+              onChange={e => setType(e.target.value as HabitType)}
+            >
+              <option value="boolean" className="bg-slate-900">✅ Yes / No</option>
+              <option value="count" className="bg-slate-900">🔢 Count (reps…)</option>
+              <option value="duration" className="bg-slate-900">⏱ Duration</option>
+              <option value="rating" className="bg-slate-900">⭐ Rating (1-5)</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+              Frequency
+            </label>
+            <select
+              className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-semibold outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer"
+              value={freq}
+              onChange={e => setFreq(e.target.value as HabitFrequency)}
+            >
+              <option value="daily" className="bg-slate-900">📅 Every day</option>
+              <option value="weekly" className="bg-slate-900">📆 Specific days</option>
+            </select>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {freq === 'weekly' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+                Active Days
+              </label>
+              <div className="flex gap-2">
+                {DAYS.map((d, i) => {
+                  const isActive = freqDays.includes(i);
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => toggleDay(i)}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border-2 ${
+                        isActive ? 'text-white' : 'border-white/5 text-slate-500 hover:border-white/20'
+                      }`}
+                      style={isActive ? { borderColor: color, background: `${color}30` } : {}}
+                    >
+                      {d}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {type !== 'boolean' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block mt-2">
+                Daily Target {type === 'duration' ? '(minutes)' : type === 'rating' ? '(out of 5)' : '(count)'}
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={type === 'rating' ? 5 : undefined}
+                value={target}
+                onChange={e => setTarget(Number(e.target.value))}
+                className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-lg font-bold outline-none focus:border-brand-500/50 transition-all shadow-inner"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="pt-2">
+          <label className="flex items-center gap-3 cursor-pointer py-1 group">
+            <div
+              className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${grace ? 'border-brand-500 bg-brand-500' : 'border-white/10 bg-slate-900 group-hover:border-white/30'}`}
+            >
+              {grace && <CheckCircle2 size={14} className="text-white" />}
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-slate-200">Enable Grace Day</span>
+              <span className="text-[10px] text-slate-500 font-medium">Allow 1 free miss per week without breaking streak</span>
+            </div>
+          </label>
+        </div>
+
+        {/* Reminder Time */}
+        <div className="bg-slate-950/40 border border-white/5 rounded-2xl p-4 mt-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center">
+                <Bell size={16} className="text-brand-400" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white">Daily Reminder</span>
+                <span className="text-[10px] text-slate-400">Get notified when it's time</span>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type="time"
+                value={reminderTime}
+                onChange={e => setReminderTime(e.target.value)}
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm font-bold text-white outline-none cursor-pointer focus:border-brand-500/50 [color-scheme:dark]"
+              />
+              {reminderTime && (
+                <button
+                  type="button"
+                  onClick={() => setReminderTime('')}
+                  className="absolute -right-2 -top-2 w-5 h-5 bg-slate-800 rounded-full border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-4">
         <button
           type="button"
           onClick={() => onClose()}
-          className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors"
+          className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-slate-300 font-bold text-sm hover:bg-white/10 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95"
+          className="flex-1 py-4 rounded-2xl font-bold text-sm text-white transition-all active:scale-95 shadow-xl button-3d"
           style={{
             background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-            boxShadow: `0 8px 20px ${color}40`,
+            boxShadow: `0 10px 25px -5px ${color}60`,
+            borderColor: `${color}80`
           }}
         >
           {initialHabit ? '✓ Save Changes' : '🔥 Create Habit'}
@@ -404,7 +479,6 @@ function HabitForm({
     </form>
   );
 }
-
 // ─── Bottom Sheet wrapper ──────────────────────────────────────────
 function BottomSheet({
   open,
