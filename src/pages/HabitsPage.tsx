@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
 import {
@@ -420,7 +421,7 @@ function BottomSheet({
   accentIcon?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -438,7 +439,7 @@ function BottomSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-h-[92vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 w-full z-50 rounded-t-3xl max-h-[92vh] overflow-y-auto"
             style={{
               background: 'linear-gradient(180deg, rgba(12,8,28,0.98) 0%, rgba(5,3,15,0.99) 100%)',
               border: `1px solid ${accentColor ? accentColor + '25' : 'rgba(255,255,255,0.1)'}`,
@@ -475,7 +476,8 @@ function BottomSheet({
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 
