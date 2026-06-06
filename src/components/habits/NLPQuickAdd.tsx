@@ -3,6 +3,7 @@ import { nlpParserService } from '@/services/nlpParserService';
 import type { ParsedHabitIntent, Habit } from '@/types';
 import { Wand2, Clock, Calendar, Target, Tag, Check, X, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DynamicIcon } from '../ui/DynamicIcon';
 
 interface Props {
   onHabitCreated: (habit: Partial<Habit>) => void;
@@ -178,7 +179,9 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
             <div className="px-4 py-3 space-y-3">
               {/* Parsed name */}
               <div className="flex items-center gap-2">
-                <span className="text-lg">{CATEGORY_ICONS[parsed.category || 'general']}</span>
+                <DynamicIcon tiltIntensity={15} size={24} interactive={true}>
+                  <span className="text-lg">{CATEGORY_ICONS[parsed.category || 'general']}</span>
+                </DynamicIcon>
                 <span className="text-sm font-bold text-white">{parsed.name}</span>
               </div>
 

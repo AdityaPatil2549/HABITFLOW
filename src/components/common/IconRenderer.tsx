@@ -1,5 +1,6 @@
 import React from 'react';
 import * as Lucide from 'lucide-react';
+import { DynamicIcon } from '../ui/DynamicIcon';
 
 const ScalesIcon = ({ size = 24, className }: any) => (
   <img
@@ -65,22 +66,25 @@ interface IconRendererProps {
   className?: string;
   size?: number;
   color?: string;
+  interactive?: boolean;
 }
 
-export function IconRenderer({ name, className, size = 18, color }: IconRendererProps) {
+export function IconRenderer({ name, className, size = 18, color, interactive = false }: IconRendererProps) {
   if (!name) return <Lucide.HelpCircle size={size} className={className} style={{ color }} />;
 
   // Emoji check (old data)
   if (name.length <= 2) {
-    return (
+    const emojiElement = (
       <span className={className} style={{ fontSize: size, color }}>
         {name}
       </span>
     );
+    return interactive ? <DynamicIcon size={size}>{emojiElement}</DynamicIcon> : emojiElement;
   }
 
   // Lookup in our safe map
   const IconComponent = ICON_COMPONENTS[name] || Lucide.HelpCircle;
 
-  return <IconComponent size={size} className={className} style={{ color }} />;
+  const iconElement = <IconComponent size={size} className={className} style={{ color }} />;
+  return interactive ? <DynamicIcon size={size}>{iconElement}</DynamicIcon> : iconElement;
 }

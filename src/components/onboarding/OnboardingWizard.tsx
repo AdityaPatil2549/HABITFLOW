@@ -1,9 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useProfileStore } from '../../store/profileStore';
-import { format } from 'date-fns';
 import { ArrowRight, Check, Sparkles, ChevronRight, Flame } from 'lucide-react';
+import { format } from 'date-fns';
+import { TiltCard } from '../ui/TiltCard';
+import { DynamicIcon } from '../ui/DynamicIcon';
+
+const GamificationBackground = lazy(() => import('../gamification/GamificationBackground'));
 
 const ONBOARDING_KEY = 'habitflow_onboarding_done';
 
@@ -160,40 +164,24 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: '#020617',
-          backgroundImage: `radial-gradient(ellipse at 40% 20%, ${STEP_COLORS[step]} 0%, transparent 70%)`,
+          backgroundColor: 'transparent',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        {/* Decorative orbs */}
-        <div
-          style={{
-            position: 'fixed',
-            top: 40,
-            left: '33%',
-            width: 384,
-            height: 384,
-            borderRadius: '50%',
-            background: 'rgba(99,102,241,0.05)',
-            filter: 'blur(80px)',
-            pointerEvents: 'none',
-          }}
-        />
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 80,
-            right: '25%',
-            width: 256,
-            height: 256,
-            borderRadius: '50%',
-            background: 'rgba(139,92,246,0.05)',
-            filter: 'blur(60px)',
-            pointerEvents: 'none',
-          }}
-        />
+        {/* 3D Immersive Background */}
+        <div className="fixed inset-0 -z-10 pointer-events-none">
+          <Suspense fallback={null}>
+            <GamificationBackground />
+          </Suspense>
+          <div
+            className="absolute inset-0 transition-colors duration-1000 pointer-events-none"
+            style={{
+              backgroundImage: `radial-gradient(ellipse at 40% 20%, ${STEP_COLORS[step]} 0%, transparent 70%)`,
+            }}
+          />
+        </div>
 
         {/* Centered content wrapper */}
         <div
@@ -262,26 +250,29 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   exit={{ opacity: 0, y: -24 }}
                   style={{ textAlign: 'center' }}
                 >
-                  <div
-                    style={{
-                      width: 80,
-                      height: 80,
-                      margin: '0 auto 24px',
-                      borderRadius: 24,
-                      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 20px 60px rgba(99,102,241,0.3)',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <img
-                      src="/logo.png"
-                      alt="HabitFlow"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
+                  <TiltCard tiltIntensity={20}>
+                    <div
+                      style={{
+                        width: 88,
+                        height: 88,
+                        margin: '0 auto 24px',
+                        borderRadius: 24,
+                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 20px 60px rgba(99,102,241,0.4)',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(255,255,255,0.2)'
+                      }}
+                    >
+                      <img
+                        src="/logo.png"
+                        alt="HabitFlow"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'translateZ(20px)' }}
+                      />
+                    </div>
+                  </TiltCard>
 
                   <h1
                     style={{
@@ -351,13 +342,15 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                     />
                   </div>
 
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => setStep(1)}
                     style={{
                       width: '100%',
                       padding: '16px 24px',
                       borderRadius: 16,
-                      border: 'none',
+                      border: '1px solid rgba(255,255,255,0.1)',
                       cursor: 'pointer',
                       background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
                       color: 'white',
@@ -367,14 +360,13 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 12,
-                      boxShadow: '0 20px 60px rgba(99,102,241,0.3)',
+                      boxShadow: '0 10px 40px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
                       marginBottom: 16,
-                      transition: 'opacity 0.2s',
                     }}
                   >
                     {name.trim() ? `Let's go, ${name.split(' ')[0]}!` : "Let's get started"}{' '}
                     <ArrowRight size={20} />
-                  </button>
+                  </motion.button>
 
                   <button
                     onClick={onComplete}
@@ -429,40 +421,43 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                         GoalKey,
                         (typeof GOAL_TEMPLATES)[GoalKey],
                       ][]
-                    ).map(([key, t]) => (
-                      <button
+                    ).map(([key, t], idx) => (
+                      <motion.div
                         key={key}
-                        onClick={() => {
-                          setGoal(key);
-                          setSelected([true, true, true]);
-                          setStep(2);
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 16,
-                          padding: 16,
-                          borderRadius: 16,
-                          border: `1px solid ${goal === key ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                          background:
-                            goal === key ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.03)',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.2s',
-                          width: '100%',
-                        }}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.05 }}
                       >
-                        <span style={{ fontSize: 28, flexShrink: 0 }}>{t.icon}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontWeight: 700, color: 'white', marginBottom: 4 }}>
-                            {t.label}
-                          </p>
-                          <p style={{ fontSize: 12, color: '#64748b' }}>
-                            {t.habits.map(h => h.name.split(' ').slice(0, 3).join(' ')).join(' · ')}
-                          </p>
-                        </div>
-                        <ChevronRight size={18} color="#64748b" style={{ flexShrink: 0 }} />
-                      </button>
+                        <TiltCard tiltIntensity={10} className="w-full block">
+                          <button
+                            onClick={() => {
+                              setGoal(key);
+                              setSelected([true, true, true]);
+                              setStep(2);
+                            }}
+                            className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group
+                              ${
+                                goal === key
+                                  ? 'border-indigo-500/50 bg-indigo-500/10 shadow-[0_0_30px_rgba(99,102,241,0.15)]'
+                                  : 'border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20'
+                              }
+                            `}
+                          >
+                            <span style={{ fontSize: 32, flexShrink: 0, transform: 'translateZ(20px)' }} className="group-hover:scale-110 transition-transform">{t.icon}</span>
+                            <div style={{ flex: 1, minWidth: 0, transform: 'translateZ(10px)' }}>
+                              <p className={`font-bold mb-1 transition-colors ${goal === key ? 'text-indigo-300' : 'text-white'}`}>
+                                {t.label}
+                              </p>
+                              <p style={{ fontSize: 12, color: '#94a3b8' }}>
+                                {t.habits.map(h => h.name.split(' ').slice(0, 3).join(' ')).join(' · ')}
+                              </p>
+                            </div>
+                            <div style={{ transform: 'translateZ(10px)' }}>
+                              <ChevronRight size={18} className={`transition-colors ${goal === key ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} style={{ flexShrink: 0 }} />
+                            </div>
+                          </button>
+                        </TiltCard>
+                      </motion.div>
                     ))}
                   </div>
 
@@ -495,7 +490,9 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   exit={{ opacity: 0, y: -24 }}
                 >
                   <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <span style={{ fontSize: 40 }}>{selectedGoal.icon}</span>
+                    <DynamicIcon size={56} tiltIntensity={20} glowColor={selectedGoal.color + '80'} interactive={true}>
+                      <span style={{ fontSize: 40 }}>{selectedGoal.icon}</span>
+                    </DynamicIcon>
                     <p
                       style={{
                         fontSize: 11,
@@ -520,79 +517,116 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                     style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}
                   >
                     {selectedGoal.habits.map((h, i) => (
-                      <button
+                      <motion.div
                         key={h.name}
-                        onClick={() => setSelected(s => s.map((v, idx) => (idx === i ? !v : v)))}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 16,
-                          padding: 16,
-                          width: '100%',
-                          borderRadius: 16,
-                          border: `1px solid ${selected[i] ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                          background: selected[i]
-                            ? 'rgba(16,185,129,0.08)'
-                            : 'rgba(255,255,255,0.02)',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.2s',
-                          opacity: selected[i] ? 1 : 0.5,
-                        }}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.05 }}
                       >
-                        <div
-                          style={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: 12,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: h.color + '20',
-                            color: h.color,
-                            flexShrink: 0,
-                            fontSize: 18,
-                          }}
-                        >
-                          {selected[i] ? <Check size={20} color={h.color} /> : '○'}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <p
-                            style={{
-                              fontWeight: 700,
-                              color: 'white',
-                              fontSize: 14,
-                              marginBottom: 4,
-                            }}
+                        <TiltCard tiltIntensity={10} className="w-full block">
+                          <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setSelected(s => s.map((v, idx) => (idx === i ? !v : v)))}
+                            className={`flex items-center gap-4 p-4 w-full rounded-2xl border text-left transition-all duration-300
+                              ${
+                                selected[i]
+                                  ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+                                  : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 opacity-70 hover:opacity-100'
+                              }
+                            `}
                           >
-                            {h.name}
-                          </p>
-                          <p style={{ fontSize: 12, color: '#64748b' }}>{h.category} · Daily</p>
-                        </div>
-                        <div
-                          style={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: '50%',
-                            border: `2px solid ${selected[i] ? '#10b981' : 'rgba(255,255,255,0.2)'}`,
-                            background: selected[i] ? '#10b981' : 'transparent',
-                            flexShrink: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {selected[i] && <Check size={11} color="white" />}
-                        </div>
-                      </button>
+                            <div
+                              style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 12,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: h.color + (selected[i] ? '30' : '15'),
+                                color: h.color,
+                                flexShrink: 0,
+                                fontSize: 18,
+                                transform: 'translateZ(15px)',
+                              }}
+                              className="transition-colors"
+                            >
+                              <AnimatePresence mode="popLayout">
+                                {selected[i] ? (
+                                  <motion.div
+                                    key="check"
+                                    initial={{ scale: 0, rotate: -180 }}
+                                    animate={{ scale: 1, rotate: 0 }}
+                                    exit={{ scale: 0, rotate: 180 }}
+                                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                  >
+                                    <Check size={24} color={h.color} />
+                                  </motion.div>
+                                ) : (
+                                  <motion.span
+                                    key="empty"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                  >
+                                    ○
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                            <div style={{ flex: 1, transform: 'translateZ(5px)' }}>
+                              <p
+                                style={{
+                                  fontWeight: 700,
+                                  color: 'white',
+                                  fontSize: 15,
+                                  marginBottom: 4,
+                                }}
+                              >
+                                {h.name}
+                              </p>
+                              <p style={{ fontSize: 13, color: '#94a3b8' }}>{h.category} · Daily</p>
+                            </div>
+                            <div
+                              style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '50%',
+                                border: `2px solid ${selected[i] ? '#10b981' : 'rgba(255,255,255,0.2)'}`,
+                                background: selected[i] ? '#10b981' : 'transparent',
+                                flexShrink: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transform: 'translateZ(15px)',
+                              }}
+                              className="transition-colors"
+                            >
+                              <AnimatePresence>
+                                {selected[i] && (
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                  >
+                                    <Check size={14} color="white" strokeWidth={3} />
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </motion.button>
+                        </TiltCard>
+                      </motion.div>
                     ))}
                   </div>
 
                   <div style={{ display: 'flex', gap: 12 }}>
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => setStep(1)}
                       style={{
-                        padding: '14px 20px',
+                        padding: '14px 24px',
                         borderRadius: 14,
                         border: '1px solid rgba(255,255,255,0.1)',
                         background: 'rgba(255,255,255,0.05)',
@@ -600,30 +634,32 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                         fontWeight: 600,
                         fontSize: 14,
                         cursor: 'pointer',
-                        transition: 'background 0.2s',
                       }}
+                      className="hover:bg-white/10 hover:text-white transition-colors"
                     >
                       ← Back
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                      whileHover={!adding && selected.some(Boolean) ? { scale: 1.02 } : {}}
+                      whileTap={!adding && selected.some(Boolean) ? { scale: 0.98 } : {}}
                       onClick={handleFinish}
                       disabled={adding || !selected.some(Boolean)}
                       style={{
                         flex: 1,
                         padding: '14px 20px',
                         borderRadius: 14,
-                        border: 'none',
+                        border: '1px solid rgba(255,255,255,0.1)',
                         cursor: adding ? 'not-allowed' : 'pointer',
                         background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
                         color: 'white',
                         fontWeight: 700,
-                        fontSize: 14,
+                        fontSize: 15,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: 8,
                         opacity: adding || !selected.some(Boolean) ? 0.5 : 1,
-                        boxShadow: '0 12px 40px rgba(99,102,241,0.3)',
+                        boxShadow: '0 12px 40px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
                       }}
                     >
                       {adding ? (
@@ -647,7 +683,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                           {selected.filter(Boolean).length !== 1 ? 's' : ''} & Start!
                         </>
                       )}
-                    </button>
+                    </motion.button>
                   </div>
                 </motion.div>
               )}
@@ -661,46 +697,55 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   exit={{ opacity: 0 }}
                   style={{ textAlign: 'center', padding: '32px 0' }}
                 >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    style={{
-                      width: 96,
-                      height: 96,
-                      margin: '0 auto 24px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #34d399, #6366f1)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 48,
-                      boxShadow: '0 20px 60px rgba(52,211,153,0.4)',
-                    }}
-                  >
-                    🎉
-                  </motion.div>
-                  <h2 style={{ fontSize: 32, fontWeight: 900, color: 'white', marginBottom: 12 }}>
+                  <TiltCard tiltIntensity={15}>
+                    <motion.div
+                      initial={{ scale: 0, rotate: -10 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                      style={{
+                        width: 120,
+                        height: 120,
+                        margin: '0 auto 24px',
+                        borderRadius: 32,
+                        background: 'linear-gradient(135deg, #34d399, #10b981)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 64,
+                        boxShadow: '0 30px 80px rgba(52,211,153,0.5), inset 0 2px 0 rgba(255,255,255,0.4)',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        transform: 'translateZ(30px)'
+                      }}
+                    >
+                      🎉
+                    </motion.div>
+                  </TiltCard>
+                  <h2 style={{ fontSize: 36, fontWeight: 900, color: 'white', marginBottom: 12 }}>
                     You're all set!
                   </h2>
-                  <p style={{ color: '#94a3b8', fontSize: 16 }}>
+                  <p style={{ color: '#94a3b8', fontSize: 16, marginBottom: 16 }}>
                     Your habits are ready. Day 1 starts now.
                   </p>
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
+                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.6, type: 'spring' }}
                     style={{
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 8,
                       color: '#fbbf24',
-                      fontWeight: 700,
+                      fontWeight: 800,
                       marginTop: 24,
+                      background: 'rgba(251, 191, 36, 0.15)',
+                      padding: '12px 24px',
+                      borderRadius: 100,
+                      border: '1px solid rgba(251, 191, 36, 0.3)',
+                      boxShadow: '0 0 40px rgba(251, 191, 36, 0.2)'
                     }}
                   >
-                    <Sparkles size={18} />
+                    <Sparkles size={20} className="animate-pulse" />
                     <span>+10 XP bonus for setting up!</span>
                   </motion.div>
                 </motion.div>

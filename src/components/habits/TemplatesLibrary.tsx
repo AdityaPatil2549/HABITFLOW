@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Check, Search, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { useHabitStore } from '../../store/habitStore';
 import { format } from 'date-fns';
+import { DynamicIcon } from '../ui/DynamicIcon';
 
 // ── Full Template Catalogue ──────────────────────────────────────
 const TEMPLATE_PACKS = [
@@ -395,15 +396,17 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
 
                     {/* Pack header */}
                     <motion.div layout="position" className="flex items-start gap-4 z-10">
-                      <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg"
-                        style={{
-                          background: pack.color + '20',
-                          border: `1px solid ${pack.color}40`,
-                        }}
-                      >
-                        {pack.emoji}
-                      </div>
+                      <DynamicIcon tiltIntensity={20} glowColor={pack.color + '80'} interactive={true}>
+                        <div
+                          className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg"
+                          style={{
+                            background: pack.color + '20',
+                            border: `1px solid ${pack.color}40`,
+                          }}
+                        >
+                          {pack.emoji}
+                        </div>
+                      </DynamicIcon>
                       <div className="flex-1 min-w-0 pt-0.5">
                         <p className="font-bold text-slate-50 text-base">{pack.name}</p>
                         <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
