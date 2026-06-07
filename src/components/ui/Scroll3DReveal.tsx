@@ -21,20 +21,23 @@ export function Scroll3DReveal({ children, delay = 0, className = '' }: Props) {
     return <div className={className}>{children}</div>;
   }
 
+  // Cap the delay so long lists don't take forever to reveal the bottom elements
+  const safeDelay = Math.min(delay, 0.3);
+
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, rotateX: 45, y: 60, scale: 0.95, filter: 'blur(10px)' }}
-      whileInView={{ opacity: 1, rotateX: 0, y: 0, scale: 1, filter: 'blur(0px)' }}
-      viewport={{ once: true, margin: '-20px' }}
+      initial={{ opacity: 0, rotateX: 20, y: 40, scale: 0.98 }}
+      whileInView={{ opacity: 1, rotateX: 0, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: '200px' }}
       transition={{
-        duration: 0.8,
-        delay,
+        duration: 0.4,
+        delay: safeDelay,
         type: 'spring',
-        stiffness: 100,
-        damping: 20,
+        stiffness: 250,
+        damping: 25,
       }}
-      style={{ transformPerspective: 1200 }}
+      style={{ transformPerspective: 1000 }}
     >
       {children}
     </motion.div>
