@@ -16,7 +16,7 @@ function CustomTooltip({
   return (
     <div
       {...tooltipProps}
-      className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-slate-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl p-6"
+      className="relative w-[300px] sm:w-[380px] overflow-hidden rounded-3xl bg-slate-900/90 backdrop-blur-2xl border border-white/10 shadow-2xl p-6"
     >
       {/* 3D Background Glow Effects */}
       <div className="absolute -top-16 -right-16 w-32 h-32 bg-brand-500/30 rounded-full blur-3xl" />
@@ -194,6 +194,7 @@ export function OnboardingTour() {
         options: {
           zIndex: 10000,
           arrowColor: 'rgba(15, 23, 42, 0.95)',
+          width: 380,
         },
       }}
     />
