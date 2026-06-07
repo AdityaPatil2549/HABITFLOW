@@ -1,5 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Joyride, STATUS, Step, TooltipRenderProps } from 'react-joyride';
+import re
+
+with open("src/components/ui/OnboardingTour.tsx", "r", encoding="utf-8") as f:
+    content = f.read()
+
+new_content = """import React, { useEffect, useState } from 'react';
+import Joyride, { STATUS, Step, TooltipRenderProps } from 'react-joyride';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -190,7 +195,6 @@ export function OnboardingTour() {
       steps={steps}
       tooltipComponent={CustomTooltip}
       styles={{
-        // @ts-ignore
         options: {
           zIndex: 10000,
           arrowColor: 'rgba(15, 23, 42, 0.95)',
@@ -199,3 +203,9 @@ export function OnboardingTour() {
     />
   );
 }
+"""
+
+with open("src/components/ui/OnboardingTour.tsx", "w", encoding="utf-8") as f:
+    f.write(new_content)
+
+print("Successfully replaced OnboardingTour.tsx")
