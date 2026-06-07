@@ -61,7 +61,6 @@ export function CursorTrail() {
           x: cursorX,
           y: cursorY,
           background: 'radial-gradient(circle, rgba(99,102,241,0.5) 0%, rgba(99,102,241,0) 70%)',
-          filter: 'blur(4px)',
         }}
         animate={{
           opacity: isVisible ? 0.6 : 0,

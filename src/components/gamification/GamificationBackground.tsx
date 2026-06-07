@@ -89,10 +89,10 @@ export function GamificationBackground() {
       </Canvas>
       {/* Background ambient glow matching the palette */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[10%] w-[40%] h-[40%] rounded-full blur-[140px] opacity-[0.08]"
-          style={{ background: '#f59e0b' }} />
-        <div className="absolute bottom-[0%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[160px] opacity-[0.06]"
-          style={{ background: '#ec4899' }} />
+        <div className="absolute top-[-10%] right-[10%] w-[40%] h-[40%] rounded-full opacity-[0.2]"
+          style={{ background: 'radial-gradient(circle, #f59e0b 0%, transparent 60%)' }} />
+        <div className="absolute bottom-[0%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-[0.15]"
+          style={{ background: 'radial-gradient(circle, #ec4899 0%, transparent 60%)' }} />
       </div>
     </div>
   );

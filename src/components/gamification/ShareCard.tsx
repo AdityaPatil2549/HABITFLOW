@@ -38,9 +38,11 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           color: 'var(--color-on-surface, white)',
         }}
       >
-        {/* Background Decorative Blobs */}
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-brand-500 rounded-full mix-blend-screen filter blur-[100px] opacity-40"></div>
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-brand-400 rounded-full mix-blend-screen filter blur-[100px] opacity-40"></div>
+        {/* Background ambient glow matching the brand */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 mix-blend-screen opacity-40"
+             style={{ background: 'radial-gradient(circle, #8b5cf6 0%, transparent 70%)' }}></div>
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 mix-blend-screen opacity-40"
+             style={{ background: 'radial-gradient(circle, #818cf8 0%, transparent 70%)' }}></div>
 
         {/* Header */}
         <div className="relative z-10 flex items-center justify-between">
