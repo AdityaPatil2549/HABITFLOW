@@ -9,9 +9,13 @@ export function OnboardingTour() {
   useEffect(() => {
     // Only run the tour if they haven't seen it, and only on the dashboard route
     const hasSeenTour = localStorage.getItem('habitflow_tour_completed');
-    if (!hasSeenTour && location.pathname === '/') {
+    if (!hasSeenTour && (location.pathname === '/' || location.pathname === '/dashboard')) {
       // Small delay to ensure elements are rendered
-      const timer = setTimeout(() => setRun(true), 1500);
+      const timer = setTimeout(() => {
+        setRun(true);
+        // Eagerly set to true so it doesn't show again on next refresh even if they don't finish it
+        localStorage.setItem('habitflow_tour_completed', 'true');
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [location]);
