@@ -49,9 +49,13 @@ export function SpotlightCard({ children, className, onClick, ...rest }: Props) 
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      className={cn('relative overflow-hidden vision-panel cursor-pointer group', className)}
-      whileHover={{ scale: 0.99 }}
-      whileTap={{ scale: 0.97 }}
+      className={cn(
+        'relative overflow-hidden vision-panel group',
+        onClick ? 'cursor-pointer' : '',
+        className
+      )}
+      whileHover={onClick ? { scale: 0.99 } : undefined}
+      whileTap={onClick ? { scale: 0.97 } : undefined}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       {...rest}
     >

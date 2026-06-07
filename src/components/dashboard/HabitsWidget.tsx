@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, Reorder } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Flame, CheckCircle2, ArrowRight, Zap, GripHorizontal } from 'lucide-react';
@@ -61,13 +62,14 @@ export function HabitsWidget({ dragHandleProps }: { dragHandleProps?: any }) {
             </div>
           </div>
 
-          {showSmartAdd && (
+          {showSmartAdd && document.body && createPortal(
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
               <NLPQuickAdd
                 onClose={() => setShowSmartAdd(false)}
                 onHabitCreated={() => setShowSmartAdd(false)}
               />
-            </div>
+            </div>,
+            document.body
           )}
 
           {loading ? (
