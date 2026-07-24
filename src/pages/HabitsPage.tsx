@@ -598,9 +598,9 @@ function HabitCard({
   const done =
     !!habit.todayLog &&
     (habit.todayLog.isFrozen ||
-      habit.todayLog.value >= (habit.type === 'boolean' ? 1 : habit.targetValue));
+      habit.todayLog.value >= (habit.type === 'boolean' ? 1 : (habit.targetValue || 1)));
   const pct =
-    habit.type !== 'boolean' && habit.todayLog
+    habit.type !== 'boolean' && habit.todayLog && habit.targetValue
       ? Math.min((habit.todayLog.value / habit.targetValue) * 100, 100)
       : done ? 100 : 0;
   const c            = habit.color || '#6366f1';
