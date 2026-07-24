@@ -6,7 +6,7 @@ Welcome to **HabitFlow**! Whether you're looking to drink more water, learn a ne
 
 Best of all? **No account required to start.** HabitFlow is an offline-first experience—your data lives securely on your own device, with the power to back it up seamlessly to the cloud.
 
-**🌐 Start Your Journey Today:** [HabitFlow Web App](https://habitflow-murex.vercel.app)
+**🌐 Start Your Journey Today:** [HabitFlow Web App](https://habitflow-1.web.app)
 
 ---
 
