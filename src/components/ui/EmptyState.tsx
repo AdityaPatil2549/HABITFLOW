@@ -33,7 +33,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
           y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
           opacity: { duration: 0.3 }
         }}
-        className="w-20 h-20 rounded-full bg-brand-500/10 flex items-center justify-center mb-5 border border-brand-500/20 shadow-[0_0_30px_rgba(129,140,248,0.2)]"
+        className="w-20 h-20 rounded-full bg-brand-500/10 flex items-center justify-center mb-5 border border-brand-500/20 shadow-lg"
       >
         <Icon className="w-10 h-10 text-brand-400 drop-shadow-lg" />
       </motion.div>
@@ -61,7 +61,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
           onClick={onAction}
-          className="px-6 py-3 bg-brand-500 hover:bg-brand-400 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(129,140,248,0.4)] hover:shadow-[0_0_30px_rgba(129,140,248,0.6)] z-10 flex items-center gap-2"
+          className="px-6 py-3 bg-brand-500 hover:bg-brand-400 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl z-10 flex items-center gap-2 active:scale-[0.98]"
         >
           {actionLabel}
         </motion.button>

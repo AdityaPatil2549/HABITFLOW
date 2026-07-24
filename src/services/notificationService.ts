@@ -62,8 +62,8 @@ class NotificationService {
           continue;
         }
 
-        // Is it the right time? (Checking exact HH:mm)
-        if (habit.reminderTime === timeStr) {
+        // Is it past the reminder time?
+        if (timeStr >= habit.reminderTime) {
           const notifKey = `${habit.id}-${today}`;
 
           if (!this.notifiedToday.has(notifKey)) {
@@ -144,7 +144,7 @@ class NotificationService {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   private async getPendingHabitsForToday(habits: any[], today: string) {
     const logs = await db.habitLogs.where('date').equals(today).toArray();
     const currentDay = new Date().getDay(); // 0 = Sunday, 6 = Saturday
@@ -157,7 +157,7 @@ class NotificationService {
         }
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const log = logs.find((l: any) => l.habitId === habit.id);
       if (!log) return true;
       return log.value < (habit.type === 'boolean' ? 1 : habit.targetValue);

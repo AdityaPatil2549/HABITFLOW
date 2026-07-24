@@ -101,7 +101,7 @@ export function PerformanceWidget({ dragHandleProps }: { dragHandleProps?: any }
       )}
       <Scroll3DReveal delay={0.2} className="h-full">
         <TiltCard borderGlow className="h-full">
-          <SpotlightCard variants={item} className="h-full rounded-[2.5rem] p-6 sm:p-10">
+          <SpotlightCard className="h-full rounded-[2.5rem] p-6 sm:p-10">
             <div className="flex items-start justify-between mb-4 sm:mb-6">
               <div>
                 <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">

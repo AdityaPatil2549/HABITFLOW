@@ -1,8 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
-  Moon,
-  Sun,
-  Monitor,
   Download,
   Upload,
   Trash2,
@@ -10,11 +7,15 @@ import {
   Shield,
   Palette,
   Database,
-  Info,
   CheckCircle2,
   Calendar,
   CloudOff,
   Activity,
+  HardDrive,
+  Zap,
+  Camera,
+  MapPin,
+  Youtube,
 } from 'lucide-react';
 import { db, getOrCreateSettings } from '../db';
 import type { Settings, Theme } from '../types';
@@ -26,6 +27,9 @@ import { useToast } from '../components/common/Toast';
 import { calendarService } from '../services/calendarService';
 import { useAuthStore } from '../store/authStore';
 import { Link } from 'react-router-dom';
+import { driveService } from '../services/driveService';
+import { healthSyncService } from '../services/healthSyncService';
+import { storageService } from '../services/storageService';
 
 const THEMES: { value: Theme; label: string; color: string }[] = [
   { value: 'indigo', label: 'Indigo', color: '#6366f1' },
@@ -42,8 +46,14 @@ export function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [exported, setExported] = useState(false);
   const [csvExported, setCsvExported] = useState(false);
+  const [driveConnected, setDriveConnected] = useState(driveService.isDriveConnected());
+  const [fitConnected, setFitConnected] = useState(healthSyncService.isFitConnected());
+  const [driveLoading, setDriveLoading] = useState(false);
+  const [fitLoading, setFitLoading] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
-  const { isGuest } = useAuthStore();
+  const { isGuest, user } = useAuthStore();
   const isCalendarConnected = calendarService.isCalendarConnected();
 
   const { userXP, loadXP } = useGamificationStore();
@@ -64,9 +74,6 @@ export function SettingsPage() {
     setSettings(updated);
 
     const root = document.documentElement;
-    if (update.darkMode) {
-      root.classList.toggle('light', update.darkMode === 'light');
-    }
     if (update.theme) {
       if (update.theme === 'indigo') root.removeAttribute('data-theme');
       else root.setAttribute('data-theme', update.theme);
@@ -110,6 +117,80 @@ export function SettingsPage() {
     setTimeout(() => setExported(false), 2000);
   }
 
+  async function handleConnectDrive() {
+    if (isGuest) { toast.error('Sign in to use Google Drive backup'); return; }
+    setDriveLoading(true);
+    try {
+      if (driveConnected) {
+        driveService.disconnectDrive();
+        setDriveConnected(false);
+        toast.success('Google Drive disconnected');
+      } else {
+        await driveService.connectDrive();
+        setDriveConnected(true);
+        toast.success('Google Drive connected! 🎉');
+      }
+    } catch (e) {
+      toast.error('Failed to connect Google Drive. Please try again.');
+    } finally {
+      setDriveLoading(false);
+    }
+  }
+
+  async function handleDriveBackup() {
+    if (!driveConnected) { toast.error('Connect Google Drive first'); return; }
+    setDriveLoading(true);
+    try {
+      const [habits, habitLogs, tasks, projects, moods] = await Promise.all([
+        db.habits.toArray(), db.habitLogs.toArray(),
+        db.tasks.toArray(), db.projects.toArray(), db.moods.toArray(),
+      ]);
+      await driveService.saveBackupToDrive({ habits, habitLogs, tasks, projects, moods, app: 'HabitFlow', exportedAt: new Date().toISOString() });
+      toast.success('Backup saved to Google Drive! ☁️');
+    } catch (e: any) {
+      toast.error(e.message || 'Drive backup failed');
+    } finally {
+      setDriveLoading(false);
+    }
+  }
+
+  async function handleConnectFit() {
+    setFitLoading(true);
+    try {
+      if (fitConnected) {
+        healthSyncService.disconnectFit();
+        setFitConnected(false);
+        toast.success('Google Fit disconnected');
+      } else {
+        await healthSyncService.connectGoogleFit();
+        setFitConnected(true);
+        toast.success('Google Fit connected! Steps & sleep will now sync. 🏃');
+      }
+    } catch (e) {
+      toast.error('Failed to connect Google Fit. Please try again.');
+    } finally {
+      setFitLoading(false);
+    }
+  }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (isGuest) { toast.error('Sign in to upload a profile photo'); return; }
+    setPhotoUploading(true);
+    try {
+      const url = await storageService.uploadProfilePhoto(file);
+      toast.success('Profile photo updated! 📸');
+      // Trigger a re-render by updating a URL state if needed
+      console.log('[Settings] Profile photo uploaded:', url);
+    } catch (e: any) {
+      toast.error(e.message || 'Photo upload failed');
+    } finally {
+      setPhotoUploading(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  }
+
   async function handleExportCSV() {
     const habits = await db.habits.toArray();
     const logs = await db.habitLogs.toArray();
@@ -124,7 +205,7 @@ export function SettingsPage() {
         escape(h?.category || ''),
         escape(h?.type || ''),
         l.value,
-        l.mood || '',
+        '',
         escape(l.note || ''),
       ].join(',');
     });
@@ -178,7 +259,7 @@ export function SettingsPage() {
       }
 
       toast.confirm(
-        `Import ${data.habits?.length ?? 0} habits, ${data.tasks?.length ?? 0} tasks, and ${data.habitLogs?.length ?? 0} logs? This will replace all existing data.`,
+        `Import ${data.habits?.length ?? 0} habits, ${data.tasks?.length ?? 0} tasks, and ${data.habitLogs?.length ?? 0} logs? This will overwrite existing data for the imported categories.`,
         async () => {
           await db.transaction(
             'rw',
@@ -276,42 +357,17 @@ export function SettingsPage() {
           <Palette size={18} className="text-brand-400" /> Appearance
         </h2>
 
-        <div>
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block">
-            Color Mode
-          </label>
-          <div className="flex gap-2 p-1 bg-slate-900 rounded-xl border border-white/10">
-            {(
-              [
-                ['system', Monitor, 'System'],
-                ['dark', Moon, 'Dark'],
-                ['light', Sun, 'Light'],
-              ] as const
-            ).map(([v, Icon, l]) => (
-              <button
-                key={v}
-                onClick={() => saveSetting({ darkMode: v as Settings['darkMode'] })}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${
-                  settings.darkMode === v
-                    ? 'bg-brand-500 text-white shadow-md'
-                    : 'text-slate-500 hover:text-white hover:bg-slate-950/20'
-                }`}
-              >
-                <Icon size={14} /> <span>{l}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         <div>
           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block flex items-center justify-between">
             <span>Accent Color</span>
-            <a
-              href="/profile"
+            <Link
+              to="/profile"
               className="text-xs text-brand-400 hover:underline flex items-center gap-1.5"
             >
               <Palette size={12} /> Get more themes
-            </a>
+            </Link>
           </label>
           <div className="flex flex-wrap gap-4">
             {THEMES.filter(t => userXP?.unlockedThemes?.includes(t.value)).map(t => (
@@ -336,6 +392,9 @@ export function SettingsPage() {
             <p className="text-xs text-slate-500">Affects all charts and weekly views.</p>
           </div>
           <button
+            role="switch"
+            aria-checked={settings.weekStartsOnMonday}
+            aria-label="Toggle week starts on Monday"
             onClick={() => saveSetting({ weekStartsOnMonday: !settings.weekStartsOnMonday })}
             className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.weekStartsOnMonday ? 'bg-brand-500' : 'bg-slate-700'}`}
           >
@@ -430,7 +489,7 @@ export function SettingsPage() {
       {/* ─── Integrations ─── */}
       <section className="glass-card rounded-2xl p-6 space-y-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Calendar size={18} className="text-brand-400" /> Integrations
+          <Calendar size={18} className="text-brand-400" /> Calendar Sync
         </h2>
 
         {isGuest ? (
@@ -511,27 +570,29 @@ export function SettingsPage() {
         )}
       </section>
 
-      {/* ── Integrations ── */}
+      {/* ── Health & Fitness ── */}
       <section className="glass-card rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Activity size={18} className="text-brand-400" /> Integrations
+          <Activity size={18} className="text-brand-400" /> Health & Fitness
         </h2>
-
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
             <div>
               <p className="text-sm font-bold text-white">Google Fit / Health Connect</p>
               <p className="text-[10px] text-slate-400 mt-1">
-                Simulated sync engine for health habits
+                {fitConnected ? '✅ Connected — steps & sleep syncing' : 'Auto-complete fitness habits from your phone data'}
               </p>
             </div>
             <button
-              onClick={() => {
-                toast.success('Simulated Health Sync Connected! Auto-completion enabled.');
-              }}
-              className="px-4 py-2 bg-brand-500/20 text-brand-400 text-xs font-bold rounded-xl hover:bg-brand-500/30 transition-colors"
+              onClick={handleConnectFit}
+              disabled={fitLoading}
+              className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors ${
+                fitConnected
+                  ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                  : 'bg-brand-500/20 text-brand-400 hover:bg-brand-500/30'
+              }`}
             >
-              Connect
+              {fitLoading ? '…' : fitConnected ? 'Disconnect' : 'Connect'}
             </button>
           </div>
           <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl opacity-60">
@@ -539,13 +600,104 @@ export function SettingsPage() {
               <p className="text-sm font-bold text-white">Apple Health (iOS)</p>
               <p className="text-[10px] text-slate-400 mt-1">Requires native app installation</p>
             </div>
-            <button
-              disabled
-              className="px-4 py-2 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl"
-            >
-              Coming Soon
-            </button>
+            <button disabled className="px-4 py-2 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl">Coming Soon</button>
           </div>
+        </div>
+      </section>
+
+      {/* ── Google Integrations ── */}
+      <section className="glass-card rounded-2xl p-6 space-y-6">
+        <h2 className="text-base font-bold text-white flex items-center gap-2">
+          <Zap size={18} className="text-yellow-400" /> Google Integrations
+        </h2>
+        <div className="space-y-3">
+
+          {/* Google Drive Backup */}
+          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <HardDrive size={16} className="text-blue-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Google Drive Backup</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {driveConnected ? '✅ Connected — auto-backup ready' : 'Save & restore backups to your Drive'}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {driveConnected && (
+                <button
+                  onClick={handleDriveBackup}
+                  disabled={driveLoading}
+                  className="px-3 py-1.5 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-lg hover:bg-blue-500/30 transition-colors"
+                >
+                  {driveLoading ? '…' : 'Backup Now'}
+                </button>
+              )}
+              <button
+                onClick={handleConnectDrive}
+                disabled={driveLoading}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                  driveConnected
+                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                    : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                }`}
+              >
+                {driveLoading ? '…' : driveConnected ? 'Disconnect' : 'Connect'}
+              </button>
+            </div>
+          </div>
+
+          {/* Profile Photo Upload */}
+          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <Camera size={16} className="text-purple-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Profile Photo</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Upload to Firebase Cloud Storage</p>
+              </div>
+            </div>
+            <label className={`px-3 py-1.5 bg-purple-500/20 text-purple-400 text-xs font-bold rounded-lg cursor-pointer hover:bg-purple-500/30 transition-colors ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+              {photoUploading ? 'Uploading…' : 'Upload Photo'}
+              <input ref={photoInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} />
+            </label>
+          </div>
+
+          {/* Google Maps — Location Triggers */}
+          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <MapPin size={16} className="text-green-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Location Triggers</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Remind me when I arrive at a location</p>
+              </div>
+            </div>
+            <div className="px-3 py-1.5 bg-green-500/10 text-green-400 text-xs font-bold rounded-lg">
+              {import.meta.env.VITE_MAPS_API_KEY && import.meta.env.VITE_MAPS_API_KEY !== 'YOUR_MAPS_API_KEY_HERE' ? '✅ Active' : 'Add API Key'}
+            </div>
+          </div>
+
+          {/* YouTube Recommendations */}
+          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center">
+                <Youtube size={16} className="text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">YouTube Recommendations</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Habit videos in your AI Coach tab</p>
+              </div>
+            </div>
+            <div className="px-3 py-1.5 bg-red-500/10 text-red-400 text-xs font-bold rounded-lg">
+              {import.meta.env.VITE_YOUTUBE_API_KEY && import.meta.env.VITE_YOUTUBE_API_KEY !== 'YOUR_YOUTUBE_API_KEY_HERE' ? '✅ Active' : 'Add API Key'}
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -619,11 +771,11 @@ export function SettingsPage() {
             <Shield size={20} />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-white">Privacy First</h2>
+            <h2 className="text-sm font-bold text-white">Privacy & Security</h2>
             <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              HabitFlow is a local-first application. We don't have servers to store your data.
-              Everything is kept securely in your browser's IndexedDB. Your habits, tasks, and
-              profile photo never leave your device.
+              HabitFlow uses secure cloud sync so your data is backed up and available across your devices.
+              All syncing happens securely through our database infrastructure, ensuring your habits and progress
+              remain private to you.
             </p>
           </div>
         </div>
@@ -639,20 +791,18 @@ export function SettingsPage() {
         <p className="text-sm font-bold text-white">HabitFlow v1.2</p>
         <p className="text-xs text-slate-500 mt-1">Built with precision for peak performance.</p>
         <div className="flex items-center justify-center gap-4 mt-4">
-          <button
-            onClick={() =>
-              toast.info('HabitFlow is a local-first app. Your data never leaves your device.')
-            }
+          <Link
+            to="/privacy"
             className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"
           >
             Privacy Policy
-          </button>
-          <button
-            onClick={() => toast.info('HabitFlow is free to use. No terms or restrictions apply.')}
+          </Link>
+          <Link
+            to="/terms"
             className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"
           >
             Terms of Use
-          </button>
+          </Link>
           <button
             onClick={() => toast.info('HabitFlow is an open-source project.')}
             className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"

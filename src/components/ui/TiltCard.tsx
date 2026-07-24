@@ -63,25 +63,20 @@ export function TiltCard({
   return (
     <motion.div
       ref={ref}
-      className={`tilt-card-wrapper ${borderGlow ? 'tilt-border-glow' : ''} ${className}`}
-      style={{
-        perspective: 1200,
-        ...style,
-      }}
+      className={`tilt-card-wrapper p-1.5 rounded-[2rem] bg-white/5 border border-white/10 ${className}`}
+      style={style}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <motion.div
-        className="tilt-card-inner"
+        className="tilt-card-inner active:scale-[0.98] transition-all bg-slate-950 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] rounded-[calc(2rem-0.375rem)] overflow-hidden"
         style={{
-          rotateX,
-          rotateY,
           scale: isHovering ? scale : 1,
           width: '100%',
           height: '100%',
           position: 'relative',
-          transition: 'scale 0.2s ease-out',
+          transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
         }}
       >
         {children}

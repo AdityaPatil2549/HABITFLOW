@@ -7,6 +7,7 @@ import { TiltCard } from '../ui/TiltCard';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/Skeleton';
 import { Reorder } from 'framer-motion';
+import { NeonCheckbox } from '../ui/animated-check-box';
 
 export function TasksWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export function TasksWidget({ dragHandleProps }: { dragHandleProps?: any }) {
         </div>
       )}
       <TiltCard borderGlow className="w-full h-full">
-        <SpotlightCard variants={item} className="h-full rounded-[2.5rem] p-6 sm:p-10">
+        <SpotlightCard className="h-full rounded-[2.5rem] p-6 sm:p-10">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <CheckCircle2 size={16} className="text-brand-400" /> Due & Overdue
@@ -61,40 +62,67 @@ export function TasksWidget({ dragHandleProps }: { dragHandleProps?: any }) {
               />
             ) : (
               <Reorder.Group axis="y" values={todayTasks.slice(0, 5)} onReorder={() => {}}>
-                {todayTasks.slice(0, 5).map(t => (
-                  <Reorder.Item
-                    key={t.id}
-                    value={t}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all group/item mb-2"
-                  >
-                    <button
-                      onClick={() => completeTask(t.id)}
-                      className="w-5 h-5 rounded-full border-2 border-white/20 flex items-center justify-center flex-shrink-0 hover:border-brand-400 hover:bg-brand-500/10 transition-all cursor-pointer"
-                    >
-                      <CheckCircle2
-                        size={11}
-                        className="text-transparent group-hover/item:text-brand-400 transition-colors"
-                      />
-                    </button>
-                    <div
-                      className={`w-1 h-6 rounded-full flex-shrink-0 ${['bg-red-500', 'bg-orange-500', 'bg-brand-500', 'bg-slate-600'][t.priority]}`}
-                    />
-                    <div className="flex-1 min-w-0 cursor-grab active:cursor-grabbing">
-                      <p className="text-sm font-semibold text-white truncate group-hover/item:text-brand-400 transition-colors">
-                        {t.title}
-                      </p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">
-                        {t.dueDate === today ? 'Due today' : 'Overdue'}
-                      </p>
+                {todayTasks.slice(0, 5).map(t => {
+                  const subtasks = tasks.filter(sub => sub.parentId === t.id && !sub.completed);
+                  return (
+                    <div key={t.id}>
+                      <Reorder.Item
+                        value={t}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all group/item mb-2"
+                      >
+                        <div className="flex-shrink-0 flex items-center justify-center relative z-10 w-5 h-5">
+                          <NeonCheckbox 
+                            checked={t.completed} 
+                            onChange={() => completeTask(t.id)}
+                            neonColor="var(--brand-400)"
+                            checkboxSize="20px"
+                          />
+                        </div>
+                        <div
+                          className={`w-1 h-6 rounded-full flex-shrink-0 ${['bg-red-500', 'bg-orange-500', 'bg-brand-500', 'bg-slate-600'][t.priority]}`}
+                        />
+                        <div className="flex-1 min-w-0 cursor-grab active:cursor-grabbing">
+                          <p className="text-sm font-semibold text-white truncate group-hover/item:text-brand-400 transition-colors">
+                            {t.title}
+                          </p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">
+                            {t.dueDate === today ? 'Due today' : 'Overdue'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => navigate('/tasks')}
+                          className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-slate-500 hover:bg-brand-500/10 hover:text-brand-400 hover:border-brand-500/30 transition-all opacity-0 group-hover/item:opacity-100"
+                        >
+                          <ArrowRight size={13} />
+                        </button>
+                      </Reorder.Item>
+                      {subtasks.length > 0 && (
+                        <div className="ml-8 space-y-1 mb-3">
+                          {subtasks.map(sub => (
+                            <div
+                              key={sub.id}
+                              className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.01] border border-white/[0.02] hover:border-white/[0.05] transition-all group/sub"
+                            >
+                              <div className="flex-shrink-0 flex items-center justify-center relative z-10 w-4 h-4">
+                                <NeonCheckbox 
+                                  checked={sub.completed} 
+                                  onChange={() => completeTask(sub.id)}
+                                  neonColor="var(--brand-400)"
+                                  checkboxSize="16px"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-slate-300 truncate group-hover/sub:text-brand-300 transition-colors">
+                                  {sub.title}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={() => navigate('/tasks')}
-                      className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-slate-500 hover:bg-brand-500/10 hover:text-brand-400 hover:border-brand-500/30 transition-all opacity-0 group-hover/item:opacity-100"
-                    >
-                      <ArrowRight size={13} />
-                    </button>
-                  </Reorder.Item>
-                ))}
+                  );
+                })}
               </Reorder.Group>
             )}
             {todayTasks.length > 5 && (

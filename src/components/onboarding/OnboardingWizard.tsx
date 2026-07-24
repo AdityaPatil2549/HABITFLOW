@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { GalaxyCanvas } from '../ui/GalaxyCanvas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useProfileStore } from '../../store/profileStore';
@@ -158,231 +159,163 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   return (
     <AnimatePresence>
       {/* Full-screen backdrop */}
+      {/* Full-screen backdrop */}
       <dialog
         ref={dialogRef}
-        className="dark-overlay bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950 open:animate-in open:fade-in duration-300 z-[9999]"
+        className="dark-overlay m-0 p-0 border-0 outline-none open:animate-in open:fade-in duration-300 z-[9999]"
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: 'transparent',
+          width: '100vw',
+          height: '100vh',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+          boxSizing: 'border-box',
+          backgroundColor: '#030208',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        {/* 3D Immersive Background */}
-        <div className="fixed inset-0 -z-10 pointer-events-none">
-          <Suspense fallback={null}>
-            <GamificationBackground />
-          </Suspense>
-          <div
-            className="absolute inset-0 transition-colors duration-1000 pointer-events-none"
-            style={{
-              backgroundImage: `radial-gradient(ellipse at 40% 20%, ${STEP_COLORS[step]} 0%, transparent 70%)`,
-            }}
-          />
+        {/* Galaxy Background */}
+        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+          {/* All-in-one galaxy: nebula clouds + twinkling stars */}
+          <GalaxyCanvas />
         </div>
 
         {/* Centered content wrapper */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2rem 1rem',
-          }}
-        >
-          <div style={{ width: '100%', maxWidth: 480, position: 'relative', zIndex: 10 }}>
-            {/* Progress indicator */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                marginBottom: 40,
-              }}
-            >
-              {STEPS.map((s, i) => (
-                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 12,
-                      fontWeight: 900,
-                      transition: 'all 0.3s',
-                      background:
-                        i < step ? '#10b981' : i === step ? '#6366f1' : 'rgba(255,255,255,0.06)',
-                      color: i <= step ? 'white' : '#64748b',
-                      boxShadow: i === step ? '0 0 20px rgba(99,102,241,0.4)' : 'none',
-                    }}
-                  >
-                    {i < step ? <Check size={13} /> : i + 1}
-                  </div>
-                  {i < STEPS.length - 1 && (
-                    <div
-                      style={{
-                        width: 32,
-                        height: 2,
-                        borderRadius: 1,
-                        transition: 'all 0.5s',
-                        background: i < step ? '#10b981' : 'rgba(255,255,255,0.08)',
-                      }}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <AnimatePresence mode="wait">
-              {/* ── Step 0: Welcome ── */}
-              {step === 0 && (
-                <motion.div
-                  key="welcome"
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -24 }}
-                  style={{ textAlign: 'center' }}
+        <div className="flex-1 w-full flex flex-col items-center justify-center p-4 md:p-6 relative z-10 my-auto">
+          
+          {/* Progress indicator at top, separated from card */}
+          <div className="flex items-center justify-center gap-2 mb-10">
+            {STEPS.map((s, i) => (
+              <div key={s} className="flex items-center gap-2">
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300 ${
+                    i < step
+                      ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)]'
+                      : i === step
+                      ? 'bg-indigo-500/30 text-indigo-200 shadow-[0_0_20px_rgba(99,102,241,0.6)]'
+                      : 'bg-white/5 text-slate-500 border border-white/10'
+                  }`}
                 >
-                  <TiltCard tiltIntensity={20}>
-                    <div
-                      style={{
-                        width: 88,
-                        height: 88,
-                        margin: '0 auto 24px',
-                        borderRadius: 24,
-                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 20px 60px rgba(99,102,241,0.4)',
-                        overflow: 'hidden',
-                        border: '1px solid rgba(255,255,255,0.2)'
-                      }}
+                  {i < step ? <Check size={12} /> : i + 1}
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div
+                    className={`w-6 h-[1px] transition-all duration-500 ${
+                      i < step ? 'bg-indigo-500' : 'bg-white/10'
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="w-full min-w-[320px] max-w-[460px] relative mx-auto">
+            {/* 3D Stacked Card Effect Backings matching screenshot precisely */}
+            {/* Third card (furthest back) */}
+            <motion.div 
+              animate={{ rotate: [-2, -2.5, -2], y: [0, 4, 0] }}
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+              className="absolute inset-0 top-[-12px] left-[-4px] right-[-4px] bottom-[12px] scale-[0.96] rounded-[24px] border border-purple-500/10 bg-[#0c081e]/40 backdrop-blur-md shadow-2xl pointer-events-none" 
+            />
+            {/* Second card */}
+            <motion.div 
+              animate={{ rotate: [1.5, 2, 1.5], y: [0, -3, 0] }}
+              transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }}
+              className="absolute inset-0 top-[-6px] left-[-2px] right-[-2px] bottom-[6px] scale-[0.98] rounded-[24px] border border-purple-500/20 bg-[#0c081e]/60 backdrop-blur-lg shadow-2xl pointer-events-none" 
+            />
+
+            {/* Main Front Card Container */}
+            <div className="relative rounded-[24px] border border-purple-500/30 bg-[#070412]/95 backdrop-blur-3xl px-8 py-10 shadow-[0_0_80px_rgba(147,51,234,0.15)] overflow-hidden">
+              {/* Inner ambient top glow inside the card */}
+              <motion.div 
+                animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.1, 1] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                className="absolute -top-32 left-1/2 -translate-x-1/2 w-72 h-40 bg-purple-500/10 blur-[50px] pointer-events-none rounded-full" 
+              />
+              
+              <AnimatePresence mode="wait">
+                {/* ── Step 0: Welcome ── */}
+                {step === 0 && (
+                  <motion.div
+                    key="welcome"
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -24 }}
+                    className="text-center relative z-10 flex flex-col items-center w-full"
+                  >
+                    <motion.div
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                     >
-                      <img
-                        src="/logo.png"
-                        alt="HabitFlow"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'translateZ(20px)' }}
+                      <div className="w-16 h-16 mx-auto mb-6 rounded-[20px] bg-[#0c081e] border border-purple-500/30 p-2.5 shadow-[0_0_30px_rgba(168,85,247,0.25)] flex items-center justify-center relative group hover:scale-105 transition-transform duration-300">
+                        <div className="absolute inset-0 bg-purple-500/10 rounded-[20px] blur-sm group-hover:bg-purple-500/20 transition-all" />
+                        <img
+                          src="/logo.png"
+                          alt="HabitFlow"
+                          className="w-full h-full object-contain rounded-xl relative z-10 opacity-90"
+                        />
+                      </div>
+                    </motion.div>
+
+                    <h1 className="text-3xl font-bold text-white mb-4 tracking-tight leading-tight">
+                      Welcome to{' '}
+                      <span className="text-purple-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                        HabitFlow
+                      </span>
+                    </h1>
+
+                    <p className="text-[#8b949e] text-[14px] leading-relaxed mb-8 w-full">
+                      Build powerful daily routines with a system that actually works. Let's get you set up in 60 seconds.
+                    </p>
+
+                    <div className="mb-6 w-full flex flex-col items-center">
+                      <label className="text-[9px] font-bold tracking-[0.25em] text-[#6b7280] uppercase mb-4 text-center">
+                        WHAT SHOULD WE CALL YOU?
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Your name..."
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && setStep(1)}
+                        autoFocus
+                        className="w-full bg-transparent border border-purple-500/40 shadow-[0_0_15px_rgba(147,51,234,0.15)] focus:border-purple-400 focus:shadow-[0_0_20px_rgba(147,51,234,0.3)] rounded-[14px] px-5 py-3.5 text-slate-300 text-center text-sm outline-none transition-all placeholder:text-[#4b5563]"
                       />
                     </div>
-                  </TiltCard>
 
-                  <h1
-                    style={{
-                      fontSize: 36,
-                      fontWeight: 900,
-                      color: 'white',
-                      marginBottom: 12,
-                      lineHeight: 1.15,
-                    }}
-                  >
-                    Welcome to{' '}
-                    <span
-                      style={{
-                        background: 'linear-gradient(to right, #818cf8, #c4b5fd)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                      }}
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setStep(1)}
+                      className="relative w-full py-3.5 px-6 rounded-[14px] border border-purple-400/20 bg-gradient-to-r from-[#2e1065] via-[#4c1d95] to-[#3b0764] hover:from-[#3b0764] hover:to-[#4c1d95] text-white font-semibold text-[13px] flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(109,40,217,0.4)] transition-all overflow-hidden mb-4 group"
                     >
-                      HabitFlow
-                    </span>
-                  </h1>
-                  <p style={{ color: '#94a3b8', fontSize: 16, lineHeight: 1.6, marginBottom: 32 }}>
-                    Build powerful daily routines with a system that actually works. Let's get you
-                    set up in 60 seconds.
-                  </p>
+                      {/* Intense glowing lens flare with continuous sweeping animation */}
+                      <motion.div 
+                        animate={{ x: ['-200%', '400%', '400%'] }}
+                        transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", times: [0, 0.4, 1] }}
+                        className="absolute top-[-50%] bottom-[-50%] w-[100px] left-0 flex items-center justify-center pointer-events-none mix-blend-overlay rotate-12"
+                      >
+                        <div className="w-[40px] h-full bg-white opacity-40 blur-[12px]" />
+                        <div className="w-[2px] h-full bg-white opacity-80 blur-[1px] absolute" />
+                        <div className="w-[8px] h-full bg-purple-200 opacity-60 blur-[4px] absolute" />
+                      </motion.div>
+                      
+                      <span className="relative z-10 flex items-center gap-2 tracking-wide">
+                        Let's get started <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </motion.button>
 
-                  <div style={{ marginBottom: 24 }}>
-                    <p
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: '0.15em',
-                        color: '#64748b',
-                        textTransform: 'uppercase',
-                        marginBottom: 12,
-                      }}
+                    <button
+                      onClick={onComplete}
+                      className="text-[11px] text-[#4b5563] hover:text-[#6b7280] transition-colors tracking-wide"
                     >
-                      What should we call you?
-                    </p>
-                    <input
-                      type="text"
-                      placeholder="Your name…"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && setStep(1)}
-                      autoFocus
-                      style={{
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: 16,
-                        padding: '16px 20px',
-                        color: 'white',
-                        fontSize: 18,
-                        fontWeight: 600,
-                        textAlign: 'center',
-                        outline: 'none',
-                        transition: 'border-color 0.2s',
-                      }}
-                      onFocus={e => {
-                        e.target.style.borderColor = 'rgba(99,102,241,0.5)';
-                      }}
-                      onBlur={e => {
-                        e.target.style.borderColor = 'rgba(255,255,255,0.1)';
-                      }}
-                    />
-                  </div>
-
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setStep(1)}
-                    style={{
-                      width: '100%',
-                      padding: '16px 24px',
-                      borderRadius: 16,
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      cursor: 'pointer',
-                      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                      color: 'white',
-                      fontWeight: 700,
-                      fontSize: 16,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 12,
-                      boxShadow: '0 10px 40px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-                      marginBottom: 16,
-                    }}
-                  >
-                    {name.trim() ? `Let's go, ${name.split(' ')[0]}!` : "Let's get started"}{' '}
-                    <ArrowRight size={20} />
-                  </motion.button>
-
-                  <button
-                    onClick={onComplete}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#475569',
-                      fontSize: 12,
-                      transition: 'color 0.2s',
-                    }}
-                  >
-                    Skip setup
-                  </button>
-                </motion.div>
-              )}
+                      Skip setup
+                    </button>
+                  </motion.div>
+                )}
 
               {/* ── Step 1: Goal Selection ── */}
               {step === 1 && (
@@ -753,7 +686,8 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
             </AnimatePresence>
           </div>
         </div>
-      </dialog>
-    </AnimatePresence>
+      </div>
+    </dialog>
+  </AnimatePresence>
   );
 }

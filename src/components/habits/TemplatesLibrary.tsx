@@ -389,7 +389,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                     key={pack.id}
                     layout
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    className="relative rounded-[24px] border border-white/10 bg-slate-950/40 p-5 flex flex-col gap-5 hover:bg-slate-950/60 hover:border-white/20 transition-all shadow-inner overflow-hidden group"
+                    className="relative glass-card-3d rounded-[24px] p-5 flex flex-col gap-5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-500/20 transition-all overflow-hidden group"
                   >
                     {/* Hover Glow */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
@@ -465,12 +465,12 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                       layout="position"
                       onClick={() => !isAdded && !isAdding && addPack(pack)}
                       disabled={isAdding || isAdded}
-                      className={`relative w-full py-3 mt-auto rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-300 z-10 overflow-hidden ${
+                      className={`relative w-full py-3 mt-auto rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-300 z-10 overflow-hidden border-b-[3px] active:border-b active:translate-y-[2px] ${
                         isAdded
-                          ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 cursor-default'
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default'
                           : isAdding
-                            ? 'bg-brand-500/10 border border-brand-500/20 text-brand-400'
-                            : 'bg-gradient-to-r from-brand-600 to-indigo-600 text-slate-50 shadow-lg shadow-brand-500/20 active:scale-95 border border-white/10 group-hover:shadow-brand-500/30'
+                            ? 'bg-brand-500/10 border-brand-500/30 text-brand-400'
+                            : 'bg-gradient-to-r from-brand-600 to-indigo-600 text-slate-50 border-brand-700 shadow-lg shadow-brand-500/20 group-hover:shadow-brand-500/30'
                       }`}
                     >
                       {/* Button Hover Effect */}

@@ -1,6 +1,6 @@
 import { db, getOrCreateUserXP } from '@/db';
 import type { UserXP, Badge, Level } from '@/types';
-import { format } from 'date-fns';
+import { format, startOfWeek } from 'date-fns';
 
 // --- Gamification Logic & Constants ---
 export const XP_PER_HABIT = 10;
@@ -27,10 +27,13 @@ export function calculateStats(totalXP: number): {
   numericLevel: number;
   nextXP: number;
 } {
-  // Numeric level: Every 100 XP is a level. Level 1 = 0XP. Level 2 = 100XP.
-  const numericLevel = Math.floor(totalXP / 100) + 1;
-  const xpCurrentLevel = totalXP % 100;
-  const levelProgress = xpCurrentLevel; // because 100 XP per level means % is just the remainder
+  // Numeric level: Level 1 = 0-100XP. Level 2 = 101-200XP.
+  let numericLevel = Math.floor((totalXP - 1) / 100) + 1;
+  if (totalXP === 0) numericLevel = 1;
+  
+  let levelProgress = totalXP === 0 ? 0 : totalXP % 100;
+  if (totalXP > 0 && levelProgress === 0) levelProgress = 100;
+  
   const nextXP = numericLevel * 100;
 
   // Title calculation based on totalXP thresholds
@@ -54,15 +57,7 @@ export const gamificationService = {
 
     // ── Auto-reset daily / weekly scores ────────────────────────
     const todayStr = format(new Date(), 'yyyy-MM-dd');
-    const thisMonday = format(
-      (() => {
-        const d = new Date();
-        const day = d.getDay(); // 0=Sun
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-        return new Date(d.setDate(diff));
-      })(),
-      'yyyy-MM-dd'
-    );
+    const thisMonday = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
     if (userXP.lastDailyReset !== todayStr) {
       userXP.dailyScore = 0;
@@ -181,32 +176,31 @@ export const gamificationService = {
   },
 
   async checkStreakBadges(streak: number): Promise<UserXP | null> {
-    // Use >= so badges aren't missed if streak jumps past a threshold (e.g., grace days)
-    if (streak >= 100)
-      return this.awardBadge(
-        'streak_100',
-        'Legend',
-        'Achieved a 100-day streak — extraordinary!',
-        '🏆'
-      );
-    if (streak >= 30)
-      return this.awardBadge('streak_30', 'Unstoppable', 'Hit a 30-day streak', '🚀');
-    if (streak >= 7)
-      return this.awardBadge('streak_7', 'Consistency Key', 'Hit a 7-day streak', '⭐');
-    if (streak >= 3)
-      return this.awardBadge('streak_3', 'Streak Novice', 'Hit a 3-day streak on any habit', '🔥');
-    return null;
+    let xp: UserXP | null = null;
+    if (streak >= 3) {
+      const res = await this.awardBadge('streak_3', 'Streak Novice', 'Hit a 3-day streak on any habit', '🔥');
+      if (res) xp = res;
+    }
+    if (streak >= 7) {
+      const res = await this.awardBadge('streak_7', 'Consistency Key', 'Hit a 7-day streak', '⭐');
+      if (res) xp = res;
+    }
+    if (streak >= 30) {
+      const res = await this.awardBadge('streak_30', 'Unstoppable', 'Hit a 30-day streak', '🚀');
+      if (res) xp = res;
+    }
+    if (streak >= 100) {
+      const res = await this.awardBadge('streak_100', 'Legend', 'Achieved a 100-day streak — extraordinary!', '🏆');
+      if (res) xp = res;
+    }
+    return xp;
   },
 
   async buyStreakFreeze(cost: number): Promise<boolean> {
     const userXP = await getOrCreateUserXP();
-    if (userXP.total < cost) return false;
-    // Deducting XP could lower numeric level, but we keep the title simple
-    userXP.total -= cost;
+    if ((userXP.coins || 0) < cost) return false;
+    userXP.coins = (userXP.coins || 0) - cost;
     userXP.streakFreezes = (userXP.streakFreezes || 0) + 1;
-    const { level, levelProgress } = calculateStats(userXP.total);
-    userXP.level = level;
-    userXP.levelProgress = levelProgress;
     await db.userXP.put(userXP);
     return true;
   },
@@ -221,17 +215,13 @@ export const gamificationService = {
 
   async buyTheme(themeId: string, cost: number): Promise<boolean> {
     const userXP = await getOrCreateUserXP();
-    if (userXP.total < cost) return false;
+    if ((userXP.coins || 0) < cost) return false;
     if (userXP.unlockedThemes?.includes(themeId)) return false;
 
-    userXP.total -= cost;
+    userXP.coins = (userXP.coins || 0) - cost;
     if (!userXP.unlockedThemes)
-      userXP.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
+      userXP.unlockedThemes = ['indigo'];
     userXP.unlockedThemes.push(themeId);
-
-    const { level, levelProgress } = calculateStats(userXP.total);
-    userXP.level = level;
-    userXP.levelProgress = levelProgress;
 
     await db.userXP.put(userXP);
     return true;

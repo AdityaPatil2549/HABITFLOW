@@ -254,7 +254,7 @@ export function ProfilePage() {
                     Member since{' '}
                     {habits.length > 0
                       ? format(
-                          new Date(Math.min(...habits.map(h => new Date(h.createdAt).getTime()))),
+                          new Date(Math.min(...habits.map(h => new Date(h.createdAt).getTime()), Date.now())),
                           'MMM yyyy'
                         )
                       : format(new Date(), 'MMM yyyy')}
@@ -364,11 +364,11 @@ export function ProfilePage() {
           </div>
           <button
             onClick={() => {
-              if ((userXP?.total ?? 0) < 500) {
-                toast.error('Not enough XP! You need 500 XP to buy a Streak Freeze.');
+              if ((userXP?.coins ?? 0) < 500) {
+                toast.error('Not enough Coins! You need 500 Coins to buy a Streak Freeze.');
                 return;
               }
-              toast.confirm('Buy 1 Streak Freeze for 500 XP?', () => {
+              toast.confirm('Buy 1 Streak Freeze for 500 Coins?', () => {
                 buyFreeze(500).then(success => {
                   if (success) {
                     soundService.playLevelUp();
@@ -383,7 +383,7 @@ export function ProfilePage() {
               boxShadow: '0 0 24px rgba(59,130,246,0.3)',
             }}
           >
-            Buy for 500 XP
+            Buy for 500 Coins
           </button>
         </div>
         </div>
@@ -397,7 +397,7 @@ export function ProfilePage() {
             <Palette size={18} className="text-brand-400" /> Premium Themes
           </h2>
           <span className="text-xs font-bold text-brand-400 bg-brand-500/10 px-2 py-1 rounded-md">
-            {userXP?.total ?? 0} XP
+            {userXP?.coins ?? 0} Coins
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -428,11 +428,11 @@ export function ProfilePage() {
                 ) : (
                   <button
                     onClick={() => {
-                      if ((userXP?.total ?? 0) < t.cost) {
-                        toast.error(`You need ${t.cost} XP to unlock this theme!`);
+                      if ((userXP?.coins ?? 0) < t.cost) {
+                        toast.error(`You need ${t.cost} Coins to unlock this theme!`);
                         return;
                       }
-                      toast.confirm(`Unlock ${t.label} theme for ${t.cost} XP?`, () => {
+                      toast.confirm(`Unlock ${t.label} theme for ${t.cost} Coins?`, () => {
                         useGamificationStore
                           .getState()
                           .unlockTheme(t.id, t.cost)
@@ -446,7 +446,7 @@ export function ProfilePage() {
                     }}
                     className="w-full py-2 rounded-lg bg-brand-500/10 text-brand-400 text-xs font-bold hover:bg-brand-500/20 transition-all active:scale-95 border border-brand-500/20"
                   >
-                    Unlock {t.cost} XP
+                    Unlock {t.cost} Coins
                   </button>
                 )}
               </div>
@@ -521,7 +521,7 @@ export function ProfilePage() {
 
       {/* Hidden element for Image Generation */}
       {userXP && (
-        <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}>
+        <div style={{ position: 'fixed', top: '-9999px', left: '-9999px' }} aria-hidden="true">
           <ShareCard
             ref={cardRef}
             theme={theme}

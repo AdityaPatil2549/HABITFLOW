@@ -22,17 +22,17 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
 
           <motion.div
             className="relative z-10 max-w-md w-full mx-4 glass-card rounded-2xl p-6 modal-glow"
-            initial={{ scale: 0.9, y: 20 }}
+            initial={{ scale: 0.95, y: 10 }}
             animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
+            exit={{ scale: 0.95, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                  <Keyboard size={18} className="text-indigo-400" />
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                  <Keyboard size={18} className="text-emerald-400" />
                 </div>
                 <h2 className="text-lg font-bold text-white">Keyboard Shortcuts</h2>
               </div>

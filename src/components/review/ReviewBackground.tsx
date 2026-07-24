@@ -1,5 +1,6 @@
+﻿/* eslint-disable react-hooks/purity */
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useRef, useMemo, Suspense } from 'react';
+import { useRef, useMemo, Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 
 interface ConstellationProps { score: number }
@@ -18,7 +19,7 @@ function Constellation({ score }: ConstellationProps) {
       pos[i * 3 + 2] = (Math.random() - 0.5) * 6;
     }
 
-    // Connect nearby particles — density scales with score
+    // Connect nearby particles â€” density scales with score
     const threshold = 2.5 + (score / 100) * 2.5;
     const lineArr: number[] = [];
     for (let i = 0; i < COUNT; i++) {
@@ -45,6 +46,13 @@ function Constellation({ score }: ConstellationProps) {
 
     return { pointsGeo: pGeo, linesGeo: lineArr.length ? lGeo : null };
   }, [score]);
+
+  useEffect(() => {
+    return () => {
+      pointsGeo.dispose();
+      if (linesGeo) linesGeo.dispose();
+    };
+  }, [pointsGeo, linesGeo]);
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;

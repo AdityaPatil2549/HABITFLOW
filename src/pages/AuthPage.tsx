@@ -97,10 +97,12 @@ export function AuthPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-screen flex items-center justify-center overflow-hidden px-4">
+    <div className="relative md:h-screen md:overflow-hidden w-full bg-slate-950 text-slate-50">
       <FloatingOrbs />
-      {/* ── Animated background orbs ────────────────────────────────── */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      
+      <div className="pointer-events-none absolute inset-0 overflow-hidden isolate -z-10 contain-strict">
+        <div className="bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,rgba(139,92,246,0.06)_0,rgba(99,102,241,0.02)_50%,transparent_80%)] absolute top-0 left-0 h-[320px] w-[140px] -translate-y-[87.5px] -rotate-45 rounded-full blur-3xl" />
+        <div className="bg-[radial-gradient(50%_50%_at_50%_50%,rgba(99,102,241,0.04)_0,rgba(139,92,246,0.01)_80%,transparent_100%)] absolute top-0 left-0 h-[320px] w-[60px] translate-x-[5%] -translate-y-1/2 -rotate-45 rounded-full blur-3xl" />
         {orbs.map((orb, i) => (
           <motion.div
             key={i}
@@ -128,112 +130,68 @@ export function AuthPage() {
         ))}
       </div>
 
-      {/* ── Main card ──────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 32, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="glass-card rounded-2xl p-8 sm:p-10 w-[90%] max-w-[440px] relative z-10"
-      >
-        {/* ── Logo / Branding ─────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
+      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-center mb-8"
+          transition={{ duration: 0.5 }}
+          className="mx-auto space-y-6 sm:w-[400px] bg-slate-900/50 p-8 rounded-3xl border border-white/5 backdrop-blur-xl shadow-2xl"
         >
-          <div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5"
-            style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
-          >
-            <Sparkles className="w-8 h-8 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/20">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <p className="text-2xl font-bold tracking-tight text-white">
+              Habit<span className="text-brand-400">Flow</span>
+            </p>
           </div>
-
-          <h1 className="font-h1 text-white mb-2">
-            Habit<span className="text-brand-active">Flow</span>
-          </h1>
-          <p className="text-slate-400 text-body-md leading-relaxed">
-            Build better habits. Track your progress.
-            <br />
-            Level up your life.
+          
+          <div className="flex flex-col space-y-2">
+            <h1 className="font-heading text-3xl font-bold tracking-tight text-white">
+              Sign In or Join Now
+            </h1>
+            <p className="text-slate-400 text-base leading-relaxed">
+              Login to sync your habits across devices, or continue as a guest to store data locally.
+            </p>
+          </div>
+          
+          <div className="space-y-3 pt-4">
+            <button 
+              type="button" 
+              onClick={handleGoogleSignIn}
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl text-white font-semibold text-[15px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
+                boxShadow: '0 8px 24px -4px rgba(var(--brand-500-rgb), 0.35)',
+              }}
+            >
+              <GoogleIcon className="size-5" />
+              Continue with Google
+            </button>
+            
+            <button 
+              type="button" 
+              onClick={handleGuestMode}
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl text-slate-300 font-semibold text-[15px] cursor-pointer transition-all hover:text-white bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Continue as Guest
+            </button>
+          </div>
+          
+          <p className="text-slate-500 mt-8 text-sm text-center pt-4">
+            By clicking continue, you agree to our{' '}
+            <a href="/terms" className="hover:text-brand-400 underline underline-offset-4 transition-colors">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href="/privacy" className="hover:text-brand-400 underline underline-offset-4 transition-colors">
+              Privacy Policy
+            </a>
+            .
           </p>
         </motion.div>
-
-        {/* ── Google sign-in button ───────────────────────────────── */}
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.5 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={handleGoogleSignIn}
-          className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl text-white font-semibold text-[15px] cursor-pointer transition-shadow hover:shadow-lg"
-          style={{
-            background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
-            boxShadow: '0 8px 24px -4px rgba(var(--brand-500-rgb), 0.35)',
-          }}
-        >
-          <GoogleIcon />
-          Continue with Google
-        </motion.button>
-
-        {/* ── Features list ───────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="mt-8 space-y-3"
-        >
-          {features.map((feat, i) => (
-            <motion.div
-              key={feat.label}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.55 + i * 0.1, duration: 0.4 }}
-              className="flex items-center gap-3 text-slate-400 text-sm"
-            >
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5">
-                <feat.icon className="w-4 h-4 text-brand-active" />
-              </div>
-              {feat.label}
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* ── Divider ─────────────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.4 }}
-          className="flex items-center gap-3 my-6"
-        >
-          <div className="flex-1 h-px bg-white/10" />
-          <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">or</span>
-          <div className="flex-1 h-px bg-white/10" />
-        </motion.div>
-
-        {/* ── Guest mode link ─────────────────────────────────────── */}
-        <motion.button
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.4 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={handleGuestMode}
-          className="w-full py-3 rounded-xl text-slate-400 hover:text-white text-sm font-medium cursor-pointer transition-colors bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10"
-        >
-          Continue as Guest
-        </motion.button>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.4 }}
-          className="text-center text-slate-500 text-xs mt-4"
-        >
-          Guest data stays on this device only
-        </motion.p>
-      </motion.div>
+      </div>
     </div>
   );
 }

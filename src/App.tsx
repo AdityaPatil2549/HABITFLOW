@@ -11,6 +11,7 @@ import { OnboardingWizard, useOnboarding } from './components/onboarding/Onboard
 import { ToastProvider } from './components/common/Toast';
 import { getOrCreateSettings } from './db';
 import { gamificationService } from './services/gamificationService';
+import { ScrollToTop } from './components/ui/ScrollToTop';
 import { useModalStore } from './store/modalStore';
 import { QuickAddModalFixed } from './components/habits/QuickAddModalFixed';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -19,6 +20,9 @@ import { syncService } from './services/syncService';
 import { migrateLocalDataToCloud } from './services/migrationService';
 import { pushNotificationService } from './services/pushNotificationService';
 import { startHealthSyncPolling } from './services/healthSyncService';
+import { analyticsService } from './services/analyticsService';
+import { remoteConfigService } from './services/remoteConfigService';
+import { performanceService } from './services/performanceService';
 import { useHabitStore } from './store/habitStore';
 import { useTaskStore } from './store/taskStore';
 import { useMoodStore } from './store/moodStore';
@@ -40,14 +44,17 @@ const WeeklyReviewPage = lazy(() =>
 const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })));
 const ShopPage = lazy(() => import('./pages/ShopPage').then(m => ({ default: m.ShopPage })));
 const SquadPage = lazy(() => import('./pages/SquadPage').then(m => ({ default: m.SquadPage })));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
 
 function App() {
   const { show: showOnboarding, complete: completeOnboarding } = useOnboarding();
   const { initialize: initAuth, user, isGuest } = useAuthStore();
 
-  // Initialize Supabase auth on app boot
+  // Initialize Firebase auth and Remote Config on app boot
   useEffect(() => {
     initAuth();
+    remoteConfigService.init().catch(console.warn);
   }, [initAuth]);
 
   // Health sync polling — only starts if the user has opted in via Settings
@@ -63,15 +70,16 @@ function App() {
   useEffect(() => {
     if (user && !isGuest) {
       // Migrate local data to cloud (idempotent — runs once per user)
-      migrateLocalDataToCloud(user.id).catch(console.error);
+      migrateLocalDataToCloud(user.uid).catch(console.error);
       // Start auto-sync
       syncService.startAutoSync();
+      // Initialize Web Push Notifications (FCM)
+      pushNotificationService.initialize();
+      // Track sign-in event
+      analyticsService.trackSignIn('google');
     } else {
       syncService.stopAutoSync();
     }
-
-    // Initialize Web Push Notifications
-    pushNotificationService.initialize();
 
     return () => syncService.stopAutoSync();
   }, [user, isGuest]);
@@ -79,14 +87,7 @@ function App() {
   useEffect(() => {
     getOrCreateSettings().then(settings => {
       const root = document.documentElement;
-      if (settings.darkMode === 'light') {
-        root.classList.add('light');
-      } else if (settings.darkMode === 'system') {
-        const preferLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-        root.classList.toggle('light', preferLight);
-      } else {
-        root.classList.remove('light');
-      }
+      root.classList.remove('light');
       if (settings.theme) {
         if (settings.theme === 'indigo') root.removeAttribute('data-theme');
         else root.setAttribute('data-theme', settings.theme);
@@ -112,16 +113,17 @@ function App() {
   }, []);
 
   async function handleOnboardingComplete() {
-    await gamificationService.addXP(10);
+    await gamificationService.addXP(100);
     completeOnboarding();
   }
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <ErrorBoundary>
         <Suspense
           fallback={
-            <div className="min-h-screen flex items-center justify-center text-[var(--text-muted)]">
+            <div className="min-h-[100dvh] flex items-center justify-center text-[var(--text-muted)]">
               Loading...
             </div>
           }
@@ -139,6 +141,8 @@ function App() {
               <Route path="review" element={<WeeklyReviewPage />} />
               <Route path="shop" element={<ShopPage />} />
               <Route path="squad" element={<SquadPage />} />
+              <Route path="privacy" element={<PrivacyPage />} />
+              <Route path="terms" element={<TermsPage />} />
             </Route>
           </Routes>
         </Suspense>

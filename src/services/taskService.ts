@@ -75,13 +75,12 @@ export const taskService = {
       }
       if (nextDueDate) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id, parentId, order, createdAt, ...rest } = task;
+        const { id, parentId, order, createdAt, updated_at, completedAt, ...rest } = task;
         await taskService.create({
           ...rest,
           parentId: undefined,
           dueDate: nextDueDate,
           completed: false,
-          completedAt: undefined,
         });
       }
     }

@@ -1,5 +1,6 @@
+﻿/* eslint-disable react-hooks/purity */
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useRef, useMemo, Suspense } from 'react';
+import { useRef, useMemo, Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 
 // Palette matches gamification vibes: amber, orange, purple, pink
@@ -40,6 +41,12 @@ function FloatingParticles() {
     return g;
   }, []);
 
+  useEffect(() => {
+    return () => {
+      geo.dispose();
+    };
+  }, [geo]);
+
   useFrame(({ clock }) => {
     if (!pointsRef.current) return;
     const t   = clock.elapsedTime;
@@ -79,6 +86,7 @@ export function GamificationBackground() {
   return (
     <div className="fixed inset-0 -z-10 pointer-events-none">
       <Canvas
+        style={{ pointerEvents: 'none' }}
         camera={{ position: [0, 0, 15], fov: 55 }}
         gl={{ alpha: true, antialias: false, powerPreference: 'low-power' }}
         dpr={[1, 1.5]}

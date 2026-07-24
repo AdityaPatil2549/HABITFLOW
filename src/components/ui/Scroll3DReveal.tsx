@@ -27,8 +27,8 @@ export function Scroll3DReveal({ children, delay = 0, className = '' }: Props) {
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, rotateX: 20, y: 40, scale: 0.98 }}
-      whileInView={{ opacity: 1, rotateX: 0, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 40, scale: 0.98 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '200px' }}
       transition={{
         duration: 0.4,
@@ -37,7 +37,6 @@ export function Scroll3DReveal({ children, delay = 0, className = '' }: Props) {
         stiffness: 250,
         damping: 25,
       }}
-      style={{ transformPerspective: 1000 }}
     >
       {children}
     </motion.div>

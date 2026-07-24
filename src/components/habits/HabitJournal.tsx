@@ -64,12 +64,11 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
   }, [filteredEntries]);
 
-  if (!isOpen) return null;
-
-  return (
+  const modalContent = (
     <AnimatePresence>
+      {isOpen && (
       <motion.div
-        className="fixed inset-0 z-[9997] flex items-center justify-center"
+        className="fixed inset-0 z-[9999] flex items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -78,7 +77,7 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
         <motion.div
-          className="relative z-10 max-w-lg w-full mx-4 max-h-[80vh] flex flex-col glass-card rounded-2xl dark-overlay"
+          className="relative z-10 w-[95vw] max-w-[500px] max-h-[80vh] flex flex-col glass-card rounded-2xl dark-overlay"
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
@@ -92,13 +91,13 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 <BookOpen size={18} className="text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">Habit Journal</h2>
+                <h2 className="text-lg font-bold dark:text-white text-slate-900">Habit Journal</h2>
                 <p className="text-xs text-slate-500">{filteredEntries.length} entries</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+              className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
             >
               <X size={16} />
             </button>
@@ -111,7 +110,7 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               <select
                 value={filterHabit}
                 onChange={e => setFilterHabit(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white w-full outline-none focus:border-indigo-500/50"
+                className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white w-full outline-none focus:border-indigo-500/50"
               >
                 <option value="all">All Habits</option>
                 {habits.map(h => (
@@ -145,32 +144,29 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     {dayEntries.map((entry, i) => (
                       <motion.div
                         key={entry.id}
-                        className="flex gap-3 p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
+                        className="flex gap-3 p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-slate-900/10 dark:border-white/5"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.05 }}
                       >
                         <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm"
-                          style={{ backgroundColor: `${entry.habitColor}20` }}
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{
+                            background: `color-mix(in srgb, ${entry.habitColor} 20%, transparent)`,
+                          }}
                         >
-                          <IconRenderer name={entry.habitIcon} size={16} />
+                          <IconRenderer name={entry.habitIcon} className="text-slate-900 dark:text-white" size={18} />
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-sm font-semibold text-white">
-                              {entry.habitName}
-                            </span>
-                            {entry.mood && (
-                              <span className="text-xs">
-                                {['😢', '😕', '😐', '🙂', '😊'][entry.mood - 1]}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-slate-400 leading-relaxed">{entry.note}</p>
-                          <p className="text-xs text-slate-600 mt-1">
-                            {format(parseISO(entry.timeStamp), 'h:mm a')}
+                        <div className="flex-1 min-w-0 py-0.5">
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate mb-1">
+                            {entry.habitName}
+                          </h4>
+                          <p className="text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                            {entry.note}
                           </p>
+                        </div>
+                        <div className="text-xs text-slate-500 font-medium pt-1">
+                          {entry.updated_at ? format(new Date(entry.updated_at), 'h:mm a') : ''}
                         </div>
                       </motion.div>
                     ))}
@@ -181,6 +177,9 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           </div>
         </motion.div>
       </motion.div>
+      )}
     </AnimatePresence>
   );
+
+  return modalContent;
 }

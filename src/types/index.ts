@@ -56,7 +56,6 @@ export interface HabitLog {
   date: string; // YYYY-MM-DD
   value: number; // 1 for boolean, actual count/duration/rating
   note?: string;
-  mood?: MoodScore;
   isFrozen?: boolean;
   timeStamp: string; // ISO
   createdAt: string; // ISO
@@ -195,7 +194,7 @@ export interface ShopItem {
   name: string;
   description: string;
   icon: string;
-  category: 'theme' | 'avatar' | 'icon_pack' | 'badge_frame';
+  category: 'theme' | 'avatar' | 'icon_pack' | 'badge_frame' | 'consumable';
   price: number;
   preview?: string; // CSS class or image URL
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
@@ -240,6 +239,7 @@ export interface Squad {
 // ─── NLP Parsed Habit ────────────────────────────────────────
 export interface ParsedHabitIntent {
   name: string;
+  icon?: string;
   frequency: HabitFrequency;
   frequencyDays?: number[];
   frequencyInterval?: number;

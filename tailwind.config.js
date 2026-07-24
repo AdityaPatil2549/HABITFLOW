@@ -8,7 +8,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Clash Display', 'sans-serif'],
+        sans: ['Satoshi', 'system-ui', 'sans-serif'],
+      },
+      transitionTimingFunction: {
+        'ease-out': 'cubic-bezier(0.23, 1, 0.32, 1)',
+        'ease-in-out': 'cubic-bezier(0.77, 0, 0.175, 1)',
+        'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
       colors: {
         brand: {

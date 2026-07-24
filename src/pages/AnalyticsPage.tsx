@@ -1,16 +1,19 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
 import { useMoodStore } from '../store/moodStore';
+import { useGamificationStore } from '../store/gamificationStore';
+import { youtubeService } from '../services/youtubeService';
 import { db } from '../db';
 import { cn } from '../lib/utils';
 import { motion } from 'framer-motion';
 import { correlationService } from '../services/correlationService';
 import { ExportReportButton } from '../components/ui/ExportReportButton';
-import type { CorrelationResult } from '../types';
+import type { CorrelationResult, AIInsight } from '../types';
+import { aiCoachService } from '../services/aiCoachService';
+import { toPng } from 'html-to-image';
 import {
   ResponsiveContainer,
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -45,7 +48,7 @@ import { TiltCard } from '../components/ui/TiltCard';
 import { Skeleton } from '../components/ui/Skeleton';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap'] as const;
+const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap', 'AI Coach'] as const;
 type TabType = (typeof TABS)[number];
 
 const TOOLTIP_STYLE = {
@@ -323,6 +326,232 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
   );
 }
 
+// ─── 365-Day Mood Heatmap ────────────────────────────────────
+function MoodYearlyHeatmap({ moods }: { moods: any[] }) {
+  const [data, setData] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const MONTHS = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+
+  useEffect(() => {
+    if (!moods.length) {
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+    (async () => {
+      setLoading(true);
+      const today = new Date();
+      const yearAgo = subYears(today, 1);
+      const yearAgoStr = format(yearAgo, 'yyyy-MM-dd');
+      const todayStr = format(today, 'yyyy-MM-dd');
+      const days = eachDayOfInterval({ start: yearAgo, end: today });
+
+      const allMoods = await db.moods
+        .where('date')
+        .between(yearAgoStr, todayStr, true, true)
+        .toArray();
+
+      const map: Record<string, number> = {};
+      for (const m of allMoods) {
+        map[m.date] = m.score;
+      }
+      setData(map);
+      setLoading(false);
+    })();
+  }, [moods]);
+
+  function colorFor(val: number) {
+    if (!val || val === 0) return 'var(--heatmap-empty, rgba(255,255,255,0.03))';
+    if (val === 1) return '#ef4444'; // Red for awful
+    if (val === 2) return '#f97316'; // Orange for bad
+    if (val === 3) return '#eab308'; // Yellow for okay
+    if (val === 4) return '#84cc16'; // Light green for good
+    if (val === 5) return '#22c55e'; // Green for awesome
+    return 'var(--heatmap-empty)';
+  }
+
+  const today = new Date();
+  const yearAgo = subYears(today, 1);
+  const days = eachDayOfInterval({ start: yearAgo, end: today });
+
+  // Build weeks grid
+  const weeks: { date: string; value: number; dow: number }[][] = [];
+  let week: { date: string; value: number; dow: number }[] = [];
+  days.forEach((d, i) => {
+    const ds = format(d, 'yyyy-MM-dd');
+    week.push({ date: ds, value: data[ds] ?? 0, dow: d.getDay() });
+    if (d.getDay() === 6 || i === days.length - 1) {
+      weeks.push(week);
+      week = [];
+    }
+  });
+
+  const monthLabels: { label: string; col: number }[] = [];
+  weeks.forEach((wk, wi) => {
+    const firstDay = wk[0];
+    if (firstDay) {
+      const d = new Date(firstDay.date + 'T00:00:00');
+      if (wi === 0 || d.getDate() <= 7) {
+        monthLabels.push({ label: MONTHS[d.getMonth()], col: wi });
+      }
+    }
+  });
+
+  if (loading)
+    return (
+      <div className="h-40 w-full rounded-2xl overflow-hidden">
+        <Skeleton className="w-full h-full" />
+      </div>
+    );
+
+  const CELL = 13;
+  const GAP = 2;
+  const STEP = CELL + GAP;
+
+  return (
+    <div className="space-y-4">
+      <div className="overflow-x-auto pb-2 -mx-1">
+        <svg width={weeks.length * STEP + 30} height={7 * STEP + 24} className="block">
+          {monthLabels.map(({ label, col }) => (
+            <text
+              key={`${label}-${col}`}
+              x={col * STEP + 30}
+              y={10}
+              fill="#475569"
+              fontSize={10}
+              fontFamily="Inter, sans-serif"
+            >
+              {label}
+            </text>
+          ))}
+          {['M', 'W', 'F'].map((l, i) => (
+            <text
+              key={l}
+              x={4}
+              y={12 + (i * 2 + 1) * STEP}
+              fill="#475569"
+              fontSize={9}
+              fontFamily="Inter, sans-serif"
+              alignmentBaseline="middle"
+            >
+              {l}
+            </text>
+          ))}
+          {weeks.map((wk, wi) =>
+            wk.map(day => (
+              <rect
+                key={day.date}
+                x={wi * STEP + 30}
+                y={12 + day.dow * STEP}
+                width={CELL}
+                height={CELL}
+                rx={3}
+                fill={colorFor(day.value)}
+                style={{ transition: 'fill 0.3s' }}
+              >
+                <title>
+                  {day.date}: Mood {day.value > 0 ? `${day.value}/5` : 'Unknown'}
+                </title>
+              </rect>
+            ))
+          )}
+        </svg>
+      </div>
+      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <span>Awful</span>
+        {[1, 2, 3, 4, 5].map(v => (
+          <div key={v} className="w-3 h-3 rounded-sm" style={{ background: colorFor(v) }} />
+        ))}
+        <span>Awesome</span>
+        <span className="ml-auto text-slate-600">Showing {days.length} days</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── AI Coach Tab ─────────────────────────────────────────────
+function AICoachTab() {
+  const [insights, setInsights] = useState<AIInsight[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      aiCoachService.getCoachInsights(),
+      youtubeService.getMotivationalVideos('default')
+    ]).then(([insightsData, videosData]) => {
+      setInsights(insightsData);
+      setVideos(videosData);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <Skeleton className="h-40 w-full" />;
+
+  if (insights.length === 0 && videos.length === 0) return <EmptyChart />;
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          ✨ AI Insights
+        </h3>
+        {insights.length === 0 ? (
+          <p className="text-xs text-slate-500">No AI insights available right now.</p>
+        ) : (
+          insights.map(insight => (
+            <TiltCard key={insight.id} className="p-4 flex gap-4">
+              <div className="text-3xl">{insight.icon}</div>
+              <div>
+                <h4 className="font-bold text-slate-900 dark:text-white">{insight.title}</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{insight.body}</p>
+                <span className="text-xs text-slate-400 mt-2 block">
+                  {format(new Date(insight.created_at), 'MMM d, yyyy h:mm a')}
+                </span>
+              </div>
+            </TiltCard>
+          ))
+        )}
+      </div>
+
+      {videos.length > 0 && (
+        <div className="space-y-4 pt-4 border-t border-white/10">
+          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            📺 Recommended for You
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {videos.map(video => (
+              <a 
+                key={video.videoId} 
+                href={youtubeService.getWatchUrl(video.videoId)} 
+                target="_blank" 
+                rel="noreferrer"
+                className="block group"
+              >
+                <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 relative">
+                  <img src={video.thumbnailUrl} alt={video.title} className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white pl-1 shadow-lg">
+                      ▶
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h4 className="text-xs font-bold text-white line-clamp-2 leading-snug">{video.title}</h4>
+                    <p className="text-[10px] text-slate-400 mt-1">{video.channelTitle}</p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Per-Habit Heatmap (26 weeks) ─────────────────────────────
 function Heatmap({ logs }: { logs: Record<string, number> }) {
   const weeks = 26;
@@ -416,86 +645,73 @@ function WeeklyRadar({ habits }: { habits: any[] }) {
     })();
   }, [habits]);
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <RadarChart data={data}>
-        <PolarGrid stroke="rgba(255,255,255,0.08)" />
-        <PolarAngleAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 12 }} />
-        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#475569', fontSize: 10 }} />
-        <Radar
-          name="Completion %"
-          dataKey="completion"
-          stroke="#818cf8"
-          fill="rgba(129,140,248,0.2)"
-          strokeWidth={2}
-        />
-      </RadarChart>
-    </ResponsiveContainer>
+    <div style={{ width: '100%', height: 260, minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart data={data}>
+          <PolarGrid stroke="rgba(255,255,255,0.08)" />
+          <PolarAngleAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 12 }} />
+          <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#475569', fontSize: 10 }} />
+          <Radar
+            name="Completion %"
+            dataKey="completion"
+            stroke="#818cf8"
+            fill="rgba(129,140,248,0.2)"
+            strokeWidth={2}
+          />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
 // ─── 30-day Area Trend ─────────────────────────────────────────
-function TrendLine({ habits }: { habits: any[] }) {
-  const [data, setData] = useState<any[]>([]);
-  useEffect(() => {
-    (async () => {
-      const days = Array.from({ length: 30 }, (_, i) =>
-        format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
-      );
-      const startDateStr = days[0];
-      const endDateStr = days[days.length - 1];
+function TrendLine({ habits, logsByDate }: { habits: any[]; logsByDate: Map<string, any[]> }) {
+  const data = useMemo(() => {
+    const days = Array.from({ length: 30 }, (_, i) =>
+      format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
+    );
 
-      const allLogs = await db.habitLogs
-        .where('date')
-        .between(startDateStr, endDateStr, true, true)
-        .toArray();
-
-      const logsByDate = new Map<string, typeof allLogs>();
-      for (const log of allLogs) {
-        if (!logsByDate.has(log.date)) logsByDate.set(log.date, []);
-        logsByDate.get(log.date)!.push(log);
-      }
-
-      const rows = days.map(date => {
-        const logs = logsByDate.get(date) ?? [];
-        const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
-        return {
-          date: date.slice(5),
-          completion: scheduled.length
-            ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100)
-            : 0,
-        };
-      });
-      setData(rows);
-    })();
-  }, [habits]);
+    return days.map(date => {
+      const logs = logsByDate.get(date) ?? [];
+      const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
+      return {
+        date: date.slice(5),
+        completion: scheduled.length
+          ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100)
+          : 0,
+      };
+    });
+  }, [habits, logsByDate]);
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <AreaChart data={data}>
-        <defs>
-          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.6} />
-            <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-        <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
-        <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
-        <Tooltip
-          contentStyle={TOOLTIP_STYLE}
-          itemStyle={TOOLTIP_ITEM_STYLE}
-          labelStyle={TOOLTIP_LABEL_STYLE}
-          formatter={(v: any) => [`${v}%`, 'Completion']}
-        />
-        <Area
-          type="monotone"
-          dataKey="completion"
-          stroke="#818cf8"
-          strokeWidth={2.5}
-          fill="url(#areaGrad)"
-          dot={false}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div style={{ width: '100%', height: 220, minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#818cf8" stopOpacity={0.6} />
+              <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+          <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
+          <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+            formatter={(v: any) => [`${v}%`, 'Completion']}
+          />
+          <Area
+            type="monotone"
+            dataKey="completion"
+            stroke="#818cf8"
+            strokeWidth={2.5}
+            fill="url(#areaGrad)"
+            dot={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -515,34 +731,36 @@ function MoodTrend({ moods }: { moods: any[] }) {
   }, [moods]);
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <AreaChart data={data}>
-        <defs>
-          <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#10b981" stopOpacity={0.6} />
-            <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-        <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
-        <YAxis domain={[1, 5]} tick={{ fill: '#64748b', fontSize: 11 }} />
-        <Tooltip
-          contentStyle={TOOLTIP_STYLE}
-          itemStyle={TOOLTIP_ITEM_STYLE}
-          labelStyle={TOOLTIP_LABEL_STYLE}
-          formatter={(v: any) => [`${v}/5`, 'Mood Score']}
-        />
-        <Area
-          type="monotone"
-          dataKey="mood"
-          stroke="#10b981"
-          strokeWidth={2.5}
-          fill="url(#moodGrad)"
-          dot={{ r: 4, fill: '#10b981' }}
-          connectNulls
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div style={{ width: '100%', height: 220, minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.6} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+          <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
+          <YAxis domain={[1, 5]} tick={{ fill: '#64748b', fontSize: 11 }} />
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+            formatter={(v: any) => [`${v}/5`, 'Mood Score']}
+          />
+          <Area
+            type="monotone"
+            dataKey="mood"
+            stroke="#10b981"
+            strokeWidth={2.5}
+            fill="url(#moodGrad)"
+            dot={{ r: 4, fill: '#10b981' }}
+            connectNulls
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -569,33 +787,35 @@ function TaskThroughput({ tasks }: { tasks: any[] }) {
       .map(([week, v]) => ({ week, ...v }));
   }, [tasks]);
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={data} barGap={4}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-        <XAxis dataKey="week" tick={{ fill: '#64748b', fontSize: 11 }} />
-        <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
-        <Tooltip
-          contentStyle={TOOLTIP_STYLE}
-          itemStyle={TOOLTIP_ITEM_STYLE}
-          labelStyle={TOOLTIP_LABEL_STYLE}
-        />
-        <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
-        <Bar
-          dataKey="created"
-          name="Created"
-          fill="rgba(129,140,248,0.5)"
-          radius={[4, 4, 0, 0]}
-          maxBarSize={48}
-        />
-        <Bar
-          dataKey="completed"
-          name="Completed"
-          fill="#10b981"
-          radius={[4, 4, 0, 0]}
-          maxBarSize={48}
-        />
-      </BarChart>
-    </ResponsiveContainer>
+    <div style={{ width: '100%', height: 220, minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} barGap={4}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+          <XAxis dataKey="week" tick={{ fill: '#64748b', fontSize: 11 }} />
+          <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+          />
+          <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
+          <Bar
+            dataKey="created"
+            name="Created"
+            fill="rgba(129,140,248,0.5)"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={48}
+          />
+          <Bar
+            dataKey="completed"
+            name="Completed"
+            fill="#10b981"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={48}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -645,7 +865,7 @@ function BestWorstDay({ habits }: { habits: any[] }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl p-4 text-center border border-emerald-500/20 bg-emerald-500/5">
           <div className="text-2xl mb-1">🏆</div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
             Best Day
           </p>
           <p className="font-bold text-slate-900 dark:text-white">{best.day}</p>
@@ -653,121 +873,108 @@ function BestWorstDay({ habits }: { habits: any[] }) {
         </div>
         <div className="rounded-xl p-4 text-center border border-red-500/20 bg-red-500/5">
           <div className="text-2xl mb-1">⚠️</div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mb-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
             Weakest Day
           </p>
           <p className="font-bold text-slate-900 dark:text-white">{worst.day}</p>
           <p className="text-orange-400 text-sm font-bold">{worst.pct}%</p>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={180}>
-        <BarChart data={dayData}>
-          <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11 }} />
-          <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            itemStyle={TOOLTIP_ITEM_STYLE}
-            labelStyle={TOOLTIP_LABEL_STYLE}
-            formatter={(v: any) => [`${v}%`, 'Completion']}
-          />
-          <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={48}>
-            {dayData.map((d, i) => (
-              <Cell
-                key={i}
-                fill={
-                  d.day === best.day
-                    ? '#10b981'
-                    : d.day === worst.day
-                      ? '#ef4444'
-                      : 'rgba(129,140,248,0.6)'
-                }
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <div style={{ width: '100%', height: 180, minWidth: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={dayData}>
+            <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 11 }} />
+            <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              itemStyle={TOOLTIP_ITEM_STYLE}
+              labelStyle={TOOLTIP_LABEL_STYLE}
+              formatter={(v: any) => [`${v}%`, 'Completion']}
+            />
+            <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={48}>
+              {dayData.map((d, i) => (
+                <Cell
+                  key={i}
+                  fill={
+                    d.day === best.day
+                      ? '#10b981'
+                      : d.day === worst.day
+                        ? '#ef4444'
+                        : 'rgba(129,140,248,0.6)'
+                  }
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
 
 // ─── Habit-Mood Correlation ────────────────────────────────────
-function HabitMoodCorrelation({ habits, moods }: { habits: any[]; moods: any[] }) {
-  const [data, setData] = useState<any[]>([]);
-  useEffect(() => {
-    (async () => {
-      const days = Array.from({ length: 30 }, (_, i) =>
-        format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
-      );
-      const startDateStr = days[0];
-      const endDateStr = days[days.length - 1];
+function HabitMoodCorrelation({ habits, moods, logsByDate }: { habits: any[]; moods: any[]; logsByDate: Map<string, any[]> }) {
+  const data = useMemo(() => {
+    const days = Array.from({ length: 30 }, (_, i) =>
+      format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
+    );
 
-      const allLogs = await db.habitLogs
-        .where('date')
-        .between(startDateStr, endDateStr, true, true)
-        .toArray();
-
-      const logsByDate = new Map<string, typeof allLogs>();
-      for (const log of allLogs) {
-        if (!logsByDate.has(log.date)) logsByDate.set(log.date, []);
-        logsByDate.get(log.date)!.push(log);
-      }
-
-      const rows = days.map(date => {
-        const logs = logsByDate.get(date) ?? [];
-        const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
-        const pct = scheduled.length
-          ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100)
-          : 0;
-        const moodLog = moods.find(m => m.date === date);
-        return { date: date.slice(5), completion: pct, mood: moodLog ? moodLog.score : null };
-      });
-      setData(rows);
-    })();
-  }, [habits, moods]);
+    return days.map(date => {
+      const logs = logsByDate.get(date) ?? [];
+      const scheduled = habits.filter(h => habitService.isScheduledForDate(h, date));
+      const pct = scheduled.length
+        ? Math.round((logs.filter(l => l.value >= 1).length / scheduled.length) * 100)
+        : 0;
+      const moodLog = moods.find(m => m.date === date);
+      return { date: date.slice(5), completion: pct, mood: moodLog ? moodLog.score : null };
+    });
+  }, [habits, moods, logsByDate]);
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <ComposedChart data={data}>
-        <defs>
-          <linearGradient id="compGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.6} />
-            <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-        <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
-        <YAxis yAxisId="left" domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
-        <YAxis
-          yAxisId="right"
-          orientation="right"
-          domain={[1, 5]}
-          tick={{ fill: '#64748b', fontSize: 11 }}
-        />
-        <Tooltip
-          contentStyle={TOOLTIP_STYLE}
-          itemStyle={TOOLTIP_ITEM_STYLE}
-          labelStyle={TOOLTIP_LABEL_STYLE}
-        />
-        <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
-        <Bar
-          yAxisId="left"
-          dataKey="completion"
-          name="Completion %"
-          fill="rgba(129,140,248,0.5)"
-          radius={[4, 4, 0, 0]}
-          maxBarSize={48}
-        />
-        <Line
-          yAxisId="right"
-          type="monotone"
-          dataKey="mood"
-          name="Mood (1–5)"
-          stroke="#10b981"
-          strokeWidth={2.5}
-          dot={{ r: 3, fill: '#10b981' }}
-          connectNulls
-        />
-      </ComposedChart>
-    </ResponsiveContainer>
+    <div style={{ width: '100%', height: 260, minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={data}>
+          <defs>
+            <linearGradient id="compGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#818cf8" stopOpacity={0.6} />
+              <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+          <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} interval={4} />
+          <YAxis yAxisId="left" domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} unit="%" />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            domain={[1, 5]}
+            tick={{ fill: '#64748b', fontSize: 11 }}
+          />
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
+            labelStyle={TOOLTIP_LABEL_STYLE}
+          />
+          <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
+          <Bar
+            yAxisId="left"
+            dataKey="completion"
+            name="Completion %"
+            fill="rgba(129,140,248,0.5)"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={48}
+          />
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="mood"
+            name="Mood (1–5)"
+            stroke="#10b981"
+            strokeWidth={2.5}
+            dot={{ r: 3, fill: '#10b981' }}
+            connectNulls
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -777,20 +984,18 @@ function StatCard({
   value,
   sub,
   colorClass = 'kpi-card-indigo',
-  iconColor = '#818cf8',
 }: {
   icon: string;
   label: string;
   value: string | number;
   sub?: string;
   colorClass?: string;
-  iconColor?: string;
 }) {
   return (
     <TiltCard className="h-full w-full block">
       <motion.div
         className={cn(
-          'glass-card rounded-2xl p-6 text-center relative overflow-hidden group h-full',
+          'glass-card rounded-2xl p-6 text-center relative overflow-hidden group h-full hover:shadow-lg transition-all',
           colorClass
         )}
       >
@@ -827,7 +1032,7 @@ function ChartCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="glass-card-3d rounded-2xl p-6 relative overflow-hidden group"
+      className="glass-card-3d rounded-2xl p-6 relative overflow-hidden group hover:shadow-lg transition-all"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500" />
       <div className="mb-5 relative z-10">
@@ -856,8 +1061,33 @@ function EmptyChart() {
 }
 
 // ─── AI Insight Synthesizer ──────────────────────────────────────
-function DynamicInsights({ habits }: { habits: any[] }) {
-  if (habits.length === 0) {
+function DynamicInsights() {
+  const [insights, setInsights] = useState<AIInsight[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    aiCoachService.getCoachInsights().then(res => {
+      setInsights(res);
+      setLoading(false);
+    }).catch(console.error);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="glass-card-3d rounded-2xl p-6 relative overflow-hidden h-full flex flex-col justify-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 to-transparent opacity-50" />
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-brand-500/20 flex items-center justify-center text-2xl animate-pulse" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (insights.length === 0) {
     return (
       <div className="glass-card-3d rounded-2xl p-6 relative overflow-hidden h-full flex flex-col justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 to-transparent opacity-50" />
@@ -867,40 +1097,15 @@ function DynamicInsights({ habits }: { habits: any[] }) {
           </div>
           <div>
             <h4 className="text-sm font-black text-brand-400 uppercase tracking-widest mb-1">
-              AI Synthesis
+              Smart Insights
             </h4>
-            <p className="text-sm text-slate-300 font-medium leading-relaxed">
+            <p className="text-sm dark:text-slate-300 text-slate-600 font-medium leading-relaxed">
               Every day is a new opportunity. Start building your habits to generate insights!
             </p>
           </div>
         </div>
       </div>
     );
-  }
-
-  const insights: string[] = [];
-
-  const bestCurrent = [...habits].sort((a, b) => b.streak.current - a.streak.current)[0];
-  if (bestCurrent && bestCurrent.streak.current >= 3) {
-    insights.push(`You're on a powerful ${bestCurrent.streak.current}-day streak for "${bestCurrent.name}".`);
-  }
-
-  const avgComp = Math.round(
-    (habits.reduce((s, h) => s + h.completionRate30Days, 0) / habits.length) * 100
-  );
-  if (avgComp > 80) {
-    insights.push(`Your overall consistency is an impressive ${avgComp}%.`);
-  } else if (avgComp > 40) {
-    insights.push(`You maintain a steady ${avgComp}% completion rate.`);
-  }
-
-  const catCounts: Record<string, number> = {};
-  habits.forEach(h => {
-    catCounts[h.category] = (catCounts[h.category] || 0) + h.completionRate30Days;
-  });
-  const bestCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
-  if (bestCat && bestCat[1] > 0) {
-    insights.push(`You've been highly focused on your ${bestCat[0]} routines.`);
   }
 
   return (
@@ -915,21 +1120,27 @@ function DynamicInsights({ habits }: { habits: any[] }) {
             <div className="absolute inset-0 rounded-full border border-brand-500/50 animate-[spin_3s_linear_infinite]" />
           </div>
           <h4 className="text-xs font-black text-brand-400 uppercase tracking-[0.2em]">
-            HabitFlow AI Analysis
+            HabitFlow Smart Analysis
           </h4>
         </div>
         
-        <div className="space-y-3">
-          {insights.map((text, i) => (
-            <motion.p
-              key={i}
+        <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+          {insights.map((insight, i) => (
+            <motion.div
+              key={insight.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.4 + 0.2, duration: 0.6, ease: 'easeOut' }}
-              className="text-[15px] text-slate-700 dark:text-slate-200 font-medium leading-relaxed"
+              transition={{ delay: i * 0.2, duration: 0.5, ease: 'easeOut' }}
+              className="flex gap-3 items-start bg-white/5 dark:bg-black/10 rounded-xl p-3 border border-slate-200 dark:border-white/5 shadow-sm"
             >
-              {text}
-            </motion.p>
+              <span className="text-xl mt-0.5">{insight.icon}</span>
+              <div>
+                <h5 className="text-sm font-bold text-slate-800 dark:text-slate-100">{insight.title}</h5>
+                <p className="text-[13px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                  {insight.body}
+                </p>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -946,6 +1157,24 @@ export function AnalyticsPage() {
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const [heatmapData, setHeatmapData] = useState<Record<string, number>>({});
   const [perHabitDays, setPerHabitDays] = useState<7 | 30 | 90>(30);
+  const [logs30Days, setLogs30Days] = useState<Map<string, any[]>>(new Map());
+
+  useEffect(() => {
+    (async () => {
+      const start = format(subDays(new Date(), 29), 'yyyy-MM-dd');
+      const end = format(new Date(), 'yyyy-MM-dd');
+      const allLogs = await db.habitLogs
+        .where('date')
+        .between(start, end, true, true)
+        .toArray();
+      const logsByDate = new Map<string, typeof allLogs>();
+      for (const log of allLogs) {
+        if (!logsByDate.has(log.date)) logsByDate.set(log.date, []);
+        logsByDate.get(log.date)!.push(log);
+      }
+      setLogs30Days(logsByDate);
+    })();
+  }, [habits]);
 
   useEffect(() => {
     loadHabits();
@@ -1008,7 +1237,7 @@ export function AnalyticsPage() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
             Your Progress Report
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 dark:text-slate-400 text-sm mt-1">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             Track, analyze, and improve your habits over time.
           </p>
         </div>
@@ -1018,7 +1247,7 @@ export function AnalyticsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 p-1 bg-transparent sm:bg-slate-800/60 sm:rounded-2xl sm:border sm:border-white/5">
+      <div className="flex flex-wrap gap-2 p-1 bg-transparent sm:dark:bg-slate-800/60 sm:bg-slate-100 sm:rounded-2xl sm:border sm:dark:border-white/5 sm:border-slate-200">
         {TABS.map(t => (
           <button
             key={t}
@@ -1027,7 +1256,7 @@ export function AnalyticsPage() {
               'px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl font-bold text-[13px] sm:text-sm transition-all whitespace-nowrap flex-grow sm:flex-grow-0 text-center border',
               tab === t
                 ? 'button-3d text-white border-brand-400'
-                : 'glass-card-3d text-slate-400 border-white/5 hover:text-white hover:border-white/20 hover:-translate-y-1'
+                : 'glass-card-3d dark:text-slate-400 text-slate-500 dark:border-white/5 border-slate-900/10 dark:hover:text-white hover:text-slate-900 dark:hover:border-white/20 hover:border-slate-900/20 hover:-translate-y-1'
             )}
           >
             {t}
@@ -1041,7 +1270,7 @@ export function AnalyticsPage() {
           {/* Top Bento Row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <DynamicInsights habits={habits} />
+              <DynamicInsights />
             </div>
             <div className="lg:col-span-1 grid grid-cols-2 gap-4">
               <StatCard
@@ -1093,7 +1322,7 @@ export function AnalyticsPage() {
             title="30-Day Completion Trend"
             subtitle="Daily habit completion rate over the last month"
           >
-            {habits.length > 0 ? <TrendLine habits={habits} /> : <EmptyChart />}
+            {habits.length > 0 ? <TrendLine habits={habits} logsByDate={logs30Days} /> : <EmptyChart />}
           </ChartCard>
 
           <ChartCard
@@ -1113,14 +1342,14 @@ export function AnalyticsPage() {
             subtitle="Discover how keeping up with your habits affects your energy, and vice versa (30 days)"
           >
             {habits.length > 0 ? (
-              <HabitMoodCorrelation habits={habits} moods={moods} />
+              <HabitMoodCorrelation habits={habits} moods={moods} logsByDate={logs30Days} />
             ) : (
               <EmptyChart />
             )}
           </ChartCard>
 
           {/* Dynamic insight callouts */}
-          <DynamicInsights habits={habits} />
+          <DynamicInsights />
 
           {/* Correlation Engine */}
           <CorrelationInsights />
@@ -1143,7 +1372,7 @@ export function AnalyticsPage() {
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
                       selectedHabit?.id === h.id
                         ? 'button-3d border-brand-500/50 text-white'
-                        : 'glass-card-3d border-white/5 text-slate-400 hover:text-white hover:-translate-y-1'
+                        : 'glass-card-3d dark:border-white/5 border-slate-900/10 dark:text-slate-400 text-slate-600 dark:hover:text-white hover:text-slate-900 hover:-translate-y-1'
                     }`}
                   >
                     <span>
@@ -1158,15 +1387,15 @@ export function AnalyticsPage() {
                 <>
                   {/* Date range selector */}
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="flex bg-slate-900/40 p-1 rounded-xl border border-white/5 relative shadow-inner">
+                    <div className="flex dark:bg-slate-900/40 bg-slate-200/50 p-1 rounded-xl border dark:border-white/5 border-slate-900/10 relative shadow-inner">
                       {([7, 30, 90] as const).map(days => (
                         <button
                           key={days}
                           onClick={() => setPerHabitDays(days)}
                           className={`relative z-10 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                             perHabitDays === days
-                              ? 'text-white'
-                              : 'text-slate-400 hover:text-slate-200'
+                              ? 'dark:text-white text-slate-900'
+                              : 'dark:text-slate-400 text-slate-600 dark:hover:text-slate-200 hover:text-slate-900'
                           }`}
                         >
                           {perHabitDays === days && (
@@ -1271,14 +1500,53 @@ export function AnalyticsPage() {
           <div className="glass-card rounded-2xl p-6">
             <div className="mb-5">
               <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                🟩 365-Day Activity Heatmap
+                🟩 Habit Activity Heatmap
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Your overall habit completion across the entire last year, just like GitHub.
               </p>
             </div>
             {habits.length > 0 ? <YearlyHeatmap habits={habits} /> : <EmptyChart />}
           </div>
+
+          <div className="glass-card rounded-2xl p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  🎨 Year in Pixels (Mood)
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Your daily mood painted across the year.
+                </p>
+              </div>
+              <button 
+                onClick={() => {
+                  const el = document.getElementById('mood-heatmap-export');
+                  if (el) {
+                    toPng(el, { backgroundColor: '#0f172a' }).then(dataUrl => {
+                      const link = document.createElement('a');
+                      link.download = 'mood-year-in-pixels.png';
+                      link.href = dataUrl;
+                      link.click();
+                    });
+                  }
+                }} 
+                className="px-3 py-1.5 rounded-lg text-xs font-bold glass-card-3d hover:-translate-y-0.5 transition-transform flex items-center gap-2"
+              >
+                <span>📸</span> Download Image
+              </button>
+            </div>
+            <div id="mood-heatmap-export" className="p-4 rounded-xl">
+              {moods.length > 0 ? <MoodYearlyHeatmap moods={moods} /> : <EmptyChart />}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── AI Coach ── */}
+      {tab === 'AI Coach' && (
+        <div className="space-y-6">
+          <AICoachTab />
         </div>
       )}
     </div>

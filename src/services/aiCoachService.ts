@@ -5,6 +5,8 @@
 import { db } from '@/db';
 import type { AIInsight } from '@/types';
 import { format, subDays, subWeeks } from 'date-fns';
+import { vertexAI } from '@/lib/firebase';
+import { getGenerativeModel } from 'firebase/ai';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -47,6 +49,61 @@ async function generateWeeklySummary(): Promise<AIInsight | null> {
   const worst = [...habitStats].sort((a, b) => a.completed / a.total - b.completed / b.total)[0];
 
   let body: string;
+  let icon = '📊';
+
+  // --- Real AI Integration ---
+  if (vertexAI) {
+    try {
+      const model = getGenerativeModel(vertexAI, { model: 'gemini-2.5-flash' });
+      const prompt = `You are HabitFlow, an elite behavioral science AI coach. 
+      Analyze the user's weekly metrics:
+      - Completion rate: ${pct}%
+      - Best habit: ${best?.name} (${best?.completed}/${best?.total})
+      - Needs attention: ${worst?.name} (${worst?.completed}/${worst?.total})
+      
+      Output a personalized 3-paragraph summary in strict JSON format:
+      {
+        "body": "Paragraph 1: Validate their wins.\\n\\nParagraph 2: Analyze their data (correlations).\\n\\nParagraph 3: Give a specific micro-adjustment for next week.",
+        "icon": "A single emoji representing the tone of the review."
+      }
+      Do NOT wrap the output in markdown block ticks. Return raw JSON.`;
+
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+        }
+      });
+
+      const text = result.response.text() || '{}';
+      const parsed = JSON.parse(text);
+      body = parsed.body || `Fallback: You completed ${pct}% of your habits.`;
+      icon = parsed.icon || '🧠';
+    } catch (e) {
+      console.error('[AI Coach] Vertex AI failed, falling back to deterministic:', e);
+      body = fallbackSummaryBody(pct, best, worst);
+    }
+  } else {
+    // Fallback to deterministic
+    body = fallbackSummaryBody(pct, best, worst);
+  }
+
+  const insight: AIInsight = {
+    id: uid(),
+    type: 'weekly_summary',
+    title: 'Weekly Review',
+    body,
+    icon,
+    created_at: now(),
+    read: false,
+  };
+
+  await db.ai_insights.add(insight);
+  return insight;
+}
+
+function fallbackSummaryBody(pct: number, best: any, worst: any) {
+  let body: string;
   if (pct >= 80) {
     body = `🔥 Incredible week! You completed ${pct}% of your habits. `;
   } else if (pct >= 50) {
@@ -61,19 +118,7 @@ async function generateWeeklySummary(): Promise<AIInsight | null> {
   if (worst && worst.completed < worst.total && worst.name !== best?.name) {
     body += `${worst.icon} ${worst.name} needs attention (${worst.completed}/${worst.total}). Try linking it to an existing habit for consistency.`;
   }
-
-  const insight: AIInsight = {
-    id: uid(),
-    type: 'weekly_summary',
-    title: 'Weekly Review',
-    body,
-    icon: '📊',
-    created_at: now(),
-    read: false,
-  };
-
-  await db.ai_insights.add(insight);
-  return insight;
+  return body;
 }
 
 async function generateDailyTip(): Promise<AIInsight | null> {
@@ -238,6 +283,7 @@ async function detectPatterns(): Promise<AIInsight[]> {
   }
 
   // Pattern 3: Consecutive day analysis (strong-strong-skip pattern)
+  const allWarnings = await db.ai_insights.filter(i => i.type === 'warning' && i.title === 'Two-Day Cycle').toArray();
   for (const habit of habits) {
     let pattern = '';
     for (let i = 14; i >= 0; i--) {
@@ -245,7 +291,7 @@ async function detectPatterns(): Promise<AIInsight[]> {
       pattern += logSet.has(`${habit.id}|${d}`) ? '1' : '0';
     }
     const skipAfterTwo = (pattern.match(/110/g) || []).length;
-    if (skipAfterTwo >= 3) {
+    if (skipAfterTwo >= 3 && !allWarnings.some(w => w.body.includes(habit.name))) {
       insights.push({
         id: uid(),
         type: 'warning',
@@ -270,10 +316,11 @@ async function getCoachInsights(): Promise<AIInsight[]> {
   const CACHE_KEY = 'habitflow_ai_coach_generated_date';
   const lastGenerated = localStorage.getItem(CACHE_KEY);
 
-  // If we already generated insights today, return from DB
+  // If we already generated insights today AND have a daily tip for today, return from DB
   if (lastGenerated === today) {
+    const tipsToday = await db.ai_insights.filter(i => i.type === 'tip' && i.created_at.startsWith(today)).count();
     const all = await db.ai_insights.toArray();
-    if (all.length > 0) {
+    if (tipsToday > 0 && all.length > 0) {
       return all.sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 20);
     }
   }
@@ -293,7 +340,7 @@ async function getCoachInsights(): Promise<AIInsight[]> {
   const shouldGenerateWeekly = recentWeekly === 0;
 
   // Generate fresh insights
-  const [tip, patterns, weekly] = await Promise.all([
+  await Promise.all([
     generateDailyTip(),
     detectPatterns(),
     shouldGenerateWeekly ? generateWeeklySummary() : Promise.resolve(null),
@@ -301,12 +348,7 @@ async function getCoachInsights(): Promise<AIInsight[]> {
 
   localStorage.setItem(CACHE_KEY, today);
 
-  const results = [];
-  if (tip) results.push(tip);
-  if (weekly) results.push(weekly);
-  results.push(...patterns);
-
-  return results;
+  return getRecentInsights(20);
 }
 
 async function getRecentInsights(limit = 10): Promise<AIInsight[]> {

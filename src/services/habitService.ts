@@ -48,7 +48,12 @@ export const habitService = {
   },
 
   async archive(id: string): Promise<void> {
-    await db.habits.update(id, { archived: true });
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    await db.habits.update(id, { archived: true, endDate: todayStr, updated_at: new Date().toISOString() });
+    const updated = await db.habits.get(id);
+    if (updated) {
+      syncService.queuePush('habits', updated, 'upsert').catch(console.error);
+    }
   },
 
   async delete(id: string): Promise<void> {
@@ -63,11 +68,18 @@ export const habitService = {
   },
 
   async reorder(ids: string[]): Promise<void> {
+    const updatedHabits: Habit[] = [];
     await db.transaction('rw', db.habits, async () => {
+      const now = new Date().toISOString();
       for (let i = 0; i < ids.length; i++) {
-        await db.habits.update(ids[i], { order: i });
+        await db.habits.update(ids[i], { order: i, updated_at: now });
+        const h = await db.habits.get(ids[i]);
+        if (h) updatedHabits.push(h);
       }
     });
+    for (const h of updatedHabits) {
+      syncService.queuePush('habits', h, 'upsert').catch(console.error);
+    }
   },
 
   // ─── Logs ────────────────────────────────────────────────────
@@ -84,9 +96,8 @@ export const habitService = {
 
   async getLogForDate(habitId: string, date: string): Promise<HabitLog | undefined> {
     const logs = await db.habitLogs
-      .where('habitId')
-      .equals(habitId)
-      .filter(l => l.date === date)
+      .where('[habitId+date]')
+      .equals([habitId, date])
       .toArray();
     return logs[0];
   },
@@ -106,9 +117,8 @@ export const habitService = {
 
     // Upsert: delete existing log for this day first
     await db.habitLogs
-      .where('habitId')
-      .equals(habitId)
-      .filter(l => l.date === date)
+      .where('[habitId+date]')
+      .equals([habitId, date])
       .delete();
 
     const log: HabitLog = {
@@ -130,15 +140,15 @@ export const habitService = {
 
   async removeLog(habitId: string, date: string): Promise<void> {
     await db.habitLogs
-      .where('habitId')
-      .equals(habitId)
-      .filter(l => l.date === date)
+      .where('[habitId+date]')
+      .equals([habitId, date])
       .delete();
   },
 
   // ─── Streak Calculation ───────────────────────────────────────
   async getStreakInfo(habit: Habit): Promise<StreakInfo> {
     const allLogs = await db.habitLogs.where('habitId').equals(habit.id).toArray();
+    if (allLogs.length === 0) return { current: 0, best: 0, graceUsed: false };
     const logMap = new Map(allLogs.map(l => [l.date, l]));
 
     function isDayScheduled(date: Date): boolean {
@@ -166,13 +176,15 @@ export const habitService = {
       return log.value >= habit.targetValue;
     }
 
+    const todayAnchor = new Date(new Date().setHours(0, 0, 0, 0));
+
     // Calculate current streak
     let current = 0;
     let graceUsed = false;
     let i = 0;
     // Start from today, go backwards
     while (true) {
-      const d = subDays(new Date(), i);
+      const d = subDays(todayAnchor, i);
       const dStr = format(d, 'yyyy-MM-dd');
       if (habit.startDate && dStr < habit.startDate) break;
       if (isDayScheduled(d)) {
@@ -197,7 +209,7 @@ export const habitService = {
     let tempStreak = 0;
     let j = 0;
     while (true) {
-      const d = subDays(new Date(), j);
+      const d = subDays(todayAnchor, j);
       const dStr = format(d, 'yyyy-MM-dd');
       if (habit.startDate && dStr < habit.startDate) break;
       if (isDayScheduled(d)) {

@@ -58,7 +58,7 @@ async function exportToCSV(): Promise<void> {
       const type = habit?.type ?? '';
       const target = habit?.targetValue ?? '';
       const note = log.note ? `"${log.note.replace(/"/g, '""')}"` : '';
-      const mood = log.mood ?? '';
+      const mood = '';
       return `${log.date},${name},${category},${type},${log.value},${target},${note},${mood},${log.timeStamp}`;
     })
     .join('\n');

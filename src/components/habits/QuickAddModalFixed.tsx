@@ -3,11 +3,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import type { HabitType, HabitFrequency, Priority } from '../../types';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { IconRenderer, HABIT_ICONS } from '../common/IconRenderer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { habitSchema } from '../../lib/validations';
 import { DynamicIcon } from '../ui/DynamicIcon';
+import { DatePicker } from '../ui/date-picker';
 
 const CATEGORIES = [
   { name: 'Health', icon: '🍎' },
@@ -436,11 +437,10 @@ export function QuickAddModalFixed({ onClose }: Props) {
                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
                       Due Date
                     </label>
-                    <input
-                      type="date"
-                      className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium outline-none focus:border-emerald-500/50 transition-all cursor-text"
-                      value={taskDueDate}
-                      onChange={e => setTaskDueDate(e.target.value)}
+                    <DatePicker
+                      date={taskDueDate ? parseISO(taskDueDate) : undefined}
+                      onDateChange={(d) => setTaskDueDate(d ? format(d, 'yyyy-MM-dd') : '')}
+                      className="w-full"
                     />
                   </div>
                   <div>

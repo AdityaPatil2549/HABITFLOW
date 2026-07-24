@@ -13,14 +13,12 @@ import { SpotlightCard } from '../ui/SpotlightCard';
 import { TiltCard } from '../ui/TiltCard';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/Skeleton';
-import { AnimatedCheckmark } from '../ui/AnimatedCheckmark';
+import { HabitItemCard } from './HabitItemCard';
 
 export function HabitsWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   const navigate = useNavigate();
-  const { habits, logHabit, unlogHabit, loading } = useHabitStore();
-  const { fireConfetti } = useCompletionEffects();
+  const { habits, loading } = useHabitStore();
   const [showSmartAdd, setShowSmartAdd] = useState(false);
-  const logDebounceRef = useRef<Set<string>>(new Set());
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const scheduled = habits.filter(h => !h.archived && habitService.isScheduledForDate(h, today));
@@ -38,7 +36,7 @@ export function HabitsWidget({ dragHandleProps }: { dragHandleProps?: any }) {
         </div>
       )}
       <TiltCard borderGlow className="w-full h-full">
-        <SpotlightCard variants={item} className="h-full rounded-[2.5rem] p-6 sm:p-10">
+        <SpotlightCard className="h-full rounded-[2.5rem] p-6 sm:p-10">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <Flame size={16} className="text-orange-500" /> Active Habits
@@ -89,75 +87,15 @@ export function HabitsWidget({ dragHandleProps }: { dragHandleProps?: any }) {
             />
           ) : (
             <Reorder.Group axis="y" values={scheduled.slice(0, 6)} onReorder={() => {}} className="space-y-2">
-              {scheduled.slice(0, 6).map((h, i, arr) => {
-                const isDone = h.todayLog && h.todayLog.value >= 1;
-                return (
+              {scheduled.slice(0, 6).map((h) => (
                   <Reorder.Item
                     key={h.id}
                     value={h}
                     className="relative"
                   >
-                    <div
-                      onClick={() => {
-                        if (logDebounceRef.current.has(h.id)) return;
-                        logDebounceRef.current.add(h.id);
-                        const action = isDone ? unlogHabit(h.id) : logHabit(h.id, 1);
-                        if (!isDone) fireConfetti();
-                        Promise.resolve(action).finally(() => logDebounceRef.current.delete(h.id));
-                      }}
-                      className={`p-3 rounded-2xl border transition-all cursor-grab active:cursor-grabbing group/habit flex items-center gap-3 ${
-                        isDone
-                          ? 'bg-emerald-500/10 border-emerald-500/20'
-                          : 'bg-white/[0.02] border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5'
-                      }`}
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-active/habit:scale-90 ${isDone ? 'bg-emerald-500/20' : 'bg-white/5'}`}
-                      >
-                        <IconRenderer
-                          name={h.icon}
-                          size={18}
-                          color={isDone ? '#10b981' : 'var(--brand-400)'}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-xs font-bold truncate ${isDone ? 'text-emerald-400' : 'text-white'}`}
-                        >
-                          {h.name}
-                        </p>
-                        <div className="flex items-center gap-1 mt-0.5 relative">
-                          {h.streak.current >= 7 && (
-                            <motion.div
-                              animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.2, 1] }}
-                              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                              className="absolute -left-1 -top-1 w-4 h-4 bg-orange-500/20 rounded-full blur-sm"
-                            />
-                          )}
-                          <Flame
-                            size={10}
-                            className={
-                              h.streak.current >= 7
-                                ? 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]'
-                                : h.streak.current > 0
-                                  ? 'text-orange-500/80'
-                                  : 'text-slate-600'
-                            }
-                          />
-                          <span className={`text-[10px] font-bold ${h.streak.current >= 7 ? 'text-orange-400' : 'text-slate-500'}`}>
-                            {h.streak.current}d streak
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${isDone ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-white/20'}`}
-                      >
-                        {isDone && <AnimatedCheckmark size={18} strokeWidth={2.5} />}
-                      </div>
-                    </div>
+                    <HabitItemCard habit={h} />
                   </Reorder.Item>
-                );
-              })}
+                ))}
             </Reorder.Group>
           )}
           {scheduled.length > 6 && (

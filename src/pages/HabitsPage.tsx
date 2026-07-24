@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { Scroll3DReveal } from '../components/ui/Scroll3DReveal';
+import { JollyTagGroup, TagList, Tag } from '../components/ui/tag-group';
 import {
   motion,
   AnimatePresence,
@@ -15,8 +16,6 @@ import {
   Archive,
   Trash2,
   Edit2,
-  CheckCircle2,
-  Cloud,
   ChevronRight,
   CalendarDays,
   Snowflake,
@@ -56,8 +55,7 @@ import { TemplatesLibrary } from '../components/habits/TemplatesLibrary';
 import { useToast } from '../components/common/Toast';
 import { db } from '../db';
 import { exportHabitToCalendar } from '../lib/calendarSync';
-
-const HabitsBackground = lazy(() => import('../components/habits/HabitsBackground'));
+import { NeonCheckbox } from '../components/ui/animated-check-box';
 
 // ─── constants ────────────────────────────────────────────────────
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -76,6 +74,7 @@ function useCountUp(target: number, duration = 1000, delayMs = 0) {
   const [value, setValue] = useState(0);
   const rafRef = useRef<number>(0);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue(0);
     const t = setTimeout(() => {
       const start = performance.now();
@@ -144,7 +143,7 @@ function KpiRing({ label, emoji, value, suffix = '', max = 100, color, delay = 0
         </svg>
         {/* Center */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-          <span className="text-base font-black text-white leading-none tabular-nums">{counted}{suffix}</span>
+          <span className="text-base font-black dark:text-white text-slate-900 leading-none tabular-nums">{counted}{suffix}</span>
           <span className="text-sm leading-none">{emoji}</span>
         </div>
       </div>
@@ -172,8 +171,6 @@ function HabitForm({
   const [target, setTarget]     = useState(initialHabit?.targetValue ?? 1);
   const [grace, setGrace]       = useState(initialHabit?.graceDayEnabled ?? false);
   const [reminderTime, setReminderTime] = useState(initialHabit?.reminderTime ?? '');
-  const [healthSyncEnabled, setHealthSyncEnabled] = useState(false);
-  const [healthMetric, setHealthMetric] = useState<string>('steps');
   const [error, setError]       = useState<string | null>(null);
 
   const toggleDay = (d: number) =>
@@ -220,7 +217,7 @@ function HabitForm({
         <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
           Choose Identity
         </label>
-        <div className="grid grid-cols-5 gap-2 bg-slate-950/30 rounded-2xl p-3 border border-white/5 shadow-inner">
+        <div className="grid grid-cols-5 gap-2 dark:bg-slate-950/30 bg-slate-100 rounded-2xl p-3 border dark:border-white/5 border-slate-900/5 shadow-inner">
           {HABIT_ICONS.map(item => {
             const isActive = icon === item.name;
             return (
@@ -254,7 +251,7 @@ function HabitForm({
           <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
             Color Theme
           </label>
-          <div className="flex gap-2.5 flex-wrap bg-slate-950/20 p-3 rounded-2xl border border-white/5">
+          <div className="flex gap-2.5 flex-wrap dark:bg-slate-950/20 bg-slate-100 p-3 rounded-2xl border dark:border-white/5 border-slate-900/5">
             {COLORS.map(c => (
               <button
                 key={c}
@@ -268,40 +265,42 @@ function HabitForm({
         </div>
 
         {/* Category */}
-        <div>
-          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
-            Category
-          </label>
-          <div className="flex flex-wrap gap-2">
+        <JollyTagGroup
+          label="Category"
+          selectionMode="single"
+          selectedKeys={new Set([category])}
+          onSelectionChange={(keys) => {
+            const arr = Array.from(keys) as string[];
+            if (arr.length > 0) setCategory(arr[0]);
+          }}
+        >
+          <TagList>
             {CATEGORIES.map(c => {
               const isActive = category === c.name;
               return (
-                <button
+                <Tag
+                  id={c.name}
                   key={c.name}
-                  type="button"
-                  onClick={() => setCategory(c.name)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300 border ${
-                    isActive
-                      ? 'shadow-inner'
-                      : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5'
-                  }`}
                   style={isActive ? { background: `${color}25`, borderColor: color, color: '#fff', boxShadow: `inset 0 0 10px ${color}10` } : {}}
+                  className={isActive ? '' : 'dark:bg-slate-950/40 bg-white dark:border-white/5 border-slate-900/5 text-slate-500'}
                 >
-                  <DynamicIcon tiltIntensity={25} size={18} interactive={true}>
-                    <span className="text-sm block">{c.icon}</span>
-                  </DynamicIcon>
-                  {c.name}
-                </button>
+                  <div className="flex items-center gap-1.5">
+                    <DynamicIcon tiltIntensity={25} size={18} interactive={true}>
+                      <span className="text-sm block">{c.icon}</span>
+                    </DynamicIcon>
+                    {c.name}
+                  </div>
+                </Tag>
               );
             })}
-          </div>
-        </div>
+          </TagList>
+        </JollyTagGroup>
       </div>
 
-      <div className="space-y-6 bg-slate-950/20 p-4 rounded-3xl border border-white/5 shadow-inner">
+      <div className="space-y-6 dark:bg-slate-950/20 bg-slate-50 p-4 rounded-3xl border dark:border-white/5 border-slate-900/5 glass-card-3d">
         {/* Habit Name */}
         <div>
-          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+          <label htmlFor="habit-name" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
             Habit Name
           </label>
           <div className="relative group">
@@ -314,11 +313,12 @@ function HabitForm({
               </div>
             </div>
             <input
-              className="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-16 pr-4 py-4 text-white placeholder-slate-600 text-base font-bold outline-none focus:border-brand-500/50 focus:bg-slate-950/60 transition-all shadow-inner"
+              id="habit-name"
+              name="habit-name"
+              className="w-full dark:bg-slate-950/40 bg-white border dark:border-white/10 border-slate-900/10 rounded-2xl pl-16 pr-4 py-4 dark:text-white text-slate-900 placeholder-slate-400 dark:placeholder-slate-600 text-base font-bold outline-none focus:border-brand-500/50 dark:focus:bg-slate-950/60 transition-all shadow-sm"
               placeholder="e.g. Read 20 pages"
               value={name}
               onChange={e => setName(e.target.value)}
-              autoFocus
               required
             />
           </div>
@@ -326,11 +326,13 @@ function HabitForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+            <label htmlFor="habit-type" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
               Type
             </label>
             <select
-              className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-semibold outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer"
+              id="habit-type"
+              name="habit-type"
+              className="w-full dark:bg-slate-950/40 bg-white border dark:border-white/10 border-slate-900/10 rounded-2xl px-4 py-3.5 dark:text-white text-slate-900 text-sm font-semibold outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer shadow-sm"
               value={type}
               onChange={e => setType(e.target.value as HabitType)}
             >
@@ -341,11 +343,13 @@ function HabitForm({
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+            <label htmlFor="habit-frequency" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
               Frequency
             </label>
             <select
-              className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-semibold outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer"
+              id="habit-frequency"
+              name="habit-frequency"
+              className="w-full dark:bg-slate-950/40 bg-white border dark:border-white/10 border-slate-900/10 rounded-2xl px-4 py-3.5 dark:text-white text-slate-900 text-sm font-semibold outline-none focus:border-brand-500/50 transition-all appearance-none cursor-pointer shadow-sm"
               value={freq}
               onChange={e => setFreq(e.target.value as HabitFrequency)}
             >
@@ -374,7 +378,7 @@ function HabitForm({
                       type="button"
                       onClick={() => toggleDay(i)}
                       className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border-2 ${
-                        isActive ? 'text-white' : 'border-white/5 text-slate-500 hover:border-white/20'
+                        isActive ? 'dark:text-white text-slate-900' : 'dark:border-white/5 border-slate-900/5 text-slate-500 dark:hover:border-white/20 hover:border-slate-900/20'
                       }`}
                       style={isActive ? { borderColor: color, background: `${color}30` } : {}}
                     >
@@ -394,16 +398,18 @@ function HabitForm({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
             >
-              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block mt-2">
+              <label htmlFor="habit-target" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block mt-2">
                 Daily Target {type === 'duration' ? '(minutes)' : type === 'rating' ? '(out of 5)' : '(count)'}
               </label>
               <input
+                id="habit-target"
+                name="habit-target"
                 type="number"
                 min={1}
                 max={type === 'rating' ? 5 : undefined}
                 value={target}
                 onChange={e => setTarget(Number(e.target.value))}
-                className="w-full bg-slate-950/40 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-lg font-bold outline-none focus:border-brand-500/50 transition-all shadow-inner"
+                className="w-full dark:bg-slate-950/40 bg-white border dark:border-white/10 border-slate-900/10 rounded-2xl px-4 py-3.5 dark:text-white text-slate-900 text-lg font-bold outline-none focus:border-brand-500/50 transition-all shadow-sm"
               />
             </motion.div>
           )}
@@ -411,11 +417,12 @@ function HabitForm({
 
         <div className="pt-2">
           <label className="flex items-center gap-3 cursor-pointer py-1 group">
-            <div
-              className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${grace ? 'border-brand-500 bg-brand-500' : 'border-white/10 bg-slate-900 group-hover:border-white/30'}`}
-            >
-              {grace && <CheckCircle2 size={14} className="text-white" />}
-            </div>
+            <NeonCheckbox
+              checked={grace}
+              onChange={(e) => setGrace(e.target.checked)}
+              neonColor="var(--brand-500)"
+              checkboxSize="24px"
+            />
             <div className="flex flex-col">
               <span className="text-sm font-bold text-slate-200">Enable Grace Day</span>
               <span className="text-[10px] text-slate-500 font-medium">Allow 1 free miss per week without breaking streak</span>
@@ -424,23 +431,25 @@ function HabitForm({
         </div>
 
         {/* Reminder Time */}
-        <div className="bg-slate-950/40 border border-white/5 rounded-2xl p-4 mt-2">
+        <div className="dark:bg-slate-950/40 bg-slate-100 border dark:border-white/5 border-slate-900/5 rounded-2xl p-4 mt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center">
                 <Bell size={16} className="text-brand-400" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-white">Daily Reminder</span>
+                <label htmlFor="habit-reminder" className="text-sm font-bold dark:text-white text-slate-900">Daily Reminder</label>
                 <span className="text-[10px] text-slate-400">Get notified when it's time</span>
               </div>
             </div>
             <div className="relative">
               <input
+                id="habit-reminder"
+                name="habit-reminder"
                 type="time"
                 value={reminderTime}
                 onChange={e => setReminderTime(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm font-bold text-white outline-none cursor-pointer focus:border-brand-500/50 [color-scheme:dark]"
+                className="dark:bg-white/5 bg-white border dark:border-white/10 border-slate-900/10 rounded-xl px-3 py-2 text-sm font-bold dark:text-white text-slate-900 outline-none cursor-pointer focus:border-brand-500/50"
               />
               {reminderTime && (
                 <button
@@ -460,7 +469,7 @@ function HabitForm({
         <button
           type="button"
           onClick={() => onClose()}
-          className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-slate-300 font-bold text-sm hover:bg-white/10 transition-colors"
+          className="flex-1 py-4 rounded-2xl dark:bg-white/5 bg-slate-100 border dark:border-white/10 border-slate-900/10 dark:text-slate-300 text-slate-700 font-bold text-sm dark:hover:bg-white/10 hover:bg-slate-200 transition-colors"
         >
           Cancel
         </button>
@@ -578,7 +587,6 @@ function HabitCard({
   const [showDetails, setShowDetails] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history,     setHistory]     = useState<Record<string, boolean>>({});
-  const [checkFlash,  setCheckFlash]  = useState(false);
 
   // 3D Tilt
   const cardRef = useRef<HTMLDivElement>(null);
@@ -676,66 +684,29 @@ function HabitCard({
           <div className="flex items-center gap-3 sm:gap-4 mb-1 sm:mb-3">
 
             {/* 3D Check button */}
-            <motion.button
-              onClick={() => {
-                onLogClick(habit);
-                if (!done) { setCheckFlash(true); setTimeout(() => setCheckFlash(false), 500); }
-              }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.85 }}
-              className={cn(
-                'w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center flex-shrink-0 relative overflow-hidden transition-all',
-                done && 'animate-check-pop'
-              )}
-              style={
-                done
-                  ? {
-                      background: habit.todayLog?.isFrozen
-                        ? 'linear-gradient(135deg, #3b82f6, #2563eb)'
-                        : `linear-gradient(135deg, ${c}, ${c}dd)`,
-                      borderColor: 'transparent',
-                      boxShadow: `0 8px 24px ${c}50, 0 0 0 1px ${c}30`,
-                    }
-                  : { borderColor: `${c}50`, background: `${c}10` }
-              }
-            >
-              {/* Flash ripple on check */}
-              {checkFlash && !done && (
-                <motion.div
-                  className="absolute inset-0"
-                  initial={{ opacity: 0.6, scale: 0.5 }}
-                  animate={{ opacity: 0, scale: 2.5 }}
-                  transition={{ duration: 0.45 }}
-                  style={{ background: `radial-gradient(circle, ${c} 0%, transparent 70%)` }}
-                />
-              )}
-              <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-white">
-                {done ? (
-                  habit.todayLog?.isFrozen ? (
-                    <Snowflake size={18} className="sm:w-6 sm:h-6" />
-                  ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"
-                      className="w-4 h-4 sm:w-6 sm:h-6" strokeLinecap="round" strokeLinejoin="round">
-                      <motion.path
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.4, ease: 'easeOut' }}
-                        d="M20 6L9 17l-5-5"
-                      />
-                    </svg>
-                  )
+            <div className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 relative">
+              <NeonCheckbox
+                checked={done}
+                onChange={() => {
+                  onLogClick(habit);
+                }}
+                neonColor={habit.todayLog?.isFrozen ? '#3b82f6' : c}
+                checkboxSize="100%"
+              >
+                {habit.todayLog?.isFrozen ? (
+                  <Snowflake size={20} className="text-white drop-shadow-md" />
                 ) : (
-                  <IconRenderer name={habit.icon} size={20} color={c} />
+                  <IconRenderer name={habit.icon} size={24} color={c} />
                 )}
-              </div>
-            </motion.button>
+              </NeonCheckbox>
+            </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
               <button
                 className={cn(
                   'font-bold text-sm sm:text-base truncate w-full text-left transition-all block',
-                  done ? 'line-through text-slate-500' : 'text-white hover:text-brand-300'
+                  done ? 'line-through text-slate-500' : 'dark:text-white text-slate-900 hover:text-brand-300'
                 )}
                 onClick={() => {
                   setShowHistory(v => { if (!v) loadHistory(); return !v; });
@@ -772,7 +743,7 @@ function HabitCard({
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="hidden sm:flex flex-col items-end">
                 <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Best</p>
-                <p className="text-lg font-black text-white leading-none">{habit.streak.best}d</p>
+                <p className="text-lg font-black dark:text-white text-slate-900 leading-none">{habit.streak.best}d</p>
               </div>
               <button
                 onClick={() => setShowDetails(v => !v)}
@@ -801,7 +772,7 @@ function HabitCard({
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[8px] font-black text-white">{Math.round(pct)}%</span>
+                  <span className="text-[8px] font-black dark:text-white text-slate-900">{Math.round(pct)}%</span>
                 </div>
               </div>
               <div className="flex-1">
@@ -882,14 +853,14 @@ function HabitCard({
                     ].map(s => (
                       <div key={s.label} className="rounded-xl p-2" style={{ background: `${c}08` }}>
                         <p className="text-[10px] text-slate-500 mb-0.5">{s.label}</p>
-                        <p className="text-sm font-bold text-white capitalize">{s.val}</p>
+                        <p className="text-sm font-bold dark:text-white text-slate-900 capitalize">{s.val}</p>
                       </div>
                     ))}
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => openPicker({ id: habit.id, title: habit.name, type: 'habit' })}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-400 hover:bg-brand-500/20 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:bg-brand-500/20 transition-colors"
                     >
                       <Timer size={11} /> Focus
                     </button>
@@ -1203,10 +1174,6 @@ export function HabitsPage() {
   // ── Render ─────────────────────────────────────────────────────
   return (
     <div className="space-y-5 relative">
-      {/* Three.js floating particles background */}
-      <Suspense fallback={null}>
-        <HabitsBackground />
-      </Suspense>
 
       {/* Soft ambient blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
@@ -1239,8 +1206,8 @@ export function HabitsPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Habit Tracker</p>
-          <h1 className="text-2xl sm:text-3xl font-black text-white text-gradient">My Habits</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-brand-600 dark:from-white dark:to-brand-300">My Habits</h1>
+          <p className="dark:text-slate-400 text-slate-600 text-sm mt-1">
             {isToday ? (
               <>
                 {done}/{scheduled.length} done today
@@ -1287,9 +1254,11 @@ export function HabitsPage() {
             onClick={() => setShowTemplates(true)}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
+            className="flex items-center justify-center p-2.5 sm:px-4 sm:py-3 rounded-2xl font-bold text-sm text-brand-300 border border-brand-500/30 hover:bg-brand-500/10 transition-all"
+            title="Browse Templates"
           >
-            ✨ Templates
+            <span className="sm:hidden text-lg leading-none">✨</span>
+            <span className="hidden sm:flex items-center gap-2">✨ Templates</span>
           </motion.button>
           <MagneticButton
             onClick={() => setShowAdd(v => !v)}
@@ -1322,12 +1291,7 @@ export function HabitsPage() {
 
       {/* ── Date Strip ── */}
       <div
-        className="rounded-2xl p-2.5 sm:p-3"
-        style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          backdropFilter: 'blur(20px)',
-        }}
+        className="rounded-2xl p-2.5 sm:p-3 border dark:border-white/7 border-slate-900/10 dark:bg-white/[0.03] bg-slate-900/5 backdrop-blur-xl"
       >
         <div className="flex items-center gap-2 mb-2 px-1">
           <CalendarDays size={13} className="text-brand-400" />
@@ -1496,6 +1460,7 @@ export function HabitsPage() {
                               'relative',
                               snapshot.isDragging && 'z-50 opacity-90 scale-[1.02]'
                             )}
+                            style={dragProvided.draggableProps.style as React.CSSProperties}
                           >
                             {/* Drag handle */}
                             <div
@@ -1581,25 +1546,22 @@ export function HabitsPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="rounded-2xl p-5 mt-2"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.07)',
-              backdropFilter: 'blur(20px)',
-            }}
+            className="glass-card-3d rounded-2xl p-6 mt-4 relative overflow-hidden group hover:shadow-lg transition-all"
           >
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500" />
+            <div className="relative z-10">
             {/* Month nav */}
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => { const m = subMonths(calMonth, 1); setCalMonth(m); loadCalendarLogs(m); }}
-                className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-400 dark:hover:text-white hover:text-slate-900 transition-colors"
               >
                 <ChevronLeft size={16} />
               </button>
-              <h2 className="text-base font-bold text-white">{format(calMonth, 'MMMM yyyy')}</h2>
+              <h2 className="text-base font-bold dark:text-white text-slate-900">{format(calMonth, 'MMMM yyyy')}</h2>
               <button
                 onClick={() => { const m = addMonths(calMonth, 1); setCalMonth(m); loadCalendarLogs(m); }}
-                className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-400 dark:hover:text-white hover:text-slate-900 transition-colors"
               >
                 <ChevronRight size={16} />
               </button>
@@ -1639,17 +1601,17 @@ export function HabitsPage() {
                         onClick={() => { setSelectedDate(ds); setShowView('list'); }}
                         className={`relative flex flex-col items-center justify-center rounded-xl p-1.5 min-h-[44px] transition-all ${
                           isSelected ? 'ring-2 ring-brand-500 bg-brand-500/15'
-                            : isTodayDay ? 'bg-white/8 font-bold'
+                            : isTodayDay ? 'dark:bg-white/10 bg-slate-900/10 font-bold'
                             : isFuture  ? 'opacity-40 cursor-default'
-                            : 'hover:bg-white/5'
+                            : 'hover:bg-black/5 dark:hover:bg-white/5'
                         }`}
                         disabled={isFuture}
                       >
                         <span className={`text-xs font-semibold ${
-                          isSelected ? 'text-brand-300'
-                            : isTodayDay ? 'text-white'
-                            : isFuture  ? 'text-slate-700'
-                            : 'text-slate-400'
+                          isSelected ? 'text-brand-600 dark:text-brand-300'
+                            : isTodayDay ? 'dark:text-white text-slate-900'
+                            : isFuture  ? 'text-slate-400 dark:text-slate-700'
+                            : 'text-slate-500 dark:text-slate-400'
                         }`}>
                           {format(day, 'd')}
                         </span>
@@ -1678,6 +1640,7 @@ export function HabitsPage() {
             <p className="text-center text-xs text-slate-600 mt-3">
               Tap any past day to view &amp; log habits for that date
             </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

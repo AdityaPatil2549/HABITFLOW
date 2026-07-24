@@ -45,8 +45,9 @@ export function MagneticButton({
       onClick={onClick}
       animate={{ x: position.x, y: position.y }}
       transition={{ type: 'spring', stiffness: 150, damping: 15, mass: 0.1 }}
-      className={className}
+      className={`whitespace-nowrap active:scale-[0.97] transition-all duration-200 ${className}`}
       style={style}
+      whileTap={{ scale: 0.97 }}
     >
       {children}
     </motion.button>

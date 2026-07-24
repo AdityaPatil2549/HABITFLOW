@@ -101,7 +101,7 @@ export function EditLayoutModal({
                                 ? 'bg-brand-500/20 border-brand-500/50 shadow-xl scale-105 z-50'
                                 : 'bg-white/5 border-white/10 hover:border-white/20'
                             } transition-colors`}
-                            style={provided.draggableProps.style}
+                            style={provided.draggableProps.style as React.CSSProperties}
                           >
                             <div
                               {...provided.dragHandleProps}

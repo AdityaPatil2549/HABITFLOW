@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import ParticlesComponent from '../ui/particles-bg';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFocusStore, calcFocusXP } from '../../store/focusStore';
 import { useGamificationStore } from '../../store/gamificationStore';
@@ -318,32 +319,10 @@ export function FocusOverlay() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="dark-overlay fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden"
+        className="dark-overlay fixed inset-0 z-[9999] flex flex-col items-center justify-center text-white overflow-hidden"
       >
-        {/* Background atmosphere */}
-        <div
-          className={`absolute inset-0 pointer-events-none transition-colors duration-1000 ${isFocus ? 'bg-indigo-950/30' : 'bg-emerald-950/20'}`}
-        />
-        <div
-          className={`absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-3xl opacity-[0.07] pointer-events-none ${isFocus ? 'bg-brand-400' : 'bg-emerald-400'} ${isRunning ? 'animate-pulse' : ''}`}
-        />
-
-        {/* Zen Breathing Circle */}
-        {isFocus && isRunning && (
-          <motion.div
-            className="absolute top-1/2 left-1/2 w-[500px] h-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full border-[2px] border-white/5 pointer-events-none z-0"
-            style={{ filter: 'blur(2px)' }}
-            animate={{
-              scale: [0.8, 1.4, 0.8],
-              opacity: [0, 0.2, 0],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-        )}
+        {/* ── Particles Background ── */}
+        <ParticlesComponent />
 
         {/* Ambient Sound Controls */}
         <div className="absolute top-6 right-6 z-50">
@@ -414,16 +393,72 @@ export function FocusOverlay() {
             </h2>
           )}
 
-          {/* Circular timer */}
-          <div className="relative w-64 h-64 mx-auto mb-6 flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 200 200">
+          {/* Circular timer with 3D sphere */}
+          <div className="relative w-72 h-72 mx-auto mb-6 flex items-center justify-center">
+
+            {/* ── Proper 3D Gyroscope Loader Core ── */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none perspective-[1000px]">
+              
+              {/* Outer Orbiting Ring */}
+              <motion.div 
+                animate={{ rotateZ: [0, 360], rotateX: [20, -20, 20], rotateY: [-20, 20, -20] }}
+                transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                className="absolute inset-0 rounded-full"
+                style={{
+                  boxShadow: `
+                    inset 0 10px 20px rgba(56, 189, 248, 0.5),
+                    inset 0 -10px 25px rgba(0, 93, 255, 0.4),
+                    0 0 15px rgba(56, 189, 248, 0.4)
+                  `,
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  transformStyle: 'preserve-3d'
+                }}
+              />
+
+              {/* Inner Cross Ring (Spins on opposite axis) */}
+              <motion.div 
+                animate={{ rotateZ: [360, 0], rotateX: [60, 60, 60], rotateY: [0, 360] }}
+                transition={{ repeat: Infinity, duration: 6, ease: "linear" }}
+                className="absolute w-[85%] h-[85%] rounded-full"
+                style={{
+                  boxShadow: `
+                    inset 0 8px 16px rgba(139, 92, 246, 0.6),
+                    inset 0 -8px 20px rgba(79, 70, 229, 0.5),
+                    0 0 20px rgba(139, 92, 246, 0.3)
+                  `,
+                  border: '2px solid rgba(139, 92, 246, 0.4)',
+                  transformStyle: 'preserve-3d'
+                }}
+              />
+
+              {/* Core 3D Sphere (Intense shadows & highlights) */}
+              <motion.div 
+                animate={{ 
+                  rotateZ: [90, 270, 450],
+                  boxShadow: [
+                    "inset 0 15px 30px -5px #38bdf8, inset 0 -20px 40px -10px #1e40af, inset 0 0 80px rgba(0, 93, 255, 0.6), 0 0 20px 5px rgba(56, 189, 248, 0.2)",
+                    "inset 0 15px 30px -5px #818cf8, inset 0 -20px 40px -10px #312e81, inset 0 0 80px rgba(79, 70, 229, 0.6), 0 0 20px 5px rgba(129, 140, 248, 0.2)",
+                    "inset 0 15px 30px -5px #38bdf8, inset 0 -20px 40px -10px #1e40af, inset 0 0 80px rgba(0, 93, 255, 0.6), 0 0 20px 5px rgba(56, 189, 248, 0.2)"
+                  ]
+                }}
+                transition={{ repeat: Infinity, duration: 5, ease: "linear" }}
+                className="absolute inset-[15%] rounded-full"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                {/* Specular Highlight for ultra-realism */}
+                <div className="absolute top-[10%] left-[20%] w-[30%] h-[15%] rounded-full bg-white/40 blur-[4px] -rotate-12 pointer-events-none" />
+              </motion.div>
+            </div>
+
+            {/* Progress ring SVG */}
+            <svg className="absolute inset-0 w-full h-full -rotate-90 z-10" viewBox="0 0 200 200">
               <circle
                 cx="100"
                 cy="100"
                 r="88"
                 fill="none"
-                stroke="rgba(255,255,255,0.05)"
-                strokeWidth="8"
+                stroke="rgba(255,255,255,0.04)"
+                strokeWidth="6"
               />
               <circle
                 cx="100"
@@ -431,7 +466,7 @@ export function FocusOverlay() {
                 r="88"
                 fill="none"
                 stroke={isFocus ? '#818cf8' : '#34d399'}
-                strokeWidth="8"
+                strokeWidth="6"
                 strokeLinecap="round"
                 strokeDasharray={`${2 * Math.PI * 88}`}
                 strokeDashoffset={`${2 * Math.PI * 88 * (1 - progress / 100)}`}
@@ -439,11 +474,13 @@ export function FocusOverlay() {
                 style={{ filter: `drop-shadow(0 0 12px ${isFocus ? '#818cf8' : '#34d399'})` }}
               />
             </svg>
-            <div className="text-center">
-              <span className="text-6xl font-black tabular-nums tracking-tight text-white">
+
+            {/* Timer text on top */}
+            <div className="text-center z-20 relative">
+              <span className="text-6xl font-black tabular-nums tracking-tight text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
                 {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
               </span>
-              <p className="text-slate-500 text-sm mt-1 font-medium">
+              <p className="text-blue-300/50 text-sm mt-1 font-medium">
                 {isFocus ? 'remaining' : 'break time'}
               </p>
             </div>
@@ -501,6 +538,8 @@ export function FocusOverlay() {
               : "The next session starts when you're ready."}
           </p>
         </div>
+
+        {/* Global animations handle the 3D loader and text effects */}
       </motion.div>
     </AnimatePresence>
   );

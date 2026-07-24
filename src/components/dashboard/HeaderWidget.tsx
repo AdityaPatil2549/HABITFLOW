@@ -58,7 +58,7 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   const item = { hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } };
 
   return (
-    <div className="flex flex-col gap-6 sm:gap-8 relative group widget-container">
+    <div className="flex flex-col gap-6 sm:gap-8 relative group widget-container w-full">
       {dragHandleProps && (
         <div
           {...dragHandleProps}
@@ -68,15 +68,15 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
         </div>
       )}
 
-      <motion.div variants={item} className="flex flex-col gap-6 sm:gap-8">
-        <div className="flex flex-col gap-2 relative">
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-none relative z-10 drop-shadow-2xl">
-            {greeting}, <br />
+      <motion.div variants={item} className="flex flex-col gap-6 sm:gap-8 w-full">
+        <div className="flex flex-col gap-2 relative w-full">
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black dark:text-white text-slate-900 tracking-tighter leading-none relative z-10 drop-shadow-2xl">
+            {greeting},{' '}
             <span className="bg-clip-text text-transparent bg-gradient-to-br from-brand-400 via-brand-500 to-indigo-600">
               {userName}
             </span>
           </h1>
-          <p className="text-slate-400 text-lg sm:text-xl font-medium mt-4 max-w-xl">
+          <p className="text-slate-500 dark:text-slate-400 text-lg sm:text-xl font-medium mt-4 w-full">
             {done === scheduled.length && scheduled.length > 0
               ? '🎉 Incredible. You have conquered all habits for today.'
               : done > 0
@@ -90,18 +90,20 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
         <div className="flex items-center gap-4">
           <MagneticButton
             onClick={() => navigate('/habits')}
-            className="group relative flex items-center gap-3 px-6 py-4 rounded-2xl bg-white text-slate-950 font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.4)]"
+            className="group relative flex items-center gap-4 pl-6 pr-2 py-2 rounded-full bg-white text-slate-950 font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
             intensity={0.2}
           >
-            <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
             <span>Engage Habit</span>
+            <div className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black/10 transition-colors">
+              <Plus size={20} className="group-hover:rotate-90 group-hover:scale-110 transition-transform duration-300" />
+            </div>
           </MagneticButton>
 
           {xpStats && (
             <div data-tour="stats-widget" className="flex flex-col items-start gap-1 ml-4 px-6 py-3 rounded-2xl vision-panel backdrop-blur-xl border border-white/10">
               <div className="flex items-center gap-2">
                 <Zap size={16} className="text-amber-400" />
-                <span className="text-base font-bold text-white tracking-wide">
+                <span className="text-base font-bold text-slate-900 dark:text-white tracking-wide">
                   {userXP?.total ?? 0} XP
                 </span>
               </div>
@@ -140,10 +142,13 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
           </div>
           <MagneticButton
             onClick={() => navigate('/habits')}
-            className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 font-bold hover:bg-red-500/30 transition-colors whitespace-nowrap border border-red-500/30"
+            className="group flex-shrink-0 flex items-center gap-3 pl-5 pr-1.5 py-1.5 rounded-full bg-red-500/20 text-red-400 font-bold hover:bg-red-500/30 transition-colors whitespace-nowrap border border-red-500/30"
             intensity={0.2}
           >
-            Avert Crisis →
+            <span>Avert Crisis</span>
+            <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </div>
           </MagneticButton>
         </motion.div>
       )}

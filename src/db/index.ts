@@ -73,16 +73,47 @@ class HabitFlowDB extends Dexie {
       ai_insights: 'id, type, created_at, read',
     });
 
-    // v7: Drop userXP and settings to safely change primary keys from auto-increment to string
+    // v7: Copy data to temp tables with string primary keys
     this.version(7).stores({
-      userXP: null,
-      settings: null,
+      userXP_temp: 'id',
+      settings_temp: 'id',
+    }).upgrade(async tx => {
+      const xp = await tx.table('userXP').toArray();
+      if (xp.length > 0) {
+        xp[0].id = 'singleton';
+        await tx.table('userXP_temp').put(xp[0]);
+      }
+      const settings = await tx.table('settings').toArray();
+      if (settings.length > 0) {
+        settings[0].id = 'singleton';
+        await tx.table('settings_temp').put(settings[0]);
+      }
     });
 
-    // v8: Recreate userXP and settings with string primary keys
+    // v8: Recreate userXP and settings with string primary keys and restore data
     this.version(8).stores({
       userXP: 'id',
       settings: 'id',
+    }).upgrade(async tx => {
+      const xp = await tx.table('userXP_temp').toArray();
+      if (xp.length > 0) await tx.table('userXP').put(xp[0]);
+      const settings = await tx.table('settings_temp').toArray();
+      if (settings.length > 0) await tx.table('settings').put(settings[0]);
+    });
+
+    // v9: Clean up temp tables
+    this.version(9).stores({
+      userXP_temp: null,
+      settings_temp: null,
+    });
+
+    // v10: Add deleted_at index to all syncable tables
+    this.version(10).stores({
+      habits: '++id, name, category, type, frequency, archived, createdAt, order, deleted_at',
+      habitLogs: '++id, habitId, date, [habitId+date], createdAt, deleted_at',
+      tasks: '++id, title, priority, dueDate, projectId, parentId, completed, createdAt, order, deleted_at',
+      projects: '++id, name, archived, order, createdAt, deleted_at',
+      moods: '++id, date, score, createdAt, deleted_at',
     });
   }
 }
@@ -96,7 +127,7 @@ export async function getOrCreateUserXP(): Promise<UserXP> {
     if (user) {
       let needsUpdate = false;
       if (!user.unlockedThemes) {
-        user.unlockedThemes = ['indigo', 'violet', 'emerald', 'rose', 'amber'];
+        user.unlockedThemes = ['indigo'];
         needsUpdate = true;
       }
       if (user.coins === undefined || user.coins === null) {
@@ -120,13 +151,13 @@ export async function getOrCreateUserXP(): Promise<UserXP> {
     badgesEarned: [],
     weeklyScore: 0,
     dailyScore: 0,
-    streakFreezes: 3,
-    unlockedThemes: ['indigo', 'violet', 'emerald', 'rose', 'amber'],
+    streakFreezes: 0,
+    unlockedThemes: ['indigo'],
     lastUpdated: new Date().toISOString(),
   };
   try {
     await db.userXP.add(newXP).catch(() => null);
-  } catch(e) { /* ignore */ }
+  } catch { /* ignore */ }
   return newXP;
 }
 
@@ -134,11 +165,11 @@ export async function getOrCreateSettings(): Promise<Settings> {
   try {
     const existing = await db.settings.get('singleton').catch(() => null);
     if (existing) return existing;
-  } catch (err) { /* ignore */ }
+  } catch { /* ignore */ }
   const defaults: Settings = {
     id: 'singleton',
     theme: 'indigo',
-    darkMode: 'system',
+    darkMode: 'dark',
     weekStartsOnMonday: true,
     notificationsEnabled: false,
     soundEnabled: true,
@@ -148,6 +179,6 @@ export async function getOrCreateSettings(): Promise<Settings> {
   };
   try {
     await db.settings.add(defaults).catch(() => null);
-  } catch(e) { /* ignore */ }
+  } catch { /* ignore */ }
   return defaults;
 }

@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
-import type { User, Session } from '@supabase/supabase-js';
+import { auth } from '@/lib/firebase';
+import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut } from 'firebase/auth';
 
 interface AuthState {
   user: User | null;
-  session: Session | null;
+  session: { access_token: string } | null;
   loading: boolean;
   isGuest: boolean;
   signInWithGoogle: () => Promise<void>;
@@ -13,9 +13,9 @@ interface AuthState {
 }
 
 // Hold the subscription reference outside the store so we can unsubscribe on re-init
-let authSubscription: { unsubscribe: () => void } | null = null;
+let authSubscription: (() => void) | null = null;
 
-export const useAuthStore = create<AuthState>(set => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   session: null,
   loading: true,
@@ -25,34 +25,29 @@ export const useAuthStore = create<AuthState>(set => ({
     try {
       // Clean up any previous listener
       if (authSubscription) {
-        authSubscription.unsubscribe();
+        authSubscription();
         authSubscription = null;
       }
 
-      // Restore existing session
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      set({
-        session,
-        user: session?.user ?? null,
-        isGuest: !session,
-        loading: false,
-      });
-
       // Listen for future auth changes (sign-in, sign-out, token refresh)
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        set({
-          session,
-          user: session?.user ?? null,
-          isGuest: !session,
-          loading: false,
-        });
+      authSubscription = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const token = await user.getIdToken();
+          set({
+            user,
+            session: { access_token: token },
+            isGuest: false,
+            loading: false,
+          });
+        } else {
+          set({
+            user: null,
+            session: null,
+            isGuest: true,
+            loading: false,
+          });
+        }
       });
-
-      authSubscription = subscription;
     } catch (error) {
       console.error('Auth initialization failed:', error);
       set({ loading: false, isGuest: true });
@@ -60,34 +55,37 @@ export const useAuthStore = create<AuthState>(set => ({
   },
 
   signInWithGoogle: async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/login`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-        scopes: 'https://www.googleapis.com/auth/calendar.events',
-      },
-    });
-
-    if (error) {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('https://www.googleapis.com/auth/calendar.events');
+      provider.setCustomParameters({ prompt: 'consent' });
+      
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+      if (token) {
+        localStorage.setItem('google_calendar_token', token);
+      }
+      if (result.user) {
+         // Token logic is handled by onAuthStateChanged
+      }
+    } catch (error: any) {
       console.error('Google sign-in failed:', error.message);
       throw error;
     }
   },
 
   signOut: async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      await firebaseSignOut(auth);
+      set({
+        user: null,
+        session: null,
+        isGuest: true,
+      });
+    } catch (error: any) {
       console.error('Sign-out failed:', error.message);
       throw error;
     }
-    set({
-      user: null,
-      session: null,
-      isGuest: true,
-    });
   },
 }));

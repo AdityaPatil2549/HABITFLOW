@@ -20,8 +20,6 @@ export function TargetWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   const circ = 2 * Math.PI * 78;
   const offset = circ - (circ * pct) / 100;
 
-  const item = { hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } };
-
   return (
     <div className="h-full relative group widget-container">
       {dragHandleProps && (
@@ -33,7 +31,7 @@ export function TargetWidget({ dragHandleProps }: { dragHandleProps?: any }) {
         </div>
       )}
       <TiltCard borderGlow className="h-full">
-        <SpotlightCard variants={item} className="h-full rounded-[2.5rem] p-6 sm:p-10 relative">
+        <SpotlightCard className="h-full p-6 sm:p-10 relative">
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
             <Trophy size={100} className="text-brand-400" />
           </div>

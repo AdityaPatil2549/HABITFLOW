@@ -1,23 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
+import { GripHorizontal } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { db, getOrCreateSettings } from '../db';
+import { useHabitStore } from '../store/habitStore';
+import { useTaskStore } from '../store/taskStore';
 
 
-import { HeaderWidget } from '../components/dashboard/HeaderWidget';
-import { TargetWidget } from '../components/dashboard/TargetWidget';
-import { PerformanceWidget } from '../components/dashboard/PerformanceWidget';
-import { TasksWidget } from '../components/dashboard/TasksWidget';
-import { HabitsWidget } from '../components/dashboard/HabitsWidget';
-import { MoodWidget } from '../components/dashboard/MoodWidget';
+const HeaderWidget = lazy(() => import('../components/dashboard/HeaderWidget').then(m => ({ default: m.HeaderWidget })));
+const TargetWidget = lazy(() => import('../components/dashboard/TargetWidget').then(m => ({ default: m.TargetWidget })));
+const PerformanceWidget = lazy(() => import('../components/dashboard/PerformanceWidget').then(m => ({ default: m.PerformanceWidget })));
+const TasksWidget = lazy(() => import('../components/dashboard/TasksWidget').then(m => ({ default: m.TasksWidget })));
+const HabitsWidget = lazy(() => import('../components/dashboard/HabitsWidget').then(m => ({ default: m.HabitsWidget })));
+const MoodWidget = lazy(() => import('../components/dashboard/MoodWidget').then(m => ({ default: m.MoodWidget })));
+const AICoachWidget = lazy(() => import('../components/dashboard/AICoachWidget').then(m => ({ default: m.AICoachWidget })));
 
-const DEFAULT_LAYOUT = ['header', 'target', 'performance', 'tasks', 'habits', 'mood'];
+const DEFAULT_LAYOUT = ['header', 'aicoach', 'target', 'performance', 'tasks', 'habits', 'mood'];
 
 export function Dashboard() {
   const [layout, setLayout] = useState<string[]>(DEFAULT_LAYOUT);
+  const { loadHabits } = useHabitStore();
+  const { loadTasks } = useTaskStore();
 
   useEffect(() => {
     document.title = 'Dashboard — HabitFlow';
+    loadHabits();
+    loadTasks();
     const loadLayout = async () => {
       const s = await getOrCreateSettings();
       // If it's an array and not empty, use it, else default
@@ -32,12 +40,22 @@ export function Dashboard() {
         
         // Only update if we have valid widgets, otherwise fallback to default
         if (mappedLayout.length > 0) {
-          setLayout(mappedLayout);
+          // Deduplicate the layout first
+          const uniqueLayout = Array.from(new Set(mappedLayout));
+          
+          // Append any missing widgets from DEFAULT_LAYOUT
+          const mappedSet = new Set(uniqueLayout);
+          for (const id of DEFAULT_LAYOUT) {
+            if (!mappedSet.has(id)) {
+              uniqueLayout.push(id);
+            }
+          }
+          setLayout(uniqueLayout);
         }
       }
     };
     loadLayout();
-  }, []);
+  }, [loadHabits, loadTasks]);
 
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
@@ -53,42 +71,42 @@ export function Dashboard() {
 
   const container = {
     hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.1 } },
+    show: { opacity: 1, transition: { staggerChildren: 0.02 } },
   };
 
   const itemVariant = {
-    hidden: { y: 30, opacity: 0, scale: 0.95 },
+    hidden: { y: 48, filter: 'blur(8px)', opacity: 0 },
     show: { 
       y: 0, 
+      filter: 'blur(0px)',
       opacity: 1, 
-      scale: 1, 
-      transition: { type: 'spring' as const, stiffness: 300, damping: 24 } 
+      transition: { type: 'spring' as const, stiffness: 100, damping: 20 } 
     },
   };
 
-  const renderWidget = (id: string, dragHandleProps: any) => {
+  const renderWidget = (id: string) => {
     switch (id) {
       case 'header':
-        return <HeaderWidget dragHandleProps={dragHandleProps} />;
+        return <HeaderWidget />;
       case 'target':
-        return <TargetWidget dragHandleProps={dragHandleProps} />;
+        return <TargetWidget />;
       case 'performance':
-        return <PerformanceWidget dragHandleProps={dragHandleProps} />;
+        return <PerformanceWidget />;
       case 'tasks':
-        return <TasksWidget dragHandleProps={dragHandleProps} />;
+        return <TasksWidget />;
       case 'habits':
-        return <HabitsWidget dragHandleProps={dragHandleProps} />;
+        return <HabitsWidget />;
       case 'mood':
-        return <MoodWidget dragHandleProps={dragHandleProps} />;
+        return <MoodWidget />;
+      case 'aicoach':
+        return <AICoachWidget />;
       default:
         return null;
     }
   };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="min-h-screen pb-20">
-
-
+    <motion.div variants={container} initial="hidden" animate="show" className="min-h-[100dvh] pb-20">
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="dashboard">
           {provided => (
@@ -101,6 +119,7 @@ export function Dashboard() {
                 <Draggable key={id} draggableId={id} index={index}>
                   {provided => {
                     let spanClass = 'col-span-full';
+                    if (id === 'aicoach') spanClass = 'lg:col-span-2 xl:col-span-4';
                     if (id === 'target') spanClass = 'lg:col-span-1 xl:col-span-2';
                     if (id === 'performance') spanClass = 'lg:col-span-2 xl:col-span-4';
                     if (id === 'tasks') spanClass = 'col-span-full xl:col-span-3';
@@ -116,8 +135,20 @@ export function Dashboard() {
                           zIndex: (provided.draggableProps.style as any)?.zIndex || 1,
                         }}
                       >
-                        <motion.div variants={itemVariant} className="h-full">
-                          {renderWidget(id, provided.dragHandleProps)}
+                        <motion.div variants={itemVariant} className="h-full relative group widget-container">
+                          <div
+                            {...provided.dragHandleProps}
+                            className="absolute top-4 right-4 z-50 p-2 text-white/20 hover:text-white/60 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg backdrop-blur-md"
+                          >
+                            <GripHorizontal size={20} />
+                          </div>
+                          <Suspense fallback={
+                            <div className="h-full min-h-[200px] flex items-center justify-center rounded-3xl dark:bg-slate-900/40 bg-white/50 backdrop-blur-xl border dark:border-white/10 border-slate-900/10 shadow-xl">
+                              <div className="w-8 h-8 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin" />
+                            </div>
+                          }>
+                            {renderWidget(id)}
+                          </Suspense>
                         </motion.div>
                       </div>
                     );

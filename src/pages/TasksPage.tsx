@@ -21,13 +21,17 @@ import {
 import { useTaskStore } from '../store/taskStore';
 import { useFocusStore } from '../store/focusStore';
 import type { Task, Priority } from '../types';
-import { format, isToday, isPast } from 'date-fns';
+import { format, isToday, isPast, parseISO } from 'date-fns';
 import { taskSchema } from '../lib/validations';
 import { cn, compressImage } from '../lib/utils';
 import { useToast } from '../components/common/Toast';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { MagneticButton } from '../components/ui/MagneticButton';
 import { exportTaskToCalendar } from '../lib/calendarSync';
+import { NeonCheckbox } from '../components/ui/animated-check-box';
+import { DatePicker } from '../components/ui/date-picker';
+import { MorphingPopover, MorphingPopoverTrigger, MorphingPopoverContent } from '../components/ui/morphing-popover';
+import { JollyTagGroup, TagList, Tag } from '../components/ui/tag-group';
 
 // Lazy load the heavy Three.js background
 const TasksBackground = lazy(() =>
@@ -118,7 +122,7 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
   const [dueDate, setDueDate] = useState(initialTask?.dueDate ?? format(new Date(), 'yyyy-MM-dd'));
   const [priority, setPriority] = useState<Priority>(initialTask?.priority ?? 2);
   const [recurring, setRecurring] = useState<Task['recurring']>(initialTask?.recurring ?? 'none');
-  const [label, setLabel]     = useState(initialTask?.labels?.[0] ?? '');
+  const [labels, setLabels]   = useState<string[]>(initialTask?.labels ?? []);
   const [imageAttachment, setImageAttachment] = useState(initialTask?.imageAttachment ?? '');
   const [error, setError]     = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -135,7 +139,7 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
     if (!title.trim()) return;
     const parsed = taskSchema.safeParse({
       title: title.trim(), description: desc, priority,
-      dueDate: dueDate || undefined, labels: label ? [label] : [],
+      dueDate: dueDate || undefined, labels,
       recurring, completed: initialTask?.completed ?? false,
       parentId: initialTask?.parentId, projectId: initialTask?.projectId,
       imageAttachment: imageAttachment || undefined,
@@ -185,8 +189,11 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
       <div className="grid grid-cols-2 gap-3">
         <div>
           <p className="text-xs text-slate-500 font-bold mb-2 uppercase tracking-wider">Due Date</p>
-          <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-brand-500/50 transition-all" />
+          <DatePicker 
+            date={dueDate ? parseISO(dueDate) : undefined}
+            onDateChange={(d) => setDueDate(d ? format(d, 'yyyy-MM-dd') : '')}
+            className="w-full py-2.5" 
+          />
         </div>
         <div>
           <p className="text-xs text-slate-500 font-bold mb-2 uppercase tracking-wider">Repeat</p>
@@ -199,8 +206,18 @@ function TaskForm({ onClose, initialTask }: { onClose: () => void; initialTask?:
           </select>
         </div>
       </div>
-      <input className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 text-sm outline-none focus:border-brand-500/50 transition-all"
-        placeholder="Label (e.g. Work, Study, Health)…" value={label} onChange={e => setLabel(e.target.value)} />
+      <JollyTagGroup
+        label="Labels"
+        selectionMode="multiple"
+        selectedKeys={new Set(labels)}
+        onSelectionChange={(keys) => setLabels(Array.from(keys) as string[])}
+      >
+        <TagList>
+          {['Work', 'Study', 'Health', 'Personal', 'Finance', 'Errands'].map(t => (
+            <Tag id={t} key={t}>{t}</Tag>
+          ))}
+        </TagList>
+      </JollyTagGroup>
       <div className="flex gap-3 pt-1">
         <button type="button" onClick={onClose}
           className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors">
@@ -242,6 +259,7 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
   const [completing, setCompleting] = useState(false);
   const [particles, setParticles]   = useState<Particle[]>([]);
   const [expanded, setExpanded]     = useState(false);
+  const [descNote, setDescNote]     = useState(task.description || '');
 
   const subtasks = tasks.filter(t => t.parentId === task.id);
   const pc = PRIORITY_CONFIG[task.priority];
@@ -323,8 +341,8 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
             className={cn(
               'rounded-2xl border overflow-hidden transition-all duration-300',
               task.completed
-                ? 'opacity-55 grayscale-[0.6] bg-white/3 border-white/5'
-                : 'bg-slate-900/65 backdrop-blur-xl border-white/10 hover:border-white/20 shadow-xl'
+                ? 'opacity-55 grayscale-[0.6] dark:bg-white/3 bg-slate-900/5 dark:border-white/5 border-slate-900/10'
+                : 'dark:bg-slate-900/65 bg-white/60 backdrop-blur-xl dark:border-white/10 border-slate-900/10 hover:dark:border-white/20 hover:border-slate-900/20 shadow-xl'
             )}
             style={!task.completed ? {
               borderLeft: `3px solid ${pc.color}`,
@@ -339,29 +357,18 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
 
             <div className="relative flex items-center gap-4 px-5 py-4">
               {/* Check button */}
-              <motion.button
-                onClick={handleComplete}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.8 }}
-                className={cn(
-                  'flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all',
-                  task.completed ? 'bg-emerald-500 border-emerald-400 text-white' : 'border-slate-600'
-                )}
-                style={!task.completed ? { borderColor: `${pc.color}70` } : {}}
-              >
-                {task.completed && (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-3.5 h-3.5" strokeLinecap="round" strokeLinejoin="round">
-                    <motion.path initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.4, ease: 'easeOut' }} d="M20 6L9 17l-5-5" />
-                  </svg>
-                )}
-                {!task.completed && (
-                  <div className="w-2 h-2 rounded-full opacity-0 group-hover:opacity-50 transition-opacity" style={{ background: pc.color }} />
-                )}
-              </motion.button>
+              <div className="flex-shrink-0 flex items-center justify-center relative z-10 w-7 h-7">
+                <NeonCheckbox 
+                  checked={task.completed} 
+                  onChange={handleComplete}
+                  neonColor={pc.color}
+                  checkboxSize="28px"
+                />
+              </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className={cn('text-sm font-bold tracking-tight', task.completed ? 'line-through text-slate-500' : 'text-white')}>
+                <p className={cn('text-sm font-bold tracking-tight', task.completed ? 'line-through text-slate-500' : 'dark:text-white text-slate-900')}>
                   {task.title}
                 </p>
                 {task.description && (
@@ -414,6 +421,31 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 {!task.completed && (
                   <>
+                    <MorphingPopover>
+                      <MorphingPopoverTrigger className="w-8 h-8 rounded-full hover:bg-brand-500/20 text-slate-500 hover:text-brand-400 transition-colors flex items-center justify-center" title="Note">
+                        <Plus size={14} />
+                      </MorphingPopoverTrigger>
+                      <MorphingPopoverContent className="w-64 p-3 flex flex-col gap-2 relative z-50">
+                        <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">Task Note</label>
+                        <textarea
+                          className="input w-full min-h-20 resize-none text-sm bg-slate-800/50"
+                          placeholder="Add details or notes..."
+                          value={descNote}
+                          onChange={e => setDescNote(e.target.value)}
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => {
+                            const { updateTask } = useTaskStore.getState();
+                            updateTask(task.id, { description: descNote });
+                            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+                          }}
+                          className="btn-primary py-1.5 text-xs w-full mt-1"
+                        >
+                          Save
+                        </button>
+                      </MorphingPopoverContent>
+                    </MorphingPopover>
                     <button onClick={() => openPicker({ id: task.id, title: task.title, type: 'task' })}
                       className="w-8 h-8 rounded-full hover:bg-brand-500/20 text-slate-500 hover:text-brand-400 transition-colors flex items-center justify-center" title="Focus">
                       <Timer size={14} />
@@ -524,7 +556,7 @@ function KanbanBoard({ tasks, search }: { tasks: Task[]; search: string }) {
     // Perspective wrapper for 3D depth
     <div style={{ perspective: '2400px', perspectiveOrigin: '50% 10%' }}>
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 pb-8"
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8 pb-8"
         style={{ transformStyle: 'preserve-3d' }}
         initial={{ rotateX: 8, opacity: 0 }}
         animate={{ rotateX: 0, opacity: 1 }}
@@ -545,12 +577,12 @@ function KanbanBoard({ tasks, search }: { tasks: Task[]; search: string }) {
               {/* Column header */}
               <div className="flex items-center justify-between px-4 py-3 rounded-2xl border backdrop-blur-sm"
                 style={{ background: `${col.color}12`, borderColor: `${col.color}28` }}>
-                <span className="text-sm font-black text-white tracking-tight">{col.label}</span>
+                <span className="text-sm font-black dark:text-white text-slate-900 tracking-tight">{col.label}</span>
                 <span className="text-xs font-black px-2 py-0.5 rounded-full"
                   style={{ background: `${col.color}22`, color: col.color }}>{colTasks.length}</span>
               </div>
               {/* Column cards */}
-              <div className="flex flex-col gap-2 min-h-[120px]">
+              <div className="flex flex-col gap-3 min-h-[120px]">
                 <AnimatePresence mode="popLayout">
                   {colTasks.length === 0 ? (
                     <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -583,8 +615,8 @@ function EmptyState({ view, onAdd }: { view: ViewType; onAdd: () => void }) {
       <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent pointer-events-none" />
       <motion.span animate={{ y: [0, -10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         className="text-6xl mb-5 relative z-10">{cfg.emoji}</motion.span>
-      <h3 className="text-xl font-black text-white mb-2 relative z-10">{cfg.title}</h3>
-      <p className="text-slate-400 text-sm leading-relaxed max-w-[240px] relative z-10">{cfg.sub}</p>
+      <h3 className="text-xl font-black dark:text-white text-slate-900 mb-2 relative z-10">{cfg.title}</h3>
+      <p className="dark:text-slate-400 text-slate-500 text-sm leading-relaxed max-w-[240px] relative z-10">{cfg.sub}</p>
       {view !== 'Completed' && (
         <MagneticButton onClick={onAdd} intensity={0.4}
           className="mt-6 px-6 py-2.5 rounded-xl font-bold text-sm text-white flex items-center gap-2 relative z-10"
@@ -629,6 +661,7 @@ export function TasksPage() {
 
   // Reorder local state for drag-to-reorder in list mode
   const [orderedFiltered, setOrderedFiltered] = useState(filtered);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setOrderedFiltered(filtered), [filtered]);
 
   const doneToday   = tasks.filter(t => !t.parentId && t.completed && t.completedAt?.startsWith(today)).length;
@@ -651,8 +684,8 @@ export function TasksPage() {
           backdropFilter: 'blur(24px)',
         }}>
         {/* Ambient orbs */}
-        <div className="absolute top-0 right-0 w-72 h-72 rounded-full blur-[120px] opacity-20 pointer-events-none" style={{ background: 'var(--brand-500)' }} />
-        <div className="absolute bottom-0 left-1/3 w-56 h-56 rounded-full blur-[80px] opacity-10 pointer-events-none" style={{ background: 'var(--brand-400)' }} />
+        <div className="absolute top-0 right-0 w-72 h-72 rounded-full blur-[120px] opacity-20 pointer-events-none -z-10" style={{ background: 'var(--brand-500)' }} />
+        <div className="absolute bottom-0 left-1/3 w-56 h-56 rounded-full blur-[80px] opacity-10 pointer-events-none -z-10" style={{ background: 'var(--brand-400)' }} />
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-6">
           <ProgressRing done={doneToday} total={doneToday + totalToday} />
@@ -661,8 +694,8 @@ export function TasksPage() {
             <p className="text-xs font-black uppercase tracking-[0.25em] mb-1" style={{ color: 'var(--brand-400)' }}>
               Task Command Center
             </p>
-            <h1 className="text-4xl font-black text-white tracking-tight mb-2">My Tasks</h1>
-            <p className="text-slate-400 text-sm mb-5">
+            <h1 className="text-4xl font-black dark:text-white text-slate-900 tracking-tight mb-2">My Tasks</h1>
+            <p className="dark:text-slate-400 text-slate-600 text-sm mb-5">
               {doneToday > 0 ? `${doneToday} smashed today — let's keep going! 🔥` : 'Stay focused. Build momentum.'}
             </p>
 
@@ -721,21 +754,21 @@ export function TasksPage() {
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
           <input type="text" placeholder="Search tasks…" value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-500 outline-none transition-all"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm dark:text-white text-slate-900 placeholder-slate-500 outline-none transition-all"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', backdropFilter: 'blur(10px)' }} />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
               <X size={14} />
             </button>
           )}
         </div>
         {/* View mode toggle */}
-        <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 gap-1">
+        <div className="flex bg-slate-900/5 dark:bg-white/5 border border-slate-900/10 dark:border-white/10 rounded-xl p-1 gap-1">
           {(['list', 'board'] as DisplayMode[]).map(mode => {
           const Icon = mode === 'list' ? LayoutList : LayoutGrid;
           return (
             <button key={mode} onClick={() => setDisplayMode(mode)}
-              className={`relative flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold transition-colors ${displayMode === mode ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+              className={`relative flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold transition-colors ${displayMode === mode ? 'dark:text-white text-slate-900' : 'text-slate-500 dark:hover:text-slate-300 hover:text-slate-700'}`}>
               {displayMode === mode && (
                 <motion.div layoutId="view-pill" className="absolute inset-0 rounded-lg"
                   style={{ background: 'rgba(var(--brand-500-rgb),0.3)' }}
@@ -750,10 +783,10 @@ export function TasksPage() {
 
       {/* ── View Tabs + Priority Filters ────────────────────── */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex gap-1 p-1 rounded-xl border border-white/8" style={{ background: 'rgba(255,255,255,0.04)' }}>
+        <div className="flex gap-1 p-1 rounded-xl border border-slate-900/5 dark:border-white/8" style={{ background: 'rgba(255,255,255,0.04)' }}>
           {VIEWS.map(v => (
             <button key={v} onClick={() => setView(v)}
-              className={`relative px-4 py-2 rounded-lg text-sm font-bold transition-colors ${view === v ? 'text-white' : 'text-slate-400 hover:text-white'}`}>
+              className={`relative px-4 py-2 rounded-lg text-sm font-bold transition-colors ${view === v ? 'dark:text-white text-slate-900' : 'text-slate-500 dark:hover:text-white hover:text-slate-900'}`}>
               {view === v && (
                 <motion.div layoutId="view-tab" className="absolute inset-0 rounded-lg"
                   style={{ background: 'rgba(var(--brand-500-rgb),0.25)', border: '1px solid rgba(var(--brand-500-rgb),0.3)' }}
@@ -763,10 +796,10 @@ export function TasksPage() {
                 {v}
                 {v === 'Today' && totalToday > 0 && (
                   <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full"
-                    style={{ background: 'rgba(var(--brand-500-rgb),0.3)', color: 'var(--brand-400)' }}>{totalToday}</span>
+                    style={{ background: 'rgba(var(--brand-500-rgb),0.3)', color: 'var(--brand-600)' }}>{totalToday}</span>
                 )}
                 {v === 'Upcoming' && urgentCount > 0 && (
-                  <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400">{urgentCount} 🔴</span>
+                  <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-500">{urgentCount} 🔴</span>
                 )}
               </span>
             </button>
@@ -775,7 +808,7 @@ export function TasksPage() {
 
         <div className="flex gap-1.5 flex-wrap">
           <button onClick={() => setPriorityFilter(null)}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${priorityFilter === null ? 'bg-white/15 border-white/30 text-white' : 'bg-transparent border-white/10 text-slate-400 hover:text-white'}`}>
+            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${priorityFilter === null ? 'dark:bg-white/15 bg-slate-900/10 dark:border-white/30 border-slate-900/20 dark:text-white text-slate-900' : 'bg-transparent dark:border-white/10 border-slate-900/10 text-slate-500 dark:hover:text-white hover:text-slate-900'}`}>
             All
           </button>
           {PRIORITY_CONFIG.map((p, i) => (
@@ -783,7 +816,7 @@ export function TasksPage() {
               className="px-3 py-1.5 rounded-full text-xs font-bold transition-all border"
               style={priorityFilter === i
                 ? { background: p.bg, borderColor: p.border, color: p.color }
-                : { background: 'transparent', borderColor: 'rgba(255,255,255,0.08)', color: '#64748b' }}>
+                : { background: 'transparent', borderColor: 'rgba(100,116,139,0.2)', color: '#64748b' }}>
               {p.icon} {p.label}
             </button>
           ))}

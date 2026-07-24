@@ -1,93 +1,88 @@
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useRef, useMemo, Suspense } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 
-// Palette matches habit COLORS: indigo, violet, emerald, rose, amber, cyan
-const PALETTE: [number, number, number][] = [
-  [0.388, 0.4,  0.945],
-  [0.545, 0.361,0.965],
-  [0.063, 0.714,0.506],
-  [0.957, 0.259,0.361],
-  [0.961, 0.620,0.063],
-  [0.024, 0.714,0.831],
-];
-
-const COUNT = 60;
-
-function FloatingParticles() {
-  const pointsRef  = useRef<THREE.Points>(null);
-  const speedsRef  = useRef<Float32Array>(
-    Float32Array.from({ length: COUNT }, () => 0.003 + Math.random() * 0.006)
-  );
-  const phasesRef  = useRef<Float32Array>(
-    Float32Array.from({ length: COUNT }, () => Math.random() * Math.PI * 2)
-  );
-
-  const geo = useMemo(() => {
-    const positions = new Float32Array(COUNT * 3);
-    const colors    = new Float32Array(COUNT * 3);
-    for (let i = 0; i < COUNT; i++) {
-      positions[i * 3]     = (Math.random() - 0.5) * 26;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 18;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 8;
-      const [r, g, b] = PALETTE[Math.floor(Math.random() * PALETTE.length)];
-      colors[i * 3]     = r;
-      colors[i * 3 + 1] = g;
-      colors[i * 3 + 2] = b;
+function GalaxyStars() {
+  const count = 300;
+  const mesh = useRef<THREE.InstancedMesh>(null);
+  
+  const particles = useMemo(() => {
+    const temp = [];
+    for (let i = 0; i < count; i++) {
+      const t = Math.random() * 100;
+      const factor = 10 + Math.random() * 80;
+      const speed = 0.005 + Math.random() / 300;
+      const xFactor = -40 + Math.random() * 80;
+      const yFactor = -40 + Math.random() * 80;
+      const zFactor = -40 + Math.random() * 80;
+      // Add a slight color variation for galaxy feel
+      const color = new THREE.Color();
+      const r = Math.random();
+      if (r > 0.8) color.set('#c084fc'); // purple
+      else if (r > 0.6) color.set('#34d399'); // emerald
+      else color.set('#818cf8'); // indigo
+      
+      temp.push({ t, factor, speed, xFactor, yFactor, zFactor, mx: 0, my: 0, color });
     }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    g.setAttribute('color',    new THREE.BufferAttribute(colors,    3));
-    return g;
-  }, []);
+    return temp;
+  }, [count]);
 
-  useFrame(({ clock }) => {
-    if (!pointsRef.current) return;
-    const t   = clock.elapsedTime;
-    const pos = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
-    for (let i = 0; i < COUNT; i++) {
-      // Float upward
-      let y = pos.getY(i) + speedsRef.current[i];
-      if (y > 10) {
-        y = -10;
-        pos.setX(i, (Math.random() - 0.5) * 26);
-      }
-      // Gentle lateral sway
-      const sway = Math.sin(t * 0.4 + phasesRef.current[i]) * 0.012;
-      pos.setX(i, pos.getX(i) + sway);
-      pos.setY(i, y);
-    }
-    pos.needsUpdate = true;
-    // Very slow global rotation
-    pointsRef.current.rotation.y = t * 0.012;
+  const dummy = new THREE.Object3D();
+  
+  // Set initial colors once
+  useEffect(() => {
+    if (!mesh.current) return;
+    particles.forEach((p, i) => {
+      mesh.current!.setColorAt(i, p.color);
+    });
+    mesh.current!.instanceColor!.needsUpdate = true;
+  }, [particles]);
+
+  useFrame((state) => {
+    if (!mesh.current) return;
+    particles.forEach((particle, i) => {
+      let { t, factor, speed, xFactor, yFactor, zFactor } = particle;
+      t = particle.t += speed;
+      const a = Math.cos(t) + Math.sin(t * 1) / 10;
+      const b = Math.sin(t) + Math.cos(t * 2) / 10;
+      const s = Math.cos(t) * 0.5 + 0.5;
+      
+      // Gentle mouse interaction
+      particle.mx += (state.pointer.x * 2 - particle.mx) * 0.02;
+      particle.my += (state.pointer.y * 2 - particle.my) * 0.02;
+      
+      dummy.position.set(
+        (particle.mx * 5) + a + xFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 1) * factor) / 10,
+        (particle.my * 5) + b + yFactor + Math.sin((t / 10) * factor) + (Math.cos(t * 2) * factor) / 10,
+        (particle.my * 5) + b + zFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 3) * factor) / 10
+      );
+      dummy.scale.set(s, s, s);
+      dummy.updateMatrix();
+      mesh.current!.setMatrixAt(i, dummy.matrix);
+    });
+    mesh.current!.instanceMatrix.needsUpdate = true;
   });
 
   return (
-    <points ref={pointsRef} geometry={geo}>
-      <pointsMaterial
-        size={0.18}
-        vertexColors
-        transparent
-        opacity={0.38}
-        sizeAttenuation
-        depthWrite={false}
-      />
-    </points>
+    <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
+      {/* Use icosahedron for cheap, perfectly smooth looking spheres */}
+      <icosahedronGeometry args={[0.12, 1]} />
+      <meshBasicMaterial transparent opacity={0.6} depthWrite={false} />
+    </instancedMesh>
   );
 }
 
 export function HabitsBackground() {
   return (
-    <div className="fixed inset-0 -z-10 pointer-events-none">
+    <div className="fixed inset-0 z-0 pointer-events-none">
       <Canvas
-        camera={{ position: [0, 0, 14], fov: 55 }}
-        gl={{ alpha: true, antialias: false, powerPreference: 'low-power' }}
-        dpr={[1, 1.5]}
+        camera={{ position: [0, 0, 20], fov: 60 }}
+        gl={{ alpha: true, antialias: true, powerPreference: 'low-power' }}
+        dpr={[1, 2]}
       >
-        <Suspense fallback={null}>
-          <FloatingParticles />
-        </Suspense>
+        <GalaxyStars />
       </Canvas>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950/80 pointer-events-none" />
     </div>
   );
 }

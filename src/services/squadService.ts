@@ -1,11 +1,12 @@
 /**
  * Squad Service — Social Accountability Groups
- * Uses Supabase for real-time multiplayer squads.
+ * Uses Firestore for real-time multiplayer squads.
  */
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { db, isFirebaseConfigured } from '@/lib/firebase';
+import { collection, doc, setDoc, getDoc, getDocs, query, where, deleteDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import type { Squad, SquadMember } from '@/types';
 
-const MY_SQUAD_KEY = 'habitflow_my_squad_id';
+const MY_SQUADS_KEY = 'habitflow_my_squad_ids';
 
 function generateInviteCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Omit confusing chars
@@ -16,13 +17,38 @@ function generateInviteCode(): string {
   return code;
 }
 
-function getMySquadId(): string | null {
-  return localStorage.getItem(MY_SQUAD_KEY);
+function getMySquadIds(): string[] {
+  const ids = localStorage.getItem(MY_SQUADS_KEY);
+  if (!ids) {
+    const oldId = localStorage.getItem('habitflow_my_squad_id');
+    if (oldId) {
+      setMySquadIds([oldId]);
+      localStorage.removeItem('habitflow_my_squad_id');
+      return [oldId];
+    }
+    return [];
+  }
+  try {
+    return JSON.parse(ids);
+  } catch {
+    return [];
+  }
 }
 
-function setMySquadId(id: string | null): void {
-  if (id) localStorage.setItem(MY_SQUAD_KEY, id);
-  else localStorage.removeItem(MY_SQUAD_KEY);
+function setMySquadIds(ids: string[]): void {
+  localStorage.setItem(MY_SQUADS_KEY, JSON.stringify(ids));
+}
+
+function addSquadId(id: string) {
+  const ids = getMySquadIds();
+  if (!ids.includes(id)) {
+    setMySquadIds([...ids, id]);
+  }
+}
+
+function removeSquadId(id: string) {
+  const ids = getMySquadIds();
+  setMySquadIds(ids.filter(i => i !== id));
 }
 
 async function createSquad(
@@ -31,50 +57,253 @@ async function createSquad(
   displayName: string,
   avatarUrl?: string
 ): Promise<Squad | null> {
-  if (!isSupabaseConfigured()) {
-    console.error('[SquadService] Supabase not configured');
-    return null;
+  if (!isFirebaseConfigured()) {
+    return mockCreateSquad(name, userId, displayName, avatarUrl);
   }
 
   const inviteCode = generateInviteCode();
+  const squadId = crypto.randomUUID();
 
-  // 1. Insert Squad
-  const { data: squadData, error: squadError } = await supabase
-    .from('squads')
-    .insert({
-      name,
-      invite_code: inviteCode,
-      owner_id: userId,
-    })
-    .select()
-    .single();
-
-  if (squadError || !squadData) {
-    console.error('[SquadService] Error creating squad:', squadError);
-    return null;
-  }
-
-  // 2. Insert Owner as Member
-  const { error: memberError } = await supabase.from('squad_members').insert({
-    squad_id: squadData.id,
-    user_id: userId,
-    streak: 0,
-    completion_today: 0,
+  // 1. Create Squad doc
+  const squadDocRef = doc(db, 'squads', squadId);
+  const now = new Date().toISOString();
+  await setDoc(squadDocRef, {
+    id: squadId,
+    name,
+    invite_code: inviteCode,
+    owner_id: userId,
+    created_at: now
   });
 
-  if (memberError) {
-    console.error('[SquadService] Error adding owner to squad:', memberError);
+  // 2. Create Squad Member doc
+  const memberDocRef = doc(db, 'squad_members', `${squadId}_${userId}`);
+  await setDoc(memberDocRef, {
+    squad_id: squadId,
+    user_id: userId,
+    display_name: displayName,
+    avatar_url: avatarUrl || null,
+    streak: 0,
+    completion_today: 0,
+    joined_at: now
+  });
+
+  addSquadId(squadId);
+
+  return {
+    id: squadId,
+    name,
+    invite_code: inviteCode,
+    owner_id: userId,
+    created_at: now,
+    members: [
+      {
+        user_id: userId,
+        display_name: displayName,
+        avatar_url: avatarUrl,
+        streak: 0,
+        completion_today: 0,
+        joined_at: now,
+      },
+    ],
+  };
+}
+
+async function joinSquad(
+  inviteCode: string,
+  userId: string,
+  displayName: string,
+  avatarUrl?: string
+): Promise<Squad | null> {
+  if (!isFirebaseConfigured()) {
+    return mockJoinSquad(inviteCode, userId, displayName, avatarUrl);
+  }
+
+  // 1. Find Squad by invite code
+  const squadsRef = collection(db, 'squads');
+  const q = query(squadsRef, where('invite_code', '==', inviteCode.trim().toUpperCase()));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    console.error('[SquadService] Invalid invite code or squad not found');
     return null;
   }
 
-  setMySquadId(squadData.id);
+  const squadData = snapshot.docs[0].data();
+  const squadId = squadData.id;
+
+  // 2. Check member count
+  const membersRef = collection(db, 'squad_members');
+  const membersQuery = query(membersRef, where('squad_id', '==', squadId));
+  const membersSnapshot = await getDocs(membersQuery);
+
+  if (membersSnapshot.size >= 5) {
+    console.error('[SquadService] Squad is full');
+    return null;
+  }
+
+  // 3. Insert Member
+  const memberDocRef = doc(db, 'squad_members', `${squadId}_${userId}`);
+  await setDoc(memberDocRef, {
+    squad_id: squadId,
+    user_id: userId,
+    display_name: displayName,
+    avatar_url: avatarUrl || null,
+    streak: 0,
+    completion_today: 0,
+    joined_at: new Date().toISOString()
+  }, { merge: true });
+
+  addSquadId(squadId);
+  
+  const squads = await getMySquads();
+  return squads.find(s => s.id === squadId) || null;
+}
+
+async function leaveSquad(squadId: string, userId: string): Promise<void> {
+  if (!isFirebaseConfigured()) {
+    return mockLeaveSquad(squadId, userId);
+  }
+
+  const memberDocRef = doc(db, 'squad_members', `${squadId}_${userId}`);
+  await deleteDoc(memberDocRef);
+
+  removeSquadId(squadId);
+}
+
+async function getMySquads(): Promise<Squad[]> {
+  if (!isFirebaseConfigured()) {
+    return mockGetMySquads();
+  }
+  const ids = getMySquadIds();
+  if (ids.length === 0) return [];
+
+  const validSquads: Squad[] = [];
+  const activeIds: string[] = [];
+
+  for (const squadId of ids) {
+    // 1. Get Squad
+    const squadDoc = await getDoc(doc(db, 'squads', squadId));
+    if (!squadDoc.exists()) continue;
+    
+    const squadData = squadDoc.data();
+    activeIds.push(squadId);
+
+    // 2. Get Members
+    const membersQuery = query(collection(db, 'squad_members'), where('squad_id', '==', squadId));
+    const membersSnapshot = await getDocs(membersQuery);
+
+    const members: SquadMember[] = membersSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        user_id: data.user_id,
+        display_name: data.display_name || 'Anonymous',
+        avatar_url: data.avatar_url,
+        streak: data.streak || 0,
+        completion_today: data.completion_today || 0,
+        joined_at: data.joined_at,
+      };
+    });
+
+    validSquads.push({
+      id: squadData.id,
+      name: squadData.name,
+      invite_code: squadData.invite_code,
+      owner_id: squadData.owner_id,
+      created_at: squadData.created_at,
+      members,
+    });
+  }
+
+  if (activeIds.length !== ids.length) {
+    setMySquadIds(activeIds);
+  }
+
+  return validSquads;
+}
+
+async function updateMyProgress(
+  userId: string,
+  streak: number,
+  completionToday: number
+): Promise<void> {
+  if (!isFirebaseConfigured()) {
+    return mockUpdateProgress(userId, streak, completionToday);
+  }
+
+  const squadIds = getMySquadIds();
+  if (squadIds.length === 0) return;
+
+  for (const squadId of squadIds) {
+    const memberDocRef = doc(db, 'squad_members', `${squadId}_${userId}`);
+    try {
+      await updateDoc(memberDocRef, {
+        streak,
+        completion_today: completionToday,
+      });
+    } catch (err) {
+      // Document might not exist if they were removed
+      console.error('[SquadService] Failed to update progress for squad', squadId, err);
+    }
+  }
+}
+
+function subscribeToSquad(squadId: string, onUpdate: () => void) {
+  if (!isFirebaseConfigured()) {
+    return { unsubscribe: () => {} };
+  }
+
+  const q = query(collection(db, 'squad_members'), where('squad_id', '==', squadId));
+  const unsubscribe = onSnapshot(q, () => {
+    onUpdate();
+  });
 
   return {
-    id: squadData.id,
-    name: squadData.name,
-    invite_code: squadData.invite_code,
-    owner_id: squadData.owner_id,
-    created_at: squadData.created_at,
+    unsubscribe
+  };
+}
+
+export const squadService = {
+  createSquad,
+  joinSquad,
+  leaveSquad,
+  getMySquads,
+  updateMyProgress,
+  generateInviteCode,
+  subscribeToSquad,
+};
+
+// ─── MOCK DATA IMPLEMENTATION ────────────────────────────────────
+
+const MOCK_DB_KEY = 'habitflow_mock_squads_db';
+
+function getMockDb(): Record<string, Squad> {
+  try {
+    return JSON.parse(localStorage.getItem(MOCK_DB_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveMockDb(mockData: Record<string, Squad>) {
+  localStorage.setItem(MOCK_DB_KEY, JSON.stringify(mockData));
+}
+
+async function mockCreateSquad(
+  name: string,
+  userId: string,
+  displayName: string,
+  avatarUrl?: string
+): Promise<Squad | null> {
+  const mockData = getMockDb();
+  const squadId = crypto.randomUUID();
+  const inviteCode = generateInviteCode();
+
+  const newSquad: Squad = {
+    id: squadId,
+    name,
+    invite_code: inviteCode,
+    owner_id: userId,
+    created_at: new Date().toISOString(),
     members: [
       {
         user_id: userId,
@@ -84,146 +313,91 @@ async function createSquad(
         completion_today: 0,
         joined_at: new Date().toISOString(),
       },
+      {
+        user_id: 'mock_1',
+        display_name: 'Alex (Mock)',
+        streak: 12,
+        completion_today: 0.8,
+        joined_at: new Date().toISOString(),
+      },
+      {
+        user_id: 'mock_2',
+        display_name: 'Sam (Mock)',
+        streak: 5,
+        completion_today: 1.0,
+        joined_at: new Date().toISOString(),
+      },
     ],
   };
+
+  mockData[squadId] = newSquad;
+  saveMockDb(mockData);
+  addSquadId(squadId);
+  return newSquad;
 }
 
-async function joinSquad(
+async function mockJoinSquad(
   inviteCode: string,
   userId: string,
-  _displayName: string,
-  _avatarUrl?: string
+  displayName: string,
+  avatarUrl?: string
 ): Promise<Squad | null> {
-  if (!isSupabaseConfigured()) return null;
+  const mockData = getMockDb();
+  const squad = Object.values(mockData).find(s => s.invite_code === inviteCode.trim().toUpperCase());
 
-  // 1. Find Squad
-  const { data: squadData, error: squadError } = await supabase
-    .from('squads')
-    .select('id')
-    .ilike('invite_code', inviteCode.trim())
-    .single();
+  if (!squad) return null;
+  if (squad.members.length >= 5) return null;
 
-  if (squadError || !squadData) {
-    console.error('[SquadService] Invalid invite code or squad not found');
-    return null;
+  if (!squad.members.find(m => m.user_id === userId)) {
+    squad.members.push({
+      user_id: userId,
+      display_name: displayName,
+      avatar_url: avatarUrl,
+      streak: 0,
+      completion_today: 0,
+      joined_at: new Date().toISOString(),
+    });
+    saveMockDb(mockData);
   }
 
-  // 2. Count members
-  const { count, error: countError } = await supabase
-    .from('squad_members')
-    .select('*', { count: 'exact', head: true })
-    .eq('squad_id', squadData.id);
-
-  if (countError || (count !== null && count >= 5)) {
-    console.error('[SquadService] Squad is full');
-    return null;
-  }
-
-  // 3. Insert Member (ignores if already exists due to PK)
-  const { error: insertError } = await supabase.from('squad_members').upsert({
-    squad_id: squadData.id,
-    user_id: userId,
-  });
-
-  if (insertError) {
-    console.error('[SquadService] Error joining squad:', insertError);
-    return null;
-  }
-
-  setMySquadId(squadData.id);
-  return await getMySquad();
+  addSquadId(squad.id);
+  return squad;
 }
 
-async function leaveSquad(squadId: string, userId: string): Promise<void> {
-  if (!isSupabaseConfigured()) return;
-
-  const { error } = await supabase
-    .from('squad_members')
-    .delete()
-    .eq('squad_id', squadId)
-    .eq('user_id', userId);
-
-  if (error) {
-    console.error('[SquadService] Error leaving squad:', error);
-    return;
+async function mockLeaveSquad(squadId: string, userId: string): Promise<void> {
+  const mockData = getMockDb();
+  const squad = mockData[squadId];
+  if (squad) {
+    squad.members = squad.members.filter(m => m.user_id !== userId);
+    saveMockDb(mockData);
   }
-
-  // Cleanup local
-  setMySquadId(null);
+  removeSquadId(squadId);
 }
 
-async function getMySquad(): Promise<Squad | null> {
-  if (!isSupabaseConfigured()) return null;
-  const id = getMySquadId();
-  if (!id) return null;
-
-  // Query squad and members + profiles
-  const { data: squadData, error: squadError } = await supabase
-    .from('squads')
-    .select(
-      `
-      id, name, invite_code, owner_id, created_at,
-      squad_members (
-        user_id, streak, completion_today, joined_at,
-        profiles (
-          name, avatar_url
-        )
-      )
-    `
-    )
-    .eq('id', id)
-    .single();
-
-  if (squadError || !squadData) {
-    console.error('[SquadService] Error fetching squad:', squadError);
-    // Maybe they got kicked out, or squad deleted
-    setMySquadId(null);
-    return null;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const members: SquadMember[] = ((squadData.squad_members as any[]) || []).map(m => ({
-    user_id: m.user_id,
-    display_name: m.profiles?.name || 'Anonymous',
-    avatar_url: m.profiles?.avatar_url,
-    streak: m.streak,
-    completion_today: m.completion_today,
-    joined_at: m.joined_at,
-  }));
-
-  return {
-    id: squadData.id,
-    name: squadData.name,
-    invite_code: squadData.invite_code,
-    owner_id: squadData.owner_id,
-    created_at: squadData.created_at,
-    members,
-  };
+async function mockGetMySquads(): Promise<Squad[]> {
+  const mockData = getMockDb();
+  const ids = getMySquadIds();
+  return ids.map(id => mockData[id]).filter(Boolean);
 }
 
-async function updateMyProgress(
-  squadId: string,
+async function mockUpdateProgress(
   userId: string,
   streak: number,
   completionToday: number
 ): Promise<void> {
-  if (!isSupabaseConfigured()) return;
+  const mockData = getMockDb();
+  let updated = false;
 
-  await supabase
-    .from('squad_members')
-    .update({
-      streak,
-      completion_today: completionToday,
-    })
-    .eq('squad_id', squadId)
-    .eq('user_id', userId);
+  for (const squad of Object.values(mockData)) {
+    const member = squad.members.find(m => m.user_id === userId);
+    if (member) {
+      member.streak = streak;
+      member.completion_today = completionToday;
+      updated = true;
+    }
+  }
+
+  if (updated) {
+    saveMockDb(mockData);
+  }
 }
-
-export const squadService = {
-  createSquad,
-  joinSquad,
-  leaveSquad,
-  getMySquad,
-  updateMyProgress,
-  generateInviteCode,
-};

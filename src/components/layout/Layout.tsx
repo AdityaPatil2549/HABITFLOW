@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
-import { FloatingOrbs } from '../ui/FloatingOrbs';
+import { HabitsBackground } from '../habits/HabitsBackground';
 import { cn } from '../../lib/utils';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { useFocusStore } from '../../store/focusStore';
@@ -20,7 +20,6 @@ import { AchievementToast, useAchievementToast } from '../ui/AchievementToast';
 import { soundService } from '../../services/soundService';
 import {
   Search,
-  Bell,
   Settings,
   User,
   LayoutDashboard,
@@ -29,250 +28,16 @@ import {
   BarChart2,
   Plus,
   LogOut,
-  HelpCircle,
   X,
   Zap,
   CheckCircle2,
   Timer,
-  Sun,
-  Moon,
   Cloud,
   CloudOff,
   Users,
-  Flower2,
 } from 'lucide-react';
 import { CursorTrail } from '../ui/CursorTrail';
 import { OnboardingTour } from '../ui/OnboardingTour';
-// ── Notification panel ─────────────────────────────────────────
-// Demo notifications — will be replaced with real event-driven notifications in a future update
-const DEMO_NOTIFICATIONS = [
-  {
-    id: 1,
-    icon: '🔥',
-    title: 'Streak milestone!',
-    body: 'You\'ve kept your "Deep Work" habit for 7 days.',
-    time: '2m ago',
-    unread: true,
-  },
-  {
-    id: 2,
-    icon: '✅',
-    title: 'Task due soon',
-    body: '"Finalize report" is due in 2 hours.',
-    time: '1h ago',
-    unread: true,
-  },
-  {
-    id: 3,
-    icon: '📈',
-    title: 'Weekly summary ready',
-    body: 'You completed 84% of habits this week!',
-    time: '1d ago',
-    unread: false,
-  },
-];
-
-function NotificationPanel({
-  onClose,
-  notes,
-  setNotes,
-  onViewAll,
-}: {
-  onClose: () => void;
-  notes: typeof DEMO_NOTIFICATIONS;
-  setNotes: React.Dispatch<React.SetStateAction<typeof DEMO_NOTIFICATIONS>>;
-  onViewAll: () => void;
-}) {
-  return (
-    <div className="fixed left-0 right-0 top-14 sm:absolute sm:left-full sm:right-auto sm:top-12 lg:left-0 lg:top-auto lg:bottom-12 mx-2 sm:ml-2 sm:mx-0 lg:ml-0 w-auto sm:w-80 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl max-h-[70vh] sm:max-h-none">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-        <h3 className="text-sm font-bold text-white">Notifications</h3>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setNotes(n => n.map(x => ({ ...x, unread: false })))}
-            className="text-[10px] font-semibold text-brand-400 hover:text-brand-300 transition-colors"
-          >
-            Mark all read
-          </button>
-          <button
-            onClick={onClose}
-            className="text-slate-500 hover:text-white transition-colors ml-2"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      </div>
-      <div className="max-h-72 overflow-y-auto divide-y divide-white/5">
-        {notes.map(n => (
-          <div
-            key={n.id}
-            onClick={() =>
-              setNotes(ns => ns.map(x => (x.id === n.id ? { ...x, unread: false } : x)))
-            }
-            className={`flex gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-white/5 ${n.unread ? 'bg-brand-500/5' : ''}`}
-          >
-            <span className="text-xl flex-shrink-0 mt-0.5">{n.icon}</span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold text-white truncate">{n.title}</p>
-                {n.unread && <span className="w-2 h-2 rounded-full bg-brand-400 flex-shrink-0" />}
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{n.body}</p>
-              <p className="text-[10px] text-slate-600 mt-1">{n.time}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="px-5 py-3 border-t border-white/5 text-center">
-        <button
-          onClick={onViewAll}
-          className="text-xs text-brand-400 hover:text-brand-300 font-semibold transition-colors"
-        >
-          View all notifications
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── All Notifications Modal ──────────────────────────────────────
-function AllNotificationsModal({
-  onClose,
-  notes,
-  setNotes,
-}: {
-  onClose: () => void;
-  notes: typeof DEMO_NOTIFICATIONS;
-  setNotes: React.Dispatch<React.SetStateAction<typeof DEMO_NOTIFICATIONS>>;
-}) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (!dialog.open) {
-      dialog.showModal();
-    }
-    const handleClose = () => onClose();
-    dialog.addEventListener('close', handleClose);
-    return () => dialog.removeEventListener('close', handleClose);
-  }, [onClose]);
-
-  function handleDialogClick(e: React.MouseEvent<HTMLDialogElement>) {
-    const rect = dialogRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    if (
-      e.clientX < rect.left ||
-      e.clientX > rect.right ||
-      e.clientY < rect.top ||
-      e.clientY > rect.bottom
-    ) {
-      dialogRef.current?.close();
-    }
-  }
-
-  const filteredNotes = notes.filter(n => {
-    if (filter === 'unread') return n.unread;
-    if (filter === 'read') return !n.unread;
-    return true;
-  });
-
-  return (
-    <dialog
-      ref={dialogRef}
-      onClick={handleDialogClick}
-      className="dark-overlay bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center p-4 z-[9999] open:animate-in open:fade-in duration-200"
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-[550px] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl flex flex-col max-h-[80vh]"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 flex-shrink-0">
-          <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Bell size={20} className="text-brand-400" />
-              Notification Center
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">Manage all your updates and milestones</p>
-          </div>
-          <button
-            onClick={() => dialogRef.current?.close()}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Filters & Quick Action */}
-        <div className="flex items-center justify-between px-6 py-3 bg-slate-950/40 border-b border-white/5 flex-shrink-0">
-          <div className="flex gap-1">
-            {(['all', 'unread', 'read'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium capitalize transition-all ${
-                  filter === f
-                    ? 'bg-brand-500/20 text-brand-400 font-semibold'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => setNotes(ns => ns.map(x => ({ ...x, unread: false })))}
-            className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
-          >
-            Mark all read
-          </button>
-        </div>
-
-        {/* List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-white/5 min-h-[300px]">
-          {filteredNotes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center text-slate-500">
-              <Bell size={40} className="opacity-20 mb-3" />
-              <p className="text-sm font-medium">No notifications found</p>
-              <p className="text-xs text-slate-600 mt-1">You're all caught up!</p>
-            </div>
-          ) : (
-            filteredNotes.map(n => (
-              <div
-                key={n.id}
-                onClick={() =>
-                  setNotes(ns => ns.map(x => (x.id === n.id ? { ...x, unread: false } : x)))
-                }
-                className={`flex gap-4 px-6 py-5 cursor-pointer transition-all hover:bg-white/5 relative ${
-                  n.unread ? 'bg-brand-500/5' : ''
-                }`}
-              >
-                {n.unread && <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-400" />}
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-2xl flex-shrink-0">
-                  {n.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-semibold text-white leading-snug">{n.title}</p>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{n.body}</p>
-                    </div>
-                    <span className="text-[10px] text-slate-500 whitespace-nowrap flex-shrink-0 mt-0.5">
-                      {n.time}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </dialog>
-  );
-}
 
 // ── Account dropdown ───────────────────────────────────────────
 function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: any }) {
@@ -388,8 +153,12 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
               toast.confirm(
                 'Are you sure you want to sign out?',
                 async () => {
-                  await signOut();
-                  navigate('/login');
+                  try {
+                    await signOut();
+                    navigate('/login');
+                  } catch (err) {
+                    toast.error('Failed to sign out. Please try again.');
+                  }
                 },
                 { confirmLabel: 'Sign Out' }
               );
@@ -445,8 +214,8 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
 function SearchOverlay({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const { habits, loadHabits } = useHabitStore();
-  const { tasks, loadTasks } = useTaskStore();
+  const { habits } = useHabitStore();
+  const { tasks } = useTaskStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -463,11 +232,9 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   useEffect(() => {
+    // Removed unconditional loadHabits() and loadTasks() to prevent redundant DB queries
     inputRef.current?.focus();
-    // Ensure data is loaded when the search modal opens
-    loadHabits();
-    loadTasks();
-  }, [loadHabits, loadTasks]);
+  }, []);
 
   function handleDialogClick(e: React.MouseEvent<HTMLDialogElement>) {
     const rect = dialogRef.current?.getBoundingClientRect();
@@ -618,39 +385,18 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
 export function Layout() {
   const setQuickAddOpen = useModalStore(s => s.setQuickAddOpen);
   const [showSearch, setShowSearch] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const [notes, setNotes] = useState(DEMO_NOTIFICATIONS);
-  const [showAllNotifications, setShowAllNotifications] = useState(false);
   const { profile } = useProfileStore();
   const { userXP, loadXP } = useGamificationStore();
   const { isActive: focusActive, startFocus, stopFocus, openPicker } = useFocusStore();
   const { user, isGuest, signOut } = useAuthStore();
   const toast = useToast();
-  // Read persisted darkMode preference — avoid DOM-read race with App.tsx's useEffect
-  const [isDark, setIsDark] = useState(() => !document.documentElement.classList.contains('light'));
-  const mobileNotifRef = useRef<HTMLDivElement>(null);
-  const desktopNotifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const mobileAccountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { current: achievement, dismiss: dismissAchievement } = useAchievementToast();
-
-  function toggleDark() {
-    const root = document.documentElement;
-    const nowDark = !root.classList.contains('light');
-    root.classList.toggle('light', nowDark);
-    setIsDark(!nowDark);
-    const newMode = nowDark ? 'light' : 'dark';
-    import('../../db').then(({ db }) =>
-      db.settings
-        .toCollection()
-        .first()
-        .then(s => s && db.settings.update(s.id!, { darkMode: newMode }))
-    );
-  }
 
   useKeyboardShortcuts({
     onSearch: () => setShowSearch(true),
@@ -666,7 +412,6 @@ export function Layout() {
     onShowShortcuts: () => setShowShortcuts(v => !v),
     onEscape: () => {
       setShowSearch(false);
-      setShowNotifications(false);
       setShowAccount(false);
       setShowShortcuts(false);
     },
@@ -676,18 +421,11 @@ export function Layout() {
     loadXP();
   }, [loadXP]);
 
-  const unreadCount = notes.filter(n => n.unread).length;
   const xpStats = userXP ? calculateStats(userXP.total) : null;
 
-  // Close dropdowns on outside click
+  // Close account dropdown on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
-      const isOutsideMobile =
-        mobileNotifRef.current && !mobileNotifRef.current.contains(e.target as Node);
-      const isOutsideDesktop =
-        desktopNotifRef.current && !desktopNotifRef.current.contains(e.target as Node);
-      if (isOutsideMobile && isOutsideDesktop) setShowNotifications(false);
-
       if (
         accountRef.current &&
         !accountRef.current.contains(e.target as Node) &&
@@ -707,13 +445,18 @@ export function Layout() {
       : 'text-slate-400 px-5 py-2.5 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
 
   return (
-    <div className="min-h-screen flex cursor-none sm:cursor-auto text-slate-50 relative z-0">
+    <div className="min-h-[100dvh] flex text-slate-50 relative z-0">
+      {/* Skip to Content for Accessibility */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] px-4 py-2 bg-brand-500 text-white rounded-lg font-bold">
+        Skip to content
+      </a>
+
       {/* Premium VisionOS Background Elements */}
       <div className="bg-mesh" />
       <div className="bg-mesh-blob" />
       <div className="noise-overlay" />
       <CursorTrail />
-      <FloatingOrbs />
+      <HabitsBackground />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 glass-card-3d rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
@@ -722,7 +465,7 @@ export function Layout() {
           className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
         >
           <img
-            src={isDark ? '/brand-lockup-dark.png' : '/brand-lockup-light.png'}
+            src='/brand-lockup-dark.png'
             alt="HabitFlow"
             className="h-7 sm:h-9 w-auto max-w-[140px] sm:max-w-[180px] object-contain"
           />
@@ -736,54 +479,28 @@ export function Layout() {
             aria-label="Toggle Focus Mode"
             className={cn(
               'transition-colors',
-              focusActive ? 'text-rose-400' : 'text-slate-400 hover:text-white'
+              focusActive ? 'text-rose-400' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
             )}
           >
             <Timer size={22} className={focusActive ? 'animate-pulse' : ''} />
           </button>
           <button
             onClick={() => setShowSearch(true)}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <Search size={22} />
           </button>
-          <div className="relative" ref={mobileNotifRef}>
-            <button
-              onClick={() => {
-                setShowNotifications(v => !v);
-                setShowAccount(false);
-              }}
-              aria-label="Toggle notifications"
-              className="relative text-slate-400 hover:text-white transition-colors"
-            >
-              <Bell size={22} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-brand-400 ring-2 ring-slate-950" />
-              )}
-            </button>
-            {showNotifications && (
-              <NotificationPanel
-                onClose={() => setShowNotifications(false)}
-                notes={notes}
-                setNotes={setNotes}
-                onViewAll={() => {
-                  setShowNotifications(false);
-                  setShowAllNotifications(true);
-                }}
-              />
-            )}
-          </div>
+
           <div className="relative ml-2" ref={mobileAccountRef}>
             <button
               onClick={() => {
                 setShowAccount(v => !v);
-                setShowNotifications(false);
               }}
               className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white border border-white/10 overflow-hidden shadow-lg"
             >
-              {user?.user_metadata?.avatar_url || profile.avatar ? (
+              {user?.photoURL || profile.avatar ? (
                 <img
-                  src={user?.user_metadata?.avatar_url || profile.avatar}
+                  src={user?.photoURL || profile.avatar || undefined}
                   className="w-full h-full object-cover"
                   alt=""
                 />
@@ -802,14 +519,14 @@ export function Layout() {
       </nav>
 
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-screen w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
+      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-[100dvh] w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
         <div className="px-6 mb-8 flex items-center justify-between">
           <NavLink
             to="/dashboard"
             className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
           >
             <img
-              src={isDark ? '/brand-lockup-dark.png' : '/brand-lockup-light.png'}
+              src='/brand-lockup-dark.png'
               alt="HabitFlow"
               style={{ height: '50px', width: 'auto' }}
               className="object-contain"
@@ -855,7 +572,7 @@ export function Layout() {
             className={`py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-95 relative overflow-hidden ${
               focusActive
                 ? 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'
-                : 'border border-brand-500/30 text-brand-300 hover:bg-brand-500/10'
+                : 'border border-brand-500/30 text-brand-400 hover:bg-brand-500/10'
             }`}
             style={
               !focusActive
@@ -891,41 +608,6 @@ export function Layout() {
               <Search size={18} />
             </button>
 
-            <button
-              onClick={toggleDark}
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
-            >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
-            <div className="relative" ref={desktopNotifRef}>
-              <button
-                onClick={() => {
-                  setShowNotifications(v => !v);
-                  setShowAccount(false);
-                }}
-                title="Notifications"
-                className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors relative"
-              >
-                <Bell size={18} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-400 ring-2 ring-slate-900" />
-                )}
-              </button>
-              {showNotifications && (
-                <NotificationPanel
-                  onClose={() => setShowNotifications(false)}
-                  notes={notes}
-                  setNotes={setNotes}
-                  onViewAll={() => {
-                    setShowNotifications(false);
-                    setShowAllNotifications(true);
-                  }}
-                />
-              )}
-            </div>
-
             {isGuest ? (
               <Link
                 to="/login"
@@ -940,8 +622,12 @@ export function Layout() {
                   toast.confirm(
                     'Are you sure you want to sign out?',
                     async () => {
-                      await signOut();
-                      navigate('/login');
+                      try {
+                        await signOut();
+                        navigate('/login');
+                      } catch (err) {
+                        toast.error('Failed to sign out. Please try again.');
+                      }
                     },
                     { confirmLabel: 'Sign Out' }
                   );
@@ -960,14 +646,13 @@ export function Layout() {
             <button
               onClick={() => {
                 setShowAccount(v => !v);
-                setShowNotifications(false);
               }}
               className="w-full flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group text-left"
             >
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold overflow-hidden shadow-lg shadow-brand-500/20 flex-shrink-0">
-                {user?.user_metadata?.avatar_url || profile.avatar ? (
+                {user?.photoURL || profile.avatar ? (
                   <img
-                    src={user?.user_metadata?.avatar_url || profile.avatar}
+                    src={user?.photoURL || profile.avatar || undefined}
                     className="w-full h-full object-cover"
                     alt=""
                   />
@@ -977,9 +662,9 @@ export function Layout() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <h1 className="text-sm font-bold text-white leading-none truncate group-hover:text-brand-400 transition-colors">
+                  <p className="text-sm font-bold text-white leading-none truncate group-hover:text-brand-400 transition-colors">
                     {profile.name}
-                  </h1>
+                  </p>
                   {xpStats && (
                     <span className="text-[10px] text-amber-400 font-bold flex items-center gap-0.5 flex-shrink-0">
                       <Zap size={9} />
@@ -1008,12 +693,18 @@ export function Layout() {
             )}
           </div>
         </div>
+
+        {/* Legal Links */}
+        <div className="px-5 pb-4 mt-2 text-center text-[10px] text-slate-500 flex justify-center gap-3">
+          <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
+          <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
+        </div>
       </aside>
 
       {/* ── Main content ── */}
-      <main className="flex-1 lg:ml-64 w-full max-w-[100vw] overflow-x-hidden">
+      <main id="main-content" className="flex-1 lg:ml-64 w-full max-w-[100vw] overflow-x-hidden">
         {/* On mobile, add padding to clear the top nav. On all screens, add bottom padding to clear mobile nav if visible. */}
-        <div className="pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-8 pb-32 lg:pb-8 px-3 sm:px-4 md:px-8 max-w-7xl mx-auto min-h-screen">
+        <div className="pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-8 pb-32 lg:pb-8 px-3 sm:px-4 md:px-8 max-w-7xl mx-auto min-h-[100dvh]">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -1021,7 +712,7 @@ export function Layout() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2 }}
-              className="w-full flex justify-center"
+              className="w-full"
             >
               <Suspense fallback={<div className="flex items-center justify-center h-[50vh] text-slate-500 font-medium">Loading...</div>}>
                 <Outlet />
@@ -1048,7 +739,7 @@ export function Layout() {
                   `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
                 }
               >
-                <Icon size={22} className={i === 0 ? 'mr-2' : 'mr-6'} />
+                <Icon size={22} className="" />
               </NavLink>
             );
           })}
@@ -1080,7 +771,7 @@ export function Layout() {
                   `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
                 }
               >
-                <Icon size={22} className={i === 0 ? 'ml-6' : 'ml-2'} />
+                <Icon size={22} className="" />
               </NavLink>
             );
           })}
@@ -1089,13 +780,6 @@ export function Layout() {
 
       {/* ── Overlays ── */}
       {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} />}
-      {showAllNotifications && (
-        <AllNotificationsModal
-          onClose={() => setShowAllNotifications(false)}
-          notes={notes}
-          setNotes={setNotes}
-        />
-      )}
       <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
       <CommandMenu />
       {achievement && (

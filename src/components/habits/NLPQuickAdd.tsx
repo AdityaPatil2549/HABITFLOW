@@ -39,6 +39,7 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
   const [isListening, setIsListening] = useState(false);
   const [hasRecognition, setHasRecognition] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const finalTranscriptRef = useRef('');
 
   useEffect(() => {
     // Initialize Web Speech API
@@ -51,11 +52,15 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
       recognition.lang = 'en-US';
 
       recognition.onresult = (event: any) => {
-        let transcript = '';
-        for (let i = 0; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscriptRef.current += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
         }
-        setInput(transcript);
+        setInput(finalTranscriptRef.current + interimTranscript);
       };
 
       recognition.onend = () => {
@@ -76,9 +81,13 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
     if (isListening) {
       recognitionRef.current?.stop();
     } else {
-      setInput('');
-      recognitionRef.current?.start();
-      setIsListening(true);
+      finalTranscriptRef.current = input ? input + ' ' : '';
+      try {
+        recognitionRef.current?.start();
+        setIsListening(true);
+      } catch (e) {
+        console.warn('Speech recognition already started', e);
+      }
     }
   };
 
@@ -107,7 +116,8 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
     if (!parsed) return;
     const habit: Partial<Habit> = {
       name: parsed.name,
-      icon: CATEGORY_ICONS[parsed.category || 'general'] || '✨',
+      icon: parsed.icon || CATEGORY_ICONS[parsed.category || 'general'] || '✨',
+      color: '#6366f1',
       category: parsed.category || 'general',
       type: parsed.type,
       frequency: parsed.frequency,

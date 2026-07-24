@@ -82,9 +82,33 @@ export function IconRenderer({ name, className, size = 18, color, interactive = 
     return interactive ? <DynamicIcon size={size}>{emojiElement}</DynamicIcon> : emojiElement;
   }
 
-  // Lookup in our safe map
-  const IconComponent = ICON_COMPONENTS[name] || Lucide.HelpCircle;
+  // Check if we have a 3D asset for this icon
+  const is3DAsset = ICON_COMPONENTS[name] !== undefined && name !== 'Scales';
+  
+  let iconElement;
+  
+  if (is3DAsset || name === 'Scales') {
+    iconElement = (
+      <img 
+        src={`/3d-icons/${name}.png`} 
+        alt={name} 
+        style={{ width: size, height: size, objectFit: 'contain' }}
+        className={`drop-shadow-sm transition-transform duration-300 hover:scale-110 hover:-rotate-6 ${className || ''}`}
+        onError={(e) => {
+          // Fallback if 3D asset fails to load
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+    );
+  } else {
+    // Fallback to Lucide
+    let IconComponent = ICON_COMPONENTS[name];
+    if (!IconComponent) {
+      const pascalName = name.charAt(0).toUpperCase() + name.slice(1);
+      IconComponent = (Lucide as any)[pascalName] || (Lucide as any)[name] || Lucide.HelpCircle;
+    }
+    iconElement = <IconComponent size={size} className={className} style={{ color }} />;
+  }
 
-  const iconElement = <IconComponent size={size} className={className} style={{ color }} />;
   return interactive ? <DynamicIcon size={size}>{iconElement}</DynamicIcon> : iconElement;
 }

@@ -190,7 +190,7 @@ export function OnboardingTour() {
       steps={steps}
       tooltipComponent={CustomTooltip}
       styles={{
-        // @ts-ignore
+        // @ts-expect-error - options type is missing in joyride
         options: {
           zIndex: 10000,
           arrowColor: 'rgba(15, 23, 42, 0.95)',

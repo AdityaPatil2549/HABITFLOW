@@ -1,18 +1,15 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { squadService } from '@/services/squadService';
-import { isSupabaseConfigured } from '@/lib/supabase';
-import type { Squad, SquadMember } from '@/types';
+import { isFirebaseConfigured } from '@/lib/firebase';
+import type { Squad } from '@/types';
 import {
-  Users,
-  Trophy,
   Flame,
   Copy,
   Plus,
   LogIn,
   LogOut,
   Crown,
-  Shield,
   UserPlus,
   X,
 } from 'lucide-react';
@@ -48,7 +45,8 @@ export function SquadPage() {
   const { user } = useAuthStore();
   const { profile } = useProfileStore();
   const toast = useToast();
-  const [squad, setSquad] = useState<Squad | null>(null);
+  const [squads, setSquads] = useState<Squad[]>([]);
+  const [activeSquadId, setActiveSquadId] = useState<string | null>(null);
   const [loadingSquad, setLoadingSquad] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
@@ -57,23 +55,37 @@ export function SquadPage() {
   const [loading, setLoading] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
 
-  const userId = user?.id || getGuestId();
-  const displayName = user?.user_metadata?.full_name || profile.name || 'Anonymous';
-  const avatarUrl = user?.user_metadata?.avatar_url || profile.avatar;
+  const userId = user?.uid || getGuestId();
+  const displayName = user?.displayName || profile.name || 'Anonymous';
+  const avatarUrl = user?.photoURL || profile.avatar || undefined;
 
   useEffect(() => {
     document.title = 'Squad — HabitFlow';
-    async function loadSquad() {
-      const s = await squadService.getMySquad();
-      setSquad(s);
+    async function loadSquads() {
+      const s = await squadService.getMySquads();
+      setSquads(s);
+      if (s.length > 0) setActiveSquadId(s[0].id);
       setLoadingSquad(false);
     }
-    loadSquad();
+    loadSquads();
   }, []);
 
+  // Subscribe to real-time Supabase updates for the active squad
+  useEffect(() => {
+    if (!activeSquadId) return;
+
+    const { unsubscribe } = squadService.subscribeToSquad(activeSquadId, async () => {
+      // When another member updates their progress, re-fetch the squad data
+      const s = await squadService.getMySquads();
+      setSquads(s);
+    });
+
+    return () => unsubscribe();
+  }, [activeSquadId]);
+
   async function handleCreate() {
-    if (!isSupabaseConfigured()) {
-      toast.error('Supabase is not configured. Multiplayer features are disabled.');
+    if (!isFirebaseConfigured()) {
+      toast.error('Firebase is not configured. Multiplayer features are disabled.');
       return;
     }
     if (!squadName.trim()) return;
@@ -89,7 +101,8 @@ export function SquadPage() {
       setLoading(false);
       return;
     }
-    setSquad(newSquad);
+    setSquads(prev => [...prev, newSquad]);
+    setActiveSquadId(newSquad.id);
     setShowCreate(false);
     setSquadName('');
     setLoading(false);
@@ -98,15 +111,18 @@ export function SquadPage() {
   }
 
   async function handleJoin() {
-    if (!isSupabaseConfigured()) {
-      toast.error('Supabase is not configured. Multiplayer features are disabled.');
+    if (!isFirebaseConfigured()) {
+      toast.error('Firebase is not configured. Multiplayer features are disabled.');
       return;
     }
     if (!inviteCode.trim()) return;
     setLoading(true);
     const joined = await squadService.joinSquad(inviteCode.trim(), userId, displayName, avatarUrl);
     if (joined) {
-      setSquad(joined);
+      if (!squads.find(s => s.id === joined.id)) {
+        setSquads(prev => [...prev, joined]);
+      }
+      setActiveSquadId(joined.id);
       setShowJoin(false);
       setInviteCode('');
       soundService.playCelebration();
@@ -118,21 +134,30 @@ export function SquadPage() {
   }
 
   async function handleLeave() {
+    const squad = squads.find(s => s.id === activeSquadId);
     if (!squad) return;
     await squadService.leaveSquad(squad.id, userId);
-    setSquad(null);
+    const newSquads = squads.filter(s => s.id !== squad.id);
+    setSquads(newSquads);
+    if (newSquads.length > 0) {
+      setActiveSquadId(newSquads[0].id);
+    } else {
+      setActiveSquadId(null);
+    }
     setConfirmLeave(false);
     toast.info('Left the squad');
   }
 
+  const activeSquad = squads.find(s => s.id === activeSquadId);
+
   function copyCode() {
-    if (!squad) return;
-    navigator.clipboard.writeText(squad.invite_code);
+    if (!activeSquad) return;
+    navigator.clipboard.writeText(activeSquad.invite_code);
     toast.success('Invite code copied!');
   }
 
   // Sort members by streak descending
-  const sortedMembers = squad ? [...squad.members].sort((a, b) => b.streak - a.streak) : [];
+  const sortedMembers = activeSquad ? [...activeSquad.members].sort((a, b) => b.streak - a.streak) : [];
 
   if (loadingSquad) {
     return (
@@ -143,13 +168,13 @@ export function SquadPage() {
     );
   }
 
-  if (!squad) {
+  if (squads.length === 0) {
     return (
       <div className="space-y-6 relative pb-10">
         <Suspense fallback={null}><GamificationBackground /></Suspense>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Squad</h1>
-          <p className="text-sm text-slate-400 mt-1">Accountability through community</p>
+          <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight">Squad</h1>
+          <p className="text-sm dark:text-slate-400 text-slate-600 mt-1">Accountability through community</p>
         </div>
 
         {/* Hero */}
@@ -158,17 +183,17 @@ export function SquadPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <TiltCard tiltIntensity={5}>
-            <div className="relative overflow-hidden rounded-2xl bg-black/20 backdrop-blur-md border border-blue-500/30 p-8 text-center shadow-2xl shadow-blue-500/10">
+            <div className="relative overflow-hidden rounded-2xl dark:bg-black/20 bg-white/50 backdrop-blur-md border dark:border-blue-500/30 border-blue-200/50 p-8 text-center shadow-2xl dark:shadow-blue-500/10 shadow-blue-500/5">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/5 to-transparent animate-[shimmer_3s_infinite] pointer-events-none" />
-              <div className="relative">
+              <div className="relative z-10">
                 <div className="text-6xl mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">👥</div>
-                <h2 className="text-xl font-bold text-white mb-2">Better Together</h2>
-                <p className="text-sm text-slate-300 w-full max-w-[400px] mx-auto mb-6 leading-relaxed">
-                  You're <span className="text-brand-400 font-bold">65% more likely</span> to reach your
+                <h2 className="text-xl font-bold dark:text-white text-slate-900 mb-2">Better Together</h2>
+                <p className="text-sm dark:text-slate-300 text-slate-600 w-full max-w-[400px] mx-auto mb-6 leading-relaxed">
+                  You're <span className="text-brand-500 font-bold">65% more likely</span> to reach your
                   goals with an accountability partner. Create or join a squad of up to 5 people.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-20">
                   <button
                     onClick={() => setShowCreate(true)}
                     className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold hover:shadow-lg hover:shadow-brand-500/20 transition-all active:scale-95"
@@ -178,7 +203,7 @@ export function SquadPage() {
                   </button>
                   <button
                     onClick={() => setShowJoin(true)}
-                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all active:scale-95"
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl dark:bg-white/5 dark:border-white/10 dark:text-white dark:hover:bg-white/10 bg-slate-900/5 border-slate-900/10 text-slate-900 hover:bg-slate-900/10 border transition-all active:scale-95"
                   >
                     <LogIn size={18} />
                     Join a Squad
@@ -203,10 +228,10 @@ export function SquadPage() {
               transition={{ delay: 0.1 + i * 0.1 }}
             >
               <TiltCard tiltIntensity={6} className="h-full">
-                <div className="rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 p-5 text-center h-full">
+                <div className="rounded-2xl dark:bg-black/20 bg-white/50 backdrop-blur-md border dark:border-white/10 border-slate-900/10 p-5 text-center h-full relative z-10">
                   <div className="text-3xl mb-3 drop-shadow-md">{item.icon}</div>
-                  <h3 className="text-sm font-bold text-white mb-1">{item.title}</h3>
-                  <p className="text-xs text-slate-400">{item.desc}</p>
+                  <h3 className="text-sm font-bold dark:text-white text-slate-900 mb-1">{item.title}</h3>
+                  <p className="text-xs dark:text-slate-400 text-slate-600">{item.desc}</p>
                 </div>
               </TiltCard>
             </motion.div>
@@ -229,14 +254,14 @@ export function SquadPage() {
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.9, y: 20 }}
                   onClick={e => e.stopPropagation()}
-                  className="w-[384px] max-w-[90vw] rounded-2xl bg-slate-900 border border-white/10 p-6 flex flex-col"
+                  className="w-[384px] max-w-[90vw] rounded-2xl dark:bg-slate-900 bg-white border dark:border-white/10 border-slate-900/10 p-6 flex flex-col"
                   style={{ minWidth: '300px' }}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white">Create Squad</h3>
+                    <h3 className="text-lg font-bold dark:text-white text-slate-900">Create Squad</h3>
                     <button
                       onClick={() => setShowCreate(false)}
-                      className="text-slate-400 hover:text-white"
+                      className="text-slate-400 dark:hover:text-white hover:text-slate-900"
                     >
                       <X size={18} />
                     </button>
@@ -248,7 +273,7 @@ export function SquadPage() {
                     placeholder="Squad name..."
                     maxLength={30}
                     autoFocus
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4"
+                    className="w-full dark:bg-white/5 bg-slate-900/5 border dark:border-white/10 border-slate-900/10 rounded-xl px-4 py-3 text-sm dark:text-white text-slate-900 dark:placeholder:text-slate-500 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4"
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleCreate();
                     }}
@@ -283,14 +308,14 @@ export function SquadPage() {
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.9, y: 20 }}
                   onClick={e => e.stopPropagation()}
-                  className="w-[384px] max-w-[90vw] rounded-2xl bg-slate-900 border border-white/10 p-6 flex flex-col"
+                  className="w-[384px] max-w-[90vw] rounded-2xl dark:bg-slate-900 bg-white border dark:border-white/10 border-slate-900/10 p-6 flex flex-col"
                   style={{ minWidth: '300px' }}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white">Join Squad</h3>
+                    <h3 className="text-lg font-bold dark:text-white text-slate-900">Join Squad</h3>
                     <button
                       onClick={() => setShowJoin(false)}
-                      className="text-slate-400 hover:text-white"
+                      className="text-slate-400 dark:hover:text-white hover:text-slate-900"
                     >
                       <X size={18} />
                     </button>
@@ -302,7 +327,7 @@ export function SquadPage() {
                     placeholder="Enter 6-character code..."
                     maxLength={6}
                     autoFocus
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4 text-center tracking-[0.3em] font-mono text-lg"
+                    className="w-full dark:bg-white/5 bg-slate-900/5 border dark:border-white/10 border-slate-900/10 rounded-xl px-4 py-3 text-sm dark:text-white text-slate-900 dark:placeholder:text-slate-500 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4 text-center tracking-[0.3em] font-mono text-lg"
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleJoin();
                     }}
@@ -328,44 +353,85 @@ export function SquadPage() {
   return (
     <div className="space-y-6 relative pb-10">
       <Suspense fallback={null}><GamificationBackground /></Suspense>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            {squad.name}
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            {squad.members.length} member{squad.members.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        <button
-          onClick={copyCode}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all"
-        >
-          <Copy size={14} />
-          <span className="font-mono text-sm tracking-wider">{squad.invite_code}</span>
-        </button>
-      </div>
 
-      {/* Invite friends CTA */}
-      {squad.members.length < 5 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-500/10 border border-brand-500/20"
-        >
-          <UserPlus size={18} className="text-brand-400 flex-shrink-0" />
-          <p className="text-xs text-brand-300">
-            Share code <span className="font-mono font-bold">{squad.invite_code}</span> with friends
-            to invite them!
-          </p>
-        </motion.div>
+      {/* Tabs for multiple squads */}
+      {squads.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+          {squads.map(s => (
+            <button
+              key={s.id}
+              onClick={() => setActiveSquadId(s.id)}
+              className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                s.id === activeSquadId
+                  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20'
+                  : 'dark:bg-white/5 bg-slate-900/5 dark:text-slate-400 text-slate-600 hover:bg-slate-900/10'
+              }`}
+            >
+              {s.name}
+            </button>
+          ))}
+          <button
+            onClick={() => setShowJoin(true)}
+            className="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap dark:bg-white/5 bg-slate-900/5 dark:text-brand-400 text-brand-600 border border-brand-500/20 hover:bg-brand-500/10 transition-all flex items-center gap-1"
+          >
+            <Plus size={14} /> Join Another
+          </button>
+        </div>
       )}
+
+      {squads.length === 1 && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => setShowJoin(true)}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold dark:bg-white/5 bg-slate-900/5 dark:text-brand-400 text-brand-600 border border-brand-500/20 hover:bg-brand-500/10 transition-all flex items-center gap-1"
+          >
+            <Plus size={12} /> Join Another Squad
+          </button>
+        </div>
+      )}
+
+      {activeSquad && (
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight break-all">
+                  {activeSquad.name}
+                </h1>
+              </div>
+              <p className="text-sm dark:text-slate-400 text-slate-600 mt-1">
+                {activeSquad.members.length} member{activeSquad.members.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <button
+              onClick={copyCode}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl dark:bg-white/5 bg-slate-900/5 border dark:border-white/10 border-slate-900/10 dark:text-slate-300 text-slate-600 dark:hover:text-white hover:text-slate-900 dark:hover:bg-white/10 hover:bg-slate-900/10 transition-all w-full sm:w-auto"
+            >
+              <Copy size={14} />
+              <span className="font-mono text-sm tracking-wider">{activeSquad.invite_code}</span>
+            </button>
+          </div>
+
+          {/* Invite friends CTA */}
+          {activeSquad.members.length < 5 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-500/10 border border-brand-500/20"
+            >
+              <UserPlus size={18} className="text-brand-400 flex-shrink-0" />
+              <p className="text-xs text-brand-300">
+                Share code <span className="font-mono font-bold">{activeSquad.invite_code}</span> with friends
+                to invite them!
+              </p>
+            </motion.div>
+          )}
 
       {/* Leaderboard */}
       <div className="space-y-3">
         {sortedMembers.map((member, idx) => {
           const isMe = member.user_id === userId;
-          const isOwner = member.user_id === squad.owner_id;
+          const isOwner = member.user_id === activeSquad.owner_id;
           const medal = idx < 3 ? MEDAL_ICONS[idx] : null;
           const medalColor = idx < 3 ? MEDAL_COLORS[idx] : '';
 
@@ -378,7 +444,7 @@ export function SquadPage() {
             >
               <TiltCard tiltIntensity={8}>
                 <div className={`relative overflow-hidden rounded-2xl border ${
-                  idx < 3 ? `bg-gradient-to-r ${medalColor}` : 'bg-black/20 backdrop-blur-md border-white/10'
+                  idx < 3 ? `bg-gradient-to-r ${medalColor}` : 'dark:bg-black/20 bg-white/50 backdrop-blur-md dark:border-white/10 border-slate-900/10'
                 } p-4`}
                 >
                   <div className="flex items-center gap-4">
@@ -401,7 +467,7 @@ export function SquadPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-white truncate">
+                    <span className="text-sm font-bold dark:text-white text-slate-900 truncate">
                       {member.display_name}
                     </span>
                     {isMe && (
@@ -428,7 +494,7 @@ export function SquadPage() {
                       r="15"
                       fill="none"
                       stroke="currentColor"
-                      className="text-white/5"
+                      className="dark:text-white/5 text-slate-900/10"
                       strokeWidth="3"
                     />
                     <circle
@@ -448,7 +514,7 @@ export function SquadPage() {
                       </linearGradient>
                     </defs>
                   </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold dark:text-white text-slate-900">
                     {Math.round(member.completion_today * 100)}%
                   </span>
                 </div>
@@ -488,6 +554,8 @@ export function SquadPage() {
           </button>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }

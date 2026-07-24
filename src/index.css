@@ -1,6 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,400,700,500,600,300&f[]=satoshi@900,700,500,300,400&display=swap');
 @import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
 @theme {
   --color-on-surface-variant: #c7c4d7;
@@ -23,11 +22,11 @@
   --color-tertiary-container: #00885d;
   --color-surface-bright: #31394d;
   --color-on-error-container: #ffdad6;
-  --color-surface-dim: #0b1326;
-  --color-background: #0b1326;
-  --color-secondary-fixed: #f0dbff;
-  --color-primary: #c0c1ff;
-  --color-surface: #0b1326;
+  --color-surface-dim: #050505;
+  --color-background: #050505;
+  --color-secondary-fixed: #e2e8f0;
+  --color-primary: #cbd5e1;
+  --color-surface: #0a0a0a;
   --color-inverse-primary: #494bd6;
   --color-on-primary-fixed-variant: #2f2ebe;
   --color-secondary: #ddb7ff;
@@ -62,14 +61,14 @@
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-full: 9999px;
-  --font-body-md: 'Plus Jakarta Sans', sans-serif;
-  --font-h2: 'Plus Jakarta Sans', sans-serif;
-  --font-stats-num: 'Plus Jakarta Sans', sans-serif;
-  --font-body-lg: 'Plus Jakarta Sans', sans-serif;
-  --font-label-caps: 'Plus Jakarta Sans', sans-serif;
-  --font-display: 'Plus Jakarta Sans', sans-serif;
-  --font-h1: 'Plus Jakarta Sans', sans-serif;
-  --font-h3: 'Plus Jakarta Sans', sans-serif;
+  --font-body-md: 'Satoshi', sans-serif;
+  --font-h2: 'Clash Display', sans-serif;
+  --font-stats-num: 'Clash Display', sans-serif;
+  --font-body-lg: 'Satoshi', sans-serif;
+  --font-label-caps: 'Satoshi', sans-serif;
+  --font-display: 'Clash Display', sans-serif;
+  --font-h1: 'Clash Display', sans-serif;
+  --font-h3: 'Clash Display', sans-serif;
   --text-body-md: 16px;
   --text-body-md--line-height: 1.6;
   --text-body-md--font-weight: 400;
@@ -110,35 +109,35 @@
 
 /* ── Stitch Typography Utility Classes ─────────────────────────── */
 .font-display {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-display, 'Clash Display', sans-serif);
   font-size: 48px;
   line-height: 1.1;
   font-weight: 700;
   letter-spacing: -0.04em;
 }
 .font-h1 {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-h1, 'Clash Display', sans-serif);
   font-size: 32px;
   line-height: 1.2;
   font-weight: 700;
   letter-spacing: -0.03em;
 }
 .font-h2 {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-h2, 'Clash Display', sans-serif);
   font-size: 24px;
   line-height: 1.3;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 .font-h3 {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-h3, 'Clash Display', sans-serif);
   font-size: 20px;
   line-height: 1.4;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 .font-label-caps {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-label-caps, 'Satoshi', sans-serif);
   font-size: 12px;
   line-height: 1;
   font-weight: 600;
@@ -233,16 +232,16 @@
 }
 
 .glass-card {
-  background: rgba(10, 15, 30, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  background: rgba(10, 10, 10, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   position: relative;
   overflow: hidden;
   transition:
-    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
-    box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    transform 0.7s cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 0.7s cubic-bezier(0.32, 0.72, 0, 1),
     border-color 0.4s ease;
 }
 
@@ -252,16 +251,8 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(
-    to bottom right,
-    rgba(255, 255, 255, 0.2),
-    rgba(255, 255, 255, 0.02) 40%,
-    rgba(255, 255, 255, 0.01) 60%,
-    rgba(255, 255, 255, 0.1)
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.01));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -269,19 +260,17 @@
 
 @media (min-width: 768px) {
   .glass-card {
-    background: linear-gradient(135deg, rgba(30, 41, 60, 0.4) 0%, rgba(10, 15, 30, 0.6) 100%);
+    background: rgba(15, 15, 15, 0.7);
     box-shadow:
-      inset 1px 1px 1px rgba(255, 255, 255, 0.1),
-      0 20px 40px -10px rgba(0, 0, 0, 0.7),
-      0 10px 20px -5px rgba(0, 0, 0, 0.5);
+      inset 0 1px 1px rgba(255, 255, 255, 0.05),
+      0 20px 40px -10px rgba(0, 0, 0, 0.8);
   }
 
   .glass-card:hover {
     box-shadow:
-      inset 1px 1px 1px rgba(255, 255, 255, 0.15),
-      0 30px 60px -15px rgba(0, 0, 0, 0.8),
-      0 15px 25px -5px rgba(129, 140, 248, 0.15);
-    border-color: rgba(255, 255, 255, 0.15);
+      inset 0 1px 1px rgba(255, 255, 255, 0.08),
+      0 30px 60px -15px rgba(0, 0, 0, 1);
+    border-color: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -304,8 +293,8 @@
     0 1px 2px rgba(0, 0, 0, 0.4);
 }
 .glow-border:hover {
-  border-color: rgba(129, 140, 248, 0.5);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 20px rgba(5, 150, 105, 0.08);
 }
 
 /* ── Dialog / Modal top-layer reset ─────────────────────────────── */
@@ -322,11 +311,7 @@ dialog {
 dialog::backdrop {
   background: rgba(2, 6, 23, 0.85);
 }
-.text-gradient {
-  background: linear-gradient(to right, #818cf8, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+/* First .text-gradient removed — consolidated below */
 
 /* ── XP Bar Shimmer ─────────────────────────────────────────────── */
 /* Wrap the XP bar fill div with .xp-bar-fill to get the shimmer */
@@ -368,21 +353,81 @@ dialog::backdrop {
   0% {
     box-shadow:
       0 0 0 2px var(--bg-primary),
-      0 0 0 4px rgba(99, 102, 241, 0.4);
+      0 0 0 4px rgba(16, 185, 129, 0.3);
   }
   50% {
     box-shadow:
       0 0 0 2px var(--bg-primary),
-      0 0 0 6px rgba(99, 102, 241, 0.8);
+      0 0 0 6px rgba(16, 185, 129, 0.6);
   }
   100% {
     box-shadow:
       0 0 0 2px var(--bg-primary),
-      0 0 0 4px rgba(99, 102, 241, 0.4);
+      0 0 0 4px rgba(16, 185, 129, 0.3);
   }
 }
 
 /* ── Custom Utilities ─────────────────────────────────────────── */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes loaderCircle {
+  0% {
+    transform: rotate(90deg);
+    box-shadow:
+      0 6px 12px 0 #38bdf8 inset,
+      0 12px 18px 0 #005dff inset,
+      0 36px 36px 0 #1e40af inset,
+      0 0 3px 1.2px rgba(56, 189, 248, 0.3),
+      0 0 6px 1.8px rgba(0, 93, 255, 0.2);
+  }
+  50% {
+    transform: rotate(270deg);
+    box-shadow:
+      0 6px 12px 0 #60a5fa inset,
+      0 12px 6px 0 #0284c7 inset,
+      0 24px 36px 0 #005dff inset,
+      0 0 3px 1.2px rgba(56, 189, 248, 0.3),
+      0 0 6px 1.8px rgba(0, 93, 255, 0.2);
+  }
+  100% {
+    transform: rotate(450deg);
+    box-shadow:
+      0 6px 12px 0 #4dc8fd inset,
+      0 12px 18px 0 #005dff inset,
+      0 36px 36px 0 #1e40af inset,
+      0 0 3px 1.2px rgba(56, 189, 248, 0.3),
+      0 0 6px 1.8px rgba(0, 93, 255, 0.2);
+  }
+}
+
+@keyframes loaderLetter {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateY(0);
+  }
+}
+
+.animate-loaderCircle {
+  animation: loaderCircle 5s linear infinite;
+}
+
+.animate-loaderLetter {
+  animation: loaderLetter 3s infinite;
+}
+
 @keyframes check-pop {
   0% {
     transform: scale(1);
@@ -404,12 +449,13 @@ dialog::backdrop {
 /* ── Card lift on hover (override) ─────────────────────────────── */
 .glass-card {
   transition:
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+    box-shadow 0.7s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.7s cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 0.4s ease;
 }
 .glass-card:hover {
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 20px 50px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
@@ -474,35 +520,10 @@ dialog::backdrop {
   animation: mood-ring-pulse 2s infinite;
 }
 
-/* ── Modal Glow Animation ────────────────────────────────────────── */
+/* ── Modal Glow Animation (REMOVED: ANTI-PATTERN) ──────────────── */
 .modal-glow {
   position: relative;
   z-index: 1;
-}
-.modal-glow::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  padding: 2px;
-  background: conic-gradient(
-    from var(--angle),
-    transparent 0%,
-    transparent 30%,
-    var(--brand-500) 50%,
-    var(--brand-300) 60%,
-    transparent 80%,
-    transparent 100%
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: rotate-border 6s linear infinite;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.6;
 }
 
 /* ── Masked Text Gradients ───────────────────────────────────────── */
@@ -531,7 +552,7 @@ select:focus,
 
 /* ── Specific Overrides ───────────────────────────────────────── */
 .kpi-card-indigo {
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(67, 56, 202, 0.05));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05));
 }
 .kpi-card-amber {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.05));
@@ -560,11 +581,11 @@ body {
   --brand: var(--brand-500);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
 
-  /* Default theme (indigo) */
-  --brand-400: #818cf8;
-  --brand-500: #6366f1;
-  --brand-600: #4f46e5;
-  --brand-500-rgb: 99, 102, 241;
+  /* Default theme (Muted Emerald) */
+  --brand-400: #34d399;
+  --brand-500: #10b981;
+  --brand-600: #059669;
+  --brand-500-rgb: 16, 185, 129;
 }
 
 :root[data-theme='violet'] {
@@ -694,8 +715,8 @@ body {
   transition: all 0.2s;
 }
 .input:focus {
-  border-color: rgba(99, 102, 241, 0.5);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3);
 }
 .light .input {
   background-color: #ffffff;
@@ -923,11 +944,10 @@ body {
   padding: 1px;
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.4),
-    rgba(139, 92, 246, 0.2),
-    rgba(6, 182, 212, 0.3),
-    rgba(16, 185, 129, 0.2),
-    rgba(99, 102, 241, 0.4)
+    rgba(16, 185, 129, 0.3),
+    rgba(5, 150, 105, 0.15),
+    rgba(20, 184, 166, 0.2),
+    rgba(16, 185, 129, 0.3)
   );
   background-size: 300% 300%;
   animation: border-glow-rotate 6s ease infinite;
@@ -984,13 +1004,13 @@ body {
   0%,
   100% {
     box-shadow:
-      0 0 8px rgba(99, 102, 241, 0.2),
-      0 0 24px rgba(99, 102, 241, 0.1);
+      0 0 8px rgba(16, 185, 129, 0.15),
+      0 0 24px rgba(16, 185, 129, 0.08);
   }
   50% {
     box-shadow:
-      0 0 16px rgba(99, 102, 241, 0.4),
-      0 0 48px rgba(99, 102, 241, 0.2);
+      0 0 16px rgba(16, 185, 129, 0.3),
+      0 0 48px rgba(16, 185, 129, 0.15);
   }
 }
 .animate-glow-pulse {
@@ -1065,8 +1085,8 @@ body {
   transform: translateY(-4px) scale(1.01);
   box-shadow:
     inset 1px 1px 1px rgba(255, 255, 255, 0.15),
-    0 40px 80px -20px rgba(0, 0, 0, 0.9),
-    0 20px 40px -10px rgba(129, 140, 248, 0.2);
+    0 20px 40px -10px rgba(0, 0, 0, 0.5),
+    0 40px 80px -20px rgba(0, 0, 0, 0.9);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -1108,10 +1128,10 @@ body {
 .light .tilt-border-glow::before {
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.3),
-    rgba(139, 92, 246, 0.15),
-    rgba(6, 182, 212, 0.2),
-    rgba(99, 102, 241, 0.3)
+    rgba(16, 185, 129, 0.25),
+    rgba(5, 150, 105, 0.12),
+    rgba(20, 184, 166, 0.15),
+    rgba(16, 185, 129, 0.25)
   );
 }
 
@@ -1143,8 +1163,8 @@ body {
 @layer base {
   :root {
     /* ── Apple VisionOS Inspired Foundation ── */
-    --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
-    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-heading: 'Clash Display', sans-serif;
+    --font-sans: 'Satoshi', system-ui, -apple-system, sans-serif;
 
     /* Base Colors - Obsidian/Slate Base */
     --color-bg-base: #020617; /* Slate 950 */
@@ -1157,11 +1177,11 @@ body {
     --color-text-secondary: #94a3b8;
     --color-text-tertiary: #64748b;
 
-    /* Mesh Gradient Accents */
-    --color-mesh-1: rgba(99, 102, 241, 0.4); /* Indigo */
-    --color-mesh-2: rgba(168, 85, 247, 0.4); /* Purple */
-    --color-mesh-3: rgba(236, 72, 153, 0.4); /* Pink */
-    --color-mesh-4: rgba(16, 185, 129, 0.4); /* Emerald */
+    /* Mesh Gradient Accents — Desaturated Emerald/Teal */
+    --color-mesh-1: rgba(16, 185, 129, 0.25); /* Emerald */
+    --color-mesh-2: rgba(20, 184, 166, 0.2); /* Teal */
+    --color-mesh-3: rgba(5, 150, 105, 0.15); /* Deep Emerald */
+    --color-mesh-4: rgba(45, 212, 191, 0.15); /* Light Teal */
 
     /* Glass Effects */
     --glass-border: rgba(255, 255, 255, 0.08);
@@ -1172,11 +1192,11 @@ body {
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
     --glass-shadow-hover: 0 16px 48px 0 rgba(0, 0, 0, 0.5);
 
-    /* Dynamic Brand Variables (Themeable) */
-    --color-brand-300: #a5b4fc;
-    --color-brand-400: #818cf8;
-    --color-brand-500: #6366f1;
-    --color-brand-600: #4f46e5;
+    /* Dynamic Brand Variables — Emerald */
+    --color-brand-300: #6ee7b7;
+    --color-brand-400: #34d399;
+    --color-brand-500: #10b981;
+    --color-brand-600: #059669;
   }
 
   .light {
@@ -1209,7 +1229,7 @@ body {
     background-color: var(--color-bg-base);
     color: var(--color-text-primary);
     overflow-x: hidden;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   h1, h2, h3, h4, h5, h6, .font-heading {
@@ -1339,6 +1359,9 @@ body {
 }
 .light .text-gradient {
   background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .text-gradient-brand {
@@ -1366,11 +1389,11 @@ body {
 
 /* ── Text Selection Highlight ──────────────────────────────────── */
 ::selection {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(16, 185, 129, 0.25);
   color: white;
 }
 .light ::selection {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(16, 185, 129, 0.15);
   color: #111827;
 }
 
@@ -1405,8 +1428,7 @@ body {
       inset 1px 1px 2px rgba(255, 255, 255, 0.3),
       inset -1px -1px 2px rgba(0, 0, 0, 0.6),
       0 30px 60px -15px rgba(0, 0, 0, 0.9),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      0 0 20px rgba(99, 102, 241, 0.15);
+      0 0 0 1px rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.3);
   }
 }
@@ -1470,3 +1492,33 @@ body {
   z-index: 1;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Accessibility: Reduced Motion
+   Required by design-taste-frontend & emil-design-eng skills.
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-float,
+  .animate-float-slow,
+  .animate-float-fast,
+  .animate-glow-pulse,
+  .shimmer-3d,
+  .animate-flame,
+  .mood-ring.active::before {
+    animation: none !important;
+  }
+
+  .bg-mesh::before,
+  .bg-mesh::after,
+  .bg-mesh-blob {
+    animation: none !important;
+  }
+}

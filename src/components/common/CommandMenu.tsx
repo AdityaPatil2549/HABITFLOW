@@ -3,25 +3,15 @@ import { Command } from 'cmdk';
 import { useNavigate } from 'react-router-dom';
 import { 
   Home, CheckSquare, ListTodo, BarChart2, ShoppingBag, Settings, 
-  Moon, Sun, Laptop, Search
+  Search
 } from 'lucide-react';
-import { db, getOrCreateSettings } from '../../db';
-import type { Settings as AppSettings } from '../../types';
+
 
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  const updateTheme = async (mode: 'light' | 'dark' | 'system') => {
-    const settings = await getOrCreateSettings();
-    await db.settings.update(settings.id!, { darkMode: mode });
-    const root = window.document.documentElement;
-    root.classList.toggle('light', mode === 'light');
-    if (mode === 'system') {
-      const systemLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-      root.classList.toggle('light', systemLight);
-    }
-  };
+
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -88,20 +78,7 @@ export function CommandMenu() {
               </Command.Item>
             </Command.Group>
 
-            <Command.Group heading={<div className="px-2 py-1 text-xs font-semibold text-slate-500 mb-1 mt-2">Appearance</div>}>
-              <Command.Item onSelect={() => runCommand(() => updateTheme('light'))} className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-white/10 aria-selected:bg-white/10 transition-colors mb-1">
-                <Sun size={18} className="text-amber-400" />
-                <span>Light Mode</span>
-              </Command.Item>
-              <Command.Item onSelect={() => runCommand(() => updateTheme('dark'))} className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-white/10 aria-selected:bg-white/10 transition-colors mb-1">
-                <Moon size={18} className="text-indigo-400" />
-                <span>Dark Mode</span>
-              </Command.Item>
-              <Command.Item onSelect={() => runCommand(() => updateTheme('system'))} className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-white/10 aria-selected:bg-white/10 transition-colors mb-1">
-                <Laptop size={18} className="text-slate-400" />
-                <span>System Theme</span>
-              </Command.Item>
-            </Command.Group>
+
 
           </Command.List>
         </Command>

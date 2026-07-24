@@ -175,6 +175,84 @@ const SHOP_CATALOG: ShopItem[] = [
     price: 200,
     rarity: 'epic',
   },
+
+  // --- New Additions ---
+  {
+    id: 'streak_freeze',
+    name: 'Streak Freeze',
+    description: 'Missed a day? Use this to save your streak!',
+    icon: '🧊',
+    category: 'consumable',
+    price: 150,
+    rarity: 'epic',
+  },
+  {
+    id: 'midnight',
+    name: 'Midnight Dark',
+    description: 'Pure black background for OLED screens',
+    icon: '🌙',
+    category: 'theme',
+    price: 300,
+    rarity: 'epic',
+    preview: 'midnight',
+  },
+  {
+    id: 'pastel',
+    name: 'Pastel Dream',
+    description: 'Soft and soothing pastel colors',
+    icon: '🎨',
+    category: 'theme',
+    price: 150,
+    rarity: 'common',
+    preview: 'pastel',
+  },
+  {
+    id: 'monochrome',
+    name: 'Monochrome',
+    description: 'Minimalist black and white elegance',
+    icon: '⬛',
+    category: 'theme',
+    price: 250,
+    rarity: 'rare',
+    preview: 'monochrome',
+  },
+  {
+    id: 'galaxy',
+    name: 'Deep Galaxy',
+    description: 'Stars and nebulae across your app',
+    icon: '⭐',
+    category: 'theme',
+    price: 450,
+    rarity: 'legendary',
+    preview: 'galaxy',
+  },
+  {
+    id: 'icons_pixel',
+    name: 'Pixel Art Pack',
+    description: 'Retro 8-bit style icons',
+    icon: '👾',
+    category: 'icon_pack',
+    price: 150,
+    rarity: 'rare',
+  },
+  {
+    id: 'icons_3d',
+    name: '3D Render Pack',
+    description: 'Beautifully rendered 3D habit icons',
+    icon: '🧊',
+    category: 'icon_pack',
+    price: 300,
+    rarity: 'epic',
+  },
+  {
+    id: 'icons_nature',
+    name: 'Nature Pack',
+    description: 'Leaves, trees, and organic shapes',
+    icon: '🌿',
+    category: 'icon_pack',
+    price: 100,
+    rarity: 'common',
+  },
 ];
 
 // ─── Coin Earning Rates ──────────────────────────────────────
@@ -190,7 +268,7 @@ export const COIN_RATES = {
 
 async function getBalance(): Promise<number> {
   const xp = await getOrCreateUserXP();
-  return xp.coins || 0;
+  return xp.total || 0;
 }
 
 async function addCoins(amount: number, _reason: string): Promise<number> {
@@ -203,8 +281,14 @@ async function addCoins(amount: number, _reason: string): Promise<number> {
 async function spendCoins(amount: number): Promise<boolean> {
   const xp = await getOrCreateUserXP();
   if ((xp.coins || 0) < amount) return false;
-  xp.coins -= amount;
+  xp.coins = (xp.coins || 0) - amount;
+
   await db.userXP.put(xp);
+  
+  // Dispatch event so header updates instantly
+  window.dispatchEvent(new CustomEvent('coins-updated'));
+  window.dispatchEvent(new CustomEvent('xp-updated'));
+  
   return true;
 }
 

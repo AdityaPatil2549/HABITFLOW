@@ -42,12 +42,6 @@ export const useToastStore = create<ToastState>(set => ({
   add: t => {
     const id = String(_nextId++);
     set(s => ({ toasts: [...s.toasts, { ...t, id }] }));
-    if (t.duration !== 0) {
-      const dur = t.duration ?? (t.type === 'error' ? 5000 : 3500);
-      setTimeout(() => {
-        set(s => ({ toasts: s.toasts.filter(x => x.id !== id) }));
-      }, dur);
-    }
   },
 
   remove: id => set(s => ({ toasts: s.toasts.filter(x => x.id !== id) })),
@@ -116,6 +110,14 @@ function ToastCard({ toast }: { toast: ToastItem }) {
   const cfg = TOAST_CONFIG[toast.type];
   const Icon = cfg.icon;
 
+  useEffect(() => {
+    if (toast.duration !== 0) {
+      const dur = toast.duration ?? (toast.type === 'error' ? 5000 : 3500);
+      const timer = setTimeout(() => remove(toast.id), dur);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.id, toast.duration, toast.type, remove]);
+
   return (
     <motion.div
       layout
@@ -147,10 +149,17 @@ function ToastCard({ toast }: { toast: ToastItem }) {
 // ── Confirm Dialog ──────────────────────────────────────────────
 function ConfirmDialog() {
   const { confirm, dismissConfirm } = useToastStore();
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const confirmBtnRef = useRef<HTMLButtonElement>(null);
+  const cancelBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (confirm) btnRef.current?.focus();
+    if (confirm) {
+      if (confirm.danger) {
+        cancelBtnRef.current?.focus();
+      } else {
+        confirmBtnRef.current?.focus();
+      }
+    }
   }, [confirm]);
 
   if (!confirm) return null;
@@ -199,6 +208,7 @@ function ConfirmDialog() {
 
           <div className="flex gap-3 pt-1">
             <button
+              ref={cancelBtnRef}
               onClick={() => {
                 confirm.onCancel?.();
                 dismissConfirm();
@@ -208,7 +218,7 @@ function ConfirmDialog() {
               {confirm.cancelLabel ?? 'Cancel'}
             </button>
             <button
-              ref={btnRef}
+              ref={confirmBtnRef}
               onClick={() => {
                 confirm.onConfirm();
                 dismissConfirm();

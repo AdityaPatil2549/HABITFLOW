@@ -1,19 +1,23 @@
 // ============================================================
-// HabitFlow — Offline-First Sync Engine
+// HabitFlow — Offline-First Sync Engine (Firestore Version)
 // ============================================================
-// Strategy:
-//   1. ALL writes go to Dexie FIRST (instant, offline-capable)
-//   2. SyncService queues changes and pushes to Supabase in background
-//   3. On app launch / tab focus, pull remote changes newer than last cursor
-//   4. Conflict resolution: last-write-wins based on updated_at
-//   5. Failed pushes stay in sync_queue and retry on reconnection
-// ============================================================
-
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { db as firestore, auth, isFirebaseConfigured } from '@/lib/firebase';
 import { db, type SyncQueueItem } from '@/db';
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit, 
+  getDocs,
+  writeBatch
+} from 'firebase/firestore';
 
-// ─── Table Name Mapping (Dexie camelCase → Supabase snake_case) ─────
-const DEXIE_TO_SUPABASE: Record<string, string> = {
+// ─── Table Name Mapping (Dexie camelCase → Firestore collection) ─────
+const DEXIE_TO_FIRESTORE: Record<string, string> = {
   habits: 'habits',
   habitLogs: 'habit_logs',
   tasks: 'tasks',
@@ -23,88 +27,19 @@ const DEXIE_TO_SUPABASE: Record<string, string> = {
   settings: 'settings',
 };
 
-
-
-// All Dexie table names that participate in sync
-const SYNCABLE_TABLES = Object.keys(DEXIE_TO_SUPABASE);
+const SYNCABLE_TABLES = Object.keys(DEXIE_TO_FIRESTORE);
 
 // ─── Column Name Mapping (camelCase ↔ snake_case per table) ─────────
 const COLUMN_MAP: Record<string, Record<string, string>> = {
-  habits: {
-    frequencyDays: 'frequency_days',
-    frequencyInterval: 'frequency_interval',
-    targetValue: 'target_value',
-    startDate: 'start_date',
-    endDate: 'end_date',
-    reminderTime: 'reminder_time',
-    reminderDays: 'reminder_days',
-    graceDayEnabled: 'grace_day_enabled',
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    deletedAt: 'deleted_at',
-    userId: 'user_id',
-  },
-  habit_logs: {
-    habitId: 'habit_id',
-    isFrozen: 'is_frozen',
-    timeStamp: 'time_stamp',
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    deletedAt: 'deleted_at',
-    userId: 'user_id',
-  },
-  tasks: {
-    dueDate: 'due_date',
-    dueTime: 'due_time',
-    projectId: 'project_id',
-    parentId: 'parent_id',
-    recurringInterval: 'recurring_interval',
-    completedAt: 'completed_at',
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    deletedAt: 'deleted_at',
-    userId: 'user_id',
-  },
-  projects: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    deletedAt: 'deleted_at',
-    userId: 'user_id',
-  },
-  moods: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    deletedAt: 'deleted_at',
-    userId: 'user_id',
-  },
-  user_xp: {
-    levelProgress: 'level_progress',
-    badgesEarned: 'badges_earned',
-    weeklyScore: 'weekly_score',
-    dailyScore: 'daily_score',
-    streakFreezes: 'streak_freezes',
-    unlockedThemes: 'unlocked_themes',
-    lastDailyReset: 'last_daily_reset',
-    lastWeeklyReset: 'last_weekly_reset',
-    lastUpdated: 'last_updated',
-    updatedAt: 'updated_at',
-    userId: 'user_id',
-  },
-  settings: {
-    darkMode: 'dark_mode',
-    weekStartsOnMonday: 'week_starts_on_monday',
-    notificationsEnabled: 'notifications_enabled',
-    soundEnabled: 'sound_enabled',
-    hapticEnabled: 'haptic_enabled',
-    morningBriefingTime: 'morning_briefing_time',
-    updatedAt: 'updated_at',
-    userId: 'user_id',
-    googleCalendarSync: 'google_calendar_sync',
-    googleCalendarCompletions: 'google_calendar_completions',
-  },
+  habits: { frequencyDays: 'frequency_days', frequencyInterval: 'frequency_interval', targetValue: 'target_value', startDate: 'start_date', endDate: 'end_date', reminderTime: 'reminder_time', reminderDays: 'reminder_days', graceDayEnabled: 'grace_day_enabled', createdAt: 'created_at', updatedAt: 'updated_at', deletedAt: 'deleted_at', userId: 'user_id' },
+  habit_logs: { habitId: 'habit_id', isFrozen: 'is_frozen', timeStamp: 'time_stamp', createdAt: 'created_at', updatedAt: 'updated_at', deletedAt: 'deleted_at', userId: 'user_id' },
+  tasks: { dueDate: 'due_date', dueTime: 'due_time', projectId: 'project_id', parentId: 'parent_id', recurringInterval: 'recurring_interval', completedAt: 'completed_at', createdAt: 'created_at', updatedAt: 'updated_at', deletedAt: 'deleted_at', userId: 'user_id' },
+  projects: { createdAt: 'created_at', updatedAt: 'updated_at', deletedAt: 'deleted_at', userId: 'user_id' },
+  moods: { createdAt: 'created_at', updatedAt: 'updated_at', deletedAt: 'deleted_at', userId: 'user_id' },
+  user_xp: { levelProgress: 'level_progress', badgesEarned: 'badges_earned', weeklyScore: 'weekly_score', dailyScore: 'daily_score', streakFreezes: 'streak_freezes', unlockedThemes: 'unlocked_themes', lastDailyReset: 'last_daily_reset', lastWeeklyReset: 'last_weekly_reset', lastUpdated: 'last_updated', updatedAt: 'updated_at', userId: 'user_id' },
+  settings: { darkMode: 'dark_mode', weekStartsOnMonday: 'week_starts_on_monday', notificationsEnabled: 'notifications_enabled', soundEnabled: 'sound_enabled', hapticEnabled: 'haptic_enabled', morningBriefingTime: 'morning_briefing_time', updatedAt: 'updated_at', userId: 'user_id', googleCalendarSync: 'google_calendar_sync', googleCalendarCompletions: 'google_calendar_completions' },
 };
 
-// Build reverse maps for each table (snake_case → camelCase)
 const REVERSE_COLUMN_MAP: Record<string, Record<string, string>> = {};
 for (const [table, mapping] of Object.entries(COLUMN_MAP)) {
   REVERSE_COLUMN_MAP[table] = Object.fromEntries(
@@ -112,10 +47,8 @@ for (const [table, mapping] of Object.entries(COLUMN_MAP)) {
   );
 }
 
-// ─── Column Mapping Helpers ─────────────────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toSupabaseRow(supabaseTable: string, record: Record<string, any>): Record<string, any> {
-  const mapping = COLUMN_MAP[supabaseTable] ?? {};
+function toFirestoreRow(firestoreTable: string, record: Record<string, any>): Record<string, any> {
+  const mapping = COLUMN_MAP[firestoreTable] ?? {};
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     const mappedKey = mapping[key] ?? key;
@@ -124,9 +57,8 @@ function toSupabaseRow(supabaseTable: string, record: Record<string, any>): Reco
   return result;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toDexieRow(supabaseTable: string, record: Record<string, any>): Record<string, any> {
-  const mapping = REVERSE_COLUMN_MAP[supabaseTable] ?? {};
+function toDexieRow(firestoreTable: string, record: Record<string, any>): Record<string, any> {
+  const mapping = REVERSE_COLUMN_MAP[firestoreTable] ?? {};
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     const mappedKey = mapping[key] ?? key;
@@ -135,46 +67,25 @@ function toDexieRow(supabaseTable: string, record: Record<string, any>): Record<
   return result;
 }
 
-// ─── Sync Cursor Persistence (localStorage) ─────────────────────────
 const CURSOR_PREFIX = 'habitflow_sync_cursor_';
+function getSyncCursor(tableName: string): string | null { return localStorage.getItem(`${CURSOR_PREFIX}${tableName}`); }
+function setSyncCursor(tableName: string, cursor: string): void { localStorage.setItem(`${CURSOR_PREFIX}${tableName}`, cursor); }
 
-function getSyncCursor(tableName: string): string | null {
-  return localStorage.getItem(`${CURSOR_PREFIX}${tableName}`);
+function getDexieTable(dexieTableName: string) { return (db as any)[dexieTableName] as import('dexie').Table; }
+
+function getAuthUserId(): string | null {
+  return auth.currentUser?.uid ?? null;
 }
 
-function setSyncCursor(tableName: string, cursor: string): void {
-  localStorage.setItem(`${CURSOR_PREFIX}${tableName}`, cursor);
-}
-
-// ─── Helpers ────────────────────────────────────────────────────────
-function getDexieTable(dexieTableName: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (db as any)[dexieTableName] as import('dexie').Table;
-}
-
-
-async function getAuthUserId(): Promise<string | null> {
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id ?? null;
-}
-
-// ─── Sync Service Class ─────────────────────────────────────────────
 class SyncService {
   private syncInterval: ReturnType<typeof setInterval> | null = null;
   private isSyncing = false;
   private onlineHandler: (() => void) | null = null;
   private focusHandler: (() => void) | null = null;
-  private realtimeChannel: import('@supabase/supabase-js').RealtimeChannel | null = null;
+  private pushTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  // ── Queue a change for push ────────────────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async queuePush(
-    tableName: string,
-    record: Record<string, any>,
-    operation: 'upsert' | 'delete'
-  ): Promise<void> {
-    if (!isSupabaseConfigured()) return;
-
+  async queuePush(tableName: string, record: Record<string, any>, operation: 'upsert' | 'delete'): Promise<void> {
+    if (!isFirebaseConfigured()) return;
     const item: SyncQueueItem = {
       table_name: tableName,
       record_id: String(record.id),
@@ -182,26 +93,21 @@ class SyncService {
       payload: operation === 'delete' ? { id: record.id } : { ...record },
       created_at: new Date().toISOString(),
     };
-
     await db.sync_queue.add(item);
-
-    // Attempt an immediate push if online
     if (navigator.onLine) {
-      this.processPushQueue().catch(console.error);
+      if (this.pushTimeout) clearTimeout(this.pushTimeout);
+      this.pushTimeout = setTimeout(() => { this.processPushQueue().catch(console.error); }, 1000);
     }
   }
 
-  // ── Process the push queue ─────────────────────────────────────
   async processPushQueue(): Promise<void> {
-    if (!isSupabaseConfigured()) return;
-
-    const userId = await getAuthUserId();
-    if (!userId) return; // Not authenticated — nothing to push
+    if (!isFirebaseConfigured()) return;
+    const userId = getAuthUserId();
+    if (!userId) return;
 
     const items = await db.sync_queue.orderBy('created_at').toArray();
     if (items.length === 0) return;
 
-    // De-duplicate: keep only the latest operation per (table_name, record_id)
     const latest = new Map<string, SyncQueueItem>();
     for (const item of items) {
       const key = `${item.table_name}::${item.record_id}`;
@@ -209,166 +115,123 @@ class SyncService {
     }
 
     const succeeded: number[] = [];
+    
+    // Process in batches of 500 (Firestore limit)
+    let batch = writeBatch(firestore);
+    let batchCount = 0;
 
     for (const item of latest.values()) {
       try {
-        const supabaseTable = DEXIE_TO_SUPABASE[item.table_name] ?? item.table_name;
+        const firestoreTable = DEXIE_TO_FIRESTORE[item.table_name] ?? item.table_name;
+        const docRef = doc(firestore, firestoreTable, item.record_id);
 
         if (item.operation === 'delete') {
-          // Soft delete: set deleted_at
-          const { error } = await supabase
-            .from(supabaseTable)
-            .update({
-              deleted_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', item.record_id)
-            .eq('user_id', userId);
-
-          if (error) throw error;
+          batch.update(docRef, { deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() });
         } else {
-          // Upsert
-          const row = toSupabaseRow(supabaseTable, {
-            ...item.payload,
-            user_id: userId,
-            updated_at: new Date().toISOString(),
-          });
-
-          const { error } = await supabase.from(supabaseTable).upsert(row, {
-            onConflict: 'id',
-          });
-
-          if (error) throw error;
+          const row = toFirestoreRow(firestoreTable, { ...item.payload, user_id: userId, updated_at: new Date().toISOString() });
+          batch.set(docRef, row, { merge: true });
         }
-
-        // Collect all queue IDs for this (table, record) so we remove dupes too
-        const allIdsForKey = items
-          .filter(i => i.table_name === item.table_name && i.record_id === item.record_id)
-          .map(i => i.id!)
-          .filter(Boolean);
+        
+        batchCount++;
+        
+        const allIdsForKey = items.filter(i => i.table_name === item.table_name && i.record_id === item.record_id).map(i => i.id!).filter(Boolean);
         succeeded.push(...allIdsForKey);
+
+        if (batchCount >= 500) {
+          await batch.commit();
+          batch = writeBatch(firestore);
+          batchCount = 0;
+        }
       } catch (err) {
-        console.error(`[SyncService] Push failed for ${item.table_name}/${item.record_id}:`, err);
-        // Leave in queue for retry
+        console.error(`[SyncService] Batch prep failed for ${item.table_name}/${item.record_id}:`, err);
       }
     }
 
-    // Remove successfully pushed items
+    if (batchCount > 0) {
+      try {
+        await batch.commit();
+      } catch (e) {
+        console.error('[SyncService] Batch commit failed', e);
+        return; // don't delete queue if batch fails
+      }
+    }
+
     if (succeeded.length > 0) {
       await db.sync_queue.bulkDelete(succeeded);
     }
   }
 
-  // ── Pull remote changes for a single table ────────────────────
   async pullChanges(tableName: string): Promise<number> {
-    if (!isSupabaseConfigured()) return 0;
-
-    const userId = await getAuthUserId();
+    if (!isFirebaseConfigured()) return 0;
+    const userId = getAuthUserId();
     if (!userId) return 0;
 
-    const supabaseTable = DEXIE_TO_SUPABASE[tableName] ?? tableName;
+    const firestoreTable = DEXIE_TO_FIRESTORE[tableName] ?? tableName;
     const cursor = getSyncCursor(tableName);
 
-    let query = supabase
-      .from(supabaseTable)
-      .select('*')
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: true })
-      .limit(500);
-
+    let q = query(collection(firestore, firestoreTable), where('user_id', '==', userId), orderBy('updated_at', 'asc'), limit(500));
     if (cursor) {
-      query = query.gt('updated_at', cursor);
+      q = query(collection(firestore, firestoreTable), where('user_id', '==', userId), where('updated_at', '>', cursor), orderBy('updated_at', 'asc'), limit(500));
     }
 
-    const { data, error } = await query;
+    try {
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return 0;
 
-    if (error) {
-      console.error(`[SyncService] Pull failed for ${supabaseTable}:`, error);
+      const table = getDexieTable(tableName);
+      let merged = 0;
+      let latestCursor = cursor ?? '';
+
+      for (const doc of snapshot.docs) {
+        const remoteRow = doc.data();
+        const dexieRow = toDexieRow(firestoreTable, remoteRow);
+        const remoteUpdatedAt = remoteRow.updated_at ?? remoteRow.created_at ?? '';
+
+        if (remoteUpdatedAt > latestCursor) latestCursor = remoteUpdatedAt;
+
+        if (remoteRow.deleted_at) {
+          try { await table.delete(dexieRow.id); } catch {}
+          merged++;
+          continue;
+        }
+
+        const localRow = await table.get(dexieRow.id).catch(() => null);
+        if (!localRow) {
+          const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
+          await table.add(cleanRow).catch(() => table.put(cleanRow));
+          merged++;
+        } else {
+          const localUpdatedAt = (localRow as any).updatedAt ?? (localRow as any).createdAt ?? '';
+          if (remoteUpdatedAt > localUpdatedAt) {
+            const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
+            await table.put(cleanRow);
+            merged++;
+          }
+        }
+      }
+
+      if (latestCursor) setSyncCursor(tableName, latestCursor);
+      return merged;
+    } catch (e) {
+      console.error(`[SyncService] Pull failed for ${firestoreTable}:`, e);
       return 0;
     }
-
-    if (!data || data.length === 0) return 0;
-
-    const table = getDexieTable(tableName);
-    let merged = 0;
-    let latestCursor = cursor ?? '';
-
-    for (const remoteRow of data) {
-      const dexieRow = toDexieRow(supabaseTable, remoteRow);
-      const remoteUpdatedAt = remoteRow.updated_at ?? remoteRow.created_at ?? '';
-
-      // Track latest cursor
-      if (remoteUpdatedAt > latestCursor) {
-        latestCursor = remoteUpdatedAt;
-      }
-
-      // Handle soft deletes: remove locally if deleted remotely
-      if (remoteRow.deleted_at) {
-        try {
-          await table.delete(dexieRow.id);
-        } catch {
-          // May not exist locally — that's fine
-        }
-        merged++;
-        continue;
-      }
-
-      // Last-write-wins merge
-      const localRow = await table.get(dexieRow.id).catch(() => null);
-
-      if (!localRow) {
-        // No local copy — insert
-        // Remove sync-only fields before storing in Dexie
-        const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
-        await table.add(cleanRow).catch(() => {
-          // Might fail if ID collision — try put instead
-          return table.put(cleanRow);
-        });
-        merged++;
-      } else {
-        // Compare updated_at: remote wins if newer
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const localUpdatedAt = (localRow as any).updatedAt ?? (localRow as any).createdAt ?? '';
-        const remoteUpdatedAt = remoteRow.updated_at ?? remoteRow.created_at ?? '';
-        if (remoteUpdatedAt > localUpdatedAt) {
-          const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
-          await table.put(cleanRow);
-          merged++;
-        }
-      }
-    }
-
-    // Persist cursor
-    if (latestCursor) {
-      setSyncCursor(tableName, latestCursor);
-    }
-
-    return merged;
   }
 
-  // ── Full Sync (pull all, then push) ───────────────────────────
   async fullSync(): Promise<{ pulled: number; pushed: boolean }> {
     if (this.isSyncing) return { pulled: 0, pushed: false };
-    if (!isSupabaseConfigured()) return { pulled: 0, pushed: false };
+    if (!isFirebaseConfigured()) return { pulled: 0, pushed: false };
 
     this.isSyncing = true;
     let totalPulled = 0;
 
     try {
-      // Pull from all tables
       for (const tableName of SYNCABLE_TABLES) {
         const count = await this.pullChanges(tableName);
         totalPulled += count;
       }
-
-      // If we pulled new data, notify the app to reload stores
-      if (totalPulled > 0) {
-        window.dispatchEvent(new CustomEvent('habitflow-sync-pulled'));
-      }
-
-      // Push queued changes
+      if (totalPulled > 0) window.dispatchEvent(new CustomEvent('habitflow-sync-pulled'));
       await this.processPushQueue();
-
       return { pulled: totalPulled, pushed: true };
     } catch (err) {
       console.error('[SyncService] Full sync error:', err);
@@ -378,83 +241,35 @@ class SyncService {
     }
   }
 
-  // ── Auto Sync (online/offline listeners + periodic) ───────────
   startAutoSync(): void {
-    // Don't double-start
     if (this.syncInterval) return;
-
-    // Periodic sync every 30 seconds when online
+    
+    // We will rely on periodic and focus events instead of realtime channels for Firestore
     this.syncInterval = setInterval(() => {
-      if (navigator.onLine && !this.isSyncing) {
-        this.fullSync().catch(console.error);
-      }
+      if (navigator.onLine && !this.isSyncing) this.fullSync().catch(console.error);
     }, 30_000);
 
-    // Sync immediately when coming back online
-    this.onlineHandler = () => {
-      this.fullSync().catch(console.error);
-    };
+    this.onlineHandler = () => this.fullSync().catch(console.error);
     window.addEventListener('online', this.onlineHandler);
 
-    // Sync on tab focus (user returning to app)
     this.focusHandler = () => {
-      if (navigator.onLine && !this.isSyncing) {
-        this.fullSync().catch(console.error);
-      }
+      if (navigator.onLine && !this.isSyncing) this.fullSync().catch(console.error);
     };
     window.addEventListener('focus', this.focusHandler);
 
-    // Initial sync on start
-    if (navigator.onLine) {
-      this.fullSync().catch(console.error);
-    }
-
-    // Set up Supabase Realtime for instant cross-device sync
-    if (isSupabaseConfigured()) {
-      this.realtimeChannel = supabase
-        .channel('schema-db-changes')
-        .on('postgres_changes', { event: '*', schema: 'public' }, payload => {
-          console.log('[SyncService] Realtime change detected:', payload);
-          if (!this.isSyncing) {
-            this.fullSync().catch(console.error);
-          }
-        })
-        .subscribe();
-    }
+    if (navigator.onLine) this.fullSync().catch(console.error);
   }
 
   stopAutoSync(): void {
-    if (this.syncInterval) {
-      clearInterval(this.syncInterval);
-      this.syncInterval = null;
-    }
-
-    if (this.onlineHandler) {
-      window.removeEventListener('online', this.onlineHandler);
-      this.onlineHandler = null;
-    }
-
-    if (this.focusHandler) {
-      window.removeEventListener('focus', this.focusHandler);
-      this.focusHandler = null;
-    }
-
-    if (this.realtimeChannel) {
-      supabase.removeChannel(this.realtimeChannel);
-      this.realtimeChannel = null;
-    }
+    if (this.syncInterval) { clearInterval(this.syncInterval); this.syncInterval = null; }
+    if (this.onlineHandler) { window.removeEventListener('online', this.onlineHandler); this.onlineHandler = null; }
+    if (this.focusHandler) { window.removeEventListener('focus', this.focusHandler); this.focusHandler = null; }
   }
 
-  // ── Queue size (for UI indicators) ────────────────────────────
-  async getPendingCount(): Promise<number> {
-    return db.sync_queue.count();
-  }
+  async getPendingCount(): Promise<number> { return db.sync_queue.count(); }
 
-  // ── Clear all sync cursors (force re-download) ────────────────
   clearAllCursors(): void {
-    for (const tableName of SYNCABLE_TABLES) {
-      localStorage.removeItem(`${CURSOR_PREFIX}${tableName}`);
-    }
+    for (const tableName of SYNCABLE_TABLES) localStorage.removeItem(`${CURSOR_PREFIX}${tableName}`);
   }
 }
 

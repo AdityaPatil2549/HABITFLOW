@@ -23,7 +23,8 @@ export async function compressImage(file: File, maxWidth = 800, quality = 0.6): 
         const ctx = canvas.getContext('2d');
         if (!ctx) return reject(new Error('Canvas ctx null'));
         ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const outputFormat = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const dataUrl = canvas.toDataURL(outputFormat, quality);
         resolve(dataUrl);
       };
       img.onerror = err => reject(err);
