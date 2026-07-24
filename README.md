@@ -4,7 +4,7 @@
 
 Welcome to **HabitFlow**! Whether you're looking to drink more water, learn a new language, or finally stick to that morning workout, HabitFlow provides all the tools you need to stay consistent, focused, and motivated. 
 
-Best of all? **No account required.** HabitFlow is an offline-first experience—your data lives entirely and securely on your own device.
+Best of all? **No account required to start.** HabitFlow is an offline-first experience—your data lives securely on your own device, with the power to back it up seamlessly to the cloud.
 
 **🌐 Start Your Journey Today:** [HabitFlow Web App](https://habitflow-murex.vercel.app)
 
@@ -28,29 +28,30 @@ Best of all? **No account required.** HabitFlow is an offline-first experience�
 - **Level Up**: Earn XP for every habit you complete and task you crush.
 - **Unlock Badges**: Achieve milestones and earn real badges to celebrate your consistency.
 - **Streak Freezes**: Life happens. Use your hard-earned XP to buy "Streak Freezes" and protect your progress when you need a day off.
-- **Custom Themes**: Spend XP to unlock premium aesthetic themes like Cyberpunk, Sunset Glow, and Neon Pink.
+- **Custom Themes**: Spend XP to unlock premium aesthetic themes like Cyberpunk, Sunset Glow, Neon Pink, and immersive Glassmorphism designs.
+
+### 🤖 Your Personal AI Coach
+- **Vertex AI Powered**: Built-in intelligent coach secured by Firebase App Check and reCAPTCHA v3.
+- **Motivational Video Recommendations**: Automatically fetches curated YouTube videos (via **YouTube Data API**) based on the habits you are currently building!
+- **Weekly Review**: Every Sunday, your AI Coach generates an adaptive summary of your week. Find out which habits you crushed and which ones need a little more attention.
+- **On-Device ML**: Smart habit categorization and optimal time prediction powered by local Machine Learning techniques.
+
+### 🌐 The Ultimate Google & Firebase Ecosystem
+- **Google Drive Backups**: Safely backup your entire offline database to a hidden folder in your Google Drive and restore it on any device.
+- **Google Fit / Health Connect**: Sync your daily steps and sleep data to automatically complete related health habits.
+- **Google Maps API**: Set location-based reminders (e.g., "Remind me to stretch when I arrive at the gym").
+- **Firebase Cloud Storage**: Securely upload and sync your custom profile photos across devices.
+- **Firebase Performance & Analytics**: Blazing fast rendering and smart insights into how you build your routines.
+- **Real Push Notifications**: Stay on track with Firebase Cloud Messaging (FCM) notifications on both mobile and desktop.
 
 ### ⚡ Find Your Focus
 - **Built-in Pomodoro Timer**: Use the dedicated Focus Mode to start a timer for any specific habit or task.
 - **Seamless Tracking**: The timer stays running in the background as you navigate the app, keeping you in the zone.
 
-### 📊 Understand Your Patterns
-- **Deep Analytics**: View your 365-day activity heatmap and weekly trend charts.
-- **AI Coach**: A built-in intelligent coach that gives you daily motivational insights and data-driven pattern recognition.
-- **Weekly Review**: Every Sunday, your AI Coach generates an adaptive summary of your week. Find out which habits you crushed and which ones need a little more attention.
-
-### ☁️ Sync Everywhere
-- **Google Calendar Integration**: Automatically sync your habits and tasks directly into your Google Calendar.
-- **Cloud Backup**: Create an account to seamlessly sync your data across all your devices using Supabase.
-
-### 🔔 Never Miss a Beat
-- **Smart Warnings**: If a streak is in danger of breaking, HabitFlow will warn you in the evening.
-- **Custom Reminders**: Set specific push notification reminders for individual habits.
-
 ### 🔒 100% Private & Secure
-- **Offline-First Architecture**: HabitFlow works flawlessly without an internet connection. Changes are queued and synced only when you go online.
+- **Offline-First Architecture**: HabitFlow works flawlessly without an internet connection.
 - **Your Data is Yours**: By default, all data is stored locally on your device in IndexedDB.
-- **Export & Backup**: Easily export your data to JSON for safekeeping, or CSV for your own spreadsheet analysis.
+- **Export & Backup**: Easily export your data to JSON for safekeeping, or let Google Drive handle the backups automatically.
 
 ---
 
@@ -59,7 +60,7 @@ Best of all? **No account required.** HabitFlow is an offline-first experience�
 Ready to level up? Here’s how to get the most out of HabitFlow:
 
 ### 1. Set Up Your Profile
-On your first visit, an onboarding wizard will guide you through setting up your name, choosing an avatar, and picking your first few habits from our expertly curated **Habit Templates** (like *Morning Routine* or *Digital Detox*).
+On your first visit, an onboarding wizard will guide you through setting up your name, choosing an avatar, and picking your first few habits from our expertly curated **Habit Templates** (like *Morning Routine* or *Digital Detox*). Don't forget to connect your Google account in Settings to unlock cloud backups!
 
 ### 2. Log Your Daily Progress
 Visit the **Dashboard** or **Habits** page daily. Click the circle next to a habit to mark it complete. Watch your daily progress bar fill up and your XP increase!
@@ -75,7 +76,7 @@ For the best experience, install HabitFlow directly to your phone or laptop!
 ---
 
 ## 🎨 Make It Yours
-Visit the **Settings** to toggle between Light and Dark mode, or visit your **Profile** to equip the beautiful color themes you've unlocked with your XP.
+Visit the **Settings** to toggle between Light and Dark mode, connect your Google integrations (Drive, Fit), or visit your **Profile** to equip the beautiful 3D color themes you've unlocked with your XP.
 
 ---
 
