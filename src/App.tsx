@@ -23,6 +23,8 @@ import { startHealthSyncPolling } from './services/healthSyncService';
 import { analyticsService } from './services/analyticsService';
 import { remoteConfigService } from './services/remoteConfigService';
 import { performanceService } from './services/performanceService';
+import { crashlyticsService } from './services/crashlyticsService';
+import { mlService } from './services/mlService';
 import { useHabitStore } from './store/habitStore';
 import { useTaskStore } from './store/taskStore';
 import { useMoodStore } from './store/moodStore';
@@ -55,6 +57,8 @@ function App() {
   useEffect(() => {
     initAuth();
     remoteConfigService.init().catch(console.warn);
+    crashlyticsService.init();
+    mlService.init().catch(console.warn);
   }, [initAuth]);
 
   // Health sync polling — only starts if the user has opted in via Settings
