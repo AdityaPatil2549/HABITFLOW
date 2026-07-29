@@ -352,7 +352,7 @@ export function SettingsPage() {
       </div>
 
       {/* ─── Appearance ─── */}
-      <section className="glass-card rounded-2xl p-6 space-y-6">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Palette size={18} className="text-brand-400" /> Appearance
         </h2>
@@ -462,7 +462,7 @@ export function SettingsPage() {
       </section>
 
       {/* ─── Notifications ─── */}
-      <section className="glass-card rounded-2xl p-6 space-y-4">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Bell size={18} className="text-brand-400" /> Notifications
         </h2>
@@ -487,7 +487,7 @@ export function SettingsPage() {
       </section>
 
       {/* ─── Integrations ─── */}
-      <section className="glass-card rounded-2xl p-6 space-y-4">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Calendar size={18} className="text-brand-400" /> Calendar Sync
         </h2>
@@ -571,7 +571,7 @@ export function SettingsPage() {
       </section>
 
       {/* ── Health & Fitness ── */}
-      <section className="glass-card rounded-2xl p-6 space-y-6">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Activity size={18} className="text-brand-400" /> Health & Fitness
         </h2>
@@ -606,7 +606,7 @@ export function SettingsPage() {
       </section>
 
       {/* ── Google Integrations ── */}
-      <section className="glass-card rounded-2xl p-6 space-y-6">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Zap size={18} className="text-yellow-400" /> Google Integrations
         </h2>
@@ -702,7 +702,7 @@ export function SettingsPage() {
       </section>
 
       {/* ── Data ── */}
-      <section className="glass-card rounded-2xl p-6 space-y-6">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Database size={18} className="text-brand-400" /> Data Management
         </h2>
@@ -765,7 +765,7 @@ export function SettingsPage() {
       </section>
 
       {/* ─── Privacy ─── */}
-      <section className="glass-card rounded-2xl p-6">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 flex-shrink-0">
             <Shield size={20} />

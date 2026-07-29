@@ -156,7 +156,7 @@ export function ProfilePage() {
 
       {/* Profile card */}
       <TiltCard borderGlow tiltIntensity={3}>
-        <div className="glass-card rounded-2xl p-6 relative z-10 bg-black/20 backdrop-blur-md">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 relative z-10">
         <div className="flex flex-col sm:flex-row items-start gap-6">
           {/* Avatar */}
           <div
@@ -328,7 +328,7 @@ export function ProfilePage() {
           },
         ].map(s => (
           <TiltCard key={s.label} tiltIntensity={12}>
-            <div className="glass-card rounded-2xl p-4 text-center h-full bg-black/20 backdrop-blur-md border border-white/10">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-4 text-center h-full">
               <div
                 className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center"
                 style={{ background: `${s.color}18`, color: s.color }}
@@ -344,7 +344,7 @@ export function ProfilePage() {
 
       {/* Streak Freezes */}
       <TiltCard tiltIntensity={4}>
-        <div className="glass-card rounded-2xl p-6 relative overflow-hidden bg-black/20 backdrop-blur-md border border-white/10">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           <Snowflake size={120} />
         </div>
@@ -391,7 +391,7 @@ export function ProfilePage() {
 
       {/* Theme Shop */}
       <TiltCard tiltIntensity={2}>
-        <div className="glass-card rounded-2xl p-6 bg-black/20 backdrop-blur-md border border-white/10">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <Palette size={18} className="text-brand-400" /> Premium Themes
@@ -457,7 +457,7 @@ export function ProfilePage() {
       </TiltCard>
 
       <TiltCard tiltIntensity={2}>
-        <div className="glass-card rounded-2xl p-6 bg-black/20 backdrop-blur-md border border-white/10">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-white">Badges & Achievements</h2>
           <span className="text-xs text-slate-500">
@@ -496,7 +496,7 @@ export function ProfilePage() {
       </TiltCard>
 
       {/* Quick links */}
-      <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row gap-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-5 flex flex-col sm:flex-row gap-3">
         <button
           onClick={() => navigate('/settings')}
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors"

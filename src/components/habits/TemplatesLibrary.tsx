@@ -389,7 +389,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                     key={pack.id}
                     layout
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    className="relative glass-card-3d rounded-[24px] p-5 flex flex-col gap-5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-500/20 transition-all overflow-hidden group"
+                    className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-[24px] p-5 flex flex-col gap-5 hover:-translate-y-1 hover:shadow-md transition-[transform,box-shadow,border-color,background-color] duration-300 ease-out overflow-hidden group"
                   >
                     {/* Hover Glow */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />

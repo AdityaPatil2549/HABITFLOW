@@ -77,7 +77,7 @@ export function HabitJournal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
         <motion.div
-          className="relative z-10 w-[95vw] max-w-[500px] max-h-[80vh] flex flex-col glass-card rounded-2xl dark-overlay"
+          className="relative z-10 w-[95vw] max-w-[500px] max-h-[80vh] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-xl rounded-2xl dark-overlay"
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}

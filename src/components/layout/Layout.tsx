@@ -459,7 +459,7 @@ export function Layout() {
       <HabitsBackground />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
-      <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 glass-card-3d rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
+      <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-between px-5 h-14 shadow-xl">
         <NavLink
           to="/dashboard"
           className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
@@ -724,7 +724,7 @@ export function Layout() {
 
       {/* ── Mobile Bottom Nav ── */}
       <nav className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50">
-        <div className="glass-card-3d rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center">
           {[
             { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
             { to: '/habits', icon: Target, label: 'Habits' },

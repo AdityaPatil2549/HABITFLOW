@@ -19,7 +19,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
       transition={{ duration: 0.4, ease: "easeOut", staggerChildren: 0.1 }}
       className={cn(
         "flex flex-col items-center justify-center p-8 text-center",
-        "bg-white/5 border border-white/10 rounded-2xl glass-card relative overflow-hidden group",
+        "bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl relative overflow-hidden group",
         className
       )}
     >

@@ -339,10 +339,10 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
             exit={{ rotateY: 90, opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeInOut' }}
             className={cn(
-              'rounded-2xl border overflow-hidden transition-all duration-300',
+              'rounded-2xl border overflow-hidden transition-[transform,opacity,border-color,background-color,box-shadow,filter] duration-300 ease-out',
               task.completed
-                ? 'opacity-55 grayscale-[0.6] dark:bg-white/3 bg-slate-900/5 dark:border-white/5 border-slate-900/10'
-                : 'dark:bg-slate-900/65 bg-white/60 backdrop-blur-xl dark:border-white/10 border-slate-900/10 hover:dark:border-white/20 hover:border-slate-900/20 shadow-xl'
+                ? 'opacity-55 grayscale-[0.6] dark:bg-slate-800 bg-slate-100 dark:border-white/5 border-slate-900/10'
+                : 'dark:bg-slate-900 bg-white dark:border-white/10 border-slate-900/10 hover:border-brand-500/30 shadow-md'
             )}
             style={!task.completed ? {
               borderLeft: `3px solid ${pc.color}`,
@@ -490,9 +490,9 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
             initial={{ rotateY: -90, opacity: 0 }}
             animate={{ rotateY: 0, opacity: 1 }}
             exit={{ rotateY: 90, opacity: 0 }}
-            transition={{ duration: 0.22, ease: 'easeInOut' }}
-            className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(24px)', border: `1px solid ${pc.color}40` }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="rounded-2xl overflow-hidden shadow-lg"
+            style={{ background: 'var(--color-surface)', border: `1px solid ${pc.color}40` }}
           >
             {/* Flip-back header */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/8"

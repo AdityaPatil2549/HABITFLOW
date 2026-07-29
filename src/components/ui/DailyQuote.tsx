@@ -139,7 +139,7 @@ export function DailyQuote() {
 
   return (
     <motion.div
-      className="glass-card rounded-2xl p-5 relative overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-5 relative overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.5 }}

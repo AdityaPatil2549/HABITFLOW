@@ -69,7 +69,7 @@ export function EditLayoutModal({
           initial={{ scale: 0.95, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden glass-card-3d"
+          className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl overflow-hidden"
         >
           <div className="flex items-center justify-between p-6 border-b border-white/5">
             <h2 className="text-xl font-bold text-white">Customize Layout</h2>

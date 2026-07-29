@@ -297,7 +297,7 @@ function HabitForm({
         </JollyTagGroup>
       </div>
 
-      <div className="space-y-6 dark:bg-slate-950/20 bg-slate-50 p-4 rounded-3xl border dark:border-white/5 border-slate-900/5 glass-card-3d">
+      <div className="space-y-6 dark:bg-slate-950/20 bg-slate-50 p-4 rounded-3xl border dark:border-white/5 border-slate-900/5">
         {/* Habit Name */}
         <div>
           <label htmlFor="habit-name" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
@@ -633,21 +633,20 @@ function HabitCard({
     >
       <motion.div
         layout
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
         style={{ rotateX, rotateY }}
-        className={cn('relative rounded-2xl overflow-hidden group', done && 'opacity-80')}
-        whileHover={{ boxShadow: `0 24px 48px -12px ${c}30` }}
+        className={cn('relative rounded-2xl overflow-hidden group shadow-sm bg-white dark:bg-slate-900', done && 'opacity-80')}
+        whileHover={{ boxShadow: `0 12px 24px -12px ${c}40` }}
       >
-        {/* Glass card background */}
+        {/* Solid card background */}
         <div
-          className="absolute inset-0 rounded-2xl"
+          className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderLeft: `3px solid ${c}`,
-            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(100,116,139,0.2)',
+            borderLeft: `4px solid ${c}`
           }}
         />
 
@@ -705,8 +704,8 @@ function HabitCard({
             <div className="flex-1 min-w-0">
               <button
                 className={cn(
-                  'font-bold text-sm sm:text-base truncate w-full text-left transition-all block',
-                  done ? 'line-through text-slate-500' : 'dark:text-white text-slate-900 hover:text-brand-300'
+                  'font-bold text-sm sm:text-base truncate w-full text-left transition-[color] duration-200 block',
+                  done ? 'line-through text-slate-500' : 'dark:text-white text-slate-900 hover:text-brand-500'
                 )}
                 onClick={() => {
                   setShowHistory(v => { if (!v) loadHistory(); return !v; });
@@ -1546,7 +1545,7 @@ export function HabitsPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="glass-card-3d rounded-2xl p-6 mt-4 relative overflow-hidden group hover:shadow-lg transition-all"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 mt-4 relative overflow-hidden group hover:shadow-md transition-[transform,box-shadow,border-color,background-color] duration-300 ease-out"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500" />
             <div className="relative z-10">

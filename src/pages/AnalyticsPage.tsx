@@ -995,7 +995,7 @@ function StatCard({
     <TiltCard className="h-full w-full block">
       <motion.div
         className={cn(
-          'glass-card rounded-2xl p-6 text-center relative overflow-hidden group h-full hover:shadow-lg transition-all',
+          'rounded-2xl p-6 text-center relative overflow-hidden group h-full hover:shadow-md transition-[transform,box-shadow,border-color,background-color] duration-300 ease-out border shadow-sm dark:bg-slate-900 bg-white dark:border-white/10 border-slate-200',
           colorClass
         )}
       >
@@ -1032,7 +1032,7 @@ function ChartCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="glass-card-3d rounded-2xl p-6 relative overflow-hidden group hover:shadow-lg transition-all"
+      className="rounded-2xl p-6 relative overflow-hidden group hover:shadow-md transition-[box-shadow,transform] duration-300 ease-out border shadow-sm bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500" />
       <div className="mb-5 relative z-10">
@@ -1074,7 +1074,7 @@ function DynamicInsights() {
 
   if (loading) {
     return (
-      <div className="glass-card-3d rounded-2xl p-6 relative overflow-hidden h-full flex flex-col justify-center">
+      <div className="rounded-2xl p-6 relative overflow-hidden h-full flex flex-col justify-center border shadow-sm bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10">
         <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 to-transparent opacity-50" />
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-brand-500/20 flex items-center justify-center text-2xl animate-pulse" />
@@ -1089,7 +1089,7 @@ function DynamicInsights() {
 
   if (insights.length === 0) {
     return (
-      <div className="glass-card-3d rounded-2xl p-6 relative overflow-hidden h-full flex flex-col justify-center">
+      <div className="rounded-2xl p-6 relative overflow-hidden h-full flex flex-col justify-center border shadow-sm bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10">
         <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 to-transparent opacity-50" />
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-brand-500/20 flex items-center justify-center text-2xl animate-pulse">

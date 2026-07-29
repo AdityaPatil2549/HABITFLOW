@@ -21,7 +21,7 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
           <motion.div
-            className="relative z-10 max-w-md w-full mx-4 glass-card rounded-2xl p-6 modal-glow"
+            className="relative z-10 max-w-md w-full mx-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-6 modal-glow"
             initial={{ scale: 0.95, y: 10 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 10 }}
