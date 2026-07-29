@@ -9,7 +9,7 @@ export default {
     extend: {
       fontFamily: {
         serif: ['Clash Display', 'sans-serif'],
-        sans: ['Satoshi', 'system-ui', 'sans-serif'],
+        sans: ['Outfit', 'system-ui', 'sans-serif'],
       },
       transitionTimingFunction: {
         'ease-out': 'cubic-bezier(0.23, 1, 0.32, 1)',
