@@ -20,7 +20,7 @@ export function TiltCard({
   return (
     <Tilt
       rotationFactor={tiltIntensity}
-      className={`active:scale-[0.98] transition-transform duration-300 ease-out ${className}`}
+      className={`active:scale-[0.97] transition-transform duration-300 ease-out ${className}`}
       style={style as any}
       springOptions={{ stiffness: 200, damping: 20 }}
     >

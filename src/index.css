@@ -26,32 +26,32 @@
   --color-tertiary-container: #00885d;
   --color-surface-bright: #31394d;
   --color-on-error-container: #ffdad6;
-  --color-surface-dim: #050505;
-  --color-background: #050505;
+  --color-surface-dim: oklch(4% 0.004 95); /* lacquer-deep */
+  --color-background: oklch(7% 0.006 95); /* lacquer-black */
   --color-secondary-fixed: #e2e8f0;
-  --color-primary: #cbd5e1;
-  --color-surface: #0a0a0a;
+  --color-primary: oklch(84% 0.19 80.46); /* kinpaku-gold */
+  --color-surface: oklch(11% 0.006 95); /* raised-lacquer */
   --color-inverse-primary: #494bd6;
   --color-on-primary-fixed-variant: #2f2ebe;
-  --color-secondary: #ddb7ff;
+  --color-secondary: oklch(70% 0.12 188); /* verdigris-patina */
   --color-error: #ffb4ab;
   --color-secondary-fixed-dim: #ddb7ff;
   --color-surface-container-highest: #2d3449;
-  --color-on-primary: #1000a9;
+  --color-on-primary: oklch(14% 0.018 95); /* dark-ink */
   --color-on-secondary-container: #d6a9ff;
   --color-surface-container-high: #222a3d;
   --color-surface-container-low: #131b2e;
   --color-on-primary-fixed: #07006c;
-  --color-on-background: #dae2fd;
+  --color-on-background: oklch(88% 0 0); /* text-warm */
   --color-surface-variant: #2d3449;
   --color-surface-container: #171f33;
   --color-inverse-on-surface: #283044;
-  --color-outline: #908fa0;
+  --color-outline: oklch(78% 0 0 / 0.16); /* gold-hairline */
   --color-error-container: #93000a;
   --color-primary-fixed-dim: #c0c1ff;
   --color-tertiary-fixed: #6ffbbe;
   --color-on-primary-container: #0d0096;
-  --color-outline-variant: #464554;
+  --color-outline-variant: oklch(74% 0.09 82 / 0.6); /* gold-hairline-strong */
   --color-on-tertiary: #003824;
   --spacing-md: 16px;
   --spacing-unit: 4px;
@@ -61,9 +61,9 @@
   --spacing-gutter: 16px;
   --spacing-xs: 4px;
   --spacing-lg: 24px;
-  --radius: 0.25rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  --radius: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
   --radius-full: 9999px;
   --font-body-md: 'Fira Sans', system-ui, sans-serif;
   --font-h2: 'Clash Display', sans-serif;
@@ -74,20 +74,20 @@
   --font-h1: 'Clash Display', sans-serif;
   --font-h3: 'Clash Display', sans-serif;
   --text-body-md: 16px;
-  --text-body-md--line-height: 1.6;
+  --text-body-md--line-height: 1.65;
   --text-body-md--font-weight: 400;
   --text-body-md--letter-spacing: 0em;
   --text-h2: 24px;
   --text-h2--line-height: 1.3;
-  --text-h2--font-weight: 700;
-  --text-h2--letter-spacing: -0.03em;
+  --text-h2--font-weight: 300; /* weight inversion */
+  --text-h2--letter-spacing: -0.02em;
   --text-stats-num: 24px;
   --text-stats-num--line-height: 1;
   --text-stats-num--font-weight: 800;
   --text-stats-num--letter-spacing: -0.03em;
   --text-body-lg: 18px;
   --text-body-lg--line-height: 1.6;
-  --text-body-lg--font-weight: 500;
+  --text-body-lg--font-weight: 400;
   --text-body-lg--letter-spacing: 0em;
   --text-label-caps: 12px;
   --text-label-caps--line-height: 1;
@@ -95,20 +95,30 @@
   --text-label-caps--letter-spacing: 0.1em;
   --text-display: 48px;
   --text-display--line-height: 1.1;
-  --text-display--font-weight: 800;
+  --text-display--font-weight: 100; /* weight inversion */
   --text-display--letter-spacing: -0.05em;
   --text-h1: 32px;
   --text-h1--line-height: 1.2;
-  --text-h1--font-weight: 800;
+  --text-h1--font-weight: 100; /* weight inversion */
   --text-h1--letter-spacing: -0.04em;
   --text-h3: 20px;
   --text-h3--line-height: 1.4;
-  --text-h3--font-weight: 600;
+  --text-h3--font-weight: 500;
   --text-h3--letter-spacing: -0.01em;
 
+  --color-brand-300: var(--brand-300);
   --color-brand-400: var(--brand-400);
   --color-brand-500: var(--brand-500);
   --color-brand-600: var(--brand-600);
+  
+  --color-patina: var(--patina);
+  --color-patina-pale: var(--patina-pale);
+  
+  /* GitNexus glow animation colors */
+  --color-void: oklch(7% 0.006 95);
+  --color-deep: oklch(4% 0.004 95);
+  --animate-breathe: breathe 3s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
 }
 
 /* â”€â”€ Stitch Typography Utility Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -1199,11 +1209,16 @@ body {
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
     --glass-shadow-hover: 0 16px 48px 0 rgba(0, 0, 0, 0.5);
 
-    /* Dynamic Brand Variables â€” Emerald */
-    --color-brand-300: #6ee7b7;
-    --color-brand-400: #34d399;
-    --color-brand-500: #10b981;
-    --color-brand-600: #059669;
+    --glass-shadow-hover: 0 16px 48px 0 rgba(0, 0, 0, 0.5);
+
+    /* Dynamic Brand Variables â€” Neo Kinpaku */
+    --brand-300: oklch(95% 0.04 84); /* kinpaku-glint */
+    --brand-400: oklch(86% 0.07 84); /* kinpaku-pale */
+    --brand-500: oklch(84% 0.19 80.46); /* kinpaku-gold */
+    --brand-600: oklch(77% 0.13 82); /* kinpaku-rich */
+    
+    --patina: oklch(70% 0.12 188); /* verdigris-patina */
+    --patina-pale: oklch(82% 0.07 188);
   }
 
   .light {
@@ -1287,12 +1302,10 @@ body {
 
 /* â”€â”€ VisionOS Glass Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .vision-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  border-radius: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline);
+  box-shadow: none;
+  border-radius: 4px; /* Impeccable small radii */
   position: relative;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1306,10 +1319,10 @@ body {
   padding: 1px;
   background: linear-gradient(
     135deg,
-    var(--glass-highlight) 0%,
+    var(--color-outline-variant) 0%,
     rgba(255,255,255,0) 40%,
     rgba(255,255,255,0) 60%,
-    var(--glass-border) 100%
+    var(--color-outline) 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;

@@ -64,7 +64,7 @@ export function SpotlightCard({ children, className, onClick, ...rest }: Props) 
         className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-0"
         style={{
           opacity,
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(16,185,129,0.08), transparent 40%)`,
+          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, oklch(84% 0.19 80.46 / 0.08), transparent 40%)`,
         }}
       />
 
