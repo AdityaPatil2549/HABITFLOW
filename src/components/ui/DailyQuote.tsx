@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Quote } from 'lucide-react';
+import { TextEffect } from './text-effect';
 
 const QUOTES = [
   {
@@ -154,8 +155,16 @@ export function DailyQuote() {
           <Quote size={14} className="text-indigo-400" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm text-slate-300 leading-relaxed italic">"{quote.text}"</p>
-          <p className="text-xs text-slate-500 mt-2 font-medium">— {quote.author}</p>
+          <div className="text-sm text-slate-300 leading-relaxed italic">
+            <TextEffect preset="blur" per="word" delay={0.2} as="p">
+              {`"${quote.text}"`}
+            </TextEffect>
+          </div>
+          <div className="text-xs text-slate-500 mt-2 font-medium">
+            <TextEffect preset="fade" per="char" delay={0.6}>
+              {`— ${quote.author}`}
+            </TextEffect>
+          </div>
         </div>
       </div>
     </motion.div>

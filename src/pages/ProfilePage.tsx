@@ -27,6 +27,8 @@ import { useToast } from '../components/common/Toast';
 import { soundService } from '../services/soundService';
 import { calculateStats } from '../services/gamificationService';
 import { TiltCard } from '../components/ui/TiltCard';
+import { TextEffect } from '../components/ui/text-effect';
+import { InView } from '../components/ui/in-view';
 
 const GamificationBackground = lazy(() => import('../components/gamification/GamificationBackground'));
 
@@ -145,7 +147,9 @@ export function ProfilePage() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Account</p>
-          <h1 className="text-3xl font-bold text-white">My Profile</h1>
+          <h1 className="text-3xl font-bold text-white">
+            <TextEffect as="span" per="word" preset="blur">My Profile</TextEffect>
+          </h1>
         </div>
         {saved && (
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-semibold">
@@ -326,19 +330,28 @@ export function ProfilePage() {
             value: `${earnedBadges}/${BADGE_CATALOGUE.length}`,
             color: '#f59e0b',
           },
-        ].map(s => (
-          <TiltCard key={s.label} tiltIntensity={12}>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-4 text-center h-full">
-              <div
-                className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center"
-                style={{ background: `${s.color}18`, color: s.color }}
-              >
-                {s.icon}
+        ].map((s, idx) => (
+          <InView
+            key={s.label}
+            variants={{
+              hidden: { opacity: 0, y: 20, scale: 0.95 },
+              visible: { opacity: 1, y: 0, scale: 1 },
+            }}
+            transition={{ duration: 0.4, delay: idx * 0.1 }}
+          >
+            <TiltCard tiltIntensity={12} className="h-full">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-4 text-center h-full">
+                <div
+                  className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center"
+                  style={{ background: `${s.color}18`, color: s.color }}
+                >
+                  {s.icon}
+                </div>
+                <p className="text-xl font-bold text-white">{s.value}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
               </div>
-              <p className="text-xl font-bold text-white">{s.value}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
-            </div>
-          </TiltCard>
+            </TiltCard>
+          </InView>
         ))}
       </div>
 
@@ -465,30 +478,38 @@ export function ProfilePage() {
           </span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {BADGE_CATALOGUE.map(b => {
+          {BADGE_CATALOGUE.map((b, idx) => {
             const earnedBadge = userXP?.badgesEarned?.find(
               e => e.id === b.id || e.name === b.label
             );
             const isEarned = !!earnedBadge;
             return (
-              <div
+              <InView
                 key={b.id}
-                className={`rounded-xl p-4 border transition-all ${isEarned ? 'border-brand-500/20 bg-brand-500/5' : 'border-white/5 bg-white/[0.02] opacity-50'}`}
+                variants={{
+                  hidden: { opacity: 0, scale: 0.9 },
+                  visible: { opacity: 1, scale: 1 },
+                }}
+                transition={{ duration: 0.3, delay: idx * 0.05 }}
               >
-                <span className={`text-2xl block mb-2 ${!isEarned && 'grayscale opacity-50'}`}>
-                  {b.icon}
-                </span>
-                <p className="text-sm font-semibold text-white mb-1">{b.label}</p>
-                <p className="text-xs text-slate-500 leading-relaxed">{b.desc}</p>
-                {isEarned && (
-                  <span className="mt-2 inline-block text-[10px] font-bold text-emerald-400">
-                    ✓ Earned
-                    {earnedBadge?.earnedAt
-                      ? ` · ${new Date(earnedBadge.earnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                      : ''}
+                <div
+                  className={`rounded-xl p-4 border transition-all h-full ${isEarned ? 'border-brand-500/20 bg-brand-500/5' : 'border-white/5 bg-white/[0.02] opacity-50'}`}
+                >
+                  <span className={`text-2xl block mb-2 ${!isEarned && 'grayscale opacity-50'}`}>
+                    {b.icon}
                   </span>
-                )}
-              </div>
+                  <p className="text-sm font-semibold text-white mb-1">{b.label}</p>
+                  <p className="text-xs text-slate-500 leading-relaxed">{b.desc}</p>
+                  {isEarned && (
+                    <span className="mt-2 inline-block text-[10px] font-bold text-emerald-400">
+                      ✓ Earned
+                      {earnedBadge?.earnedAt
+                        ? ` · ${new Date(earnedBadge.earnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                        : ''}
+                    </span>
+                  )}
+                </div>
+              </InView>
             );
           })}
         </div>

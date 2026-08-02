@@ -20,7 +20,7 @@ export const WeeklyReportTemplate = React.forwardRef<HTMLDivElement>((_, ref) =>
     >
       <div className="flex justify-between items-end mb-8 border-b border-white/10 pb-6">
         <div>
-          <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-indigo-500">
+          <h1 className="text-4xl font-black text-brand-400">
             Weekly Progress
           </h1>
           <p className="text-slate-400 mt-2 text-lg font-medium">

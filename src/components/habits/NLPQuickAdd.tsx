@@ -241,7 +241,7 @@ export function NLPQuickAdd({ onHabitCreated, onClose }: Props) {
               {/* Create button */}
               <button
                 onClick={handleCreate}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-bold hover:shadow-lg hover:shadow-purple-500/20 transition-all active:scale-[0.98]"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold hover:shadow-lg hover:shadow-brand-500/20 transition-all active:scale-[0.98]"
               >
                 <Check size={16} />
                 Create Habit

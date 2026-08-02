@@ -19,6 +19,7 @@ import { useProfileStore } from '@/store/profileStore';
 import { useToast } from '@/components/common/Toast';
 import { soundService } from '@/services/soundService';
 import { TiltCard } from '@/components/ui/TiltCard';
+import { TextEffect } from '@/components/ui/text-effect';
 import { lazy, Suspense } from 'react';
 
 const GamificationBackground = lazy(() => import('@/components/gamification/GamificationBackground'));
@@ -173,7 +174,9 @@ export function SquadPage() {
       <div className="space-y-6 relative pb-10">
         <Suspense fallback={null}><GamificationBackground /></Suspense>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight">Squad</h1>
+          <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight">
+            <TextEffect as="span" per="word" preset="blur">Squad</TextEffect>
+          </h1>
           <p className="text-sm dark:text-slate-400 text-slate-600 mt-1">Accountability through community</p>
         </div>
 
@@ -396,7 +399,7 @@ export function SquadPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight break-all">
-                  {activeSquad.name}
+                  <TextEffect as="span" per="char" preset="fade">{activeSquad.name}</TextEffect>
                 </h1>
               </div>
               <p className="text-sm dark:text-slate-400 text-slate-600 mt-1">

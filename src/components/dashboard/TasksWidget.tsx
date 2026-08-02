@@ -7,6 +7,7 @@ import { TiltCard } from '../ui/TiltCard';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/Skeleton';
 import { Reorder } from 'framer-motion';
+import { InView } from '../ui/in-view';
 import { NeonCheckbox } from '../ui/animated-check-box';
 
 export function TasksWidget({ dragHandleProps }: { dragHandleProps?: any }) {
@@ -62,10 +63,17 @@ export function TasksWidget({ dragHandleProps }: { dragHandleProps?: any }) {
               />
             ) : (
               <Reorder.Group axis="y" values={todayTasks.slice(0, 5)} onReorder={() => {}}>
-                {todayTasks.slice(0, 5).map(t => {
+                {todayTasks.slice(0, 5).map((t, index) => {
                   const subtasks = tasks.filter(sub => sub.parentId === t.id && !sub.completed);
                   return (
-                    <div key={t.id}>
+                    <InView
+                      key={t.id}
+                      variants={{
+                        hidden: { opacity: 0, y: 15, filter: 'blur(4px)' },
+                        visible: { opacity: 1, y: 0, filter: 'blur(0px)' },
+                      }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                    >
                       <Reorder.Item
                         value={t}
                         className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all group/item mb-2"
@@ -98,29 +106,37 @@ export function TasksWidget({ dragHandleProps }: { dragHandleProps?: any }) {
                       </Reorder.Item>
                       {subtasks.length > 0 && (
                         <div className="ml-8 space-y-1 mb-3">
-                          {subtasks.map(sub => (
-                            <div
+                          {subtasks.map((sub, subIndex) => (
+                            <InView
                               key={sub.id}
-                              className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.01] border border-white/[0.02] hover:border-white/[0.05] transition-all group/sub"
+                              variants={{
+                                hidden: { opacity: 0, x: -10 },
+                                visible: { opacity: 1, x: 0 },
+                              }}
+                              transition={{ duration: 0.2, delay: index * 0.05 + subIndex * 0.05 + 0.1 }}
                             >
-                              <div className="flex-shrink-0 flex items-center justify-center relative z-10 w-4 h-4">
-                                <NeonCheckbox 
-                                  checked={sub.completed} 
-                                  onChange={() => completeTask(sub.id)}
-                                  neonColor="var(--brand-400)"
-                                  checkboxSize="16px"
-                                />
+                              <div
+                                className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.01] border border-white/[0.02] hover:border-white/[0.05] transition-all group/sub"
+                              >
+                                <div className="flex-shrink-0 flex items-center justify-center relative z-10 w-4 h-4">
+                                  <NeonCheckbox 
+                                    checked={sub.completed} 
+                                    onChange={() => completeTask(sub.id)}
+                                    neonColor="var(--brand-400)"
+                                    checkboxSize="16px"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium text-slate-300 truncate group-hover/sub:text-brand-300 transition-colors">
+                                    {sub.title}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-slate-300 truncate group-hover/sub:text-brand-300 transition-colors">
-                                  {sub.title}
-                                </p>
-                              </div>
-                            </div>
+                            </InView>
                           ))}
                         </div>
                       )}
-                    </div>
+                    </InView>
                   );
                 })}
               </Reorder.Group>

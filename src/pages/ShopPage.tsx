@@ -15,6 +15,8 @@ import { motion } from 'framer-motion';
 import { useToast } from '@/components/common/Toast';
 import { soundService } from '@/services/soundService';
 import { TiltCard } from '@/components/ui/TiltCard';
+import { TextEffect } from '@/components/ui/text-effect';
+import { InView } from '@/components/ui/in-view';
 import { lazy, Suspense } from 'react';
 
 const GamificationBackground = lazy(() => import('@/components/gamification/GamificationBackground'));
@@ -137,7 +139,7 @@ export function ShopPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight">
-            Rewards Shop
+            <TextEffect as="span" per="word" preset="blur">Rewards Shop</TextEffect>
           </h1>
           <p className="text-sm dark:text-slate-400 text-slate-500 mt-1">Earn XP, unlock premium content</p>
         </div>
@@ -266,17 +268,25 @@ export function ShopPage() {
                 { label: 'Complete habit', coins: 10, icon: '✅' },
                 { label: 'Complete task', coins: 20, icon: '📋' },
                 { label: 'Consistency', coins: 'Bonus', icon: '🔥' },
-              ].map(item => (
-                <div
+              ].map((item, idx) => (
+                <InView
                   key={item.label}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800/80 border dark:border-white/5 border-slate-900/5 shadow-sm transition-transform duration-200 ease-out hover:scale-[1.02]"
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.9 },
+                    visible: { opacity: 1, scale: 1 },
+                  }}
+                  transition={{ duration: 0.3, delay: idx * 0.1 }}
                 >
-                  <span className="text-lg">{item.icon}</span>
-                  <div>
-                    <p className="text-[10px] dark:text-slate-400 text-slate-500">{item.label}</p>
-                    <p className="text-xs font-bold text-amber-500 dark:text-amber-400">{typeof item.coins === 'number' ? `+${item.coins}` : item.coins}</p>
+                  <div
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800/80 border dark:border-white/5 border-slate-900/5 shadow-sm transition-transform duration-200 ease-out hover:scale-[1.02] h-full"
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <div>
+                      <p className="text-[10px] dark:text-slate-400 text-slate-500">{item.label}</p>
+                      <p className="text-xs font-bold text-amber-500 dark:text-amber-400">{typeof item.coins === 'number' ? `+${item.coins}` : item.coins}</p>
+                    </div>
                   </div>
-                </div>
+                </InView>
               ))}
             </div>
           </div>

@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { DailyQuote } from '../ui/DailyQuote';
 import { AICoachCard } from '../coach/AICoachCard';
 import { MagneticButton } from '../ui/MagneticButton';
+import { TextEffect } from '../ui/text-effect';
 
 const PROFILE_KEY = 'habitflow_profile';
 
@@ -71,10 +72,8 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
       <motion.div variants={item} className="flex flex-col gap-6 sm:gap-8 w-full">
         <div className="flex flex-col gap-2 relative w-full">
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black dark:text-white text-slate-900 tracking-tighter leading-none relative z-10 drop-shadow-2xl">
-            {greeting},{' '}
-            <span className="bg-clip-text text-transparent bg-gradient-to-br from-brand-400 via-brand-500 to-indigo-600">
-              {userName}
-            </span>
+            <TextEffect as="span" per="word" preset="blur">{`${greeting},`}</TextEffect>{' '}
+            <TextEffect as="span" per="char" preset="fade" delay={0.5} className="text-brand-500">{userName}</TextEffect>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-lg sm:text-xl font-medium mt-4 w-full">
             {done === scheduled.length && scheduled.length > 0

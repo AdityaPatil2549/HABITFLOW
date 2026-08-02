@@ -14,6 +14,7 @@ import { TiltCard } from '../ui/TiltCard';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/Skeleton';
 import { HabitItemCard } from './HabitItemCard';
+import { InView } from '../ui/in-view';
 
 export function HabitsWidget({ dragHandleProps }: { dragHandleProps?: any }) {
   const navigate = useNavigate();
@@ -87,14 +88,22 @@ export function HabitsWidget({ dragHandleProps }: { dragHandleProps?: any }) {
             />
           ) : (
             <Reorder.Group axis="y" values={scheduled.slice(0, 6)} onReorder={() => {}} className="space-y-2">
-              {scheduled.slice(0, 6).map((h) => (
-                  <Reorder.Item
+              {scheduled.slice(0, 6).map((h, index) => (
+                  <InView
                     key={h.id}
-                    value={h}
-                    className="relative"
+                    variants={{
+                      hidden: { opacity: 0, y: 15, filter: 'blur(4px)' },
+                      visible: { opacity: 1, y: 0, filter: 'blur(0px)' },
+                    }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <HabitItemCard habit={h} />
-                  </Reorder.Item>
+                    <Reorder.Item
+                      value={h}
+                      className="relative"
+                    >
+                      <HabitItemCard habit={h} />
+                    </Reorder.Item>
+                  </InView>
                 ))}
             </Reorder.Group>
           )}

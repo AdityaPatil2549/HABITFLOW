@@ -30,6 +30,8 @@ import { Link } from 'react-router-dom';
 import { driveService } from '../services/driveService';
 import { healthSyncService } from '../services/healthSyncService';
 import { storageService } from '../services/storageService';
+import { InView } from '../components/ui/in-view';
+import { TextEffect } from '../components/ui/text-effect';
 
 const THEMES: { value: Theme; label: string; color: string }[] = [
   { value: 'indigo', label: 'Indigo', color: '#6366f1' },
@@ -345,14 +347,21 @@ export function SettingsPage() {
         <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
           Preferences
         </p>
-        <h1 className="text-3xl font-bold text-white">Settings</h1>
+        <h1 className="text-3xl font-bold text-white">
+          <TextEffect as="span" per="word" preset="blur">Settings</TextEffect>
+        </h1>
         <p className="text-slate-400 text-sm mt-1">
           Configure your experience and manage your local data.
         </p>
       </div>
 
       {/* ─── Appearance ─── */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
+      <InView
+        as="section"
+        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6"
+      >
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Palette size={18} className="text-brand-400" /> Appearance
         </h2>
@@ -459,10 +468,15 @@ export function SettingsPage() {
             />
           </button>
         </div>
-      </section>
+      </InView>
 
       {/* ─── Notifications ─── */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-4">
+      <InView
+        as="section"
+        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-4"
+      >
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Bell size={18} className="text-brand-400" /> Notifications
         </h2>
@@ -484,10 +498,15 @@ export function SettingsPage() {
             </span>
           )}
         </div>
-      </section>
+      </InView>
 
       {/* ─── Integrations ─── */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-4">
+      <InView
+        as="section"
+        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-4"
+      >
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Calendar size={18} className="text-brand-400" /> Calendar Sync
         </h2>
@@ -568,10 +587,15 @@ export function SettingsPage() {
             </div>
           </div>
         )}
-      </section>
+      </InView>
 
       {/* ── Health & Fitness ── */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
+      <InView
+        as="section"
+        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6"
+      >
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Activity size={18} className="text-brand-400" /> Health & Fitness
         </h2>
@@ -603,7 +627,7 @@ export function SettingsPage() {
             <button disabled className="px-4 py-2 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl">Coming Soon</button>
           </div>
         </div>
-      </section>
+      </InView>
 
       {/* ── Google Integrations ── */}
       <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
@@ -702,7 +726,12 @@ export function SettingsPage() {
       </section>
 
       {/* ── Data ── */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
+      <InView
+        as="section"
+        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6"
+      >
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Database size={18} className="text-brand-400" /> Data Management
         </h2>
@@ -762,10 +791,15 @@ export function SettingsPage() {
             </div>
           </button>
         </div>
-      </section>
+      </InView>
 
       {/* ─── Privacy ─── */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6">
+      <InView
+        as="section"
+        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6"
+      >
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 flex-shrink-0">
             <Shield size={20} />
@@ -779,10 +813,15 @@ export function SettingsPage() {
             </p>
           </div>
         </div>
-      </section>
+      </InView>
 
       {/* ─── About ─── */}
-      <section className="text-center py-8">
+      <InView
+        as="section"
+        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="text-center py-8"
+      >
         <img
           src="/logo.png"
           alt="HabitFlow Logo"
@@ -810,7 +849,7 @@ export function SettingsPage() {
             Source Code
           </button>
         </div>
-      </section>
+      </InView>
     </div>
   );
 }

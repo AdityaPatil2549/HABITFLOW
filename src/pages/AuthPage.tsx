@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Sparkles, RefreshCw, Calendar, CloudUpload } from 'lucide-react';
 import { FloatingOrbs } from '../components/ui/FloatingOrbs';
+import { TextEffect } from '@/components/ui/text-effect';
 
 const features = [
   { icon: RefreshCw, label: 'Cross-device sync' },
@@ -148,7 +149,7 @@ export function AuthPage() {
           
           <div className="flex flex-col space-y-2">
             <h1 className="font-heading text-3xl font-bold tracking-tight text-white">
-              Sign In or Join Now
+              <TextEffect as="span" per="word" preset="blur">Sign In or Join Now</TextEffect>
             </h1>
             <p className="text-slate-400 text-base leading-relaxed">
               Login to sync your habits across devices, or continue as a guest to store data locally.

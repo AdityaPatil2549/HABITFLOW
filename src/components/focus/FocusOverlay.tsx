@@ -505,7 +505,7 @@ export function FocusOverlay() {
             <button
               onClick={stopFocus}
               title="End session"
-              className="w-14 h-14 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/10 hover:bg-red-500/15 hover:border-red-500/30 text-slate-500 hover:text-red-400 transition-all"
+              className="w-14 h-14 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/10 hover:bg-red-500/15 hover:border-red-500/30 text-white/50 hover:text-red-400 transition-all"
             >
               <XCircle size={22} />
             </button>
@@ -526,7 +526,7 @@ export function FocusOverlay() {
             <button
               onClick={handleCompleteEarly}
               title={isFocus ? 'Mark done & take break' : 'End break'}
-              className="w-14 h-14 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/10 hover:bg-emerald-500/15 hover:border-emerald-500/30 text-slate-500 hover:text-emerald-400 transition-all"
+              className="w-14 h-14 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/10 hover:bg-emerald-500/15 hover:border-emerald-500/30 text-white/50 hover:text-emerald-400 transition-all"
             >
               <CheckCircle2 size={22} />
             </button>

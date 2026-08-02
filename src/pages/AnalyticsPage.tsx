@@ -46,6 +46,8 @@ import { IconRenderer } from '../components/common/IconRenderer';
 
 import { TiltCard } from '../components/ui/TiltCard';
 import { Skeleton } from '../components/ui/Skeleton';
+import { InView } from '../components/ui/in-view';
+import { TextEffect } from '../components/ui/text-effect';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap', 'AI Coach'] as const;
@@ -239,7 +241,11 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
   const STEP = CELL + GAP;
 
   return (
-    <div className="space-y-4">
+    <InView
+      variants={{ hidden: { opacity: 0, scale: 0.95, filter: 'blur(4px)' }, visible: { opacity: 1, scale: 1, filter: 'blur(0px)' } }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <div className="space-y-4">
       <div className="overflow-x-auto pb-2 -mx-1">
         <svg width={weeks.length * STEP + 30} height={7 * STEP + 24} className="block">
           {/* Month labels */}
@@ -323,6 +329,7 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
         </div>
       )}
     </div>
+    </InView>
   );
 }
 
@@ -412,7 +419,11 @@ function MoodYearlyHeatmap({ moods }: { moods: any[] }) {
   const STEP = CELL + GAP;
 
   return (
-    <div className="space-y-4">
+    <InView
+      variants={{ hidden: { opacity: 0, scale: 0.95, filter: 'blur(4px)' }, visible: { opacity: 1, scale: 1, filter: 'blur(0px)' } }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <div className="space-y-4">
       <div className="overflow-x-auto pb-2 -mx-1">
         <svg width={weeks.length * STEP + 30} height={7 * STEP + 24} className="block">
           {monthLabels.map(({ label, col }) => (
@@ -469,6 +480,7 @@ function MoodYearlyHeatmap({ moods }: { moods: any[] }) {
         <span className="ml-auto text-slate-600">Showing {days.length} days</span>
       </div>
     </div>
+    </InView>
   );
 }
 
@@ -993,7 +1005,9 @@ function StatCard({
 }) {
   return (
     <TiltCard className="h-full w-full block">
-      <motion.div
+      <InView
+        variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
         className={cn(
           'rounded-2xl p-6 text-center relative overflow-hidden group h-full hover:shadow-md transition-[transform,box-shadow,border-color,background-color] duration-300 ease-out border shadow-sm dark:bg-slate-900 bg-white dark:border-white/10 border-slate-200',
           colorClass
@@ -1013,7 +1027,7 @@ function StatCard({
             {sub}
           </p>
         )}
-      </motion.div>
+      </InView>
     </TiltCard>
   );
 }
@@ -1028,9 +1042,8 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <InView
+      variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="rounded-2xl p-6 relative overflow-hidden group hover:shadow-md transition-[box-shadow,transform] duration-300 ease-out border shadow-sm bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10"
     >
@@ -1046,7 +1059,7 @@ function ChartCard({
       <div className="relative z-10">
         {children}
       </div>
-    </motion.div>
+    </InView>
   );
 }
 
@@ -1235,7 +1248,7 @@ export function AnalyticsPage() {
             Analytics
           </p>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Your Progress Report
+            <TextEffect as="span" per="word" preset="blur">Your Progress Report</TextEffect>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             Track, analyze, and improve your habits over time.

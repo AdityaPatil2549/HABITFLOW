@@ -20,6 +20,7 @@ import { useToast } from '../components/common/Toast';
 import { cn } from '../lib/utils';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { MagneticButton } from '../components/ui/MagneticButton';
+import { TextEffect } from '../components/ui/text-effect';
 
 const ReviewBackground = lazy(() => import('../components/review/ReviewBackground'));
 
@@ -181,7 +182,7 @@ function ScoreGauge({ score, headline, weekLabel }: { score: number; headline: s
         transition={{ delay: 0.9, duration: 0.5 }}
         className="text-3xl sm:text-4xl font-black dark:text-white text-slate-900 text-center tracking-tight px-4"
       >
-        {headline}
+        <TextEffect as="span" per="word" preset="blur">{headline}</TextEffect>
       </motion.h2>
       <p className="text-slate-400 text-sm italic opacity-75 text-center">"{getQuote(score, true)}"</p>
     </div>

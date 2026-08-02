@@ -46,6 +46,10 @@ import { LogHabitModal } from '../components/habits/LogHabitModal';
 import { HabitJournal } from '../components/habits/HabitJournal';
 import { MagneticButton } from '../components/ui/MagneticButton';
 import { DynamicIcon } from '../components/ui/DynamicIcon';
+import { TextEffect } from '../components/ui/text-effect';
+import { MorphingDialog, MorphingDialogTrigger, MorphingDialogContainer, MorphingDialogContent, MorphingDialogTitle, MorphingDialogClose } from '../components/ui/morphing-dialog';
+import { SlidingNumber } from '../components/ui/sliding-number';
+import { InView } from '../components/ui/in-view';
 import { cn } from '../lib/utils';
 import { IconRenderer, HABIT_ICONS } from '../components/common/IconRenderer';
 import { habitService } from '../services/habitService';
@@ -645,8 +649,7 @@ function HabitCard({
         <div
           className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
-            border: '1px solid rgba(100,116,139,0.2)',
-            borderLeft: `4px solid ${c}`
+            border: '1px solid rgba(100,116,139,0.2)'
           }}
         />
 
@@ -723,7 +726,7 @@ function HabitCard({
                 </span>
                 {habit.streak.current > 0 && (
                   <span className="flex items-center gap-1 text-xs font-black text-amber-400 animate-flame">
-                    <Flame size={12} fill="currentColor" /> {habit.streak.current}d
+                    <Flame size={12} fill="currentColor" /> <SlidingNumber value={habit.streak.current} />d
                   </span>
                 )}
                 {hasHotStreak && (
@@ -1186,9 +1189,10 @@ export function HabitsPage() {
       <AnimatePresence>
         {showCelebration && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -20 }}
+            initial={{ opacity: 0, scale: 0.4, y: -80, rotate: -15, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, scale: 1, y: 0, rotate: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, scale: 0.8, y: -20, filter: 'blur(5px)' }}
+            transition={{ type: 'spring', stiffness: 500, damping: 15, mass: 1.2, bounce: 0.6 }}
             className="fixed inset-x-4 z-[999] flex justify-center pointer-events-none"
             style={{ top: 'max(96px, calc(env(safe-area-inset-top, 0px) + 24px))' }}
           >
@@ -1205,7 +1209,9 @@ export function HabitsPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Habit Tracker</p>
-          <h1 className="text-2xl sm:text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-brand-600 dark:from-white dark:to-brand-300">My Habits</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+            <TextEffect per="char" preset="blur">My Habits</TextEffect>
+          </h1>
           <p className="dark:text-slate-400 text-slate-600 text-sm mt-1">
             {isToday ? (
               <>
@@ -1259,16 +1265,37 @@ export function HabitsPage() {
             <span className="sm:hidden text-lg leading-none">✨</span>
             <span className="hidden sm:flex items-center gap-2">✨ Templates</span>
           </motion.button>
-          <MagneticButton
-            onClick={() => setShowAdd(v => !v)}
-            intensity={0.4}
-            className="flex items-center gap-2 px-4 sm:px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0 ml-auto sm:ml-0 active:scale-95 transition-transform shadow-xl shadow-brand-500/40"
-            style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
-          >
-            <Plus size={16} />
-            <span className="hidden sm:inline">Add Habit</span>
-            <span className="sm:hidden">Add</span>
-          </MagneticButton>
+          <MorphingDialog>
+            <MorphingDialogTrigger
+              className="flex items-center gap-2 px-4 sm:px-5 py-3 rounded-2xl font-bold text-sm text-white flex-shrink-0 ml-auto sm:ml-0 active:scale-95 transition-transform shadow-xl shadow-brand-500/40"
+              style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">Add Habit</span>
+              <span className="sm:hidden">Add</span>
+            </MorphingDialogTrigger>
+            
+            <MorphingDialogContainer>
+              <MorphingDialogContent className="w-full max-w-[90vw] sm:max-w-[500px] bg-slate-950/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                <div className="flex items-center justify-between mb-6">
+                  <MorphingDialogTitle className="text-xl font-black text-white flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-brand-500/20 flex items-center justify-center text-brand-400">
+                      <Plus size={20} />
+                    </div>
+                    New Habit
+                  </MorphingDialogTitle>
+                  <MorphingDialogClose className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-slate-400 hover:text-white" />
+                </div>
+                
+                <HabitForm
+                  onClose={reason => {
+                    if (reason === 'created') setActiveCategory('All');
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+                  }}
+                />
+              </MorphingDialogContent>
+            </MorphingDialogContainer>
+          </MorphingDialog>
         </div>
       </div>
 
@@ -1341,20 +1368,7 @@ export function HabitsPage() {
         </div>
       </div>
 
-      {/* ── Add Habit Bottom Sheet ── */}
-      <BottomSheet
-        open={showAdd}
-        onClose={() => setShowAdd(false)}
-        title="New Habit"
-        accentIcon={<Flame size={18} className="text-brand-400" />}
-      >
-        <HabitForm
-          onClose={reason => {
-            setShowAdd(false);
-            if (reason === 'created') setActiveCategory('All');
-          }}
-        />
-      </BottomSheet>
+      {/* ── Add Habit Bottom Sheet Removed in favor of MorphingDialog ── */}
 
       {/* ── Edit Habit Bottom Sheet ── */}
       <BottomSheet
@@ -1469,20 +1483,28 @@ export function HabitsPage() {
                               <GripVertical size={16} />
                             </div>
                             <div className="pl-10">
-                              <HabitCard
-                                habit={h}
-                                onLogClick={handleLogClick}
-                                onEdit={setEditingHabit}
-                                onDelete={deleteHabit}
-                                canFreeze={
-                                  isToday &&
-                                  (!h.todayLog || h.todayLog.value === 0) &&
-                                  !h.todayLog?.isFrozen &&
-                                  h.streak.current > 0 &&
-                                  (userXP?.streakFreezes ?? 0) > 0
-                                }
-                                onFreeze={handleUseFreeze}
-                              />
+                              <InView 
+                                variants={{
+                                  hidden: { opacity: 0, y: 10 },
+                                  visible: { opacity: 1, y: 0 }
+                                }}
+                                transition={{ delay: index * 0.05, duration: 0.3 }}
+                              >
+                                <HabitCard
+                                  habit={h}
+                                  onLogClick={handleLogClick}
+                                  onEdit={setEditingHabit}
+                                  onDelete={deleteHabit}
+                                  canFreeze={
+                                    isToday &&
+                                    (!h.todayLog || h.todayLog.value === 0) &&
+                                    !h.todayLog?.isFrozen &&
+                                    h.streak.current > 0 &&
+                                    (userXP?.streakFreezes ?? 0) > 0
+                                  }
+                                  onFreeze={handleUseFreeze}
+                                />
+                              </InView>
                             </div>
                           </div>
                         )}

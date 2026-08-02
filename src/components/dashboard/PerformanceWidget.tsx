@@ -166,17 +166,31 @@ export function PerformanceWidget({ dragHandleProps }: { dragHandleProps?: any }
                       />
                     );
                   })}
-                  <path d={areaPath} fill="url(#area-grad-real)" />
-                  <polyline
+                  <motion.path 
+                    d={areaPath} 
+                    fill="url(#area-grad-real)" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.2 }}
+                  />
+                  <motion.polyline
                     points={polyline}
                     fill="none"
                     stroke="url(#line-grad-real)"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
                   />
                   {chartPoints.map((p, i) => (
-                    <g key={i}>
+                    <motion.g 
+                      key={i}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', delay: 1 + i * 0.1 }}
+                    >
                       <circle
                         cx={p.x}
                         cy={p.y}
@@ -196,7 +210,7 @@ export function PerformanceWidget({ dragHandleProps }: { dragHandleProps?: any }
                           {p.pct}%
                         </text>
                       )}
-                    </g>
+                    </motion.g>
                   ))}
                 </svg>
               )}

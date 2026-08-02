@@ -4,6 +4,7 @@ import { Sparkles, ArrowRight, X, GripHorizontal } from 'lucide-react';
 import { aiCoachService } from '../../services/aiCoachService';
 import { TiltCard } from '../ui/TiltCard';
 import { SpotlightCard } from '../ui/SpotlightCard';
+import { TextEffect } from '../ui/text-effect';
 import type { AIInsight } from '../../types';
 import { db } from '../../db';
 
@@ -115,7 +116,7 @@ export function AICoachWidget({ dragHandleProps }: { dragHandleProps?: any }) {
                   <div>
                     <h4 className="font-bold text-white text-base mb-1">{currentInsight.title}</h4>
                     <p className="text-sm text-slate-300 leading-relaxed font-medium">
-                      {currentInsight.body}
+                      <TextEffect as="span" per="word" preset="blur">{currentInsight.body}</TextEffect>
                     </p>
                   </div>
                 </div>

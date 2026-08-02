@@ -27,10 +27,19 @@ import { cn, compressImage } from '../lib/utils';
 import { useToast } from '../components/common/Toast';
 import { useCompletionEffects } from '../components/ui/CompletionEffects';
 import { MagneticButton } from '../components/ui/MagneticButton';
+import { TextEffect } from '../components/ui/text-effect';
 import { exportTaskToCalendar } from '../lib/calendarSync';
 import { NeonCheckbox } from '../components/ui/animated-check-box';
 import { DatePicker } from '../components/ui/date-picker';
 import { MorphingPopover, MorphingPopoverTrigger, MorphingPopoverContent } from '../components/ui/morphing-popover';
+import {
+  MorphingDialog,
+  MorphingDialogTrigger,
+  MorphingDialogContainer,
+  MorphingDialogContent,
+  MorphingDialogTitle,
+  MorphingDialogClose,
+} from '../components/ui/morphing-dialog';
 import { JollyTagGroup, TagList, Tag } from '../components/ui/tag-group';
 
 // Lazy load the heavy Three.js background
@@ -345,7 +354,6 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
                 : 'dark:bg-slate-900 bg-white dark:border-white/10 border-slate-900/10 hover:border-brand-500/30 shadow-md'
             )}
             style={!task.completed ? {
-              borderLeft: `3px solid ${pc.color}`,
               boxShadow: `0 4px 24px -8px ${pc.glow}`,
             } : {}}
           >
@@ -451,7 +459,7 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
                       <Timer size={14} />
                     </button>
                     <button onClick={() => exportTaskToCalendar(task)}
-                      className="w-8 h-8 rounded-full hover:bg-amber-500/20 text-slate-500 hover:text-amber-400 transition-colors flex items-center justify-center" title="Calendar">
+                      className="w-8 h-8 rounded-full hover:bg-amber-500/20 text-amber-100/60 hover:text-amber-400 transition-colors flex items-center justify-center" title="Calendar">
                       <Calendar size={14} />
                     </button>
                   </>
@@ -468,7 +476,7 @@ function TaskCard({ task, index = 0 }: { task: Task; index?: number }) {
                   <Edit2 size={14} />
                 </button>
                 <button onClick={() => toast.confirm(`Delete "${task.title}"${subtasks.length > 0 ? ' and its subtasks' : ''}?`, () => deleteTask(task.id), { confirmLabel: 'Delete', danger: true })}
-                  className="w-8 h-8 rounded-full hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors flex items-center justify-center">
+                  className="w-8 h-8 rounded-full hover:bg-red-500/20 text-red-100/60 hover:text-red-400 transition-colors flex items-center justify-center">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -615,7 +623,9 @@ function EmptyState({ view, onAdd }: { view: ViewType; onAdd: () => void }) {
       <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent pointer-events-none" />
       <motion.span animate={{ y: [0, -10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         className="text-6xl mb-5 relative z-10">{cfg.emoji}</motion.span>
-      <h3 className="text-xl font-black dark:text-white text-slate-900 mb-2 relative z-10">{cfg.title}</h3>
+      <h3 className="text-xl font-black dark:text-white text-slate-900 mb-2 relative z-10">
+        <TextEffect as="span" per="word" preset="blur">{cfg.title}</TextEffect>
+      </h3>
       <p className="dark:text-slate-400 text-slate-500 text-sm leading-relaxed max-w-[240px] relative z-10">{cfg.sub}</p>
       {view !== 'Completed' && (
         <MagneticButton onClick={onAdd} intensity={0.4}
@@ -694,7 +704,9 @@ export function TasksPage() {
             <p className="text-xs font-black uppercase tracking-[0.25em] mb-1" style={{ color: 'var(--brand-400)' }}>
               Task Command Center
             </p>
-            <h1 className="text-4xl font-black dark:text-white text-slate-900 tracking-tight mb-2">My Tasks</h1>
+            <h1 className="text-4xl font-black dark:text-white text-slate-900 tracking-tight mb-2">
+              <TextEffect per="char" preset="fade">My Tasks</TextEffect>
+            </h1>
             <p className="dark:text-slate-400 text-slate-600 text-sm mb-5">
               {doneToday > 0 ? `${doneToday} smashed today — let's keep going! 🔥` : 'Stay focused. Build momentum.'}
             </p>
@@ -713,41 +725,32 @@ export function TasksPage() {
               ))}
             </div>
 
-            <MagneticButton onClick={() => setShowAdd(v => !v)} intensity={0.4}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-transform"
-              style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.4)' }}>
-              <Plus size={16} /> New Task
-            </MagneticButton>
+            <MorphingDialog>
+              <MorphingDialogTrigger
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm text-white active:scale-95 transition-transform"
+                style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))', boxShadow: '0 8px 24px rgba(var(--brand-500-rgb),0.4)' }}>
+                <Plus size={16} /> New Task
+              </MorphingDialogTrigger>
+              <MorphingDialogContainer>
+                <MorphingDialogContent className="w-full max-w-[90vw] sm:max-w-[500px] bg-slate-950/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <MorphingDialogTitle className="text-xl font-black text-white flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-brand-400" style={{ background: 'rgba(var(--brand-500-rgb),0.22)' }}>
+                        <Target size={20} />
+                      </div>
+                      New Task
+                    </MorphingDialogTitle>
+                    <MorphingDialogClose className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-slate-400 hover:text-white" />
+                  </div>
+                  <TaskForm onClose={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))} />
+                </MorphingDialogContent>
+              </MorphingDialogContainer>
+            </MorphingDialog>
           </div>
         </div>
       </div>
 
-      {/* ── Add Form Drawer ──────────────────────────────────── */}
-      <AnimatePresence>
-        {showAdd && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
-            animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
-            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-            transition={{ duration: 0.35, ease: 'easeInOut' }}
-          >
-            <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(var(--brand-500-rgb),0.28)' }}>
-              <div className="flex items-center gap-3 px-6 py-4" style={{ background: 'linear-gradient(135deg, rgba(var(--brand-500-rgb),0.18), rgba(var(--brand-500-rgb),0.06))' }}>
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(var(--brand-500-rgb),0.22)' }}>
-                  <Target size={16} style={{ color: 'var(--brand-400)' }} />
-                </div>
-                <h2 className="text-base font-black text-white">New Task</h2>
-                <button onClick={() => setShowAdd(false)} className="ml-auto w-8 h-8 rounded-full hover:bg-white/10 text-slate-500 hover:text-white transition-colors flex items-center justify-center">
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="p-6" style={{ background: 'rgba(15,23,42,0.75)', backdropFilter: 'blur(24px)' }}>
-                <TaskForm onClose={() => setShowAdd(false)} />
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* ── Add Form Drawer removed in favor of MorphingDialog ── */}
 
       {/* ── Toolbar ─────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row gap-3">

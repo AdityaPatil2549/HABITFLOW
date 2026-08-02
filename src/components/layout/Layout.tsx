@@ -441,7 +441,7 @@ export function Layout() {
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
-      ? 'bg-gradient-to-r from-brand-500/20 to-brand-600/20 text-brand-400 border-l-2 border-brand-500 px-5 py-2.5 flex items-center gap-3 text-sm font-medium tracking-wide transition-all rounded-r-xl'
+      ? 'bg-brand-500/10 text-brand-400 px-5 py-2.5 flex items-center gap-3 text-sm font-medium tracking-wide transition-all rounded-r-xl'
       : 'text-slate-400 px-5 py-2.5 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
 
   return (
