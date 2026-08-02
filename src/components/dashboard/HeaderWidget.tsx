@@ -102,7 +102,7 @@ export function HeaderWidget({ dragHandleProps }: { dragHandleProps?: any }) {
             <div data-tour="stats-widget" className="flex flex-col items-start gap-1 ml-4 px-6 py-3 rounded-2xl vision-panel backdrop-blur-xl border border-white/10">
               <div className="flex items-center gap-2">
                 <Zap size={16} className="text-amber-400" />
-                <span className="text-base font-bold text-slate-900 dark:text-white tracking-wide">
+                <span className="text-base font-bold text-slate-900 dark:text-white tracking-wide metric-value">
                   {userXP?.total ?? 0} XP
                 </span>
               </div>

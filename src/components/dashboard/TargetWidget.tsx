@@ -86,7 +86,7 @@ export function TargetWidget({ dragHandleProps }: { dragHandleProps?: any }) {
               <motion.span
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
-                className="text-4xl sm:text-5xl font-black text-white tracking-tighter flex items-baseline"
+                className="text-4xl sm:text-5xl font-black text-white tracking-tighter flex items-baseline metric-value"
               >
                 <AnimatedNumber value={pct} />
                 <span className="text-xl sm:text-2xl text-slate-500 ml-0.5">%</span>
@@ -102,7 +102,7 @@ export function TargetWidget({ dragHandleProps }: { dragHandleProps?: any }) {
               <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                 Done
               </p>
-              <p className="text-base sm:text-lg font-bold text-emerald-400">
+              <p className="text-base sm:text-lg font-bold text-emerald-400 metric-value">
                 <AnimatedNumber value={done} />
               </p>
             </div>
@@ -110,7 +110,7 @@ export function TargetWidget({ dragHandleProps }: { dragHandleProps?: any }) {
               <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                 Left
               </p>
-              <p className="text-base sm:text-lg font-bold text-white">
+              <p className="text-base sm:text-lg font-bold text-white metric-value">
                 <AnimatedNumber value={remaining} />
               </p>
             </div>
@@ -118,7 +118,7 @@ export function TargetWidget({ dragHandleProps }: { dragHandleProps?: any }) {
               <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                 Total
               </p>
-              <p className="text-base sm:text-lg font-bold text-white">
+              <p className="text-base sm:text-lg font-bold text-white metric-value">
                 <AnimatedNumber value={scheduled.length} />
               </p>
             </div>

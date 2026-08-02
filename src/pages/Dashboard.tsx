@@ -71,18 +71,20 @@ export function Dashboard() {
 
   const container = {
     hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.02 } },
+    show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.04 } },
   };
 
   const itemVariant = {
-    hidden: { y: 48, filter: 'blur(8px)', opacity: 0 },
+    hidden: { y: 24, scale: 0.96, filter: 'blur(6px)', opacity: 0 },
     show: { 
       y: 0, 
+      scale: 1,
       filter: 'blur(0px)',
       opacity: 1, 
-      transition: { type: 'spring' as const, stiffness: 100, damping: 20 } 
+      transition: { type: 'spring' as const, stiffness: 260, damping: 22, mass: 1 } 
     },
   };
+
 
   const renderWidget = (id: string) => {
     switch (id) {

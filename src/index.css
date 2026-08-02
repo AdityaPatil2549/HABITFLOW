@@ -1,5 +1,9 @@
-﻿@import 'tailwindcss';
-@import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,400,700,500,600,300&f[]=satoshi@900,700,500,300,400&display=swap');
+@import 'tailwindcss';
+/* ── Typography: Fira Sans (body) + Fira Code (data/numbers) ── */
+/* Recommended by ui-ux-pro-max-skill — Dashboard, analytics, technical mood */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+/* ── Display Headings: Clash Display (retained for brand identity) ── */
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,400,700,500,600,300&display=swap');
 
 @theme {
   --color-on-surface-variant: #c7c4d7;
@@ -61,11 +65,11 @@
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-full: 9999px;
-  --font-body-md: 'Outfit', sans-serif;
+  --font-body-md: 'Fira Sans', system-ui, sans-serif;
   --font-h2: 'Clash Display', sans-serif;
-  --font-stats-num: 'Clash Display', sans-serif;
-  --font-body-lg: 'Outfit', sans-serif;
-  --font-label-caps: 'Outfit', sans-serif;
+  --font-stats-num: 'Fira Code', 'Fira Sans', monospace; /* Data/number precision */
+  --font-body-lg: 'Fira Sans', system-ui, sans-serif;
+  --font-label-caps: 'Fira Sans', system-ui, sans-serif;
   --font-display: 'Clash Display', sans-serif;
   --font-h1: 'Clash Display', sans-serif;
   --font-h3: 'Clash Display', sans-serif;
@@ -155,10 +159,19 @@
   font-weight: 400;
 }
 .text-stats-num {
+  font-family: var(--font-stats-num);
   font-size: 24px;
   line-height: 1;
   font-weight: 700;
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fira Code precision for any inline data/metric */
+.font-data {
+  font-family: 'Fira Code', monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 
 /* â”€â”€ Stitch Color Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -232,17 +245,19 @@
 }
 
 .glass-card {
-  background: rgba(10, 10, 10, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(8, 12, 24, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 10px 40px -10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(32px) saturate(160%);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
   position: relative;
   overflow: hidden;
   transition:
-    transform 0.7s cubic-bezier(0.32, 0.72, 0, 1),
-    box-shadow 0.7s cubic-bezier(0.32, 0.72, 0, 1),
-    border-color 0.4s ease;
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease;
 }
 
 .glass-card::before {
@@ -279,18 +294,27 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.3),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.25),
     0 4px 8px rgba(0, 0, 0, 0.4),
-    0 8px 16px rgba(var(--color-brand-500-rgb), 0.2);
-  transform: translateY(0);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    0 8px 20px rgba(var(--color-brand-500-rgb), 0.25);
+  transform: translateY(0) scale(1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.button-3d:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.25),
+    0 8px 20px rgba(0, 0, 0, 0.5),
+    0 12px 28px rgba(var(--color-brand-500-rgb), 0.3);
 }
 .button-3d:active {
-  transform: translateY(2px);
+  transform: translateY(1px) scale(0.97);
   box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
     0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: all 0.08s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .glow-border:hover {
   border-color: rgba(16, 185, 129, 0.3);
@@ -1146,7 +1170,8 @@ body {
   :root {
     /* â”€â”€ Apple VisionOS Inspired Foundation â”€â”€ */
     --font-heading: 'Clash Display', sans-serif;
-    --font-sans: 'Satoshi', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Fira Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Fira Code', 'Courier New', monospace;
 
     /* Base Colors - Obsidian/Slate Base */
     --color-bg-base: #020617; /* Slate 950 */
@@ -1263,14 +1288,14 @@ body {
 /* â”€â”€ VisionOS Glass Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .vision-panel {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   border-radius: 24px;
   position: relative;
   overflow: hidden;
-  transition: all 0.5s;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .vision-panel::before {
@@ -1370,8 +1395,99 @@ body {
   color: inherit;
 }
 button {
-  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
 }
 button:active:not(:disabled) {
   transform: scale(0.97);
+  transition: transform 0.08s cubic-bezier(0.32, 0.72, 0, 1);
 }
+
+/* ── Stagger Entrance Animations (ui-ux-pro-max back.out(1.4)) ── */
+/* Apply .stagger-container on parent, .stagger-item on each child */
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stagger-item {
+  opacity: 0;
+  animation: stagger-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.stagger-item:nth-child(1)  { animation-delay: 0.02s; }
+.stagger-item:nth-child(2)  { animation-delay: 0.06s; }
+.stagger-item:nth-child(3)  { animation-delay: 0.10s; }
+.stagger-item:nth-child(4)  { animation-delay: 0.14s; }
+.stagger-item:nth-child(5)  { animation-delay: 0.18s; }
+.stagger-item:nth-child(6)  { animation-delay: 0.22s; }
+.stagger-item:nth-child(7)  { animation-delay: 0.26s; }
+.stagger-item:nth-child(8)  { animation-delay: 0.30s; }
+.stagger-item:nth-child(9)  { animation-delay: 0.34s; }
+.stagger-item:nth-child(10) { animation-delay: 0.38s; }
+.stagger-item:nth-child(n+11) { animation-delay: 0.40s; }
+
+/* Fade-up variant (more subtle) */
+@keyframes fade-up-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up-item {
+  opacity: 0;
+  animation: fade-up-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.fade-up-item:nth-child(1)  { animation-delay: 0.0s; }
+.fade-up-item:nth-child(2)  { animation-delay: 0.05s; }
+.fade-up-item:nth-child(3)  { animation-delay: 0.10s; }
+.fade-up-item:nth-child(4)  { animation-delay: 0.15s; }
+.fade-up-item:nth-child(5)  { animation-delay: 0.20s; }
+.fade-up-item:nth-child(6)  { animation-delay: 0.25s; }
+.fade-up-item:nth-child(n+7) { animation-delay: 0.30s; }
+
+/* Respect prefers-reduced-motion for stagger animations */
+@media (prefers-reduced-motion: reduce) {
+  .stagger-item,
+  .fade-up-item {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Number/Metric Precision (Fira Code) ── */
+.metric-value {
+  font-family: 'Fira Code', monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.02em;
+}
+
+/* ── Enhanced Ambient Background Blobs ── */
+.bg-mesh::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(16, 185, 129, 0.22) 0%,
+    rgba(20, 184, 166, 0.12) 50%,
+    transparent 70%
+  );
+  filter: blur(80px);
+}
+.bg-mesh::after {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(5, 150, 105, 0.18) 0%,
+    rgba(45, 212, 191, 0.1) 50%,
+    transparent 70%
+  );
+  filter: blur(100px);
+}
+
