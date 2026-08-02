@@ -1,5 +1,5 @@
+﻿@import 'tailwindcss';
 @import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,400,700,500,600,300&f[]=satoshi@900,700,500,300,400&display=swap');
-@import 'tailwindcss';
 
 @theme {
   --color-on-surface-variant: #c7c4d7;
@@ -107,7 +107,7 @@
   --color-brand-600: var(--brand-600);
 }
 
-/* ── Stitch Typography Utility Classes ─────────────────────────── */
+/* â”€â”€ Stitch Typography Utility Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .font-display {
   font-family: var(--font-display, 'Clash Display', sans-serif);
   font-size: 48px;
@@ -161,7 +161,7 @@
   letter-spacing: -0.02em;
 }
 
-/* ── Stitch Color Utilities ────────────────────────────────────── */
+/* â”€â”€ Stitch Color Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .text-on-surface {
   color: var(--color-on-surface);
 }
@@ -190,7 +190,7 @@
   background-color: var(--color-surface-container-highest);
 }
 
-/* ── Stitch Spacing Utilities ──────────────────────────────────── */
+/* â”€â”€ Stitch Spacing Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .p-lg {
   padding: 24px;
 }
@@ -297,7 +297,7 @@
   box-shadow: 0 0 20px rgba(5, 150, 105, 0.08);
 }
 
-/* ── Dialog / Modal top-layer reset ─────────────────────────────── */
+/* â”€â”€ Dialog / Modal top-layer reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 dialog {
   padding: 0;
   border: none;
@@ -311,9 +311,9 @@ dialog {
 dialog::backdrop {
   background: rgba(2, 6, 23, 0.85);
 }
-/* First .text-gradient removed — consolidated below */
+/* First .text-gradient removed â€” consolidated below */
 
-/* ── XP Bar Shimmer ─────────────────────────────────────────────── */
+/* â”€â”€ XP Bar Shimmer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Wrap the XP bar fill div with .xp-bar-fill to get the shimmer */
 .xp-bar-fill {
   position: relative;
@@ -367,7 +367,7 @@ dialog::backdrop {
   }
 }
 
-/* ── Custom Utilities ─────────────────────────────────────────── */
+/* â”€â”€ Custom Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
@@ -446,7 +446,7 @@ dialog::backdrop {
   animation: check-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Card lift on hover (override) ─────────────────────────────── */
+/* â”€â”€ Card lift on hover (override) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .glass-card {
   transition:
     box-shadow 0.7s cubic-bezier(0.32, 0.72, 0, 1),
@@ -459,7 +459,7 @@ dialog::backdrop {
     0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-/* ── Habit streak badge pulse ───────────────────────────────────── */
+/* â”€â”€ Habit streak badge pulse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes flame-pulse {
   0%,
   100% {
@@ -473,7 +473,7 @@ dialog::backdrop {
   animation: flame-pulse 1.5s ease-in-out infinite;
 }
 
-/* ── Mood Selector "Alive" Animations ───────────────────────────── */
+/* â”€â”€ Mood Selector "Alive" Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 @keyframes mood-ring-pulse {
   0% {
@@ -508,18 +508,18 @@ dialog::backdrop {
   animation: mood-ring-pulse 2s infinite;
 }
 
-/* ── Modal Glow Animation (REMOVED: ANTI-PATTERN) ──────────────── */
+/* â”€â”€ Modal Glow Animation (REMOVED: ANTI-PATTERN) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .modal-glow {
   position: relative;
   z-index: 1;
 }
 
-/* ── Masked Text Gradients (Removed: ANTI-PATTERN) ───────────────────────────────────────── */
+/* â”€â”€ Masked Text Gradients (Removed: ANTI-PATTERN) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .text-gradient {
   color: var(--brand-400);
 }
 
-/* ── Animated Focus Rings ────────────────────────────────────────── */
+/* â”€â”€ Animated Focus Rings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 input:focus,
 textarea:focus,
 select:focus,
@@ -528,7 +528,7 @@ select:focus,
   animation: focus-ring-pulse 2s infinite;
 }
 
-/* ── Specific Overrides ───────────────────────────────────────── */
+/* â”€â”€ Specific Overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .kpi-card-indigo {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05));
 }
@@ -801,7 +801,7 @@ body {
   }
 }
 
-/* ── Premium Custom Scrollbars ─────────────────────────────────── */
+/* â”€â”€ Premium Custom Scrollbars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -834,7 +834,7 @@ body {
   background-clip: padding-box;
 }
 
-/* ── Mobile Responsive Adjustments ────────────────────────────── */
+/* â”€â”€ Mobile Responsive Adjustments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 639px) {
   .mood-ring {
     width: 44px;
@@ -899,11 +899,11 @@ body {
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   3D IMMERSIVE OVERHAUL — Tilt Cards, Glow, Parallax, Animations
-   ══════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   3D IMMERSIVE OVERHAUL â€” Tilt Cards, Glow, Parallax, Animations
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Tilt Card Wrapper ─────────────────────────────────────────── */
+/* â”€â”€ Tilt Card Wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .tilt-card-wrapper {
   transform-style: preserve-3d;
   will-change: transform;
@@ -913,7 +913,7 @@ body {
   will-change: transform;
 }
 
-/* ── Animated Gradient Border Glow ─────────────────────────────── */
+/* â”€â”€ Animated Gradient Border Glow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .tilt-border-glow {
   position: relative;
   z-index: 1;
@@ -961,7 +961,7 @@ body {
   }
 }
 
-/* ── Float Animation ───────────────────────────────────────────── */
+/* â”€â”€ Float Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes float {
   0%,
   100% {
@@ -981,7 +981,7 @@ body {
   animation: float 2.5s ease-in-out infinite;
 }
 
-/* ── Glow Pulse Animation ──────────────────────────────────────── */
+/* â”€â”€ Glow Pulse Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes glow-pulse {
   0%,
   100% {
@@ -999,7 +999,7 @@ body {
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
-/* ── 3D Shimmer Effect ─────────────────────────────────────────── */
+/* â”€â”€ 3D Shimmer Effect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes shimmer-3d {
   0% {
     background-position: -200% 0;
@@ -1021,7 +1021,7 @@ body {
   animation: shimmer-3d 3s linear infinite;
 }
 
-/* ── Enhanced Glass Card Hover (3D lift) ───────────────────────── */
+/* â”€â”€ Enhanced Glass Card Hover (3D lift) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .glass-card-3d {
   background: rgba(10, 15, 30, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1072,7 +1072,7 @@ body {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* ── Completion Check Pop (enhanced) ───────────────────────────── */
+/* â”€â”€ Completion Check Pop (enhanced) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes check-pop-3d {
   0% {
     transform: scale(1);
@@ -1091,12 +1091,12 @@ body {
   animation: check-pop-3d 0.5s;
 }
 
-/* ── Parallax Utility Classes ──────────────────────────────────── */
+/* â”€â”€ Parallax Utility Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .parallax-section {
   will-change: transform;
 }
 
-/* ── Light mode overrides for 3D cards ─────────────────────────── */
+/* â”€â”€ Light mode overrides for 3D cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .light .glass-card-3d {
   background: rgba(255, 255, 255, 0.75);
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -1117,7 +1117,7 @@ body {
   );
 }
 
-/* ── Premium Grain Overlay ─────────────────────────────────────── */
+/* â”€â”€ Premium Grain Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .noise-overlay {
   position: fixed;
   inset: 0;
@@ -1131,7 +1131,7 @@ body {
   opacity: 0.05;
 }
 
-/* ── Custom macOS Style Scrollbars ─────────────────────────────── */
+/* â”€â”€ Custom macOS Style Scrollbars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -1144,7 +1144,7 @@ body {
 
 @layer base {
   :root {
-    /* ── Apple VisionOS Inspired Foundation ── */
+    /* â”€â”€ Apple VisionOS Inspired Foundation â”€â”€ */
     --font-heading: 'Clash Display', sans-serif;
     --font-sans: 'Satoshi', system-ui, -apple-system, sans-serif;
 
@@ -1159,7 +1159,7 @@ body {
     --color-text-secondary: #94a3b8;
     --color-text-tertiary: #64748b;
 
-    /* Mesh Gradient Accents — Desaturated Emerald/Teal */
+    /* Mesh Gradient Accents â€” Desaturated Emerald/Teal */
     --color-mesh-1: rgba(16, 185, 129, 0.25); /* Emerald */
     --color-mesh-2: rgba(20, 184, 166, 0.2); /* Teal */
     --color-mesh-3: rgba(5, 150, 105, 0.15); /* Deep Emerald */
@@ -1174,7 +1174,7 @@ body {
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
     --glass-shadow-hover: 0 16px 48px 0 rgba(0, 0, 0, 0.5);
 
-    /* Dynamic Brand Variables — Emerald */
+    /* Dynamic Brand Variables â€” Emerald */
     --color-brand-300: #6ee7b7;
     --color-brand-400: #34d399;
     --color-brand-500: #10b981;
@@ -1220,7 +1220,7 @@ body {
   }
 }
 
-/* ── Mesh Background ───────────────────────────────────────────── */
+/* â”€â”€ Mesh Background â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bg-mesh {
   position: fixed;
   inset: 0;
@@ -1260,7 +1260,7 @@ body {
   animation-duration: 25s;
 }
 
-/* ── VisionOS Glass Cards ──────────────────────────────────────── */
+/* â”€â”€ VisionOS Glass Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .vision-panel {
   background: var(--glass-bg);
   backdrop-filter: blur(12px) saturate(150%);
@@ -1315,150 +1315,7 @@ body {
   pointer-events: none;
 }
 
-/* ── Custom Animations ─────────────────────────────────────────── */
-  background: rgba(0, 0, 0, 0.15);
-}
-.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
-}
-
-/* ── Text Selection Highlight ──────────────────────────────────── */
-::selection {
-  background: rgba(16, 185, 129, 0.25);
-  color: white;
-}
-.light ::selection {
-  background: rgba(16, 185, 129, 0.15);
-  color: #111827;
-}
-
-/* ── VisionOS Spatial Panel ────────────────────────────────────────── */
-.vision-panel {
-  position: relative;
-  background: rgba(15, 23, 42, 0.4);
-  border-radius: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .vision-panel {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
-    backdrop-filter: blur(16px) saturate(150%);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-    border-left: 1px solid rgba(255, 255, 255, 0.15);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-    box-shadow:
-      inset 1px 1px 1px rgba(255, 255, 255, 0.2),
-      inset -1px -1px 2px rgba(0, 0, 0, 0.6),
-      0 20px 40px -10px rgba(0, 0, 0, 0.8),
-      0 0 0 1px rgba(255, 255, 255, 0.05);
-  }
-
-  .vision-panel:hover {
-    box-shadow:
-      inset 1px 1px 2px rgba(255, 255, 255, 0.3),
-      inset -1px -1px 2px rgba(0, 0, 0, 0.6),
-      0 30px 60px -15px rgba(0, 0, 0, 0.9),
-      0 0 0 1px rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-}
-
-.light .vision-panel {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-@media (min-width: 768px) {
-  .light .vision-panel {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(240, 240, 245, 0.8) 100%);
-    backdrop-filter: blur(16px) saturate(150%);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    border-top: 1px solid rgba(255, 255, 255, 1);
-    border-left: 1px solid rgba(255, 255, 255, 0.8);
-    border-right: 1px solid rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  }
-}
-
-/* ── Premium Body Base ─────────────────────────────────────────── */
-body {
-  background-color: #020617; /* Slate 950 / Obsidian */
-}
-.light body {
-  background-color: #f8fafc;
-}
-
-/* ── Neon Rotating Border (Urgent Tasks) ───────────────────────── */
-@keyframes neon-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-.neon-urgent-glow {
-  position: relative;
-  isolation: isolate;
-}
-
-.neon-urgent-glow::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 17px;
-  overflow: hidden;
-  z-index: 0;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    #ef4444 60deg,
-    #f97316 100deg,
-    #fbbf24 130deg,
-    transparent 180deg
-  );
-  animation: neon-spin 2.2s linear infinite;
-}
-
-.neon-urgent-glow > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Accessibility: Reduced Motion
-   Required by design-taste-frontend & emil-design-eng skills.
-   ═══════════════════════════════════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .animate-float,
-  .animate-float-slow,
-  .animate-float-fast,
-  .animate-glow-pulse,
-  .shimmer-3d,
-  .animate-flame,
-  .mood-ring.active::before {
-    animation: none !important;
-  }
-
-  .bg-mesh::before,
-  .bg-mesh::after,
-  .bg-mesh-blob {
-    animation: none !important;
-  }
-}
-
-/* ── Custom Animations ─────────────────────────────────────────── */
+/* â”€â”€ Custom Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes float {
   0% { transform: translate(0, 0) scale(1) rotate(0deg); }
   33% { transform: translate(5%, 5%) scale(1.05) rotate(5deg); }
@@ -1475,7 +1332,7 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
-/* ── Typography Enhancements ───────────────────────────────────── */
+/* â”€â”€ Typography Enhancements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .text-gradient {
   color: var(--brand-400);
 }
@@ -1503,7 +1360,7 @@ body {
   background: rgba(0, 0, 0, 0.25);
 }
 
-/* ── Text Selection Highlight ──────────────────────────────────── */
+/* â”€â”€ Text Selection Highlight â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 ::selection {
   background: rgba(16, 185, 129, 0.25);
   color: white;
@@ -1512,5 +1369,9 @@ body {
   background: rgba(16, 185, 129, 0.15);
   color: inherit;
 }
-b u t t o n   {   t r a n s i t i o n :   t r a n s f o r m   0 . 2 s   c u b i c - b e z i e r ( 0 . 3 2 ,   0 . 7 2 ,   0 ,   1 ) ,   b a c k g r o u n d - c o l o r   0 . 2 s   e a s e ,   o p a c i t y   0 . 2 s   e a s e ;   }   b u t t o n : a c t i v e : n o t ( : d i s a b l e d )   {   t r a n s f o r m :   s c a l e ( 0 . 9 7 ) ;   }  
- 
+button {
+  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.2s ease, opacity 0.2s ease;
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
