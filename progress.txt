@@ -24,3 +24,14 @@
 - Reordered src/index.css font imports before Tailwind, fixing CSS build warnings.
 - Verified compilation: 	sc && vite build built in 6.59 seconds with 0 warnings/errors.
 ---
+
+## 2026-11-03 - STORY-004: Offline-First Momentum & Stacking Algorithms
+- Engineered src/services/momentumEngine.ts:
+  - 100% in-browser Half-Life Exponential Decay Algorithm (calculateHabitMomentum).
+  - Resilience bonus: rewards returning users who recover from missed days.
+  - Global Momentum Aggregator (calculateGlobalMomentum).
+  - Habit Stacking DAG (esolveHabitStack): resolves parent-child habits.
+  - Chronotype Time-Slotting (groupHabitsByRitual): Morning, Afternoon, Evening, Anytime.
+- Created unit tests in src/services/__tests__/momentumEngine.test.ts.
+- Verified compilation and build passed with 0 errors.
+---

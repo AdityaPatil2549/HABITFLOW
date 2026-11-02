@@ -25,7 +25,7 @@
       "id": "STORY-004",
       "title": "Offline-First Momentum & Stacking Algorithms",
       "description": "Implement in-browser half-life momentum calculation, habit stacking DAG chains, and local correlation matrix.",
-      "passes": false
+      "passes": true
     },
     {
       "id": "STORY-005",
