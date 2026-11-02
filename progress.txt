@@ -22,7 +22,7 @@
   - SpotlightCard.tsx: Ambient cursor spotlight card with reactive hairline glow.
   - index.ts: Unified export module.
 - Reordered src/index.css font imports before Tailwind, fixing CSS build warnings.
-- Verified compilation: 	sc && vite build built in 6.59 seconds with 0 warnings/errors.
+- Verified compilation: tsc && vite build built in 6.59 seconds with 0 warnings/errors.
 ---
 
 ## 2026-11-03 - STORY-004: Offline-First Momentum & Stacking Algorithms
@@ -30,8 +30,24 @@
   - 100% in-browser Half-Life Exponential Decay Algorithm (calculateHabitMomentum).
   - Resilience bonus: rewards returning users who recover from missed days.
   - Global Momentum Aggregator (calculateGlobalMomentum).
-  - Habit Stacking DAG (esolveHabitStack): resolves parent-child habits.
+  - Habit Stacking DAG (resolveHabitStack): resolves parent-child habits.
   - Chronotype Time-Slotting (groupHabitsByRitual): Morning, Afternoon, Evening, Anytime.
 - Created unit tests in src/services/__tests__/momentumEngine.test.ts.
 - Verified compilation and build passed with 0 errors.
+---
+
+## 2026-11-03 - STORY-003: Today Ritual Experience Overhaul
+- Overhauled src/components/habits/TactileHabitCard.tsx:
+  - Integrated SpotlightCard with dynamic radial mouse glow.
+  - Added BorderTrail completion laser effect for streak milestones.
+  - Integrated SlidingNumber for streak counters.
+  - Linked synthesized Web Audio feedback via soundService (playTick, playUncheck).
+  - Added micro-spring toggle animations using Framer Motion.
+- Completely redesigned src/pages/Dashboard.tsx:
+  - Added top Momentum Pulse metrics bar with live SlidingNumber animation for Momentum Score, Today's Completion Rate, Best Streak, and Total XP.
+  - Chronological Daily Ritual sections: Morning, Afternoon, Evening, Anytime.
+  - Full-screen Zen Focus Mode ('Z' hotkey) for distraction-free single habit execution.
+  - Tactile floating navigation Dock (Linear/macOS style).
+  - Rapid keyboard shortcuts (1-9 for instant habit toggles, Z for Zen mode).
+- Verified production build (tsc && vite build) passed with 0 errors in 19.45s.
 ---

@@ -19,7 +19,7 @@
       "id": "STORY-003",
       "title": "Today Ritual Experience Overhaul",
       "description": "Rebuild the main dashboard into a focused, time-segmented ritual feed (Morning, Afternoon, Evening) with rapid keyboard logging.",
-      "passes": false
+      "passes": true
     },
     {
       "id": "STORY-004",
