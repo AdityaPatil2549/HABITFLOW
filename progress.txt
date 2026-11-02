@@ -13,3 +13,14 @@
 - Build time dropped from 61s to 6.71s; removed ~883KB react-three-fiber chunk from production bundle.
 - Verified tsc && vite build passes with 0 errors.
 ---
+
+## 2026-11-03 - STORY-002: Tactile Design Foundations & Motion Primitives
+- Created src/components/ui/motion/:
+  - SlidingNumber.tsx: Smooth tabular-nums digit flip animations using Framer Motion springs.
+  - BorderTrail.tsx: Elegant, subtle laser border trail for celebratory habit completion.
+  - Dock.tsx: Floating macOS / Linear-style magnification dock for app navigation.
+  - SpotlightCard.tsx: Ambient cursor spotlight card with reactive hairline glow.
+  - index.ts: Unified export module.
+- Reordered src/index.css font imports before Tailwind, fixing CSS build warnings.
+- Verified compilation: 	sc && vite build built in 6.59 seconds with 0 warnings/errors.
+---

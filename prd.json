@@ -13,7 +13,7 @@
       "id": "STORY-002",
       "title": "Tactile Design Foundations & Motion Primitives",
       "description": "Integrate motion-primitives and impeccable design tokens into index.css and core UI primitives.",
-      "passes": false
+      "passes": true
     },
     {
       "id": "STORY-003",
