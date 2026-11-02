@@ -1272,11 +1272,13 @@ body {
 .bg-mesh::before, .bg-mesh::after, .bg-mesh-blob {
   content: '';
   position: absolute;
-  filter: blur(100px);
+  filter: blur(80px);
   border-radius: 50%;
   animation: float 20s infinite alternate;
   opacity: 0.6;
   pointer-events: none;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .bg-mesh::before {

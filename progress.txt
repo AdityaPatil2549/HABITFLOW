@@ -1,0 +1,15 @@
+# HabitFlow Engineering Progress Log (Ralph Pattern)
+
+## Codebase Patterns
+- Build pipeline: Vite + Tailwind v4 + React 19 + TypeScript.
+- Clean Architecture: No heavy WebGL / Three.js canvas in core productivity views. All animations must use hardware-accelerated Framer Motion spring physics.
+- Offline-First: All calculations (momentum, streaks, correlations) must run in-memory and persist to Dexie IndexedDB before syncing to cloud.
+
+---
+
+## 2026-11-03 - STORY-001: 3D Demolition & Performance Reset
+- Removed @react-three/fiber, @react-three/drei, @theatre/core, @theatre/studio, three, and glsl-noise.
+- Replaced 3D canvases in HabitsBackground, TasksBackground, ReviewBackground, GamificationBackground, FloatingOrbs, and AchievementToast with lightweight CSS ambient backdrops.
+- Build time dropped from 61s to 6.71s; removed ~883KB react-three-fiber chunk from production bundle.
+- Verified tsc && vite build passes with 0 errors.
+---

@@ -1,82 +1,24 @@
-import React, { useEffect, useId, useRef } from 'react';
-import liquidGL from 'liquid-gl';
+import React from 'react';
 
 interface LiquidGlassProps {
   children?: React.ReactNode;
   className?: string;
-  // Expose liquidGL options
-  resolution?: number;
-  refraction?: number;
-  bevelDepth?: number;
-  bevelWidth?: number;
   frost?: number;
-  shadow?: boolean;
-  specular?: boolean;
-  reveal?: 'fade' | 'instant' | 'none';
-  tilt?: boolean;
-  tiltFactor?: number;
-  magnify?: number;
 }
 
 export function LiquidGlass({
   children,
   className = '',
-  resolution = 2.0,
-  refraction = 0.03,
-  bevelDepth = 0.05,
-  bevelWidth = 0.1,
   frost = 10,
-  shadow = true,
-  specular = true,
-  reveal = 'fade',
-  tilt = true,
-  tiltFactor = 5,
-  magnify = 1,
 }: LiquidGlassProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const id = useId().replace(/[:]/g, ''); 
-  const targetClass = `liquid-glass-target-${id}`;
-
-  useEffect(() => {
-    let instance: any = null;
-
-    const timeout = setTimeout(() => {
-      if (!containerRef.current) return;
-      try {
-        instance = liquidGL({
-          target: `.${targetClass}`,
-          snapshot: 'body',
-          resolution,
-          refraction,
-          bevelDepth,
-          bevelWidth,
-          frost,
-          shadow,
-          specular,
-          reveal,
-          tilt,
-          tiltFactor,
-          magnify,
-        });
-      } catch (err) {
-        console.error('Failed to initialize liquidGL:', err);
-      }
-    }, 100);
-
-    return () => {
-      clearTimeout(timeout);
-      if (instance && typeof instance.destroy === 'function') {
-        instance.destroy();
-      }
-    };
-  }, [
-    targetClass, resolution, refraction, bevelDepth, bevelWidth, frost,
-    shadow, specular, reveal, tilt, tiltFactor, magnify
-  ]);
-
+  // Pure CSS glassmorphism instead of DOM-cloning liquid-gl
   return (
-    <div className={`${targetClass} ${className}`} ref={containerRef}>
-      <div className="content relative z-10">
+    <div 
+      className={`relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md ${className}`}
+      style={{ backdropFilter: `blur(${frost}px)` }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+      <div className="relative z-10 w-full h-full">
         {children}
       </div>
     </div>

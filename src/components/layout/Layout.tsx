@@ -36,7 +36,6 @@ import {
   CloudOff,
   Users,
 } from 'lucide-react';
-import { CursorTrail } from '../ui/CursorTrail';
 import { OnboardingTour } from '../ui/OnboardingTour';
 
 // ── Account dropdown ───────────────────────────────────────────
@@ -381,6 +380,8 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
   );
 }
 
+import { SmoothScrollProvider } from './SmoothScrollProvider';
+
 // ── Layout ─────────────────────────────────────────────────────
 export function Layout() {
   const setQuickAddOpen = useModalStore(s => s.setQuickAddOpen);
@@ -445,6 +446,7 @@ export function Layout() {
       : 'text-slate-400 px-5 py-2.5 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
 
   return (
+    <SmoothScrollProvider>
     <div className="min-h-[100dvh] flex text-slate-50 relative z-0">
       {/* Skip to Content for Accessibility */}
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] px-4 py-2 bg-brand-500 text-white rounded-lg font-bold">
@@ -455,7 +457,6 @@ export function Layout() {
       <div className="bg-mesh" />
       <div className="bg-mesh-blob" />
       <div className="noise-overlay" />
-      <CursorTrail />
       <HabitsBackground />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
@@ -793,5 +794,6 @@ export function Layout() {
       )}
       <OnboardingTour />
     </div>
+    </SmoothScrollProvider>
   );
 }

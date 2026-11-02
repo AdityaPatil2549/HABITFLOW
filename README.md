@@ -56,6 +56,14 @@ Best of all? **No account required to start.** HabitFlow is an offline-first exp
 - **Your Data is Yours**: By default, all data is stored locally on your device in IndexedDB.
 - **Export & Backup**: Easily export your data to JSON for safekeeping, or let Google Drive handle the backups automatically.
 
+## 🚀 Awwwards-Tier 3D Architecture
+HabitFlow isn't just functional; it's a visual masterpiece engineered with the modern web's most powerful rendering tools:
+- **GSAP & Lenis Scroll**: Completely hijacked browser scroll for buttery-smooth, cinematic inertia (`@studio-freight/react-lenis`), synced flawlessly with 3D elements via GSAP `ScrollTrigger`.
+- **GPGPU Fluid Simulation**: Features a custom-written WebGL dual-FBO ping-pong buffer that creates an interactive, high-performance fluid trail reacting to your mouse in real-time.
+- **React Three Fiber (R3F)**: Declarative 3D scenes running at a locked 60FPS, backed by highly optimized `shaderMaterial` instances.
+- **Jotai State Management**: High-frequency state (like scroll progress and mouse vectors) is decoupled from React renders using Jotai atoms, ensuring the GPU is fed instantly without DOM bottlenecking.
+- **Theatre.js Integration**: The stage is set for complete visual keyframing using the industry-standard `@theatre/core` timeline editor.
+
 ---
 
 ## 📱 Getting Started Guide

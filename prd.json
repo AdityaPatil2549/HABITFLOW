@@ -1,0 +1,37 @@
+{
+  "project": "HabitFlow",
+  "branchName": "main",
+  "description": "World-Class, Offline-First Habit Tracking & Ritual Platform",
+  "stories": [
+    {
+      "id": "STORY-001",
+      "title": "3D Demolition & Performance Reset",
+      "description": "Remove Three.js, R3F canvases, Theatre.js, and GLSL fluid shaders to restore native 120 FPS performance and reduce bundle size.",
+      "passes": true
+    },
+    {
+      "id": "STORY-002",
+      "title": "Tactile Design Foundations & Motion Primitives",
+      "description": "Integrate motion-primitives and impeccable design tokens into index.css and core UI primitives.",
+      "passes": false
+    },
+    {
+      "id": "STORY-003",
+      "title": "Today Ritual Experience Overhaul",
+      "description": "Rebuild the main dashboard into a focused, time-segmented ritual feed (Morning, Afternoon, Evening) with rapid keyboard logging.",
+      "passes": false
+    },
+    {
+      "id": "STORY-004",
+      "title": "Offline-First Momentum & Stacking Algorithms",
+      "description": "Implement in-browser half-life momentum calculation, habit stacking DAG chains, and local correlation matrix.",
+      "passes": false
+    },
+    {
+      "id": "STORY-005",
+      "title": "Analytics, Sound Haptics & PWA Polish",
+      "description": "Build high-contrast SVG activity heatmap, Web Audio micro-haptics, and zero-latency offline persistence.",
+      "passes": false
+    }
+  ]
+}

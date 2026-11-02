@@ -1,56 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star, Flame, X } from 'lucide-react';
+import { Trophy, Star, Flame, X, Sparkles } from 'lucide-react';
 import { useCompletionEffects } from './CompletionEffects';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Octahedron, Sparkles } from '@react-three/drei';
-import * as THREE from 'three';
 
-function AnimatedTrophy() {
-  const groupRef = useRef<THREE.Group>(null);
-  
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.getElapsedTime() * 1.2;
-    }
-  });
-
+function CelebrationBadge() {
   return (
-    <group ref={groupRef}>
-      <Float speed={2.5} rotationIntensity={0.5} floatIntensity={1.5}>
-        <Octahedron args={[1.2, 0]}>
-          <meshStandardMaterial 
-            color="#fbbf24" 
-            metalness={0.8} 
-            roughness={0.15}
-            emissive="#fbbf24"
-            emissiveIntensity={0.4}
-          />
-        </Octahedron>
-        <Octahedron args={[0.7, 0]}>
-          <meshStandardMaterial 
-            color="#ffffff" 
-            metalness={1} 
-            roughness={0}
-            emissive="#ffffff"
-            emissiveIntensity={0.8}
-          />
-        </Octahedron>
-      </Float>
-    </group>
-  );
-}
-
-function Celebration3D() {
-  return (
-    <div className="h-40 w-full mb-4 relative flex items-center justify-center">
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }} dpr={[1, 1.5]}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 5, 5]} intensity={2} color="#ffffff" />
-        <pointLight position={[-5, -5, -5]} intensity={1} color="#ec4899" />
-        <Sparkles count={40} scale={4} size={3} speed={0.8} opacity={0.5} color="#fbbf24" />
-        <AnimatedTrophy />
-      </Canvas>
+    <div className="h-32 w-full mb-4 relative flex items-center justify-center">
+      <motion.div 
+        className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-200 flex items-center justify-center shadow-xl shadow-amber-500/30"
+        initial={{ scale: 0, rotate: -20 }}
+        animate={{ scale: [0, 1.15, 1], rotate: [0, 10, 0] }}
+        transition={{ type: 'spring', stiffness: 350, damping: 18 }}
+      >
+        <Trophy className="w-12 h-12 text-slate-950" />
+      </motion.div>
     </div>
   );
 }
@@ -147,7 +110,7 @@ export function AchievementToast({
               </motion.div>
 
               {type === 'level_up' ? (
-                <Celebration3D />
+                <CelebrationBadge />
               ) : (
                 <motion.div
                   className="text-7xl mb-4"
@@ -303,3 +266,4 @@ export const STREAK_MILESTONES = [
 export function checkStreakMilestone(streak: number): (typeof STREAK_MILESTONES)[0] | null {
   return STREAK_MILESTONES.find(m => m.days === streak) ?? null;
 }
+
