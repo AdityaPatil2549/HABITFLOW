@@ -51,3 +51,19 @@
   - Rapid keyboard shortcuts (1-9 for instant habit toggles, Z for Zen mode).
 - Verified production build (tsc && vite build) passed with 0 errors in 19.45s.
 ---
+
+## 2026-11-03 - STORY-005: Analytics, Sound Haptics & PWA Polish
+- Refined sound and micro-haptic engine in src/services/soundService.ts:
+  - Added playStreakMilestone: resonant dual harmonic chime (587.33Hz -> 880Hz) with 3-tap device vibration pattern.
+  - Added playMomentumSurge: warm progressive harmonic swell.
+- Overhauled Analytics visual design in src/pages/AnalyticsPage.tsx:
+  - High-contrast jewel emerald 365-day SVG activity heatmap with luxury translucent cells.
+  - High-contrast jewel mood heatmap (Rose, Orange, Amber, Sky, Purple).
+  - Replaced legacy button-3d / glass-card-3d tab headers with Linear-style tactile segmented pill tabs.
+  - Bound real-time tick micro-haptics to tab switching.
+  - Cleaned remaining button-3d references in HabitsPage.
+- Updated PWA and theme meta:
+  - Set theme_color and background_color to Obsidian deep dark #08090C in vite.config.ts and index.html.
+  - Workbox PWA precache verified generating sw.js with 82 entries.
+- Verified full production build (tsc && vite build) compiled cleanly in 12.26s.
+---

@@ -15,8 +15,8 @@ export default defineConfig({
         name: 'HabitFlow',
         short_name: 'HabitFlow',
         description: 'Local-first habit tracker & to-do list',
-        theme_color: '#6366f1',
-        background_color: '#0f0f13',
+        theme_color: '#08090C',
+        background_color: '#08090C',
         display: 'standalone',
         icons: [
           { src: 'logo.png', sizes: '512x512', type: 'image/png' },

@@ -115,6 +115,32 @@ class SoundService {
     }
   }
 
+  /** Resonant two-tone chime for hitting streak milestones (7, 14, 30, 100 days) */
+  playStreakMilestone() {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.getCtx();
+      // D5 (587.33) -> A5 (880.00) resonant chime
+      this.playTone(587.33, 0.14, 'sine', 0.18, 0, ctx);
+      this.playTone(880.0, 0.28, 'triangle', 0.22, 0.08, ctx);
+      this.haptic([25, 40, 35]);
+    } catch {
+      /**/
+    }
+  }
+
+  /** Subtle warm harmonic swell for positive momentum velocity surges */
+  playMomentumSurge() {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.getCtx();
+      this.playTone(440, 0.16, 'sine', 0.1, 0, ctx);
+      this.playTone(659.25, 0.22, 'sine', 0.12, 0.06, ctx);
+    } catch {
+      /**/
+    }
+  }
+
   /** Soft, low-pitched pop for hovering over interactive elements */
   playHover() {
     if (!this.enabled) return;

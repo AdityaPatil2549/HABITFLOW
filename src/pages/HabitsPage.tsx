@@ -479,7 +479,7 @@ function HabitForm({
         </button>
         <button
           type="submit"
-          className="flex-1 py-4 rounded-2xl font-bold text-sm text-white transition-all active:scale-95 shadow-xl button-3d"
+          className="flex-1 py-4 rounded-2xl font-bold text-sm text-white transition-all active:scale-95 shadow-xl hover:brightness-110"
           style={{
             background: `linear-gradient(135deg, ${color}, ${color}cc)`,
             boxShadow: `0 10px 25px -5px ${color}60`,

@@ -11,6 +11,7 @@ import { correlationService } from '../services/correlationService';
 import { ExportReportButton } from '../components/ui/ExportReportButton';
 import type { CorrelationResult, AIInsight } from '../types';
 import { aiCoachService } from '../services/aiCoachService';
+import { soundService } from '../services/soundService';
 import { toPng } from 'html-to-image';
 import {
   ResponsiveContainer,
@@ -194,11 +195,11 @@ function YearlyHeatmap({ habits }: { habits: any[] }) {
   }, [habits]);
 
   function colorFor(val: number) {
-    if (val === 0) return 'var(--heatmap-empty)';
-    if (val < 0.25) return '#166534';
-    if (val < 0.5) return '#16a34a';
-    if (val < 0.75) return '#22c55e';
-    return '#4ade80';
+    if (val === 0) return 'rgba(255, 255, 255, 0.04)';
+    if (val < 0.25) return 'rgba(16, 185, 129, 0.25)';
+    if (val < 0.5) return 'rgba(16, 185, 129, 0.50)';
+    if (val < 0.75) return 'rgba(16, 185, 129, 0.75)';
+    return '#10b981';
   }
 
   const today = new Date();
@@ -371,13 +372,13 @@ function MoodYearlyHeatmap({ moods }: { moods: any[] }) {
   }, [moods]);
 
   function colorFor(val: number) {
-    if (!val || val === 0) return 'var(--heatmap-empty, rgba(255,255,255,0.03))';
-    if (val === 1) return '#ef4444'; // Red for awful
-    if (val === 2) return '#f97316'; // Orange for bad
-    if (val === 3) return '#eab308'; // Yellow for okay
-    if (val === 4) return '#84cc16'; // Light green for good
-    if (val === 5) return '#22c55e'; // Green for awesome
-    return 'var(--heatmap-empty)';
+    if (!val || val === 0) return 'rgba(255, 255, 255, 0.04)';
+    if (val === 1) return '#f43f5e'; // Rose for awful
+    if (val === 2) return '#fb923c'; // Orange for bad
+    if (val === 3) return '#facc15'; // Amber for okay
+    if (val === 4) return '#38bdf8'; // Sky for good
+    if (val === 5) return '#a855f7'; // Purple for awesome
+    return 'rgba(255, 255, 255, 0.04)';
   }
 
   const today = new Date();
@@ -581,10 +582,10 @@ function Heatmap({ logs }: { logs: Record<string, number> }) {
     }
   });
   function colorFor(val: number) {
-    if (val === 0) return 'var(--heatmap-empty)';
-    if (val < 0.4) return 'var(--color-brand-300, rgba(99,102,241,0.3))';
-    if (val < 0.7) return 'var(--color-brand-400, rgba(99,102,241,0.6))';
-    return 'var(--color-brand-500, #6366f1)';
+    if (val === 0) return 'rgba(255, 255, 255, 0.04)';
+    if (val < 0.4) return 'rgba(129, 140, 248, 0.35)';
+    if (val < 0.7) return 'rgba(129, 140, 248, 0.70)';
+    return '#6366f1';
   }
   return (
     <div className="overflow-x-auto pb-2">
@@ -1122,7 +1123,7 @@ function DynamicInsights() {
   }
 
   return (
-    <div className="glass-card-3d rounded-2xl p-6 md:p-8 relative overflow-hidden h-full">
+    <div className="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden h-full border border-white/10">
       <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 via-transparent to-transparent opacity-50" />
       <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3" />
       
@@ -1259,17 +1260,20 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2 p-1 bg-transparent sm:dark:bg-slate-800/60 sm:bg-slate-100 sm:rounded-2xl sm:border sm:dark:border-white/5 sm:border-slate-200">
+      {/* Modern Tactile Segmented Tabs */}
+      <div className="flex flex-wrap gap-1.5 p-1.5 bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
         {TABS.map(t => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => {
+              setTab(t);
+              soundService.playTick();
+            }}
             className={cn(
-              'px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl font-bold text-[13px] sm:text-sm transition-all whitespace-nowrap flex-grow sm:flex-grow-0 text-center border',
+              'px-4 py-2 sm:px-5 sm:py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 whitespace-nowrap flex-grow sm:flex-grow-0 text-center cursor-pointer',
               tab === t
-                ? 'button-3d text-white border-brand-400'
-                : 'glass-card-3d dark:text-slate-400 text-slate-500 dark:border-white/5 border-slate-900/10 dark:hover:text-white hover:text-slate-900 dark:hover:border-white/20 hover:border-slate-900/20 hover:-translate-y-1'
+                ? 'bg-white/15 text-white shadow-sm border border-white/20 backdrop-blur-md'
+                : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
             )}
           >
             {t}
@@ -1384,8 +1388,8 @@ export function AnalyticsPage() {
                     onClick={() => setSelectedHabitId(h.id)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
                       selectedHabit?.id === h.id
-                        ? 'button-3d border-brand-500/50 text-white'
-                        : 'glass-card-3d dark:border-white/5 border-slate-900/10 dark:text-slate-400 text-slate-600 dark:hover:text-white hover:text-slate-900 hover:-translate-y-1'
+                        ? 'bg-brand-500 text-white shadow-lg border-brand-400'
+                        : 'bg-slate-900/40 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
                     }`}
                   >
                     <span>
@@ -1544,7 +1548,7 @@ export function AnalyticsPage() {
                     });
                   }
                 }} 
-                className="px-3 py-1.5 rounded-lg text-xs font-bold glass-card-3d hover:-translate-y-0.5 transition-transform flex items-center gap-2"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-colors flex items-center gap-2"
               >
                 <span>📸</span> Download Image
               </button>

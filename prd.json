@@ -31,7 +31,7 @@
       "id": "STORY-005",
       "title": "Analytics, Sound Haptics & PWA Polish",
       "description": "Build high-contrast SVG activity heatmap, Web Audio micro-haptics, and zero-latency offline persistence.",
-      "passes": false
+      "passes": true
     }
   ]
 }
