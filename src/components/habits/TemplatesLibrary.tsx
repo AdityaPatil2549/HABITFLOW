@@ -5,6 +5,7 @@ import { useHabitStore } from '../../store/habitStore';
 import { format } from 'date-fns';
 import { DynamicIcon } from '../ui/DynamicIcon';
 import { getHabitEmoji } from '../../lib/emoji';
+import { GlassEmojiCapsule } from '../common/GlassEmojiCapsule';
 
 // ── Full Template Catalogue ──────────────────────────────────────
 const TEMPLATE_PACKS = [
@@ -390,24 +391,20 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
                     key={pack.id}
                     layout
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-[24px] p-5 flex flex-col gap-5 hover:-translate-y-1 hover:shadow-md transition-[transform,box-shadow,border-color,background-color] duration-300 ease-out overflow-hidden group"
+                    className="relative bg-[#0e111a]/85 backdrop-blur-2xl border border-white/[0.08] hover:border-white/[0.18] shadow-xl rounded-[24px] p-5 flex flex-col gap-5 hover:-translate-y-1 hover:shadow-2xl transition-[transform,box-shadow,border-color,background-color] duration-300 ease-out overflow-hidden group"
                   >
                     {/* Hover Glow */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                     {/* Pack header */}
                     <motion.div layout="position" className="flex items-start gap-4 z-10">
-                      <DynamicIcon tiltIntensity={20} glowColor={pack.color + '80'} interactive={true}>
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg"
-                          style={{
-                            background: pack.color + '20',
-                            border: `1px solid ${pack.color}40`,
-                          }}
-                        >
-                          {pack.emoji}
-                        </div>
-                      </DynamicIcon>
+                      <GlassEmojiCapsule
+                        icon={pack.emoji}
+                        category={pack.category}
+                        size="md"
+                        interactive={true}
+                        showHalo={true}
+                      />
                       <div className="flex-1 min-w-0 pt-0.5">
                         <p className="font-bold text-slate-50 text-base">{pack.name}</p>
                         <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">

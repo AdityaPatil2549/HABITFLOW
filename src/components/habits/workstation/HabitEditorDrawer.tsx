@@ -5,6 +5,7 @@ import type { Habit, HabitType, HabitFrequency, HabitWithStreak } from '../../..
 import { soundService } from '../../../services/soundService';
 import { cn } from '../../../lib/utils';
 import { getHabitEmoji } from '../../../lib/emoji';
+import { GlassEmojiCapsule } from '../../common/GlassEmojiCapsule';
 
 export interface HabitEditorDrawerProps {
   isOpen: boolean;
@@ -158,19 +159,15 @@ export function HabitEditorDrawer({
               </label>
               <div className="flex flex-wrap gap-2">
                 {PRESET_ICONS.map(i => (
-                  <button
+                  <GlassEmojiCapsule
                     key={i}
-                    type="button"
+                    icon={i}
+                    category={category}
+                    size="sm"
+                    isDone={icon === i}
+                    interactive={true}
                     onClick={() => setIcon(i)}
-                    className={cn(
-                      'w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all cursor-pointer',
-                      icon === i
-                        ? 'bg-emerald-500/20 border border-emerald-500/50 scale-105'
-                        : 'bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05]'
-                    )}
-                  >
-                    {i}
-                  </button>
+                  />
                 ))}
               </div>
             </div>

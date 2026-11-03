@@ -102,15 +102,14 @@ export function HabitItemCard({ habit: h }: HabitItemCardProps) {
           : 'bg-white/[0.02] border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5'
       }`}
     >
-      <div
-        className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform ${h.type === 'boolean' ? 'group-active/habit:scale-90' : ''} ${isDone ? 'bg-emerald-500/20' : 'bg-white/5'}`}
-      >
-        <IconRenderer
-          name={h.icon}
-          size={18}
-          color={isDone ? '#10b981' : 'var(--brand-400)'}
-        />
-      </div>
+      <IconRenderer
+        name={h.icon}
+        category={h.category}
+        size="sm"
+        capsule={true}
+        isDone={isDone}
+        className={h.type === 'boolean' ? 'group-active/habit:scale-90' : ''}
+      />
       <div className="flex-1 min-w-0">
         <p className={`text-xs font-bold truncate ${isDone ? 'text-emerald-400' : 'text-white'}`}>
           {h.name}

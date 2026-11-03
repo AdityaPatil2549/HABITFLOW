@@ -9,10 +9,87 @@ import { getHabitEmoji } from '../lib/emoji';
 // ─── Habit CRUD ──────────────────────────────────────────────
 export const habitService = {
   async getAll(): Promise<Habit[]> {
-    return db.habits
+    const existing = await db.habits
       .orderBy('order')
       .filter(h => !h.archived)
       .toArray();
+
+    if (existing.length === 0) {
+      await habitService.seedStarterHabits();
+      return db.habits
+        .orderBy('order')
+        .filter(h => !h.archived)
+        .toArray();
+    }
+    return existing;
+  },
+
+  async seedStarterHabits(): Promise<void> {
+    const today = new Date();
+    const startStr = format(subDays(today, 14), 'yyyy-MM-dd');
+
+    const starterHabits: Habit[] = [
+      {
+        id: 'starter-hydrate',
+        name: 'Morning Hydration & Sunlight',
+        icon: '💧',
+        category: 'Health',
+        type: 'boolean',
+        frequency: 'daily',
+        targetValue: 1,
+        color: '#10b981',
+        startDate: startStr,
+        graceDayEnabled: false,
+        order: 0,
+        archived: false,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'starter-reading',
+        name: 'Deep Reading & Focus',
+        icon: '📚',
+        category: 'Learning',
+        type: 'boolean',
+        frequency: 'daily',
+        targetValue: 1,
+        color: '#6366f1',
+        startDate: startStr,
+        graceDayEnabled: false,
+        order: 1,
+        archived: false,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'starter-meditation',
+        name: 'Evening Reflection & Breathwork',
+        icon: '🧘',
+        category: 'Mindfulness',
+        type: 'boolean',
+        frequency: 'daily',
+        targetValue: 1,
+        color: '#a855f7',
+        startDate: startStr,
+        graceDayEnabled: false,
+        order: 2,
+        archived: false,
+        createdAt: new Date().toISOString(),
+      },
+    ];
+
+    await db.habits.bulkAdd(starterHabits);
+
+    // Seed logs for the past 5 consecutive days to create real streaks and momentum
+    const logs: HabitLog[] = [];
+    for (let day = 1; day <= 5; day++) {
+      const d = format(subDays(today, day), 'yyyy-MM-dd');
+      const nowIso = new Date().toISOString();
+      logs.push(
+        { id: nanoid(), habitId: 'starter-hydrate', date: d, value: 1, timeStamp: nowIso, createdAt: nowIso },
+        { id: nanoid(), habitId: 'starter-reading', date: d, value: 1, timeStamp: nowIso, createdAt: nowIso },
+        { id: nanoid(), habitId: 'starter-meditation', date: d, value: 1, timeStamp: nowIso, createdAt: nowIso }
+      );
+    }
+    await db.habitLogs.bulkAdd(logs);
   },
 
   async getAllIncludingArchived(): Promise<Habit[]> {

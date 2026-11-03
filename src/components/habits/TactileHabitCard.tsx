@@ -6,6 +6,7 @@ import { SlidingNumber } from '../ui/motion/SlidingNumber';
 import { soundService } from '../../services/soundService';
 import { cn } from '../../lib/utils';
 import { getHabitEmoji } from '../../lib/emoji';
+import { GlassEmojiCapsule } from '../common/GlassEmojiCapsule';
 
 interface TactileHabitCardProps {
   habit: HabitWithStreak;
@@ -109,20 +110,15 @@ export function TactileHabitCard({
 
         {/* Left Side: Rich Icon Capsule + Title + Metadata */}
         <div className="flex items-center gap-4 min-w-0 z-10">
-          {/* Glass Icon Capsule */}
-          <div
-            className={cn(
-              'w-12 h-12 rounded-2xl flex items-center justify-center text-2xl transition-transform duration-300 group-hover:scale-105 shrink-0 shadow-inner',
-              isDone
-                ? 'bg-emerald-500/20 border border-emerald-400/40 shadow-[0_0_15px_rgba(52,211,153,0.25)]'
-                : 'bg-white/[0.05] border border-white/[0.1] text-slate-200'
-            )}
-            style={{
-              boxShadow: isDone ? '0 0 20px rgba(16, 185, 129, 0.2)' : 'inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-            }}
-          >
-            {getHabitEmoji(habit.icon)}
-          </div>
+          {/* 3D Glass Emoji Capsule */}
+          <GlassEmojiCapsule
+            icon={habit.icon}
+            category={habit.category}
+            size="md"
+            isDone={isDone}
+            interactive={false}
+            showHalo={true}
+          />
 
           <div className="min-w-0">
             {/* Title & Category Tag */}

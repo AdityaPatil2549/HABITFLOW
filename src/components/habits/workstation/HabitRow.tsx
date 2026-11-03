@@ -16,6 +16,7 @@ import { SlidingNumber } from '../../ui/motion/SlidingNumber';
 import { soundService } from '../../../services/soundService';
 import { cn } from '../../../lib/utils';
 import { getHabitEmoji } from '../../../lib/emoji';
+import { GlassEmojiCapsule } from '../../common/GlassEmojiCapsule';
 
 export interface HabitRowProps {
   habit: HabitWithStreak;
@@ -97,12 +98,15 @@ export function HabitRow({
           </AnimatePresence>
         </button>
 
-        {/* Category Emoji Capsule */}
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg bg-white/[0.05] border border-white/[0.08] shrink-0 select-none shadow-inner">
-          <span aria-hidden="true">
-            {getHabitEmoji(habit.icon)}
-          </span>
-        </div>
+        {/* 3D Glass Category Emoji Capsule */}
+        <GlassEmojiCapsule
+          icon={habit.icon}
+          category={habit.category}
+          size="sm"
+          isDone={isDone}
+          interactive={false}
+          showHalo={false}
+        />
 
         {/* Habit Name & Metadata */}
         <div className="min-w-0 flex-1">

@@ -5,6 +5,8 @@ import { useTaskStore } from '../../store/taskStore';
 import type { HabitType, HabitFrequency, Priority } from '../../types';
 import { format, parseISO } from 'date-fns';
 import { IconRenderer, HABIT_ICONS } from '../common/IconRenderer';
+import { GlassEmojiCapsule } from '../common/GlassEmojiCapsule';
+import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { habitSchema } from '../../lib/validations';
 import { DynamicIcon } from '../ui/DynamicIcon';
@@ -200,32 +202,39 @@ export function QuickAddModalFixed({ onClose }: Props) {
                 onSubmit={handleHabitSubmit}
                 className="space-y-6"
               >
-                {/* Icon Picker */}
+                {/* 3D Glass Icon Picker */}
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
-                    Choose Identity
-                  </label>
-                  <div className="grid grid-cols-5 gap-2 bg-slate-950/30 rounded-2xl p-3 border border-white/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      Choose Icon & Aura
+                    </label>
+                    <span className="text-[10px] font-mono text-emerald-400">
+                      3D Tactile Capsule
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-7 gap-2 bg-[#080a10]/80 rounded-2xl p-3 border border-white/5 max-h-48 overflow-y-auto">
                     {HABIT_ICONS.map(item => {
                       const isActive = habitIcon === item.name;
                       return (
                         <button
                           key={item.name}
                           type="button"
+                          title={item.label}
                           onClick={() => setHabitIcon(item.name)}
-                          className={`relative h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ${
+                          className={cn(
+                            'relative p-1 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer',
                             isActive
-                              ? 'text-white'
-                              : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
-                          }`}
-                        >
-                          {isActive && (
-                            <motion.div
-                              layoutId="iconBg"
-                              className="absolute inset-0 bg-brand-500 rounded-xl shadow-lg shadow-brand-500/30"
-                            />
+                              ? 'ring-2 ring-emerald-400 bg-emerald-500/20 scale-105 shadow-[0_0_12px_rgba(52,211,153,0.3)]'
+                              : 'hover:bg-white/5 hover:scale-105 opacity-80 hover:opacity-100'
                           )}
-                          <item.icon size={20} className="relative z-10" />
+                        >
+                          <GlassEmojiCapsule
+                            icon={item.name}
+                            category={item.category}
+                            size="sm"
+                            interactive={false}
+                            showHalo={false}
+                          />
                         </button>
                       );
                     })}
@@ -267,11 +276,17 @@ export function QuickAddModalFixed({ onClose }: Props) {
                       Habit Name
                     </label>
                     <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-400 transition-transform group-focus-within:scale-110">
-                        <IconRenderer name={habitIcon} size={20} />
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 transition-transform group-focus-within:scale-110 pointer-events-none">
+                        <GlassEmojiCapsule
+                          icon={habitIcon}
+                          category={habitCategory}
+                          size="xs"
+                          interactive={false}
+                          showHalo={false}
+                        />
                       </div>
                       <input
-                        className="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-600 text-base font-medium outline-none focus:border-brand-500/50 focus:bg-slate-950/60 transition-all shadow-inner"
+                        className="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-14 pr-4 py-4 text-white placeholder-slate-600 text-base font-medium outline-none focus:border-emerald-500/50 focus:bg-slate-950/60 transition-all shadow-inner"
                         placeholder="e.g. Read 20 pages"
                         value={habitName}
                         onChange={e => setHabitName(e.target.value)}

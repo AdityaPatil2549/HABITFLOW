@@ -25,6 +25,7 @@ import type { HabitWithStreak } from '../types';
 import { format } from 'date-fns';
 import { cn } from '../lib/utils';
 import { getHabitEmoji } from '../lib/emoji';
+import { GlassEmojiCapsule } from '../components/common/GlassEmojiCapsule';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -244,9 +245,13 @@ export function Dashboard() {
 
             {nextUpHabit ? (
               <div className="max-w-md mx-auto relative z-10">
-                <div className="w-24 h-24 rounded-3xl bg-white/[0.05] border border-white/[0.1] shadow-2xl flex items-center justify-center text-5xl mx-auto mb-6">
-                  {getHabitEmoji(nextUpHabit.icon)}
-                </div>
+                <GlassEmojiCapsule
+                  icon={nextUpHabit.icon}
+                  category={nextUpHabit.category}
+                  size="xl"
+                  interactive={true}
+                  className="mx-auto mb-6 shadow-2xl"
+                />
                 <h2 className="text-2xl sm:text-3xl font-black text-white mb-3 tracking-tight">
                   {nextUpHabit.name}
                 </h2>
