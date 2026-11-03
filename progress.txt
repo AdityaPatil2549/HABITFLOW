@@ -95,3 +95,17 @@
   - Reduced habits page chunk size from 152.80 kB down to 17.88 kB (88% reduction!).
 - Verified production build (tsc && vite build) passed with 0 errors in 12.74s.
 ---
+
+## 2026-11-03 - STORY-008: Tasks Workspace Complete Rebuild
+- Demolished the 854-line legacy TasksPage.tsx monolith.
+- Purged circular particle bursts, heavy 3D glass cards, and unnecessary DOM wrappers.
+- Built modular, high-craft Linear / Things 3 task workspace in src/components/tasks/workstation/:
+  - TaskRow.tsx (193 lines): High-density task row with priority tags (urgent, high, medium, low), subtask completion counters, due date indicators, and slide-down inline subtask list.
+  - TaskFilterBar.tsx (129 lines): Minimalist view toggler (List vs Kanban board), status filter pills, search input with '/' hotkey, and priority filter.
+  - TaskEditorModal.tsx (236 lines): Keyboard-friendly modal ('N' / 'C' hotkeys, Esc to close) for creating/editing tasks with title, description, priority, category, due date, and dynamic subtask builder.
+- Rebuilt src/pages/TasksPage.tsx (247 lines):
+  - Added fluid view mode switching between List view and 3-column Kanban board (To Do, In Progress, Done).
+  - Wired hotkeys: 'C' or 'N' to create new task, 'B' to toggle Kanban board view, '/' to search.
+  - Reduced tasks page chunk size from 46.00 kB down to 18.52 kB.
+- Verified compilation and build: tsc && vite build compiled cleanly in 5.19s with 0 errors.
+---

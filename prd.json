@@ -49,7 +49,7 @@
       "id": "STORY-008",
       "title": "Tasks Workspace Complete Rebuild",
       "description": "Demolish 854-line legacy TasksPage.tsx, purge particle bursts and circular rings, and build a high-speed List and Kanban board workspace with fluid drag-and-drop.",
-      "passes": false
+      "passes": true
     },
     {
       "id": "STORY-009",
