@@ -23,10 +23,10 @@ export interface TaskRowProps {
 }
 
 const PRIORITY_MAP: Record<Priority, { label: string; color: string; badge: string }> = {
-  0: { label: 'Urgent', color: '#f43f5e', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
-  1: { label: 'High', color: '#fb923c', badge: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
-  2: { label: 'Normal', color: '#60a5fa', badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-  3: { label: 'Low', color: '#94a3b8', badge: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
+  0: { label: 'Urgent', color: '#f43f5e', badge: 'bg-rose-500/15 text-rose-300 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.25)] font-semibold' },
+  1: { label: 'High', color: '#fb923c', badge: 'bg-orange-500/15 text-orange-300 border-orange-500/30 shadow-[0_0_10px_rgba(251,146,60,0.2)] font-semibold' },
+  2: { label: 'Normal', color: '#60a5fa', badge: 'bg-blue-500/15 text-blue-300 border-blue-500/30 font-medium' },
+  3: { label: 'Low', color: '#94a3b8', badge: 'bg-slate-500/15 text-slate-300 border-slate-500/30 font-medium' },
 };
 
 export function TaskRow({
@@ -75,36 +75,36 @@ export function TaskRow({
     <div
       onClick={() => onEdit(task)}
       className={cn(
-        'group relative flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl border transition-all duration-150 cursor-pointer select-none',
+        'group relative flex items-center justify-between gap-3.5 px-4 py-3.5 rounded-2xl border transition-all duration-200 cursor-pointer select-none',
         task.completed
-          ? 'bg-emerald-950/[0.10] border-emerald-500/15 text-slate-400'
-          : 'bg-white/[0.015] border-white/[0.06] hover:bg-white/[0.035] hover:border-white/[0.12] text-slate-100'
+          ? 'bg-emerald-950/[0.14] border-emerald-500/25 text-slate-300 backdrop-blur-xl'
+          : 'glass-panel-interactive text-slate-100 hover:border-emerald-500/30'
       )}
     >
       {/* ── Left Side: Checkbox + Title + Project ───────────────── */}
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-3.5 min-w-0 flex-1">
         {/* Checkbox */}
         <button
           onClick={handleCheck}
           disabled={isToggling}
           aria-label={task.completed ? `Mark ${task.title} incomplete` : `Mark ${task.title} complete`}
           className={cn(
-            'w-5 h-5 rounded-md flex items-center justify-center transition-all duration-150 shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/40',
+            'w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/40 active:scale-90',
             task.completed
-              ? 'bg-emerald-500 text-slate-950 shadow-sm shadow-emerald-500/30'
-              : 'border border-slate-600/70 hover:border-slate-300 bg-white/[0.02]'
+              ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.5)]'
+              : 'border border-white/20 hover:border-emerald-400/50 bg-white/[0.04] hover:bg-white/[0.08]'
           )}
         >
           <AnimatePresence mode="wait">
             {task.completed ? (
               <motion.div
                 key="check"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
+                initial={{ scale: 0, rotate: -20 }}
+                animate={{ scale: 1, rotate: 0 }}
+                exit={{ scale: 0, rotate: 20 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 25 }}
               >
-                <Check className="w-3 h-3 stroke-[3]" />
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -113,8 +113,8 @@ export function TaskRow({
         {/* Task Title */}
         <span
           className={cn(
-            'text-sm font-medium tracking-tight truncate transition-colors',
-            task.completed ? 'text-slate-500 line-through decoration-emerald-500/40' : 'text-slate-100'
+            'text-sm font-semibold tracking-tight truncate transition-colors',
+            task.completed ? 'text-slate-400 line-through decoration-emerald-500/50' : 'text-slate-100 group-hover:text-emerald-300'
           )}
         >
           {task.title}
@@ -125,8 +125,8 @@ export function TaskRow({
       <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 text-xs">
         {/* Project Tag */}
         {projectName && (
-          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-white/[0.03] text-slate-400 border border-white/[0.05]">
-            <Folder className="w-3 h-3 text-slate-500" />
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/[0.05] text-slate-300 border border-white/[0.08]">
+            <Folder className="w-3 h-3 text-slate-400" />
             <span>{projectName}</span>
           </span>
         )}
@@ -135,12 +135,12 @@ export function TaskRow({
         {dueDateInfo && (
           <span
             className={cn(
-              'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono border',
+              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border font-medium',
               dueDateInfo.isOverdue
-                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                ? 'bg-rose-500/15 text-rose-300 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.2)]'
                 : dueDateInfo.isDueToday
-                ? 'bg-amber-500/10 text-amber-300 border-amber-500/20'
-                : 'bg-white/[0.02] text-slate-400 border-white/[0.05]'
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                : 'bg-white/[0.04] text-slate-300 border-white/[0.08]'
             )}
           >
             <Calendar className="w-3 h-3" />
@@ -151,7 +151,7 @@ export function TaskRow({
         {/* Priority Badge */}
         <span
           className={cn(
-            'hidden xs:inline-flex px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider border',
+            'hidden xs:inline-flex px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider border',
             priority.badge
           )}
         >
@@ -166,7 +166,7 @@ export function TaskRow({
               setShowMenu(prev => !prev);
             }}
             aria-label="Task options"
-            className="p-1 rounded-md text-slate-500 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
@@ -180,26 +180,26 @@ export function TaskRow({
                   setShowMenu(false);
                 }}
               />
-              <div className="absolute right-0 top-full mt-1 w-32 rounded-xl bg-slate-900 border border-white/10 shadow-2xl z-50 py-1 text-xs">
+              <div className="absolute right-0 top-full mt-1.5 w-36 rounded-2xl bg-[#0c0e17]/95 backdrop-blur-2xl border border-white/[0.12] shadow-2xl z-50 p-1.5 text-xs">
                 <button
                   onClick={e => {
                     e.stopPropagation();
                     setShowMenu(false);
                     onEdit(task);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/5 transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/[0.06] rounded-xl transition-colors text-left"
                 >
-                  <Edit2 className="w-3.5 h-3.5" />
+                  <Edit2 className="w-3.5 h-3.5 text-slate-400" />
                   <span>Edit</span>
                 </button>
-                <div className="h-px bg-white/5 my-1" />
+                <div className="h-px bg-white/[0.08] my-1" />
                 <button
                   onClick={async e => {
                     e.stopPropagation();
                     setShowMenu(false);
                     await onDelete(task.id);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors text-left font-medium"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/15 rounded-xl transition-colors text-left font-semibold"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Delete</span>

@@ -24,16 +24,16 @@ export function HabitCategoryFilter({
   searchInputRef,
 }: HabitCategoryFilterProps) {
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.05]">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 pb-4 border-b border-white/[0.06]">
       {/* Category Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
         <button
           onClick={() => onSelectCategory('all')}
           className={cn(
-            'px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer',
+            'px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap cursor-pointer',
             selectedCategory === 'all'
-              ? 'bg-white/10 text-white border border-white/15'
-              : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)] font-semibold'
+              : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-white/[0.05]'
           )}
         >
           All
@@ -44,10 +44,10 @@ export function HabitCategoryFilter({
             key={cat}
             onClick={() => onSelectCategory(cat)}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer',
+              'px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap cursor-pointer',
               selectedCategory === cat
-                ? 'bg-white/10 text-white border border-white/15'
-                : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)] font-semibold'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-white/[0.05]'
             )}
           >
             {cat}
@@ -56,23 +56,23 @@ export function HabitCategoryFilter({
       </div>
 
       {/* Search Input & Status Toggle */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1 sm:w-56">
-          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+      <div className="flex items-center gap-2.5">
+        <div className="relative flex-1 sm:w-60">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             placeholder="Search habits... (/)"
-            className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-white/20 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none transition-colors"
+            className="w-full bg-[#0c0e17]/60 border border-white/[0.1] focus:border-emerald-500/40 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-400 focus:outline-none transition-all backdrop-blur-md focus:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -80,10 +80,10 @@ export function HabitCategoryFilter({
         <button
           onClick={onToggleArchived}
           className={cn(
-            'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer shrink-0',
+            'px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer shrink-0 shadow-sm',
             showArchived
-              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-              : 'bg-white/[0.02] text-slate-500 hover:text-slate-300 border-white/[0.06]'
+              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
+              : 'bg-white/[0.03] text-slate-400 hover:text-slate-200 border-white/[0.08] hover:bg-white/[0.06]'
           )}
         >
           {showArchived ? 'Archived' : 'Active'}

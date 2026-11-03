@@ -442,14 +442,14 @@ export function Layout() {
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
-      ? 'bg-brand-500/10 text-brand-400 px-5 py-2.5 flex items-center gap-3 text-sm font-medium tracking-wide transition-all rounded-r-xl'
-      : 'text-slate-400 px-5 py-2.5 flex items-center gap-3 hover:text-slate-100 hover:bg-white/5 transition-all text-sm font-medium tracking-wide rounded-r-xl';
+      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-4 py-2.5 flex items-center gap-3 text-sm font-semibold tracking-wide transition-all rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.15)] mx-2'
+      : 'text-slate-400 px-4 py-2.5 flex items-center gap-3 hover:text-white hover:bg-white/[0.04] transition-all text-sm font-medium tracking-wide rounded-xl border border-transparent mx-2';
 
   return (
     <SmoothScrollProvider>
     <div className="min-h-[100dvh] flex text-slate-50 relative z-0">
       {/* Skip to Content for Accessibility */}
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] px-4 py-2 bg-brand-500 text-white rounded-lg font-bold">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] px-4 py-2 bg-emerald-500 text-slate-950 rounded-lg font-bold">
         Skip to content
       </a>
 
@@ -457,7 +457,7 @@ export function Layout() {
       <HabitsBackground />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
-      <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-between px-5 h-14 shadow-xl">
+      <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-[#0c0e17]/85 backdrop-blur-2xl border border-white/[0.1] rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
         <NavLink
           to="/dashboard"
           className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
@@ -517,7 +517,7 @@ export function Layout() {
       </nav>
 
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-[100dvh] w-64 border-r border-white/8 bg-slate-900 flex-col py-6 z-40 hidden lg:flex">
+      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-[100dvh] w-64 border-r border-white/[0.08] bg-[#0c0e17]/80 backdrop-blur-2xl flex-col py-6 z-40 hidden lg:flex shadow-2xl">
         <div className="px-6 mb-8 flex items-center justify-between">
           <NavLink
             to="/dashboard"
@@ -532,7 +532,7 @@ export function Layout() {
           </NavLink>
         </div>
 
-        <nav className="flex-1 space-y-0.5 px-3">
+        <nav className="flex-1 space-y-1 px-1">
           {[
             { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
             { to: '/habits', icon: Target, label: 'Habits' },
@@ -558,7 +558,7 @@ export function Layout() {
         </nav>
 
         {/* ── Actions ── */}
-        <div className="px-5 mb-4 grid grid-cols-2 gap-2">
+        <div className="px-5 mb-4 grid grid-cols-2 gap-2.5">
           <button
             onClick={() => {
               if (focusActive) {
@@ -567,30 +567,22 @@ export function Layout() {
                 openPicker();
               }
             }}
-            className={`py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-95 relative overflow-hidden ${
+            className={cn(
+              'py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer backdrop-blur-xl border',
               focusActive
-                ? 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'
-                : 'border border-brand-500/30 text-brand-400 hover:bg-brand-500/10'
-            }`}
-            style={
-              !focusActive
-                ? {
-                    background:
-                      'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08))',
-                  }
-                : {}
-            }
+                ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)]'
+                : 'bg-white/[0.04] border-white/[0.08] hover:border-purple-500/40 hover:bg-purple-500/10 text-slate-300 hover:text-purple-300'
+            )}
           >
-            <Timer size={14} className={focusActive ? 'animate-pulse' : ''} />
+            <Timer size={14} className={focusActive ? 'animate-pulse text-rose-400' : 'text-purple-400'} />
             <span className="relative truncate">{focusActive ? 'End Focus' : 'Focus'}</span>
-            {focusActive && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />}
           </button>
 
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="py-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold text-[11px] shadow-lg shadow-brand-500/20 active:scale-95 transition-transform flex items-center justify-center gap-1.5"
+            className="py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-[11px] shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
           >
-            <Plus size={14} />
+            <Plus size={14} className="stroke-[3]" />
             <span className="truncate">New Entry</span>
           </button>
         </div>
@@ -722,7 +714,7 @@ export function Layout() {
 
       {/* ── Mobile Bottom Nav ── */}
       <nav className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center">
+        <div className="bg-[#0c0e17]/85 backdrop-blur-2xl border border-white/[0.1] shadow-[0_16px_40px_rgba(0,0,0,0.7)] rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center">
           {[
             { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
             { to: '/habits', icon: Target, label: 'Habits' },
@@ -734,7 +726,7 @@ export function Layout() {
                 to={l.to}
                 onClick={() => soundService.playTransition()}
                 className={({ isActive }) =>
-                  `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
+                  `flex flex-col items-center justify-center w-full h-full gap-1 transition-all active:scale-95 ${isActive ? 'text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.6)] font-semibold' : 'text-slate-400 hover:text-slate-200'}`
                 }
               >
                 <Icon size={22} className="" />
@@ -749,7 +741,7 @@ export function Layout() {
                 setQuickAddOpen(true);
               }}
               aria-label="Create new entry"
-              className="absolute -top-6 z-[60] w-12 h-12 cursor-pointer bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-full flex items-center justify-center border-4 border-[#08090C] shadow-lg shadow-emerald-500/25 active:scale-95 transition-all"
+              className="absolute -top-6 z-[60] w-12 h-12 cursor-pointer bg-gradient-to-tr from-emerald-500 to-teal-400 hover:brightness-110 text-[#07080b] rounded-full flex items-center justify-center border-4 border-[#07080b] shadow-[0_0_24px_rgba(16,185,129,0.5)] active:scale-95 transition-all"
             >
               <Plus size={22} className="stroke-[2.5]" />
             </button>
@@ -766,7 +758,7 @@ export function Layout() {
                 to={l.to}
                 onClick={() => soundService.playTransition()}
                 className={({ isActive }) =>
-                  `flex flex-col items-center justify-center w-full h-full gap-1 transition-transform active:scale-95 ${isActive ? 'text-brand-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'text-slate-400'}`
+                  `flex flex-col items-center justify-center w-full h-full gap-1 transition-all active:scale-95 ${isActive ? 'text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.6)] font-semibold' : 'text-slate-400 hover:text-slate-200'}`
                 }
               >
                 <Icon size={22} className="" />

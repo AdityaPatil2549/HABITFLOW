@@ -9,6 +9,9 @@ import {
   Maximize2,
   Minimize2,
   TrendingUp,
+  Target,
+  ArrowRight,
+  Clock,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useHabitStore } from '../store/habitStore';
@@ -20,6 +23,8 @@ import { TactileHabitCard } from '../components/habits/TactileHabitCard';
 import { SlidingNumber } from '../components/ui/motion/SlidingNumber';
 import type { HabitWithStreak } from '../types';
 import { format } from 'date-fns';
+import { cn } from '../lib/utils';
+import { getHabitEmoji } from '../lib/emoji';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -105,36 +110,44 @@ export function Dashboard() {
   }, [habits]);
 
   return (
-    <div className="min-h-screen bg-[#08090C] text-slate-100 pb-32 pt-6 sm:pt-8 px-4 sm:px-8 max-w-5xl mx-auto selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 pb-32 space-y-8">
       {/* ── TOP HEADER / MOMENTUM PULSE ──────────────────────────── */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/[0.06]">
-        <div>
-          <div className="flex items-center gap-2.5 text-xs font-semibold tracking-wider uppercase text-emerald-400 mb-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/50" />
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/[0.08] relative">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Today's Ritual</span>
             <span className="text-slate-600">•</span>
-            <span className="text-slate-400 font-mono normal-case">{format(new Date(), 'EEEE, MMMM d')}</span>
+            <span className="text-slate-300 font-sans">{format(new Date(), 'EEEE, MMMM d')}</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-3">
             Daily Momentum
           </h1>
+          <p className="text-xs sm:text-sm text-slate-400 max-w-lg">
+            High-velocity habit tracking powered by client-side half-life exponential decay.
+          </p>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start md:self-auto">
           <button
             onClick={() => setZenMode(prev => !prev)}
             aria-label="Toggle Zen Focus Mode"
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold tracking-wide uppercase bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-all"
+            className={cn(
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-mono font-semibold uppercase tracking-wider transition-all cursor-pointer backdrop-blur-xl border active:scale-95',
+              zenMode
+                ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.3)]'
+                : 'bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border-white/[0.08]'
+            )}
           >
-            {zenMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            {zenMode ? <Minimize2 className="w-3.5 h-3.5 text-purple-400" /> : <Maximize2 className="w-3.5 h-3.5 text-slate-400" />}
             <span>Zen ({zenMode ? 'On' : 'Z'})</span>
           </button>
 
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wide uppercase bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:shadow-[0_0_32px_rgba(16,185,129,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>New Habit</span>
@@ -142,62 +155,72 @@ export function Dashboard() {
         </div>
       </header>
 
-      {/* ── Precision Metric HUD ──────────────────────────────── */}
+      {/* ── High-End Glass KPI Quad ─────────────────────────────── */}
       {!zenMode && (
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 my-6" aria-label="Momentum statistics">
-          {/* Momentum Score */}
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.07]">
-            <p className="text-[11px] font-medium tracking-wide text-slate-400 mb-1">
-              Momentum Index
-            </p>
-            <div className="text-2xl font-bold text-white font-mono flex items-baseline gap-1">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4" aria-label="Momentum statistics">
+          {/* 1. Momentum Score */}
+          <div className="relative p-5 rounded-2xl bg-[#0e101a]/70 border border-white/[0.08] backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] overflow-hidden group hover:border-emerald-500/30 transition-all">
+            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-colors" />
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-semibold">Momentum</span>
+              <TrendingUp size={15} className="text-emerald-400" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
               <SlidingNumber value={globalMomentum} />
-              <span className="text-xs text-emerald-400 font-mono font-normal">/ 100</span>
+              <span className="text-xs text-slate-500 font-normal">/ 100</span>
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
-              Half-life decay weighted
-            </p>
+            <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden mt-3">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                style={{ width: `${Math.min(100, Math.max(5, globalMomentum))}%` }}
+              />
+            </div>
           </div>
 
-          {/* Completion Rate */}
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.07]">
-            <p className="text-[11px] font-medium tracking-wide text-slate-400 mb-1">
-              Completed Today
-            </p>
-            <div className="text-2xl font-bold text-white font-mono flex items-baseline gap-1">
+          {/* 2. Completion Rate */}
+          <div className="relative p-5 rounded-2xl bg-[#0e101a]/70 border border-white/[0.08] backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] overflow-hidden group hover:border-blue-500/30 transition-all">
+            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-blue-500/10 blur-2xl pointer-events-none group-hover:bg-blue-500/20 transition-colors" />
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-blue-400 font-semibold">Today's Rate</span>
+              <CheckCircle2 size={15} className="text-blue-400" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
               <SlidingNumber value={completionPercentage} />
-              <span className="text-xs text-slate-400 font-mono font-normal">%</span>
+              <span className="text-xs text-blue-400 font-normal">%</span>
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
-              <span className="font-mono text-slate-300 font-medium">{completedCount}</span> of{' '}
-              <span className="font-mono text-slate-300 font-medium">{totalHabits}</span> rituals
+            <p className="mt-2 text-[11px] font-mono text-slate-400">
+              <span className="text-white font-bold">{completedCount}</span> of <span className="text-white font-bold">{totalHabits}</span> rituals checked
             </p>
           </div>
 
-          {/* Top Active Streak */}
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.07]">
-            <p className="text-[11px] font-medium tracking-wide text-slate-400 mb-1">
-              Best Streak
-            </p>
-            <div className="text-2xl font-bold text-amber-400 font-mono flex items-baseline gap-1">
+          {/* 3. Top Streak */}
+          <div className="relative p-5 rounded-2xl bg-[#0e101a]/70 border border-white/[0.08] backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] overflow-hidden group hover:border-amber-500/30 transition-all">
+            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-amber-500/10 blur-2xl pointer-events-none group-hover:bg-amber-500/20 transition-colors" />
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold">Peak Streak</span>
+              <Flame size={15} className="text-amber-400" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-amber-300 font-mono flex items-baseline gap-1">
               <SlidingNumber value={maxStreak} />
-              <span className="text-xs text-amber-400/70 font-mono font-normal">d</span>
+              <span className="text-xs text-amber-400/70 font-normal">days</span>
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
-              Consecutive days active
+            <p className="mt-2 text-[11px] font-mono text-slate-400">
+              Unbroken discipline
             </p>
           </div>
 
-          {/* Energy XP */}
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.07]">
-            <p className="text-[11px] font-medium tracking-wide text-slate-400 mb-1">
-              Accumulated XP
-            </p>
-            <div className="text-2xl font-bold text-slate-200 font-mono">
+          {/* 4. Energy XP */}
+          <div className="relative p-5 rounded-2xl bg-[#0e101a]/70 border border-white/[0.08] backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] overflow-hidden group hover:border-purple-500/30 transition-all">
+            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-purple-500/10 blur-2xl pointer-events-none group-hover:bg-purple-500/20 transition-colors" />
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-purple-400 font-semibold">Total XP</span>
+              <Zap size={15} className="text-purple-400" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-purple-300 font-mono">
               <SlidingNumber value={userXP?.total || 0} />
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
-              Rank: <span className="text-slate-300 font-medium">{userXP?.level || 'Builder'}</span>
+            <p className="mt-2 text-[11px] font-mono text-slate-400 truncate">
+              Rank: <span className="text-purple-300 font-semibold">{userXP?.level || 'Initiate'}</span>
             </p>
           </div>
         </section>
@@ -210,35 +233,41 @@ export function Dashboard() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="my-12 p-8 sm:p-12 rounded-3xl bg-slate-900/90 border border-emerald-500/30 text-center shadow-2xl backdrop-blur-2xl"
+            className="my-8 p-8 sm:p-14 rounded-3xl bg-[#0e101a]/85 border border-purple-500/30 text-center shadow-[0_24px_80px_rgba(0,0,0,0.8)] backdrop-blur-3xl relative overflow-hidden"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 mb-6">
-              <Zap className="w-3 h-3" />
+            <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 via-transparent to-transparent pointer-events-none" />
+
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono uppercase tracking-widest text-purple-300 bg-purple-500/15 border border-purple-500/30 mb-8 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+              <Zap className="w-3.5 h-3.5 text-purple-400" />
               <span>Zen Focus Active</span>
             </div>
 
             {nextUpHabit ? (
-              <div className="max-w-md mx-auto">
-                <div className="text-6xl mb-4">{nextUpHabit.icon || '🎯'}</div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">{nextUpHabit.name}</h2>
-                <p className="text-sm text-slate-400 mb-8">
-                  Focus on this single ritual right now. Press <kbd className="px-2 py-0.5 rounded bg-white/10 font-mono text-xs">1</kbd> or click below to check it off.
+              <div className="max-w-md mx-auto relative z-10">
+                <div className="w-24 h-24 rounded-3xl bg-white/[0.05] border border-white/[0.1] shadow-2xl flex items-center justify-center text-5xl mx-auto mb-6">
+                  {getHabitEmoji(nextUpHabit.icon)}
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-white mb-3 tracking-tight">
+                  {nextUpHabit.name}
+                </h2>
+                <p className="text-sm text-slate-400 mb-8 leading-relaxed">
+                  Focus purely on this single ritual right now. Press <kbd className="px-2 py-1 rounded-lg bg-white/10 font-mono text-xs text-white border border-white/10">1</kbd> or click below to mark it done.
                 </p>
 
                 <button
                   onClick={() => handleToggleHabit(nextUpHabit)}
-                  className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-lg shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-base shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:shadow-[0_0_40px_rgba(16,185,129,0.6)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 cursor-pointer"
                 >
                   <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
                   <span>Mark Done & Advance</span>
                 </button>
               </div>
             ) : (
-              <div className="py-8">
+              <div className="py-8 relative z-10">
                 <div className="text-6xl mb-4">🏆</div>
-                <h2 className="text-2xl font-bold text-white mb-2">All Daily Rituals Complete!</h2>
-                <p className="text-sm text-slate-400">
-                  You have conquered today's momentum. Take time to rest and recover.
+                <h2 className="text-2xl font-black text-white mb-2">All Daily Rituals Complete!</h2>
+                <p className="text-sm text-slate-400 max-w-sm mx-auto">
+                  You have conquered today's momentum. Take time to rest and recharge for tomorrow's flow.
                 </p>
               </div>
             )}
@@ -252,48 +281,52 @@ export function Dashboard() {
           {loading && habits.length === 0 ? (
             <div className="space-y-4 py-8">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-20 rounded-2xl bg-white/[0.03] animate-pulse" />
+                <div key={i} className="h-24 rounded-2xl bg-white/[0.03] border border-white/[0.05] animate-pulse" />
               ))}
             </div>
           ) : ritualGroups.length === 0 ? (
-            /* Empty State */
-            <div className="text-center py-20 px-4 rounded-3xl border border-dashed border-white/10 bg-slate-900/20 my-8">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-3xl">
+            /* Luxury Empty State */
+            <div className="text-center py-16 px-6 rounded-3xl border border-white/[0.08] bg-[#0e101a]/60 backdrop-blur-2xl my-6 shadow-2xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
+
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5 text-4xl shadow-[0_0_30px_rgba(16,185,129,0.2)]">
                 ✨
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Build Your Daily Ritual</h2>
-              <p className="text-sm text-slate-400 max-w-sm mx-auto mb-6">
-                Start small with atomic momentum. Add your first morning or evening habit to begin tracking.
+              <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
+                Design Your Daily Ritual
+              </h2>
+              <p className="text-sm text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
+                Start building atomic momentum today. Add your first morning or evening habit to activate the tracker.
               </p>
               <button
                 onClick={() => setQuickAddOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-sm shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4 stroke-[3]" />
-                <span>Create Habit</span>
+                <span>Create Your First Habit</span>
               </button>
             </div>
           ) : (
             ritualGroups.map(group => (
-              <section key={group.timeSlot} className="space-y-3" aria-labelledby={`ritual-${group.timeSlot}`}>
-                {/* Ritual Header */}
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.04]">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-lg">
+              <section key={group.timeSlot} className="space-y-4" aria-labelledby={`ritual-${group.timeSlot}`}>
+                {/* Ritual Header Capsule */}
+                <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">
                       {group.timeSlot === 'morning' ? '🌅' : group.timeSlot === 'afternoon' ? '☀️' : group.timeSlot === 'evening' ? '🌙' : '✨'}
                     </span>
-                    <h2 id={`ritual-${group.timeSlot}`} className="text-base sm:text-lg font-bold text-white">
+                    <h2 id={`ritual-${group.timeSlot}`} className="text-lg font-bold text-white tracking-tight">
                       {group.label}
                     </h2>
                   </div>
 
-                  <span className="text-xs font-mono text-slate-400">
-                    <span className="text-emerald-400 font-semibold">{group.completedCount}</span> / {group.totalCount} completed
+                  <span className="text-xs font-mono text-slate-400 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+                    <span className="text-emerald-400 font-bold">{group.completedCount}</span> of {group.totalCount} completed
                   </span>
                 </div>
 
                 {/* Habit Cards in this ritual */}
-                <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:gap-3.5">
                   {group.habits.map((habit, idx) => (
                     <TactileHabitCard
                       key={habit.id}

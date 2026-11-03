@@ -34,25 +34,25 @@ export function TaskFilterBar({
   ];
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.05]">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 pb-4 border-b border-white/[0.06]">
       {/* View Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => onSelectTab(t.id)}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer',
+              'flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer',
               currentTab === t.id
-                ? 'bg-white/10 text-white border border-white/15'
-                : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-white/[0.05]'
             )}
           >
             <span>{t.label}</span>
             <span
               className={cn(
-                'px-1.5 py-0.2 rounded-full text-[10px] font-mono',
-                currentTab === t.id ? 'bg-white/20 text-white' : 'text-slate-500'
+                'px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold',
+                currentTab === t.id ? 'bg-emerald-500/25 text-emerald-200' : 'bg-white/[0.06] text-slate-400'
               )}
             >
               {t.count}
@@ -62,36 +62,36 @@ export function TaskFilterBar({
       </div>
 
       {/* Priority & Search */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <select
           value={selectedPriority}
           onChange={e => onSelectPriority(e.target.value === 'all' ? 'all' : (parseInt(e.target.value, 10) as Priority))}
           aria-label="Filter by priority"
-          className="bg-white/[0.03] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none cursor-pointer"
+          className="bg-[#0c0e17]/80 border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500/40 cursor-pointer backdrop-blur-md"
         >
-          <option value="all" className="bg-slate-900 text-white">All Priorities</option>
-          <option value="0" className="bg-slate-900 text-rose-400">Urgent</option>
-          <option value="1" className="bg-slate-900 text-orange-400">High</option>
-          <option value="2" className="bg-slate-900 text-blue-400">Normal</option>
-          <option value="3" className="bg-slate-900 text-slate-400">Low</option>
+          <option value="all" className="bg-[#0c0e17] text-white">All Priorities</option>
+          <option value="0" className="bg-[#0c0e17] text-rose-400">Urgent</option>
+          <option value="1" className="bg-[#0c0e17] text-orange-400">High</option>
+          <option value="2" className="bg-[#0c0e17] text-blue-400">Normal</option>
+          <option value="3" className="bg-[#0c0e17] text-slate-400">Low</option>
         </select>
 
-        <div className="relative flex-1 sm:w-52">
-          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+        <div className="relative flex-1 sm:w-56">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             placeholder="Search tasks... (/)"
-            className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-white/20 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none transition-colors"
+            className="w-full bg-[#0c0e17]/60 border border-white/[0.1] focus:border-emerald-500/40 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-400 focus:outline-none transition-all backdrop-blur-md focus:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>

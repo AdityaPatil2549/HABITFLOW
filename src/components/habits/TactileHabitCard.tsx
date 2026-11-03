@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Flame, ChevronRight, Zap, RefreshCw, Sparkles, Clock } from 'lucide-react';
+import { Check, Flame, ChevronRight, Zap, Clock, Sparkles } from 'lucide-react';
 import type { HabitWithStreak } from '../../types';
-import { SpotlightCard } from '../ui/motion/SpotlightCard';
 import { BorderTrail } from '../ui/motion/BorderTrail';
 import { SlidingNumber } from '../ui/motion/SlidingNumber';
 import { soundService } from '../../services/soundService';
@@ -31,8 +30,7 @@ export function TactileHabitCard({
     e.stopPropagation();
     if (isToggling) return;
     setIsToggling(true);
-    
-    // Play tactile sound
+
     if (!isDone) {
       soundService.playTick();
     } else {
@@ -46,129 +44,196 @@ export function TactileHabitCard({
     }
   };
 
+  // Color thematic accent based on category or streak
+  const getCategoryTheme = (cat?: string) => {
+    switch (cat?.toLowerCase()) {
+      case 'health':
+      case 'fitness':
+        return {
+          glow: 'rgba(16, 185, 129, 0.15)',
+          badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        };
+      case 'learning':
+      case 'work':
+        return {
+          glow: 'rgba(245, 158, 11, 0.15)',
+          badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+        };
+      case 'mindfulness':
+      case 'personal':
+        return {
+          glow: 'rgba(168, 85, 247, 0.15)',
+          badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+        };
+      case 'finance':
+        return {
+          glow: 'rgba(6, 182, 212, 0.15)',
+          badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+        };
+      default:
+        return {
+          glow: 'rgba(99, 102, 241, 0.15)',
+          badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+        };
+    }
+  };
+
+  const theme = getCategoryTheme(habit.category);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ 
-        type: 'spring', 
-        stiffness: 350, 
-        damping: 24, 
-        delay: Math.min(index * 0.04, 0.3) 
+      transition={{
+        type: 'spring',
+        stiffness: 350,
+        damping: 24,
+        delay: Math.min(index * 0.04, 0.25),
       }}
-      className="relative group"
+      className="relative group cursor-pointer"
+      onClick={() => onOpenDetails?.(habit)}
     >
-      <SpotlightCard
-        onClick={() => onOpenDetails?.(habit)}
+      <div
         className={cn(
-          'relative flex items-center justify-between gap-3.5 p-3.5 sm:p-4 rounded-xl cursor-pointer select-none transition-all duration-200',
+          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl transition-all duration-300 backdrop-blur-2xl overflow-hidden',
           isDone
-            ? 'bg-emerald-950/15 border-emerald-500/25'
-            : 'bg-white/[0.02] border-white/[0.07] hover:border-white/[0.14] hover:bg-white/[0.035]'
+            ? 'bg-[#0b1414]/75 border border-emerald-500/35 shadow-[0_12px_32px_rgba(16,185,129,0.12)]'
+            : 'bg-[#0f111a]/70 border border-white/[0.08] hover:border-white/[0.18] hover:bg-[#141724]/85 shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:-translate-y-0.5'
         )}
-        spotlightColor={isDone ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.05)'}
       >
-        {/* Border trail celebratory laser on completion */}
+        {/* Subtle ambient backglow */}
+        <div
+          className="absolute -left-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-30 pointer-events-none transition-opacity duration-500 group-hover:opacity-60"
+          style={{ background: isDone ? 'rgba(16, 185, 129, 0.25)' : theme.glow }}
+        />
+
+        {/* Celebratory laser border trail when completed */}
         {isDone && (
-          <BorderTrail 
-            className="from-emerald-400 via-emerald-300 to-transparent" 
-            size={50} 
+          <BorderTrail
+            className="from-emerald-400 via-teal-300 to-transparent"
+            size={60}
           />
         )}
 
-        {/* Left Side: Icon + Title + Meta */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div 
+        {/* Left Side: Rich Icon Capsule + Title + Metadata */}
+        <div className="flex items-center gap-4 min-w-0 z-10">
+          {/* Glass Icon Capsule */}
+          <div
             className={cn(
-              'w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg sm:text-xl transition-transform duration-200 shrink-0',
+              'w-12 h-12 rounded-2xl flex items-center justify-center text-2xl transition-transform duration-300 group-hover:scale-105 shrink-0 shadow-inner',
               isDone
-                ? 'bg-emerald-500/15 text-emerald-400'
-                : 'bg-white/[0.04] text-slate-300 border border-white/[0.06]'
+                ? 'bg-emerald-500/20 border border-emerald-400/40 shadow-[0_0_15px_rgba(52,211,153,0.25)]'
+                : 'bg-white/[0.05] border border-white/[0.1] text-slate-200'
             )}
+            style={{
+              boxShadow: isDone ? '0 0 20px rgba(16, 185, 129, 0.2)' : 'inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+            }}
           >
             {getHabitEmoji(habit.icon)}
           </div>
 
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 
+            {/* Title & Category Tag */}
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h3
                 className={cn(
-                  'text-sm sm:text-base font-medium tracking-tight truncate transition-colors duration-150',
-                  isDone ? 'text-slate-400 line-through decoration-emerald-500/40' : 'text-slate-100'
+                  'text-base sm:text-lg font-semibold tracking-tight truncate transition-colors duration-200',
+                  isDone
+                    ? 'text-slate-400 line-through decoration-emerald-400/50'
+                    : 'text-white group-hover:text-white'
                 )}
               >
                 {habit.name}
               </h3>
 
-              {habit.frequency === 'daily' && (
-                <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono text-slate-500 border border-white/[0.06]">
-                  daily
+              {habit.category && (
+                <span
+                  className={cn(
+                    'px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider border',
+                    theme.badge
+                  )}
+                >
+                  {habit.category}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2.5 mt-0.5 text-xs text-slate-400">
-              {/* Streak Badge */}
-              <div className="flex items-center gap-1 font-mono font-medium text-amber-400">
-                <Flame className="w-3 h-3 fill-amber-400/80 text-amber-400" />
+            {/* Streak & Sub-metrics */}
+            <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
+              {/* Streak Flame Pill */}
+              <div
+                className={cn(
+                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[11px] font-semibold transition-colors',
+                  currentStreak > 0
+                    ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                    : 'bg-white/[0.03] text-slate-500 border border-white/[0.05]'
+                )}
+              >
+                <Flame
+                  size={12}
+                  className={cn(
+                    currentStreak > 0
+                      ? 'fill-amber-400 text-amber-400 animate-pulse'
+                      : 'text-slate-600'
+                  )}
+                />
                 <SlidingNumber value={currentStreak} />
-                <span className="text-[10px] font-normal text-slate-500 ml-0.5">d streak</span>
+                <span className="text-[10px] font-normal opacity-75">d streak</span>
               </div>
 
-              {/* Target / Unit value if count or duration */}
+              {/* Progress counter for count / duration targets */}
               {habit.type !== 'boolean' && habit.targetValue > 1 && (
-                <div className="flex items-center gap-1 text-slate-400 font-mono text-[11px]">
-                  <span className="text-slate-300 font-medium">{todayValue}</span>
+                <div className="inline-flex items-center gap-1.5 font-mono text-xs text-slate-300 bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/[0.06]">
+                  <span className="text-emerald-400 font-bold">{todayValue}</span>
                   <span className="text-slate-600">/</span>
                   <span>{habit.targetValue}</span>
-                  {habit.unit && <span className="text-[10px] text-slate-500 ml-0.5">{habit.unit}</span>}
+                  {habit.unit && <span className="text-[10px] text-slate-400">{habit.unit}</span>}
                 </div>
               )}
 
-              {/* Category */}
-              {habit.category && (
-                <span className="hidden md:inline-block text-[11px] text-slate-500">
-                  • {habit.category}
+              {habit.frequency === 'daily' && (
+                <span className="text-[11px] font-mono text-slate-500 hidden sm:inline">
+                  • Daily ritual
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Right Side: Checkoff Button */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Right Side: High-Craft Physical Check Button */}
+        <div className="flex items-center gap-2 shrink-0 z-10">
           <motion.button
             onClick={handleToggle}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.94 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
             disabled={isToggling}
             aria-label={isDone ? `Mark ${habit.name} incomplete` : `Mark ${habit.name} complete`}
             className={cn(
-              'w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer',
+              'w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 cursor-pointer shadow-lg',
               isDone
-                ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                : 'bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/[0.08]'
+                ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.5)] border border-emerald-300/60'
+                : 'bg-white/[0.04] hover:bg-emerald-500/15 hover:border-emerald-500/40 text-slate-400 hover:text-emerald-300 border border-white/[0.1]'
             )}
           >
             <AnimatePresence mode="wait">
               {isDone ? (
                 <motion.div
-                  key="checked"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                  key="done"
+                  initial={{ scale: 0, rotate: -45 }}
+                  animate={{ scale: 1, rotate: 0 }}
                   exit={{ scale: 0 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 24 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                 >
-                  <Check className="w-4 h-4 stroke-[3]" />
+                  <Check className="w-5 h-5 stroke-[3]" />
                 </motion.div>
               ) : (
-                <div className="w-3.5 h-3.5 rounded border border-slate-500/70 group-hover:border-slate-300 transition-colors" />
+                <div className="w-4 h-4 rounded-md border-2 border-slate-500/60 group-hover:border-emerald-400/80 transition-colors" />
               )}
             </AnimatePresence>
           </motion.button>
         </div>
-      </SpotlightCard>
+      </div>
     </motion.div>
   );
 }

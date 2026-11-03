@@ -142,23 +142,23 @@ export function HabitsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#08090C] text-slate-100 pb-28 pt-6 sm:pt-8 px-4 sm:px-8 max-w-5xl mx-auto selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className="min-h-screen bg-transparent text-slate-100 pb-28 pt-2 sm:pt-4 px-2 sm:px-4 max-w-5xl mx-auto selection:bg-emerald-500/30 selection:text-emerald-200">
       {/* ── Page Header ─────────────────────────────────────────── */}
-      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-white/[0.06]">
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-white/[0.08]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-slate-500 mb-1">
-            <span>Habit Workstation</span>
+          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">Habit Workstation</span>
             <span>•</span>
-            <span className="text-emerald-400 font-semibold">{habits.filter(h => !h.archived).length} active</span>
+            <span className="text-emerald-300 font-semibold">{habits.filter(h => !h.archived).length} active</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Habit Library
           </h1>
         </div>
 
         <div className="flex items-center gap-3">
           <span className="hidden md:inline-flex text-[11px] font-mono text-slate-500">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-300">C</kbd> to create
+            Press <kbd className="px-1.5 py-0.5 rounded-md bg-white/10 text-slate-300 border border-white/10">C</kbd> to create
           </span>
 
           <button
@@ -166,7 +166,7 @@ export function HabitsPage() {
               setEditingHabit(null);
               setIsDrawerOpen(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer shadow-lg shadow-emerald-500/20 active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-tr from-emerald-500 to-teal-400 hover:brightness-110 text-slate-950 transition-all cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>New Habit</span>
