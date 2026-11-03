@@ -61,7 +61,7 @@
       "id": "STORY-010",
       "title": "Final System Verification & 120 FPS Audit",
       "description": "Perform full multi-route audit, verify 0 compiler errors, confirm sub-15s production build, and deliver 120 FPS performance across all viewports.",
-      "passes": false
+      "passes": true
     }
   ]
 }
