@@ -43,7 +43,7 @@
       "id": "STORY-007",
       "title": "Habits Ecosystem Complete Rebuild",
       "description": "Demolish 1,673-line legacy HabitsPage.tsx and replace with modular, dense Linear/Things 3 grade habit list with keyboard shortcuts (C, Space, E, D) and zero neon slop.",
-      "passes": false
+      "passes": true
     },
     {
       "id": "STORY-008",

@@ -82,3 +82,16 @@
 - Refined TactileHabitCard.tsx into dense Linear/Things 3 grade cards (p-3.5 sm:p-4, tabular figures, muted streak badge).
 - Verified production build compiled cleanly with 0 errors in commit d2daec0.
 ---
+
+## 2026-11-03 - STORY-007: Habits Ecosystem Complete Rebuild
+- Demolished the legacy 1,673-line HabitsPage.tsx monolith.
+- Built modular, high-craft Linear / Things 3 habit management workstation in src/components/habits/workstation/:
+  - HabitRow.tsx (209 lines): Ultra-dense precision row with micro-spring tactile check button, streak indicators with SlidingNumber, 30-day completion rate, and quick action dropdown (Edit, Archive, Delete).
+  - HabitCategoryFilter.tsx (96 lines): Minimalist category pill selector, search bar with '/' hotkey focus, and active/archived toggle.
+  - HabitEditorDrawer.tsx (257 lines): Slide-over drawer with keyboard focus, preset icon picker, category tags, tracking type selector (boolean, count, duration), and instant validation.
+- Rebuilt src/pages/HabitsPage.tsx as a clean 220-line orchestrator:
+  - Global hotkeys ('C' or 'N' to create new habit, '/' to search, 'Esc' to dismiss).
+  - Live category and archive filtering with 100% in-browser IndexedDB persistence.
+  - Reduced habits page chunk size from 152.80 kB down to 17.88 kB (88% reduction!).
+- Verified production build (tsc && vite build) passed with 0 errors in 12.74s.
+---
