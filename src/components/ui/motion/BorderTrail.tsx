@@ -18,9 +18,9 @@ export function BorderTrail({
   style,
 }: BorderTrailProps) {
   const defaultTransition: Transition = {
-    repeat: Infinity,
-    duration: 4,
-    ease: 'linear',
+    repeat: 0,
+    duration: 1.4,
+    ease: [0.16, 1, 0.3, 1],
   };
 
   return (

@@ -61,30 +61,29 @@ export function TactileHabitCard({
       <SpotlightCard
         onClick={() => onOpenDetails?.(habit)}
         className={cn(
-          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl cursor-pointer select-none transition-all duration-300',
+          'relative flex items-center justify-between gap-3.5 p-3.5 sm:p-4 rounded-xl cursor-pointer select-none transition-all duration-200',
           isDone
-            ? 'bg-emerald-950/20 border-emerald-500/30 hover:border-emerald-500/50'
-            : 'bg-slate-900/60 border-white/[0.08] hover:border-white/20 hover:bg-slate-900/80'
+            ? 'bg-emerald-950/15 border-emerald-500/25'
+            : 'bg-white/[0.02] border-white/[0.07] hover:border-white/[0.14] hover:bg-white/[0.035]'
         )}
-        spotlightColor={isDone ? 'rgba(16, 185, 129, 0.15)' : 'rgba(99, 102, 241, 0.12)'}
+        spotlightColor={isDone ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.05)'}
       >
-        {/* Border trail celebration glow when completed */}
+        {/* Border trail celebratory laser on completion */}
         {isDone && (
           <BorderTrail 
             className="from-emerald-400 via-emerald-300 to-transparent" 
-            size={70} 
+            size={50} 
           />
         )}
 
         {/* Left Side: Icon + Title + Meta */}
-        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
-          {/* Category/Emoji Icon Container */}
+        <div className="flex items-center gap-3 min-w-0">
           <div 
             className={cn(
-              'w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl transition-transform duration-300 group-hover:scale-105 shrink-0',
+              'w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg sm:text-xl transition-transform duration-200 shrink-0',
               isDone
-                ? 'bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/20'
-                : 'bg-white/5 text-slate-300 border border-white/10'
+                ? 'bg-emerald-500/15 text-emerald-400'
+                : 'bg-white/[0.04] text-slate-300 border border-white/[0.06]'
             )}
           >
             {habit.icon || '🎯'}
@@ -94,41 +93,41 @@ export function TactileHabitCard({
             <div className="flex items-center gap-2">
               <h3 
                 className={cn(
-                  'text-base sm:text-lg font-semibold tracking-tight truncate transition-colors duration-200',
-                  isDone ? 'text-slate-200 line-through decoration-emerald-500/40' : 'text-white'
+                  'text-sm sm:text-base font-medium tracking-tight truncate transition-colors duration-150',
+                  isDone ? 'text-slate-400 line-through decoration-emerald-500/40' : 'text-slate-100'
                 )}
               >
                 {habit.name}
               </h3>
 
               {habit.frequency === 'daily' && (
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase bg-white/5 text-slate-400 border border-white/5">
-                  Daily
+                <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono text-slate-500 border border-white/[0.06]">
+                  daily
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+            <div className="flex items-center gap-2.5 mt-0.5 text-xs text-slate-400">
               {/* Streak Badge */}
-              <div className="flex items-center gap-1 font-mono font-bold text-amber-400">
-                <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <div className="flex items-center gap-1 font-mono font-medium text-amber-400">
+                <Flame className="w-3 h-3 fill-amber-400/80 text-amber-400" />
                 <SlidingNumber value={currentStreak} />
-                <span className="text-[11px] font-normal text-slate-500 ml-0.5">days</span>
+                <span className="text-[10px] font-normal text-slate-500 ml-0.5">d streak</span>
               </div>
 
               {/* Target / Unit value if count or duration */}
               {habit.type !== 'boolean' && habit.targetValue > 1 && (
-                <div className="flex items-center gap-1 text-slate-400">
-                  <span className="font-mono text-slate-300">{todayValue}</span>
-                  <span>/</span>
-                  <span className="font-mono">{habit.targetValue}</span>
-                  {habit.unit && <span className="text-[11px] text-slate-500">{habit.unit}</span>}
+                <div className="flex items-center gap-1 text-slate-400 font-mono text-[11px]">
+                  <span className="text-slate-300 font-medium">{todayValue}</span>
+                  <span className="text-slate-600">/</span>
+                  <span>{habit.targetValue}</span>
+                  {habit.unit && <span className="text-[10px] text-slate-500 ml-0.5">{habit.unit}</span>}
                 </div>
               )}
 
               {/* Category */}
               {habit.category && (
-                <span className="hidden md:inline-block text-slate-500">
+                <span className="hidden md:inline-block text-[11px] text-slate-500">
                   • {habit.category}
                 </span>
               )}
@@ -140,36 +139,30 @@ export function TactileHabitCard({
         <div className="flex items-center gap-2 shrink-0">
           <motion.button
             onClick={handleToggle}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.94 }}
             disabled={isToggling}
             aria-label={isDone ? `Mark ${habit.name} incomplete` : `Mark ${habit.name} complete`}
             className={cn(
-              'w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-all duration-300 shadow-md',
+              'w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer',
               isDone
-                ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/30'
-                : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10'
+                ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                : 'bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/[0.08]'
             )}
           >
             <AnimatePresence mode="wait">
               {isDone ? (
                 <motion.div
                   key="checked"
-                  initial={{ scale: 0, rotate: -45 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  exit={{ scale: 0 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                >
-                  <Check className="w-6 h-6 stroke-[3]" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="unchecked"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
-                  className="w-5 h-5 rounded-lg border-2 border-slate-500/60 group-hover:border-slate-300 transition-colors"
-                />
+                  transition={{ type: 'spring', stiffness: 500, damping: 24 }}
+                >
+                  <Check className="w-4 h-4 stroke-[3]" />
+                </motion.div>
+              ) : (
+                <div className="w-3.5 h-3.5 rounded border border-slate-500/70 group-hover:border-slate-300 transition-colors" />
               )}
             </AnimatePresence>
           </motion.button>

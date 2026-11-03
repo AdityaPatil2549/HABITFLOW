@@ -453,10 +453,7 @@ export function Layout() {
         Skip to content
       </a>
 
-      {/* Premium VisionOS Background Elements */}
-      <div className="bg-mesh" />
-      <div className="bg-mesh-blob" />
-      <div className="noise-overlay" />
+      {/* High-performance ambient backdrop */}
       <HabitsBackground />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
@@ -752,9 +749,9 @@ export function Layout() {
                 setQuickAddOpen(true);
               }}
               aria-label="Create new entry"
-              className="absolute -top-7 z-[60] w-[3.5rem] h-[3.5rem] cursor-pointer button-3d rounded-full flex items-center justify-center border-4 border-slate-900"
+              className="absolute -top-6 z-[60] w-12 h-12 cursor-pointer bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-full flex items-center justify-center border-4 border-[#08090C] shadow-lg shadow-emerald-500/25 active:scale-95 transition-all"
             >
-              <Plus size={26} className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" />
+              <Plus size={22} className="stroke-[2.5]" />
             </button>
           </div>
 

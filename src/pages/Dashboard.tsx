@@ -9,10 +9,6 @@ import {
   Maximize2,
   Minimize2,
   TrendingUp,
-  Target,
-  CheckSquare,
-  BarChart2,
-  User,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useHabitStore } from '../store/habitStore';
@@ -22,7 +18,6 @@ import { useModalStore } from '../store/modalStore';
 import { momentumEngine, DailyRitualGroup } from '../services/momentumEngine';
 import { TactileHabitCard } from '../components/habits/TactileHabitCard';
 import { SlidingNumber } from '../components/ui/motion/SlidingNumber';
-import { Dock, DockItem, DockLabel, DockIcon } from '../components/ui/motion/Dock';
 import type { HabitWithStreak } from '../types';
 import { format } from 'date-fns';
 
@@ -147,68 +142,63 @@ export function Dashboard() {
         </div>
       </header>
 
-      {/* ── MOMENTUM HUD METRICS ───────────────────────────────── */}
+      {/* ── Precision Metric HUD ──────────────────────────────── */}
       {!zenMode && (
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 my-8" aria-label="Momentum statistics">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 my-6" aria-label="Momentum statistics">
           {/* Momentum Score */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/40 border border-white/[0.06] backdrop-blur-md">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Momentum</span>
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
+          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.07]">
+            <p className="text-[11px] font-medium tracking-wide text-slate-400 mb-1">
+              Momentum Index
+            </p>
+            <div className="text-2xl font-bold text-white font-mono flex items-baseline gap-1">
               <SlidingNumber value={globalMomentum} />
-              <span className="text-xs text-emerald-400 font-sans font-bold">/ 100</span>
+              <span className="text-xs text-emerald-400 font-mono font-normal">/ 100</span>
             </div>
-            <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1">
-              <TrendingUp className="w-3 h-3 text-emerald-400" />
-              <span>Half-life decay resilient</span>
-            </div>
+            <p className="mt-1 text-[11px] text-slate-500">
+              Half-life decay weighted
+            </p>
           </div>
 
           {/* Completion Rate */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/40 border border-white/[0.06] backdrop-blur-md">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Completed</span>
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
+          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.07]">
+            <p className="text-[11px] font-medium tracking-wide text-slate-400 mb-1">
+              Completed Today
+            </p>
+            <div className="text-2xl font-bold text-white font-mono flex items-baseline gap-1">
               <SlidingNumber value={completionPercentage} />
-              <span className="text-xs text-slate-400 font-sans font-bold">%</span>
+              <span className="text-xs text-slate-400 font-mono font-normal">%</span>
             </div>
-            <div className="mt-2 text-[11px] text-slate-500">
-              <span className="font-mono text-slate-300 font-semibold">{completedCount}</span> of{' '}
-              <span className="font-mono text-slate-300 font-semibold">{totalHabits}</span> rituals
-            </div>
+            <p className="mt-1 text-[11px] text-slate-500">
+              <span className="font-mono text-slate-300 font-medium">{completedCount}</span> of{' '}
+              <span className="font-mono text-slate-300 font-medium">{totalHabits}</span> rituals
+            </p>
           </div>
 
           {/* Top Active Streak */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/40 border border-white/[0.06] backdrop-blur-md">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-              <span>Top Streak</span>
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-amber-400 font-mono flex items-baseline gap-1">
+          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.07]">
+            <p className="text-[11px] font-medium tracking-wide text-slate-400 mb-1">
+              Best Streak
+            </p>
+            <div className="text-2xl font-bold text-amber-400 font-mono flex items-baseline gap-1">
               <SlidingNumber value={maxStreak} />
-              <span className="text-xs text-amber-400/80 font-sans font-bold">days</span>
+              <span className="text-xs text-amber-400/70 font-mono font-normal">d</span>
             </div>
-            <div className="mt-2 text-[11px] text-slate-500">
-              Personal best consistency
-            </div>
+            <p className="mt-1 text-[11px] text-slate-500">
+              Consecutive days active
+            </p>
           </div>
 
-          {/* XP Level */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/40 border border-white/[0.06] backdrop-blur-md">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Energy XP</span>
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-indigo-400 font-mono">
+          {/* Energy XP */}
+          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.07]">
+            <p className="text-[11px] font-medium tracking-wide text-slate-400 mb-1">
+              Accumulated XP
+            </p>
+            <div className="text-2xl font-bold text-slate-200 font-mono">
               <SlidingNumber value={userXP?.total || 0} />
             </div>
-            <div className="mt-2 text-[11px] text-slate-500">
-              Tier: <span className="text-slate-300 font-semibold">{userXP?.level || 'Builder'}</span>
-            </div>
+            <p className="mt-1 text-[11px] text-slate-500">
+              Rank: <span className="text-slate-300 font-medium">{userXP?.level || 'Builder'}</span>
+            </p>
           </div>
         </section>
       )}
@@ -318,44 +308,6 @@ export function Dashboard() {
           )}
         </div>
       )}
-
-      {/* ── TACTILE FLOATING DOCK (Navigation) ────────────────────── */}
-      <Dock className="border-white/10 bg-slate-950/85">
-        <DockItem onClick={() => navigate('/dashboard')} active>
-          <DockLabel>Today Ritual</DockLabel>
-          <DockIcon>
-            <Zap className="w-5 h-5 text-emerald-400" />
-          </DockIcon>
-        </DockItem>
-
-        <DockItem onClick={() => navigate('/habits')}>
-          <DockLabel>All Habits</DockLabel>
-          <DockIcon>
-            <Target className="w-5 h-5" />
-          </DockIcon>
-        </DockItem>
-
-        <DockItem onClick={() => navigate('/tasks')}>
-          <DockLabel>Tasks</DockLabel>
-          <DockIcon>
-            <CheckSquare className="w-5 h-5" />
-          </DockIcon>
-        </DockItem>
-
-        <DockItem onClick={() => navigate('/analytics')}>
-          <DockLabel>Momentum Analytics</DockLabel>
-          <DockIcon>
-            <BarChart2 className="w-5 h-5" />
-          </DockIcon>
-        </DockItem>
-
-        <DockItem onClick={() => navigate('/profile')}>
-          <DockLabel>Profile & Squad</DockLabel>
-          <DockIcon>
-            <User className="w-5 h-5" />
-          </DockIcon>
-        </DockItem>
-      </Dock>
     </div>
   );
 }

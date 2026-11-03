@@ -1150,16 +1150,7 @@ body {
 
 /* â”€â”€ Premium Grain Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .noise-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.035;
-  mix-blend-mode: overlay;
-}
-.light .noise-overlay {
-  opacity: 0.05;
+  display: none;
 }
 
 /* â”€â”€ Custom macOS Style Scrollbars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -1262,41 +1253,11 @@ body {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background-color: var(--color-bg-base);
-  overflow: hidden;
-}
-
-.bg-mesh::before, .bg-mesh::after, .bg-mesh-blob {
-  content: '';
-  position: absolute;
-  filter: blur(80px);
-  border-radius: 50%;
-  animation: float 20s infinite alternate;
-  opacity: 0.6;
+  background: #08090C;
   pointer-events: none;
-  will-change: transform;
-  transform: translateZ(0);
 }
-
-.bg-mesh::before {
-  top: -10%; left: -10%;
-  width: 50vw; height: 50vw;
-  background: var(--color-mesh-1);
-}
-
-.bg-mesh::after {
-  bottom: -10%; right: -10%;
-  width: 60vw; height: 60vw;
-  background: var(--color-mesh-2);
-  animation-delay: -5s;
-}
-
-.bg-mesh-blob {
-  top: 30%; left: 40%;
-  width: 40vw; height: 40vw;
-  background: var(--color-mesh-3);
-  animation-delay: -10s;
-  animation-duration: 25s;
+.bg-mesh::before, .bg-mesh::after, .bg-mesh-blob {
+  display: none;
 }
 
 /* â”€â”€ VisionOS Glass Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */

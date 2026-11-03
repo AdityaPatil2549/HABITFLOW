@@ -17,12 +17,21 @@ export function SpotlightCard({
 }: SpotlightCardProps) {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const rectRef = useRef<{ left: number; top: number } | null>(null);
+
+  const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top } = e.currentTarget.getBoundingClientRect();
+    rectRef.current = { left, top };
+  }, []);
 
   const handleMouseMove = useCallback(
-    ({ currentTarget, clientX, clientY }: React.MouseEvent<HTMLDivElement>) => {
-      const { left, top } = currentTarget.getBoundingClientRect();
-      mouseX.set(clientX - left);
-      mouseY.set(clientY - top);
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!rectRef.current) {
+        const { left, top } = e.currentTarget.getBoundingClientRect();
+        rectRef.current = { left, top };
+      }
+      mouseX.set(e.clientX - rectRef.current.left);
+      mouseY.set(e.clientY - rectRef.current.top);
     },
     [mouseX, mouseY]
   );
@@ -30,6 +39,7 @@ export function SpotlightCard({
   return (
     <div
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       className={cn(
         'group relative rounded-2xl border border-white/[0.08] bg-slate-900/60 p-6 shadow-xl backdrop-blur-xl overflow-hidden transition-all duration-300 hover:border-white/20',
