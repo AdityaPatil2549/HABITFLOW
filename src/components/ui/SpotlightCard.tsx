@@ -1,75 +1,47 @@
-import { useRef, useState, ReactNode } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import React, { useRef, useCallback } from 'react';
 import { cn } from '../../lib/utils';
 
-interface Props extends HTMLMotionProps<'div'> {
-  children: ReactNode;
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
 export function SpotlightCard({ children, className, onClick, ...rest }: Props) {
   const divRef = useRef<HTMLDivElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [opacity, setOpacity] = useState(0);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!divRef.current || isFocused) return;
-
-    const div = divRef.current;
-    const rect = div.getBoundingClientRect();
-
-    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    setOpacity(1);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    setOpacity(0);
-  };
-
-  const handleMouseEnter = () => {
-    setOpacity(1);
-  };
-
-  const handleMouseLeave = () => {
-    setOpacity(0);
-  };
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = divRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    el.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    el.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  }, []);
 
   return (
-    <motion.div
+    <div
       ref={divRef}
       onMouseMove={handleMouseMove}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       onClick={onClick}
       className={cn(
-        'relative overflow-hidden vision-panel group',
+        'relative overflow-hidden vision-panel group transition-transform duration-200 active:scale-[0.98]',
         onClick ? 'cursor-pointer' : '',
         className
       )}
-      whileHover={onClick ? { scale: 0.99 } : undefined}
-      whileTap={onClick ? { scale: 0.97 } : undefined}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       {...rest}
     >
-      {/* The animated spotlight gradient */}
+      {/* High-Performance CSS variable spotlight — zero React re-renders */}
       <div
         className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-0"
         style={{
-          opacity,
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, oklch(84% 0.19 80.46 / 0.08), transparent 40%)`,
+          background: `radial-gradient(500px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(16, 185, 129, 0.08), transparent 60%)`,
         }}
       />
 
-      {/* Content wrapper to ensure it sits above the spotlight */}
+      {/* Content wrapper */}
       <div className="relative z-10 w-full h-full">{children}</div>
-    </motion.div>
+    </div>
   );
 }
+
+export default SpotlightCard;

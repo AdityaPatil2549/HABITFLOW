@@ -34,34 +34,46 @@ export function Magnetic({
   const springX = useSpring(x, springOptions);
   const springY = useSpring(y, springOptions);
 
+  // Only listen to mouse movements when hovered to avoid global layout thrashing
   useEffect(() => {
+    if (!isHovered) {
+      x.set(0);
+      y.set(0);
+      return;
+    }
+
+    let ticking = false;
     const calculateDistance = (e: MouseEvent) => {
-      if (ref.current) {
-        const rect = ref.current.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const distanceX = e.clientX - centerX;
-        const distanceY = e.clientY - centerY;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (ref.current) {
+            const rect = ref.current.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const distanceX = e.clientX - centerX;
+            const distanceY = e.clientY - centerY;
+            const absoluteDistance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
 
-        const absoluteDistance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
-
-        if (isHovered && absoluteDistance <= range) {
-          const scale = 1 - absoluteDistance / range;
-          x.set(distanceX * intensity * scale);
-          y.set(distanceY * intensity * scale);
-        } else {
-          x.set(0);
-          y.set(0);
-        }
+            if (absoluteDistance <= range) {
+              const scale = 1 - absoluteDistance / range;
+              x.set(distanceX * intensity * scale);
+              y.set(distanceY * intensity * scale);
+            } else {
+              x.set(0);
+              y.set(0);
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    document.addEventListener('mousemove', calculateDistance);
-
+    window.addEventListener('mousemove', calculateDistance, { passive: true });
     return () => {
-      document.removeEventListener('mousemove', calculateDistance);
+      window.removeEventListener('mousemove', calculateDistance);
     };
-  }, [ref, isHovered, intensity, range]);
+  }, [isHovered, intensity, range, x, y]);
 
   useEffect(() => {
     if (actionArea === 'parent' && ref.current?.parentElement) {

@@ -4,11 +4,12 @@ export function HabitsBackground() {
   return (
     <div
       className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden bg-[#07080b]"
+      style={{ transform: 'translateZ(0)' }}
       aria-hidden="true"
     >
-      {/* High-End Aurora Mesh Radial Blooms */}
+      {/* High-End Aurora Mesh Radial Blooms (Native GPU gradients, 0ms filter overhead) */}
       <div
-        className="absolute top-0 inset-x-0 h-[650px] opacity-90 transition-opacity duration-1000"
+        className="absolute top-0 inset-x-0 h-[650px] opacity-90"
         style={{
           background: `
             radial-gradient(ellipse 65% 45% at 50% -5%, rgba(99, 102, 241, 0.22), rgba(147, 51, 234, 0.08), transparent 75%),
@@ -18,23 +19,20 @@ export function HabitsBackground() {
         }}
       />
 
-      {/* Subtle luxury bottom accent bloom */}
+      {/* Subtle luxury bottom accent bloom — naturally diffused gradient without expensive blur filter */}
       <div
-        className="absolute bottom-0 right-1/4 w-[700px] h-[400px] opacity-40 pointer-events-none"
+        className="absolute -bottom-20 right-1/4 w-[600px] h-[350px] opacity-30 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(168, 85, 247, 0.15), transparent 70%)',
-          filter: 'blur(90px)',
+          background: 'radial-gradient(ellipse at center, rgba(168, 85, 247, 0.20) 0%, rgba(168, 85, 247, 0.05) 45%, transparent 70%)',
         }}
       />
 
-      {/* Crisp hairline grid texture (Static CSS, 0ms GPU overhead) */}
+      {/* Crisp hairline grid texture (Lightweight background pattern without GPU mask) */}
       <div
-        className="absolute inset-0 opacity-[0.25]"
+        className="absolute inset-0 opacity-[0.14] pointer-events-none"
         style={{
-          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)',
           backgroundSize: '28px 28px',
-          maskImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 95%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 95%)',
         }}
       />
     </div>

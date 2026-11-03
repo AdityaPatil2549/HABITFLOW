@@ -6,6 +6,10 @@ import path from 'path';
 
 export default defineConfig({
   root: __dirname,
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+  },
   plugins: [
     tailwindcss(),
     react(),

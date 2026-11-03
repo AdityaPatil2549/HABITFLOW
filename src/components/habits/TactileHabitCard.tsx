@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Flame, ChevronRight, Zap, Clock, Sparkles } from 'lucide-react';
 import type { HabitWithStreak } from '../../types';
-import { BorderTrail } from '../ui/motion/BorderTrail';
 import { SlidingNumber } from '../ui/motion/SlidingNumber';
 import { soundService } from '../../services/soundService';
 import { cn } from '../../lib/utils';
@@ -96,25 +95,17 @@ export function TactileHabitCard({
     >
       <div
         className={cn(
-          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl transition-all duration-300 backdrop-blur-2xl overflow-hidden',
+          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl transition-[transform,border-color,background-color,box-shadow] duration-200 backdrop-blur-md overflow-hidden will-change-transform',
           isDone
-            ? 'bg-[#0b1414]/75 border border-emerald-500/35 shadow-[0_12px_32px_rgba(16,185,129,0.12)]'
-            : 'bg-[#0f111a]/70 border border-white/[0.08] hover:border-white/[0.18] hover:bg-[#141724]/85 shadow-[0_12px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:-translate-y-0.5'
+            ? 'bg-[#0b1414]/85 border border-emerald-500/40 shadow-[0_8px_24px_rgba(16,185,129,0.15)]'
+            : 'bg-[#0e101a]/80 border border-white/[0.08] hover:border-white/[0.18] hover:bg-[#131622]/90 shadow-[0_8px_24px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] hover:-translate-y-0.5'
         )}
       >
         {/* Subtle ambient backglow */}
         <div
-          className="absolute -left-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-30 pointer-events-none transition-opacity duration-500 group-hover:opacity-60"
-          style={{ background: isDone ? 'rgba(16, 185, 129, 0.25)' : theme.glow }}
+          className="absolute -left-10 -top-10 w-36 h-36 rounded-full opacity-30 pointer-events-none transition-opacity duration-300 group-hover:opacity-50"
+          style={{ background: isDone ? 'radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%)' : `radial-gradient(circle, ${theme.glow} 0%, transparent 70%)` }}
         />
-
-        {/* Celebratory laser border trail when completed */}
-        {isDone && (
-          <BorderTrail
-            className="from-emerald-400 via-teal-300 to-transparent"
-            size={60}
-          />
-        )}
 
         {/* Left Side: Rich Icon Capsule + Title + Metadata */}
         <div className="flex items-center gap-4 min-w-0 z-10">
