@@ -174,10 +174,14 @@ export function SquadPage() {
       <div className="space-y-6 relative pb-10">
         <Suspense fallback={null}><GamificationBackground /></Suspense>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight">
-            <TextEffect as="span" per="word" preset="blur">Squad</TextEffect>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 mb-2 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <span>Multiplayer Momentum</span>
+          </div>
+          <h1 className="text-3xl font-black text-white tracking-tight">
+            Accountability Squads
           </h1>
-          <p className="text-sm dark:text-slate-400 text-slate-600 mt-1">Accountability through community</p>
+          <p className="text-sm text-slate-400 mt-1">Consistency compounds faster when shared with peers.</p>
         </div>
 
         {/* Hero */}
@@ -185,28 +189,29 @@ export function SquadPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <TiltCard tiltIntensity={5}>
-            <div className="relative overflow-hidden rounded-2xl dark:bg-black/20 bg-white/50 backdrop-blur-md border dark:border-blue-500/30 border-blue-200/50 p-8 text-center shadow-2xl dark:shadow-blue-500/10 shadow-blue-500/5">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/5 to-transparent animate-[shimmer_3s_infinite] pointer-events-none" />
+          <TiltCard tiltIntensity={4}>
+            <div className="relative overflow-hidden rounded-3xl bg-[#0e111a]/75 backdrop-blur-2xl border border-white/[0.08] p-8 sm:p-12 text-center shadow-[0_16px_36px_rgba(0,0,0,0.45)] group">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-emerald-500/5 pointer-events-none" />
               <div className="relative z-10">
-                <div className="text-6xl mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">👥</div>
-                <h2 className="text-xl font-bold dark:text-white text-slate-900 mb-2">Better Together</h2>
-                <p className="text-sm dark:text-slate-300 text-slate-600 w-full max-w-[400px] mx-auto mb-6 leading-relaxed">
-                  You're <span className="text-brand-500 font-bold">65% more likely</span> to reach your
-                  goals with an accountability partner. Create or join a squad of up to 5 people.
+                <div className="w-20 h-20 rounded-3xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center mx-auto mb-5 text-4xl shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                  👥
+                </div>
+                <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Better Together</h2>
+                <p className="text-sm text-slate-300 w-full max-w-md mx-auto mb-8 leading-relaxed">
+                  You're <span className="text-emerald-400 font-bold">65% more likely</span> to maintain atomic habits with an accountability squad. Form or join a private circle of up to 5 performers.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-20">
+                <div className="flex flex-col sm:flex-row gap-3.5 justify-center relative z-20">
                   <button
                     onClick={() => setShowCreate(true)}
-                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold hover:shadow-lg hover:shadow-brand-500/20 transition-all active:scale-95"
+                    className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-sm shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
                   >
-                    <Plus size={18} />
+                    <Plus size={18} strokeWidth={2.5} />
                     Create a Squad
                   </button>
                   <button
                     onClick={() => setShowJoin(true)}
-                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl dark:bg-white/5 dark:border-white/10 dark:text-white dark:hover:bg-white/10 bg-slate-900/5 border-slate-900/10 text-slate-900 hover:bg-slate-900/10 border transition-all active:scale-95"
+                    className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white hover:bg-white/[0.1] active:scale-95 transition-all font-semibold text-sm cursor-pointer"
                   >
                     <LogIn size={18} />
                     Join a Squad
@@ -220,9 +225,9 @@ export function SquadPage() {
         {/* How it works */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { icon: '🏋️', title: 'Compete', desc: 'See who has the longest streak in your group' },
-            { icon: '📊', title: 'Track', desc: 'View daily completion rates for all members' },
-            { icon: '🔥', title: 'Motivate', desc: "Don't let your squad down — stay consistent" },
+            { icon: '🏋️', title: 'Compete', desc: 'See who maintains unbroken discipline and leading streak heat' },
+            { icon: '📊', title: 'Track', desc: 'View live ritual completion rates across your inner circle' },
+            { icon: '🔥', title: 'Motivate', desc: "Shared momentum pool — don't break the squad chain" },
           ].map((item, i) => (
             <motion.div
               key={item.title}
@@ -231,10 +236,10 @@ export function SquadPage() {
               transition={{ delay: 0.1 + i * 0.1 }}
             >
               <TiltCard tiltIntensity={6} className="h-full">
-                <div className="rounded-2xl dark:bg-black/20 bg-white/50 backdrop-blur-md border dark:border-white/10 border-slate-900/10 p-5 text-center h-full relative z-10">
+                <div className="rounded-2xl bg-[#0e111a]/60 backdrop-blur-xl border border-white/[0.08] p-6 text-center h-full relative z-10 shadow-lg">
                   <div className="text-3xl mb-3 drop-shadow-md">{item.icon}</div>
-                  <h3 className="text-sm font-bold dark:text-white text-slate-900 mb-1">{item.title}</h3>
-                  <p className="text-xs dark:text-slate-400 text-slate-600">{item.desc}</p>
+                  <h3 className="text-base font-bold text-white mb-1.5">{item.title}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
                 </div>
               </TiltCard>
             </motion.div>
@@ -249,34 +254,33 @@ export function SquadPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                className="fixed inset-0 z-[200] bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
                 onClick={() => setShowCreate(false)}
               >
                 <motion.div
-                  initial={{ scale: 0.9, y: 20 }}
+                  initial={{ scale: 0.95, y: 20 }}
                   animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0.9, y: 20 }}
+                  exit={{ scale: 0.95, y: 20 }}
                   onClick={e => e.stopPropagation()}
-                  className="w-[384px] max-w-[90vw] rounded-2xl dark:bg-slate-900 bg-white border dark:border-white/10 border-slate-900/10 p-6 flex flex-col"
-                  style={{ minWidth: '300px' }}
+                  className="w-[400px] max-w-[90vw] rounded-3xl bg-[#0e111a]/95 backdrop-blur-2xl border border-white/[0.12] p-7 flex flex-col shadow-2xl relative overflow-hidden"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold dark:text-white text-slate-900">Create Squad</h3>
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="text-xl font-black text-white">Create Squad</h3>
                     <button
                       onClick={() => setShowCreate(false)}
-                      className="text-slate-400 dark:hover:text-white hover:text-slate-900"
+                      className="w-8 h-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
                     >
-                      <X size={18} />
+                      <X size={16} />
                     </button>
                   </div>
                   <input
                     type="text"
                     value={squadName}
                     onChange={e => setSquadName(e.target.value)}
-                    placeholder="Squad name..."
+                    placeholder="Squad name (e.g. 5AM Club)..."
                     maxLength={30}
                     autoFocus
-                    className="w-full dark:bg-white/5 bg-slate-900/5 border dark:border-white/10 border-slate-900/10 rounded-xl px-4 py-3 text-sm dark:text-white text-slate-900 dark:placeholder:text-slate-500 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4"
+                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 mb-5"
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleCreate();
                     }}
@@ -284,7 +288,7 @@ export function SquadPage() {
                   <button
                     onClick={handleCreate}
                     disabled={!squadName.trim() || loading}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold disabled:opacity-50 transition-all active:scale-95"
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.3)]"
                   >
                     {loading ? 'Creating...' : 'Create Squad'}
                   </button>
@@ -303,34 +307,33 @@ export function SquadPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                className="fixed inset-0 z-[200] bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
                 onClick={() => setShowJoin(false)}
               >
                 <motion.div
-                  initial={{ scale: 0.9, y: 20 }}
+                  initial={{ scale: 0.95, y: 20 }}
                   animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0.9, y: 20 }}
+                  exit={{ scale: 0.95, y: 20 }}
                   onClick={e => e.stopPropagation()}
-                  className="w-[384px] max-w-[90vw] rounded-2xl dark:bg-slate-900 bg-white border dark:border-white/10 border-slate-900/10 p-6 flex flex-col"
-                  style={{ minWidth: '300px' }}
+                  className="w-[400px] max-w-[90vw] rounded-3xl bg-[#0e111a]/95 backdrop-blur-2xl border border-white/[0.12] p-7 flex flex-col shadow-2xl relative overflow-hidden"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold dark:text-white text-slate-900">Join Squad</h3>
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="text-xl font-black text-white">Join Squad</h3>
                     <button
                       onClick={() => setShowJoin(false)}
-                      className="text-slate-400 dark:hover:text-white hover:text-slate-900"
+                      className="w-8 h-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
                     >
-                      <X size={18} />
+                      <X size={16} />
                     </button>
                   </div>
                   <input
                     type="text"
                     value={inviteCode}
                     onChange={e => setInviteCode(e.target.value.toUpperCase())}
-                    placeholder="Enter 6-character code..."
+                    placeholder="Enter 6-character code"
                     maxLength={6}
                     autoFocus
-                    className="w-full dark:bg-white/5 bg-slate-900/5 border dark:border-white/10 border-slate-900/10 rounded-xl px-4 py-3 text-sm dark:text-white text-slate-900 dark:placeholder:text-slate-500 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 mb-4 text-center tracking-[0.3em] font-mono text-lg"
+                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 mb-5 text-center tracking-[0.3em] font-mono text-lg"
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleJoin();
                     }}
@@ -338,7 +341,7 @@ export function SquadPage() {
                   <button
                     onClick={handleJoin}
                     disabled={inviteCode.length !== 6 || loading}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-bold disabled:opacity-50 transition-all active:scale-95"
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.3)]"
                   >
                     {loading ? 'Joining...' : 'Join Squad'}
                   </button>
