@@ -55,7 +55,7 @@
       "id": "STORY-009",
       "title": "Weekly Retrospective & Correlation Engine",
       "description": "Demolish 994-line WeeklyReviewPage.tsx, wire client-side Pearson correlation matrix linking habits to mood, and build high-contrast retrospective summaries.",
-      "passes": false
+      "passes": true
     },
     {
       "id": "STORY-010",

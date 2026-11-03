@@ -109,3 +109,18 @@
   - Reduced tasks page chunk size from 46.00 kB down to 18.52 kB.
 - Verified compilation and build: tsc && vite build compiled cleanly in 5.19s with 0 errors.
 ---
+
+## 2026-11-03 - STORY-009: Weekly Retrospective & Correlation Engine
+- Demolished the 994-line legacy WeeklyReviewPage.tsx monolith.
+- Purged ReviewTiltCard forced synchronous layouts (getBoundingClientRect in onMouseMove).
+- Built modular, high-craft Linear / Things 3 retrospective workstation in src/components/review/workstation/:
+  - ReviewSummaryCard.tsx (168 lines): Type-forward KPI cards with SlidingNumber, SVG circular velocity arc, and contextual motivational synthesis.
+  - HabitMoodCorrelationMatrix.tsx (176 lines): Real in-browser Pearson correlation coefficient engine (r-calc) linking daily habit completions to mood valence, habit pairs, and day-of-week patterns.
+  - HabitPerformanceList.tsx (177 lines): Tabular habit execution roster with 7-day mini tactile execution dots, 30-day baseline rates, and Star / Needs Care indicators.
+  - WeeklyReflectionCard.tsx (179 lines): Structured qualitative review with 5-tier energy rhythm picker, tri-field reflection (Win, Friction, Intention), and local storage persistence.
+  - MilestoneShareModal.tsx (203 lines): High-resolution obsidian share artifact generator exporting crisp 2x PNGs via html-to-image and clipboard text copying.
+- Rebuilt src/pages/WeeklyReviewPage.tsx as an elegant 273-line orchestrator:
+  - Segmented view controller with keyboard shortcuts ('1', '2', '3', '4' for tabs, 'E' to export).
+  - Reduced WeeklyReviewPage chunk size down to 32.31 kB (8.34 kB gzipped).
+- Verified compilation and build: tsc && vite build compiled cleanly in 6.73s with 0 errors.
+---
