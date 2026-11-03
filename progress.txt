@@ -65,5 +65,20 @@
 - Updated PWA and theme meta:
   - Set theme_color and background_color to Obsidian deep dark #08090C in vite.config.ts and index.html.
   - Workbox PWA precache verified generating sw.js with 82 entries.
-- Verified full production build (tsc && vite build) compiled cleanly in 12.26s.
+---
+
+## 2026-11-03 - STORY-006: Compositor Purge & Shell Polish
+- Purged critical compositor lag traps in src/index.css:
+  - Neutralized .noise-overlay (removed full-viewport fixed mix-blend-mode: overlay).
+  - Replaced .bg-mesh 80px blur translation keyframe loops with static zero-overhead obsidian ground (#08090C).
+- Eliminated forced synchronous layouts in src/components/ui/motion/SpotlightCard.tsx:
+  - Cached bounding rect on onMouseEnter, decoupling getBoundingClientRect() from onMouseMove.
+- Fixed GPU memory leak in src/components/ui/motion/BorderTrail.tsx:
+  - Changed repeat from Infinity to 0 (single 1.4s celebratory laser sweep on habit completion).
+- Unified App Shell and navigation in src/pages/Dashboard.tsx and src/components/layout/Layout.tsx:
+  - Removed duplicate bottom Dock from Dashboard to eliminate navigation collision with desktop sidebar and mobile nav.
+  - Refined Dashboard KPI HUD into clean type-forward metrics (taste-skill section 2 compliance).
+  - Modernized mobile action button in Layout.tsx.
+- Refined TactileHabitCard.tsx into dense Linear/Things 3 grade cards (p-3.5 sm:p-4, tabular figures, muted streak badge).
+- Verified production build compiled cleanly with 0 errors in commit d2daec0.
 ---

@@ -1,7 +1,7 @@
 {
   "project": "HabitFlow",
   "branchName": "main",
-  "description": "World-Class, Offline-First Habit Tracking & Ritual Platform",
+  "description": "50-Million Tier World-Class Offline-First Habit Tracking & Ritual Platform",
   "stories": [
     {
       "id": "STORY-001",
@@ -32,6 +32,36 @@
       "title": "Analytics, Sound Haptics & PWA Polish",
       "description": "Build high-contrast SVG activity heatmap, Web Audio micro-haptics, and zero-latency offline persistence.",
       "passes": true
+    },
+    {
+      "id": "STORY-006",
+      "title": "Compositor Purge & Shell Polish",
+      "description": "Eliminate full-viewport mix-blend-mode noise overlay, purge 80px blur animation loops, cache spotlight rects to prevent layout reflows, and remove duplicate dock collision.",
+      "passes": true
+    },
+    {
+      "id": "STORY-007",
+      "title": "Habits Ecosystem Complete Rebuild",
+      "description": "Demolish 1,673-line legacy HabitsPage.tsx and replace with modular, dense Linear/Things 3 grade habit list with keyboard shortcuts (C, Space, E, D) and zero neon slop.",
+      "passes": false
+    },
+    {
+      "id": "STORY-008",
+      "title": "Tasks Workspace Complete Rebuild",
+      "description": "Demolish 854-line legacy TasksPage.tsx, purge particle bursts and circular rings, and build a high-speed List and Kanban board workspace with fluid drag-and-drop.",
+      "passes": false
+    },
+    {
+      "id": "STORY-009",
+      "title": "Weekly Retrospective & Correlation Engine",
+      "description": "Demolish 994-line WeeklyReviewPage.tsx, wire client-side Pearson correlation matrix linking habits to mood, and build high-contrast retrospective summaries.",
+      "passes": false
+    },
+    {
+      "id": "STORY-010",
+      "title": "Final System Verification & 120 FPS Audit",
+      "description": "Perform full multi-route audit, verify 0 compiler errors, confirm sub-15s production build, and deliver 120 FPS performance across all viewports.",
+      "passes": false
     }
   ]
 }
