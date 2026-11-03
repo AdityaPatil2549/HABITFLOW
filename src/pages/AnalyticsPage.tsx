@@ -1046,13 +1046,13 @@ function ChartCard({
     <InView
       variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="rounded-2xl p-6 relative overflow-hidden group hover:shadow-md transition-[box-shadow,transform] duration-300 ease-out border shadow-sm bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10"
+      className="rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/25 transition-all duration-300 ease-out border border-white/[0.08] bg-[#0e101a]/70 backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)]"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500" />
       <div className="mb-5 relative z-10">
-        <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight">{title}</h3>
+        <h3 className="text-base font-black text-white tracking-tight">{title}</h3>
         {subtitle && (
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs font-medium text-slate-400 mt-1">
             {subtitle}
           </p>
         )}
@@ -1245,13 +1245,14 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="relative z-10 flex items-end justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
-            Analytics
-          </p>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            <TextEffect as="span" per="word" preset="blur">Your Progress Report</TextEffect>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 mb-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Telemetry & Insights</span>
+          </div>
+          <h1 className="text-3xl font-black text-white tracking-tight">
+            Your Progress Report
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+          <p className="text-slate-400 text-sm mt-1">
             Track, analyze, and improve your habits over time.
           </p>
         </div>

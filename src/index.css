@@ -2,6 +2,8 @@
 @import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,400,700,500,600,300&display=swap');
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-on-surface-variant: #c7c4d7;
   --color-on-secondary: #490080;
@@ -50,14 +52,6 @@
   --color-on-primary-container: #0d0096;
   --color-outline-variant: oklch(74% 0.09 82 / 0.6); /* gold-hairline-strong */
   --color-on-tertiary: #003824;
-  --spacing-md: 16px;
-  --spacing-unit: 4px;
-  --spacing-xl: 40px;
-  --spacing-sm: 8px;
-  --spacing-container-padding: 24px;
-  --spacing-gutter: 16px;
-  --spacing-xs: 4px;
-  --spacing-lg: 24px;
   --radius: 2px;
   --radius-lg: 4px;
   --radius-xl: 6px;
