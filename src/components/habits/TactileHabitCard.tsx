@@ -7,6 +7,7 @@ import { BorderTrail } from '../ui/motion/BorderTrail';
 import { SlidingNumber } from '../ui/motion/SlidingNumber';
 import { soundService } from '../../services/soundService';
 import { cn } from '../../lib/utils';
+import { getHabitEmoji } from '../../lib/emoji';
 
 interface TactileHabitCardProps {
   habit: HabitWithStreak;
@@ -86,7 +87,7 @@ export function TactileHabitCard({
                 : 'bg-white/[0.04] text-slate-300 border border-white/[0.06]'
             )}
           >
-            {habit.icon || '🎯'}
+            {getHabitEmoji(habit.icon)}
           </div>
 
           <div className="min-w-0">

@@ -15,6 +15,7 @@ import type { HabitWithStreak } from '../../../types';
 import { SlidingNumber } from '../../ui/motion/SlidingNumber';
 import { soundService } from '../../../services/soundService';
 import { cn } from '../../../lib/utils';
+import { getHabitEmoji } from '../../../lib/emoji';
 
 export interface HabitRowProps {
   habit: HabitWithStreak;
@@ -98,7 +99,7 @@ export function HabitRow({
 
         {/* Category Icon */}
         <span className="text-base select-none shrink-0" aria-hidden="true">
-          {habit.icon || '🎯'}
+          {getHabitEmoji(habit.icon)}
         </span>
 
         {/* Habit Name & Metadata */}

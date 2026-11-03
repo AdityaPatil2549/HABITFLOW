@@ -4,6 +4,7 @@ import { X, Check, Sparkles, Layers, Clock, Hash, CheckSquare } from 'lucide-rea
 import type { Habit, HabitType, HabitFrequency, HabitWithStreak } from '../../../types';
 import { soundService } from '../../../services/soundService';
 import { cn } from '../../../lib/utils';
+import { getHabitEmoji } from '../../../lib/emoji';
 
 export interface HabitEditorDrawerProps {
   isOpen: boolean;
@@ -45,7 +46,7 @@ export function HabitEditorDrawer({
   useEffect(() => {
     if (initialHabit) {
       setName(initialHabit.name);
-      setIcon(initialHabit.icon || '🎯');
+      setIcon(getHabitEmoji(initialHabit.icon));
       setCategory(initialHabit.category || 'Health');
       setType(initialHabit.type || 'boolean');
       setFrequency(initialHabit.frequency || 'daily');

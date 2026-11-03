@@ -19,9 +19,9 @@ const GOAL_TEMPLATES = {
     icon: '🏃',
     color: '#10b981',
     habits: [
-      { name: 'Drink 8 glasses of water', icon: 'droplet', color: '#06b6d4', category: 'Health' },
-      { name: 'Exercise for 30 minutes', icon: 'activity', color: '#10b981', category: 'Health' },
-      { name: 'Sleep 8 hours', icon: 'moon', color: '#8b5cf6', category: 'Health' },
+      { name: 'Drink 8 glasses of water', icon: '💧', color: '#06b6d4', category: 'Health' },
+      { name: 'Exercise for 30 minutes', icon: '🏃', color: '#10b981', category: 'Health' },
+      { name: 'Sleep 8 hours', icon: '🌙', color: '#8b5cf6', category: 'Health' },
     ],
   },
   productivity: {
@@ -29,11 +29,11 @@ const GOAL_TEMPLATES = {
     icon: '🚀',
     color: '#6366f1',
     habits: [
-      { name: 'Deep work session (2h)', icon: 'zap', color: '#f59e0b', category: 'Work' },
-      { name: 'Plan tomorrow tonight', icon: 'checkSquare', color: '#6366f1', category: 'Work' },
+      { name: 'Deep work session (2h)', icon: '⚡', color: '#f59e0b', category: 'Work' },
+      { name: 'Plan tomorrow tonight', icon: '📝', color: '#6366f1', category: 'Work' },
       {
         name: 'No social media before noon',
-        icon: 'shield',
+        icon: '🛡️',
         color: '#f43f5e',
         category: 'Personal',
       },
@@ -44,9 +44,9 @@ const GOAL_TEMPLATES = {
     icon: '📚',
     color: '#f59e0b',
     habits: [
-      { name: 'Read for 30 minutes', icon: 'book', color: '#f59e0b', category: 'Learning' },
-      { name: 'Practice a new skill', icon: 'code', color: '#8b5cf6', category: 'Learning' },
-      { name: 'Review flashcards', icon: 'layers', color: '#06b6d4', category: 'Learning' },
+      { name: 'Read for 30 minutes', icon: '📚', color: '#f59e0b', category: 'Learning' },
+      { name: 'Practice a new skill', icon: '💻', color: '#8b5cf6', category: 'Learning' },
+      { name: 'Review flashcards', icon: '🥞', color: '#06b6d4', category: 'Learning' },
     ],
   },
   mindfulness: {
@@ -54,14 +54,14 @@ const GOAL_TEMPLATES = {
     icon: '🧘',
     color: '#8b5cf6',
     habits: [
-      { name: 'Meditate for 10 minutes', icon: 'heart', color: '#8b5cf6', category: 'Personal' },
+      { name: 'Meditate for 10 minutes', icon: '🧘', color: '#8b5cf6', category: 'Personal' },
       {
         name: 'Write in gratitude journal',
-        icon: 'feather',
+        icon: '✍️',
         color: '#f59e0b',
         category: 'Personal',
       },
-      { name: 'Evening walk', icon: 'map', color: '#10b981', category: 'Health' },
+      { name: 'Evening walk', icon: '🚶', color: '#10b981', category: 'Health' },
     ],
   },
   finance: {
@@ -69,9 +69,9 @@ const GOAL_TEMPLATES = {
     icon: '💰',
     color: '#22c55e',
     habits: [
-      { name: 'Track all expenses', icon: 'dollarSign', color: '#22c55e', category: 'Finance' },
-      { name: 'Review savings goal', icon: 'trendingUp', color: '#6366f1', category: 'Finance' },
-      { name: 'No impulse purchases', icon: 'shield', color: '#f43f5e', category: 'Finance' },
+      { name: 'Track all expenses', icon: '💰', color: '#22c55e', category: 'Finance' },
+      { name: 'Review savings goal', icon: '📈', color: '#6366f1', category: 'Finance' },
+      { name: 'No impulse purchases', icon: '🛡️', color: '#f43f5e', category: 'Finance' },
     ],
   },
 } as const;

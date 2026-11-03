@@ -4,6 +4,7 @@ import { X, Plus, Check, Search, Sparkles, ChevronDown, ChevronUp } from 'lucide
 import { useHabitStore } from '../../store/habitStore';
 import { format } from 'date-fns';
 import { DynamicIcon } from '../ui/DynamicIcon';
+import { getHabitEmoji } from '../../lib/emoji';
 
 // ── Full Template Catalogue ──────────────────────────────────────
 const TEMPLATE_PACKS = [
@@ -271,7 +272,7 @@ export function TemplatesLibrary({ onClose }: TemplatesLibraryProps) {
     for (const h of pack.habits) {
       await addHabit({
         name: h.name,
-        icon: h.icon,
+        icon: getHabitEmoji(h.icon),
         color: h.color,
         category: h.category,
         type: 'boolean',
