@@ -79,7 +79,7 @@ export function ChronoDialHUD() {
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 select-none">
+    <div className="fixed bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 z-40 select-none">
       {/* Outer Titanium Dock Glass Frame */}
       <motion.div
         layout

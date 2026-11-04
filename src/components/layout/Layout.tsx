@@ -5,6 +5,8 @@ import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
 import { CircadianSkybox } from './CircadianSkybox';
+import { GoldFoilBurst } from '../common/GoldFoilBurst';
+import { ChronoDialHUD } from '../dashboard/ChronoDialHUD';
 import { cn } from '../../lib/utils';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { useFocusStore } from '../../store/focusStore';
@@ -284,6 +286,9 @@ export function Layout() {
 
       {/* High-performance Living Circadian Skybox */}
       <CircadianSkybox />
+
+      {/* Procedural Kinpaku Gold Leaf Foil Burst Overlay */}
+      <GoldFoilBurst />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-[#0c0e17]/85 backdrop-blur-2xl border border-white/[0.1] rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
@@ -600,6 +605,7 @@ export function Layout() {
       {/* ── Overlays ── */}
       <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
       <CommandMenu />
+      <ChronoDialHUD />
       {achievement && (
         <AchievementToast
           title={achievement.title}

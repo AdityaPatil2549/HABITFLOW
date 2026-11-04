@@ -8,6 +8,7 @@ import { useChronoStore } from '../../store/chronoStore';
 import { cn } from '../../lib/utils';
 import { getHabitEmoji } from '../../lib/emoji';
 import { GlassEmojiCapsule } from '../common/GlassEmojiCapsule';
+import { triggerGoldFoilBurst } from '../common/GoldFoilBurst';
 
 interface TactileHabitCardProps {
   habit: HabitWithStreak;
@@ -58,6 +59,9 @@ export function TactileHabitCard({
     if (!isDone) {
       const isMilestone = [3, 7, 14, 30, 100].includes(currentStreak + 1);
       soundService.playChronoForging(currentEpoch, isMilestone);
+      if (isMilestone) {
+        triggerGoldFoilBurst();
+      }
     } else {
       soundService.playUncheck();
     }

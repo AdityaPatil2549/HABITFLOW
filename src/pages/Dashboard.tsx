@@ -27,7 +27,7 @@ import { cn } from '../lib/utils';
 import { getHabitEmoji } from '../lib/emoji';
 import { GlassEmojiCapsule } from '../components/common/GlassEmojiCapsule';
 import { MomentumWaveVisualizer } from '../components/dashboard/MomentumWaveVisualizer';
-import { ChronoDialHUD } from '../components/dashboard/ChronoDialHUD';
+import { KineticDysonCore } from '../components/dashboard/KineticDysonCore';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -157,6 +157,19 @@ export function Dashboard() {
           </button>
         </div>
       </header>
+
+      {/* ── KINETIC MOMENTUM DYSON CORE ─────────────────────────── */}
+      {!zenMode && habits.length > 0 && (
+        <section aria-label="Kinetic Dyson Core Sculpture">
+          <KineticDysonCore
+            score={globalMomentum}
+            completionRate={completionPercentage / 100}
+            completedCount={completedCount}
+            totalHabits={totalHabits}
+            maxStreak={maxStreak}
+          />
+        </section>
+      )}
 
       {/* ── High-End Glass KPI Quad ─────────────────────────────── */}
       {!zenMode && (
@@ -404,9 +417,6 @@ export function Dashboard() {
           )}
         </div>
       )}
-
-      {/* ── Chrono-Dial Circadian Atmospheric HUD ── */}
-      <ChronoDialHUD />
     </div>
   );
 }

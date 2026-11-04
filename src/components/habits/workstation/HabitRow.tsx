@@ -14,6 +14,8 @@ import {
 import type { HabitWithStreak } from '../../../types';
 import { SlidingNumber } from '../../ui/motion/SlidingNumber';
 import { soundService } from '../../../services/soundService';
+import { useChronoStore } from '../../../store/chronoStore';
+import { triggerGoldFoilBurst } from '../../common/GoldFoilBurst';
 import { cn } from '../../../lib/utils';
 import { getHabitEmoji } from '../../../lib/emoji';
 import { GlassEmojiCapsule } from '../../common/GlassEmojiCapsule';
@@ -37,6 +39,7 @@ export function HabitRow({
 }: HabitRowProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  const { currentEpoch } = useChronoStore();
 
   const isDone = (habit.todayLog?.value ?? 0) >= (habit.targetValue || 1);
   const currentStreak = habit.streak?.current ?? 0;
@@ -48,7 +51,11 @@ export function HabitRow({
     if (isToggling) return;
     setIsToggling(true);
     if (!isDone) {
-      soundService.playTick();
+      const isMilestone = [3, 7, 14, 30, 100].includes(currentStreak + 1);
+      soundService.playChronoForging(currentEpoch, isMilestone);
+      if (isMilestone) {
+        triggerGoldFoilBurst();
+      }
     } else {
       soundService.playUncheck();
     }
@@ -63,10 +70,10 @@ export function HabitRow({
     <div
       onClick={() => onEdit(habit)}
       className={cn(
-        'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-2xl border transition-all duration-200 cursor-pointer select-none',
+        'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-2xl border transition-all duration-200 cursor-pointer select-none card-horlogerie',
         isDone
-          ? 'bg-emerald-950/[0.18] border-emerald-500/30 text-slate-200 shadow-[0_4px_20px_rgba(16,185,129,0.06)] backdrop-blur-xl'
-          : 'glass-panel-interactive text-slate-100 hover:border-emerald-500/30'
+          ? 'bg-[#091512]/90 border-emerald-500/40 text-slate-200 shadow-[0_4px_20px_rgba(16,185,129,0.12)]'
+          : 'bg-[#0d101a]/85 border-white/[0.08] hover:border-white/[0.2] hover:bg-[#121624]/90 text-slate-100'
       )}
     >
       {/* ── Left Side: Checkbox + Icon + Name + Category ──────── */}
