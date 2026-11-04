@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,400,700,500,600,300&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,400,700,500,600,300&f[]=satoshi@900,700,500,400&display=swap');
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -56,14 +55,16 @@
   --radius-lg: 4px;
   --radius-xl: 6px;
   --radius-full: 9999px;
-  --font-body-md: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-h2: 'Outfit', system-ui, sans-serif;
-  --font-stats-num: 'Geist Mono', 'Fira Code', monospace; /* High-precision tabular metrics */
-  --font-body-lg: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-label-caps: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-display: 'Outfit', system-ui, sans-serif;
-  --font-h1: 'Outfit', system-ui, sans-serif;
-  --font-h3: 'Outfit', system-ui, sans-serif;
+  --font-sans: 'Geist', 'Satoshi', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body-md: 'Geist', 'Satoshi', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body-lg: 'Geist', 'Satoshi', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-label-caps: 'Geist', 'Satoshi', system-ui, sans-serif;
+  --font-display: 'Outfit', 'Geist', 'Clash Display', sans-serif;
+  --font-h1: 'Outfit', 'Geist', sans-serif;
+  --font-h2: 'Outfit', 'Geist', sans-serif;
+  --font-h3: 'Outfit', 'Geist', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+  --font-stats-num: 'Geist Mono', monospace; /* High-precision tabular metrics */
   --text-body-md: 16px;
   --text-body-md--line-height: 1.65;
   --text-body-md--font-weight: 400;
@@ -109,7 +110,15 @@
   --color-void: oklch(7% 0.006 95);
   --color-deep: oklch(4% 0.004 95);
   --animate-breathe: breathe 3s ease-in-out infinite;
-  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+}
+
+:root, body {
+  font-family: var(--font-sans);
+  letter-spacing: -0.012em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* ── Stitch Typography Utility Classes ──────────────────────────── */

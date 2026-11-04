@@ -7,6 +7,7 @@ import { useProfileStore } from '../../store/profileStore';
 import { CircadianSkybox } from './CircadianSkybox';
 import { GoldFoilBurst } from '../common/GoldFoilBurst';
 import { ChronoDialHUD } from '../dashboard/ChronoDialHUD';
+import { HabitFlowLogo } from '../common/HabitFlowLogo';
 import { cn } from '../../lib/utils';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { useFocusStore } from '../../store/focusStore';
@@ -272,9 +273,12 @@ export function Layout() {
   }, []);
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    isActive
-      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-4 py-2.5 flex items-center gap-3 text-sm font-semibold tracking-wide transition-all rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.15)] mx-2'
-      : 'text-slate-400 px-4 py-2.5 flex items-center gap-3 hover:text-white hover:bg-white/[0.04] transition-all text-sm font-medium tracking-wide rounded-xl border border-transparent mx-2';
+    cn(
+      'relative flex items-center gap-3 px-3.5 py-2.5 mx-2.5 rounded-xl text-xs tracking-tight transition-all duration-200 group cursor-pointer',
+      isActive
+        ? 'text-white font-semibold bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.22] shadow-[0_4px_20px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.14)]'
+        : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-transparent'
+    );
 
   return (
     <SmoothScrollProvider>
@@ -294,13 +298,9 @@ export function Layout() {
       <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-slate-950/45 backdrop-blur-3xl border border-white/[0.12] border-t-white/[0.22] rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
         <NavLink
           to="/dashboard"
-          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+          className="flex items-center cursor-pointer hover:opacity-90 transition-opacity"
         >
-          <img
-            src='/brand-lockup-dark.png'
-            alt="HabitFlow"
-            className="h-7 sm:h-9 w-auto max-w-[140px] sm:max-w-[180px] object-contain"
-          />
+          <HabitFlowLogo size="sm" showBadge={false} />
         </NavLink>
         <div className="flex items-center gap-3 sm:gap-4">
           <button
@@ -351,22 +351,35 @@ export function Layout() {
       </nav>
 
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-[100dvh] w-64 border-r border-white/[0.1] bg-slate-950/40 backdrop-blur-3xl flex-col py-6 z-40 hidden lg:flex shadow-2xl">
-        <div className="px-6 mb-8 flex items-center justify-between">
+      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-[100dvh] w-64 border-r border-white/[0.1] bg-slate-950/45 backdrop-blur-3xl flex flex-col py-5 z-40 hidden lg:flex shadow-2xl">
+        {/* Brand Header */}
+        <div className="px-5 mb-5 flex items-center justify-between">
           <NavLink
             to="/dashboard"
-            className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+            className="flex items-center cursor-pointer hover:opacity-90 transition-opacity"
           >
-            <img
-              src='/brand-lockup-dark.png'
-              alt="HabitFlow"
-              style={{ height: '50px', width: 'auto' }}
-              className="object-contain"
-            />
+            <HabitFlowLogo size="md" showBadge={true} />
           </NavLink>
         </div>
 
-        <nav className="flex-1 space-y-1 px-1">
+        {/* Quick Search HUD Pill */}
+        <div className="px-4 mb-4">
+          <button
+            onClick={() => setCommandMenuOpen(true)}
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.16] text-slate-400 hover:text-slate-200 transition-all text-xs group cursor-pointer shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <Search size={14} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
+              <span className="font-normal text-slate-400 group-hover:text-slate-300">Command HUD...</span>
+            </div>
+            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white/[0.06] border border-white/[0.1] text-slate-400">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+
+        {/* Navigation Items */}
+        <nav className="flex-1 space-y-1 px-1 overflow-y-auto">
           {[
             { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
             { to: '/habits', icon: Target, label: 'Habits' },
@@ -384,15 +397,38 @@ export function Layout() {
                 onMouseEnter={() => soundService.playHover()}
                 onClick={() => soundService.playTransition()}
               >
-                <Icon size={18} />
-                <span>{l.label}</span>
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-gradient-to-b from-cyan-400 via-sky-400 to-blue-500 shadow-[0_0_12px_rgba(0,240,255,0.85)]" />
+                    )}
+                    <Icon
+                      size={17}
+                      className={cn(
+                        'transition-all duration-200 flex-shrink-0',
+                        isActive
+                          ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.7)]'
+                          : 'text-slate-400 group-hover:text-slate-200 group-hover:scale-105'
+                      )}
+                    />
+                    <span className="truncate">{l.label}</span>
+                  </>
+                )}
               </NavLink>
             );
           })}
         </nav>
 
-        {/* ── Actions ── */}
-        <div className="px-5 mb-4 grid grid-cols-2 gap-2.5">
+        {/* ── Actions Dock ── */}
+        <div className="px-4 mb-3 space-y-2 pt-2 border-t border-white/[0.06]">
+          <button
+            onClick={() => setQuickAddOpen(true)}
+            className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-slate-950 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_28px_rgba(0,240,255,0.5)] hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer border border-white/20"
+          >
+            <Plus size={15} className="stroke-[3]" />
+            <span>New Ritual</span>
+          </button>
+
           <button
             onClick={() => {
               if (focusActive) {
@@ -402,78 +438,25 @@ export function Layout() {
               }
             }}
             className={cn(
-              'py-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer backdrop-blur-xl border',
+              'w-full py-2 px-3 rounded-xl font-medium text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer backdrop-blur-xl border',
               focusActive
-                ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)]'
-                : 'bg-white/[0.04] border-white/[0.08] hover:border-purple-500/40 hover:bg-purple-500/10 text-slate-300 hover:text-purple-300'
+                ? 'bg-rose-500/15 border-rose-500/35 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.25)]'
+                : 'bg-white/[0.03] border-white/[0.08] hover:border-purple-500/30 hover:bg-purple-500/10 text-slate-300 hover:text-purple-300'
             )}
           >
             <Timer size={14} className={focusActive ? 'animate-pulse text-rose-400' : 'text-purple-400'} />
-            <span className="relative truncate">{focusActive ? 'End Focus' : 'Focus'}</span>
-          </button>
-
-          <button
-            onClick={() => setQuickAddOpen(true)}
-            className="py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-[11px] shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            <Plus size={14} className="stroke-[3]" />
-            <span className="truncate">New Entry</span>
+            <span className="truncate">{focusActive ? 'End Focus' : 'Deep Focus'}</span>
           </button>
         </div>
 
-        {/* Sidebar Footer Controls */}
-        <div className="mt-auto px-5 pb-2">
-          <div className="flex items-center justify-between border-t border-white/5 pt-3 pb-1">
-            <button
-              onClick={() => setCommandMenuOpen(true)}
-              title="Command HUD (Cmd+K or /)"
-              className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
-            >
-              <Search size={18} />
-            </button>
-
-            {isGuest ? (
-              <Link
-                to="/login"
-                title="Sign in to sync"
-                className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
-              >
-                <CloudOff size={18} />
-              </Link>
-            ) : (
-              <button
-                onClick={() => {
-                  toast.confirm(
-                    'Are you sure you want to sign out?',
-                    async () => {
-                      try {
-                        await signOut();
-                        navigate('/login');
-                      } catch (err) {
-                        toast.error('Failed to sign out. Please try again.');
-                      }
-                    },
-                    { confirmLabel: 'Sign Out' }
-                  );
-                }}
-                title={`Synced as ${user?.email}`}
-                className="p-2.5 rounded-xl text-emerald-400 hover:bg-white/5 transition-colors"
-              >
-                <Cloud size={18} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="px-5 pt-4 border-t border-white/5 mx-3 mt-2">
+        {/* ── User Profile & XP Vault Capsule ── */}
+        <div className="px-4 pt-3 border-t border-white/[0.08]">
           <div className="relative" ref={accountRef}>
             <button
-              onClick={() => {
-                setShowAccount(v => !v);
-              }}
-              className="w-full flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group text-left"
+              onClick={() => setShowAccount(v => !v)}
+              className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/[0.05] transition-all cursor-pointer group text-left border border-transparent hover:border-white/[0.08]"
             >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold overflow-hidden shadow-lg shadow-brand-500/20 flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold overflow-hidden ring-1 ring-white/20 shadow-[0_0_10px_rgba(0,240,255,0.25)] flex-shrink-0">
                 {user?.photoURL || profile.avatar ? (
                   <img
                     src={user?.photoURL || profile.avatar || undefined}
@@ -481,37 +464,44 @@ export function Layout() {
                     alt=""
                   />
                 ) : (
-                  <User size={16} />
+                  <span className="text-xs font-mono font-bold">{profile.name?.[0]?.toUpperCase() || 'U'}</span>
                 )}
               </div>
+
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <p className="text-sm font-bold text-white leading-none truncate group-hover:text-brand-400 transition-colors">
-                    {profile.name}
+                  <p className="text-xs font-semibold text-white leading-tight truncate group-hover:text-cyan-400 transition-colors">
+                    {isGuest ? 'Guest User' : profile.name}
                   </p>
                   {xpStats && (
-                    <span className="text-[10px] text-amber-400 font-bold flex items-center gap-0.5 flex-shrink-0">
-                      <Zap size={9} />
+                    <span className="text-[9px] font-mono font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-1.5 py-0.5 rounded flex items-center gap-0.5 flex-shrink-0">
+                      <Zap size={8} className="text-cyan-400" />
                       Lv.{xpStats.numericLevel}
                     </span>
                   )}
                 </div>
+
                 {xpStats ? (
-                  <div className="mt-1.5 w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div className="mt-1.5 w-full h-1 rounded-full bg-white/[0.08] overflow-hidden">
                     <div
-                      className="xp-bar-fill h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-700"
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-teal-400 to-amber-400 transition-all duration-700 shadow-[0_0_8px_rgba(0,240,255,0.6)]"
                       style={{ width: `${xpStats.levelProgress}%` }}
                     />
                   </div>
                 ) : (
-                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">
-                    Peak Performer
+                  <p className="text-[10px] text-slate-500 font-mono tracking-wide uppercase font-semibold mt-0.5">
+                    Local Vault
                   </p>
                 )}
               </div>
+
+              <div className="text-slate-500 group-hover:text-slate-300 transition-colors flex-shrink-0">
+                {isGuest ? <CloudOff size={13} /> : <Cloud size={13} className="text-cyan-400" />}
+              </div>
             </button>
+
             {showAccount && (
-              <div className="absolute left-0 bottom-full mb-4 w-56 z-[100]">
+              <div className="absolute left-0 bottom-full mb-3 w-56 z-[100]">
                 <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
               </div>
             )}
@@ -519,7 +509,7 @@ export function Layout() {
         </div>
 
         {/* Legal Links */}
-        <div className="px-5 pb-4 mt-2 text-center text-[10px] text-slate-500 flex justify-center gap-3">
+        <div className="px-5 pt-2 text-center text-[10px] text-slate-500 flex justify-center gap-3">
           <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
           <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
         </div>
