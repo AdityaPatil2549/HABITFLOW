@@ -209,183 +209,12 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
   );
 }
 
-// ── Search overlay ─────────────────────────────────────────────
-function SearchOverlay({ onClose }: { onClose: () => void }) {
-  const navigate = useNavigate();
-  const [query, setQuery] = useState('');
-  const { habits } = useHabitStore();
-  const { tasks } = useTaskStore();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (!dialog.open) {
-      dialog.showModal();
-    }
-
-    const handleClose = () => onClose();
-    dialog.addEventListener('close', handleClose);
-    return () => dialog.removeEventListener('close', handleClose);
-  }, [onClose]);
-
-  useEffect(() => {
-    // Removed unconditional loadHabits() and loadTasks() to prevent redundant DB queries
-    inputRef.current?.focus();
-  }, []);
-
-  function handleDialogClick(e: React.MouseEvent<HTMLDialogElement>) {
-    const rect = dialogRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    if (
-      e.clientX < rect.left ||
-      e.clientX > rect.right ||
-      e.clientY < rect.top ||
-      e.clientY > rect.bottom
-    ) {
-      dialogRef.current?.close();
-    }
-  }
-
-  const q = query.toLowerCase().trim();
-  const habitResults = q
-    ? habits.filter(h => !h.archived && h.name.toLowerCase().includes(q)).slice(0, 4)
-    : [];
-  const taskResults = q
-    ? tasks.filter(t => t.title.toLowerCase().includes(q) && !t.completed).slice(0, 4)
-    : [];
-  const hasResults = habitResults.length > 0 || taskResults.length > 0;
-
-  const QUICK_LINKS = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: Target, label: 'Habits', path: '/habits' },
-    { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
-    { icon: BarChart2, label: 'Analytics', path: '/analytics' },
-    { icon: CheckCircle2, label: 'Weekly Review', path: '/review' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
-  ];
-
-  function go(path: string) {
-    navigate(path);
-    dialogRef.current?.close();
-  }
-
-  return (
-    <dialog
-      ref={dialogRef}
-      onClick={handleDialogClick}
-      className="dark-overlay bg-transparent m-0 p-0 w-full h-full max-w-none max-h-none backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm fixed inset-0 flex items-start justify-center pt-[10vh] z-[9999] open:animate-in open:fade-in duration-200"
-    >
-      {/* Panel */}
-      <div
-        onClick={e => e.stopPropagation()}
-        className="relative w-[calc(100%-2rem)] max-w-[500px] rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/80 overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-xl"
-      >
-        {/* Input */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
-          <Search size={20} className="text-slate-400" />
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search habits, tasks, pages…"
-            className="flex-1 bg-transparent text-white placeholder-slate-500 text-base outline-none"
-            onKeyDown={e => e.key === 'Escape' && onClose()}
-          />
-          <kbd className="text-[10px] text-slate-600 border border-slate-700 rounded px-1.5 py-0.5">
-            ESC
-          </kbd>
-        </div>
-
-        <div className="max-h-[60vh] overflow-y-auto">
-          {!q && (
-            <div className="px-5 py-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3">
-                Quick navigation
-              </p>
-              <div className="space-y-1">
-                {QUICK_LINKS.map(l => {
-                  const Icon = l.icon;
-                  return (
-                    <button
-                      key={l.path}
-                      onClick={() => go(l.path)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors text-left"
-                    >
-                      <Icon size={18} className="text-slate-500" />
-                      {l.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {q && !hasResults && (
-            <div className="text-center py-12 text-slate-500">
-              <Search size={32} className="mx-auto mb-2 opacity-50" />
-              <p className="text-sm">
-                No results for "<span className="text-slate-300">{query}</span>"
-              </p>
-            </div>
-          )}
-
-          {habitResults.length > 0 && (
-            <div className="px-5 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
-                Habits
-              </p>
-              {habitResults.map(h => (
-                <button
-                  key={h.id}
-                  onClick={() => go('/habits')}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors text-left"
-                >
-                  <div className="w-5 h-5 flex items-center justify-center text-brand-400">
-                    <IconRenderer name={h.icon} size={16} />
-                  </div>
-                  <span>{h.name}</span>
-                  <span className="ml-auto text-[10px] text-slate-500">{h.category}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {taskResults.length > 0 && (
-            <div className="px-5 py-3 border-t border-white/5">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
-                Tasks
-              </p>
-              {taskResults.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => go('/tasks')}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors text-left"
-                >
-                  <CheckSquare size={16} className="text-slate-500" />
-                  <span className="truncate">{t.title}</span>
-                  {t.dueDate && (
-                    <span className="ml-auto text-[10px] text-slate-500 flex-shrink-0">
-                      {t.dueDate}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </dialog>
-  );
-}
 
 import { SmoothScrollProvider } from './SmoothScrollProvider';
 
 // ── Layout ─────────────────────────────────────────────────────
 export function Layout() {
-  const setQuickAddOpen = useModalStore(s => s.setQuickAddOpen);
-  const [showSearch, setShowSearch] = useState(false);
+  const { setQuickAddOpen, setCommandMenuOpen } = useModalStore();
   const [showAccount, setShowAccount] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const { profile } = useProfileStore();
@@ -400,7 +229,7 @@ export function Layout() {
   const { current: achievement, dismiss: dismissAchievement } = useAchievementToast();
 
   useKeyboardShortcuts({
-    onSearch: () => setShowSearch(true),
+    onSearch: () => setCommandMenuOpen(true),
     onToggleFocus: () =>
       focusActive
         ? stopFocus()
@@ -412,7 +241,7 @@ export function Layout() {
     onNewTask: () => navigate('/tasks'),
     onShowShortcuts: () => setShowShortcuts(v => !v),
     onEscape: () => {
-      setShowSearch(false);
+      setCommandMenuOpen(false);
       setShowAccount(false);
       setShowShortcuts(false);
     },
@@ -483,7 +312,7 @@ export function Layout() {
             <Timer size={22} className={focusActive ? 'animate-pulse' : ''} />
           </button>
           <button
-            onClick={() => setShowSearch(true)}
+            onClick={() => setCommandMenuOpen(true)}
             className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <Search size={22} />
@@ -591,9 +420,9 @@ export function Layout() {
         <div className="mt-auto px-5 pb-2">
           <div className="flex items-center justify-between border-t border-white/5 pt-3 pb-1">
             <button
-              onClick={() => setShowSearch(true)}
-              title="Search (Cmd+K)"
-              className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+              onClick={() => setCommandMenuOpen(true)}
+              title="Command HUD (Cmd+K or /)"
+              className="p-2.5 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
             >
               <Search size={18} />
             </button>
@@ -769,7 +598,6 @@ export function Layout() {
       </nav>
 
       {/* ── Overlays ── */}
-      {showSearch && <SearchOverlay onClose={() => setShowSearch(false)} />}
       <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
       <CommandMenu />
       {achievement && (

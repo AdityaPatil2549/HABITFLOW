@@ -26,6 +26,7 @@ import { format } from 'date-fns';
 import { cn } from '../lib/utils';
 import { getHabitEmoji } from '../lib/emoji';
 import { GlassEmojiCapsule } from '../components/common/GlassEmojiCapsule';
+import { MomentumWaveVisualizer } from '../components/dashboard/MomentumWaveVisualizer';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -227,6 +228,16 @@ export function Dashboard() {
         </section>
       )}
 
+      {/* ── KINETIC MOMENTUM WAVE VISUALIZER ─────────────────────── */}
+      {!zenMode && habits.length > 0 && (
+        <section className="mb-8" aria-label="Momentum Fluid Dynamics">
+          <MomentumWaveVisualizer
+            score={globalMomentum}
+            completionRate={completionPercentage / 100}
+          />
+        </section>
+      )}
+
       {/* ── ZEN FOCUS MODE (Distraction-Free) ─────────────────────── */}
       <AnimatePresence>
         {zenMode && (
@@ -330,16 +341,58 @@ export function Dashboard() {
                   </span>
                 </div>
 
-                {/* Habit Cards in this ritual */}
-                <div className="grid grid-cols-1 gap-3 sm:gap-3.5">
-                  {group.habits.map((habit, idx) => (
-                    <TactileHabitCard
-                      key={habit.id}
-                      habit={habit as HabitWithStreak}
-                      onToggle={handleToggleHabit}
-                      index={idx}
-                    />
-                  ))}
+                {/* Atomic Habit Stacking Pipeline */}
+                <div className="relative space-y-1">
+                  {group.habits.map((habit, idx) => {
+                    const habitWithStreak = habit as HabitWithStreak;
+                    const isDone = (habitWithStreak.todayLog?.value ?? 0) >= (habitWithStreak.targetValue || 1);
+                    const hasNext = idx < group.habits.length - 1;
+
+                    return (
+                      <div key={habit.id} className="relative">
+                        <TactileHabitCard
+                          habit={habitWithStreak}
+                          onToggle={handleToggleHabit}
+                          index={idx}
+                        />
+
+                        {/* Atomic Habit Stacking Laser Connector */}
+                        {hasNext && (
+                          <div className="relative my-2 sm:my-2.5 flex items-center justify-center">
+                            {/* Vertical connector line */}
+                            <div className="absolute left-8 sm:left-10 -top-3 -bottom-3 w-0.5 z-0 pointer-events-none">
+                              <div
+                                className={cn(
+                                  'w-full h-full transition-all duration-500',
+                                  isDone
+                                    ? 'bg-gradient-to-b from-emerald-400 via-teal-400 to-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.8)]'
+                                    : 'border-l-2 border-dashed border-white/10'
+                                )}
+                              />
+                            </div>
+
+                            {/* Micro Stack Badge */}
+                            <div
+                              className={cn(
+                                'relative z-10 px-3 py-1 rounded-full text-[10px] font-mono tracking-wider transition-all duration-300 flex items-center gap-1.5 shadow-md',
+                                isDone
+                                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                                  : 'bg-[#0d1017] text-slate-500 border border-white/[0.08]'
+                              )}
+                            >
+                              <span className="text-[11px] leading-none">{isDone ? '⚡' : '↳'}</span>
+                              <span className="font-semibold">
+                                {isDone ? 'Stack Active' : 'Stack Trigger'}
+                              </span>
+                              <span className="opacity-60 hidden sm:inline">
+                                {isDone ? '— Momentum flow unlocked' : `— After ${habit.name}`}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             ))
