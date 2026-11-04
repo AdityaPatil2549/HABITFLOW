@@ -27,6 +27,7 @@ import { cn } from '../lib/utils';
 import { getHabitEmoji } from '../lib/emoji';
 import { GlassEmojiCapsule } from '../components/common/GlassEmojiCapsule';
 import { MomentumWaveVisualizer } from '../components/dashboard/MomentumWaveVisualizer';
+import { ChronoDialHUD } from '../components/dashboard/ChronoDialHUD';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -360,15 +361,19 @@ export function Dashboard() {
                         {hasNext && (
                           <div className="relative my-2 sm:my-2.5 flex items-center justify-center">
                             {/* Vertical connector line */}
-                            <div className="absolute left-8 sm:left-10 -top-3 -bottom-3 w-0.5 z-0 pointer-events-none">
+                            <div className="absolute left-8 sm:left-10 -top-3 -bottom-3 w-0.5 z-0 pointer-events-none overflow-hidden">
                               <div
                                 className={cn(
-                                  'w-full h-full transition-all duration-500',
+                                  'w-full h-full transition-all duration-500 relative',
                                   isDone
                                     ? 'bg-gradient-to-b from-emerald-400 via-teal-400 to-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.8)]'
                                     : 'border-l-2 border-dashed border-white/10'
                                 )}
-                              />
+                              >
+                                {isDone && (
+                                  <div className="absolute inset-x-0 top-0 h-5 bg-white/90 rounded-full blur-[1px] animate-laser-spark" />
+                                )}
+                              </div>
                             </div>
 
                             {/* Micro Stack Badge */}
@@ -399,6 +404,9 @@ export function Dashboard() {
           )}
         </div>
       )}
+
+      {/* ── Chrono-Dial Circadian Atmospheric HUD ── */}
+      <ChronoDialHUD />
     </div>
   );
 }

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Flame, ChevronRight, Zap, Clock, Sparkles } from 'lucide-react';
 import type { HabitWithStreak } from '../../types';
 import { SlidingNumber } from '../ui/motion/SlidingNumber';
 import { soundService } from '../../services/soundService';
+import { useChronoStore } from '../../store/chronoStore';
 import { cn } from '../../lib/utils';
 import { getHabitEmoji } from '../../lib/emoji';
 import { GlassEmojiCapsule } from '../common/GlassEmojiCapsule';
@@ -22,17 +23,41 @@ export function TactileHabitCard({
   index = 0,
 }: TactileHabitCardProps) {
   const [isToggling, setIsToggling] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0, mouseX: 0, mouseY: 0, isHovered: false });
+  const [shockwave, setShockwave] = useState<{ x: number; y: number; active: boolean }>({ x: 0, y: 0, active: false });
+  
+  const { currentEpoch } = useChronoStore();
   const isDone = (habit.todayLog?.value ?? 0) >= (habit.targetValue || 1);
   const currentStreak = habit.streak?.current ?? 0;
   const todayValue = habit.todayLog?.value ?? 0;
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -3.2;
+    const rotateY = ((x - centerX) / centerX) * 3.2;
+    setTilt({ x: rotateX, y: rotateY, mouseX: x, mouseY: y, isHovered: true });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0, mouseX: 0, mouseY: 0, isHovered: false });
+  };
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isToggling) return;
     setIsToggling(true);
 
+    const rect = e.currentTarget.getBoundingClientRect();
+    setShockwave({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true });
+    setTimeout(() => setShockwave(prev => ({ ...prev, active: false })), 600);
+
     if (!isDone) {
-      soundService.playTick();
+      const isMilestone = [3, 7, 14, 30, 100].includes(currentStreak + 1);
+      soundService.playChronoForging(currentEpoch, isMilestone);
     } else {
       soundService.playUncheck();
     }
@@ -91,22 +116,53 @@ export function TactileHabitCard({
         damping: 24,
         delay: Math.min(index * 0.04, 0.25),
       }}
-      className="relative group cursor-pointer"
+      className="relative group cursor-pointer perspective-[1200px]"
       onClick={() => onOpenDetails?.(habit)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       <div
         className={cn(
-          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl transition-[transform,border-color,background-color,box-shadow] duration-200 backdrop-blur-md overflow-hidden will-change-transform',
+          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl transition-[border-color,background-color,box-shadow] duration-200 backdrop-blur-md overflow-hidden will-change-transform card-horlogerie',
           isDone
-            ? 'bg-[#0b1414]/85 border border-emerald-500/40 shadow-[0_8px_24px_rgba(16,185,129,0.15)]'
-            : 'bg-[#0e101a]/80 border border-white/[0.08] hover:border-white/[0.18] hover:bg-[#131622]/90 shadow-[0_8px_24px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] hover:-translate-y-0.5'
+            ? 'bg-[#091512]/90 border-emerald-500/50 shadow-[0_12px_32px_rgba(16,185,129,0.20)]'
+            : 'bg-[#0d101a]/85 border-white/[0.08] hover:border-white/[0.22] hover:bg-[#121624]/90 shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.6)]'
         )}
+        style={{
+          transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) ${isToggling ? 'translateZ(-8px) scale(0.985)' : 'translateZ(0px)'}`,
+          transition: 'transform 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, border-color 200ms ease',
+        }}
       >
-        {/* Subtle ambient backglow */}
+        {/* Dynamic Cursor Spotlight Sheen */}
+        {tilt.isHovered && (
+          <div
+            className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+            style={{
+              background: `radial-gradient(circle 180px at ${tilt.mouseX}px ${tilt.mouseY}px, rgba(255, 255, 255, 0.08), transparent 75%)`,
+            }}
+          />
+        )}
+
+        {/* Dynamic Forging Shockwave Ripple */}
+        <AnimatePresence>
+          {shockwave.active && (
+            <motion.span
+              initial={{ scale: 0, opacity: 0.8 }}
+              animate={{ scale: 3.5, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute w-24 h-24 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 bg-emerald-400/30 blur-md"
+              style={{ left: shockwave.x, top: shockwave.y }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Ambient Backglow */}
         <div
           className="absolute -left-10 -top-10 w-36 h-36 rounded-full opacity-30 pointer-events-none transition-opacity duration-300 group-hover:opacity-50"
           style={{ background: isDone ? 'radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%)' : `radial-gradient(circle, ${theme.glow} 0%, transparent 70%)` }}
         />
+
 
         {/* Left Side: Rich Icon Capsule + Title + Metadata */}
         <div className="flex items-center gap-4 min-w-0 z-10">

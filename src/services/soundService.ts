@@ -254,6 +254,113 @@ class SoundService {
       this.ambientGain = null;
     }
   }
+
+  /**
+   * Chrono-Atmospheric Forging Haptics:
+   * 1. Binaural Sub-Bass Mechanical Thump (Physical inertia felt in ears/speakers)
+   * 2. Circadian Resonant Frequency:
+   *    - Dawn: 528 Hz (Solfeggio Alertness)
+   *    - Zenith: 432 Hz (Deep Focus Mechanical Shutter)
+   *    - Dusk: 220 Hz (Warm Rhodes Evening Harvest)
+   *    - Night: 174 Hz (Parasympathetic Restorative Tone)
+   * 3. Milestone Bronze Singing Bowl Gong (Optional on streaks)
+   */
+  playChronoForging(epoch: 'dawn' | 'zenith' | 'dusk' | 'night' = 'dusk', isMilestone = false) {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.getCtx();
+      const t = ctx.currentTime;
+
+      // Layer 1: Sub-bass 65Hz -> 32Hz physical thump
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(65, t);
+      sub.frequency.exponentialRampToValueAtTime(32, t + 0.12);
+      subGain.gain.setValueAtTime(0.32, t);
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      sub.connect(subGain);
+      subGain.connect(ctx.destination);
+      sub.start(t);
+      sub.stop(t + 0.12);
+
+      // Layer 2: Circadian Resonant Harmonic
+      const harmonic = ctx.createOscillator();
+      const harmonicGain = ctx.createGain();
+      const baseFreq = epoch === 'dawn' ? 528 : epoch === 'zenith' ? 432 : epoch === 'dusk' ? 220 : 174;
+      harmonic.type = epoch === 'zenith' ? 'square' : 'triangle';
+      harmonic.frequency.setValueAtTime(baseFreq, t);
+
+      harmonicGain.gain.setValueAtTime(epoch === 'zenith' ? 0.08 : 0.18, t);
+      harmonicGain.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
+
+      harmonic.connect(harmonicGain);
+      harmonicGain.connect(ctx.destination);
+      harmonic.start(t);
+      harmonic.stop(t + 0.32);
+
+      // Layer 3: Milestone Bronze Gong
+      if (isMilestone) {
+        const gong = ctx.createOscillator();
+        const gongGain = ctx.createGain();
+        gong.type = 'sine';
+        gong.frequency.setValueAtTime(108, t);
+        gongGain.gain.setValueAtTime(0.25, t);
+        gongGain.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+        gong.connect(gongGain);
+        gongGain.connect(ctx.destination);
+        gong.start(t);
+        gong.stop(t + 1.2);
+      }
+    } catch {
+      /* AudioContext error fallback */
+    }
+  }
+
+  /** Micro-mechanical click when scrubbing the Chrono-Dial */
+  playChronoDialTick() {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.getCtx();
+      const t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1400, t);
+      osc.frequency.exponentialRampToValueAtTime(800, t + 0.02);
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.02);
+    } catch {
+      /**/
+    }
+  }
+
+  /** Synaptic laser pulse traveling down stacked habit connector */
+  playSynapseSpark() {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.getCtx();
+      const t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1600, t);
+      osc.frequency.exponentialRampToValueAtTime(400, t + 0.15);
+      gain.gain.setValueAtTime(0.06, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.15);
+    } catch {
+      /**/
+    }
+  }
 }
 
 export const soundService = new SoundService();
+

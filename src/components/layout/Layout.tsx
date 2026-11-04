@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useProfileStore } from '../../store/profileStore';
-import { HabitsBackground } from '../habits/HabitsBackground';
+import { CircadianSkybox } from './CircadianSkybox';
 import { cn } from '../../lib/utils';
 import { useGamificationStore } from '../../store/gamificationStore';
 import { useFocusStore } from '../../store/focusStore';
@@ -282,8 +282,8 @@ export function Layout() {
         Skip to content
       </a>
 
-      {/* High-performance ambient backdrop */}
-      <HabitsBackground />
+      {/* High-performance Living Circadian Skybox */}
+      <CircadianSkybox />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
       <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-[#0c0e17]/85 backdrop-blur-2xl border border-white/[0.1] rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
