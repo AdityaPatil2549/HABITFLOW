@@ -291,7 +291,7 @@ export function Layout() {
       <GoldFoilBurst />
 
       {/* ── Mobile Top Header (Hidden on Desktop) ── */}
-      <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-[#0c0e17]/85 backdrop-blur-2xl border border-white/[0.1] rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
+      <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-slate-950/45 backdrop-blur-3xl border border-white/[0.12] border-t-white/[0.22] rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
         <NavLink
           to="/dashboard"
           className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
@@ -351,7 +351,7 @@ export function Layout() {
       </nav>
 
       {/* ── Desktop Sidebar (Hidden on Mobile) ── */}
-      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-[100dvh] w-64 border-r border-white/[0.08] bg-[#0c0e17]/80 backdrop-blur-2xl flex-col py-6 z-40 hidden lg:flex shadow-2xl">
+      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-[100dvh] w-64 border-r border-white/[0.1] bg-slate-950/40 backdrop-blur-3xl flex-col py-6 z-40 hidden lg:flex shadow-2xl">
         <div className="px-6 mb-8 flex items-center justify-between">
           <NavLink
             to="/dashboard"
@@ -548,7 +548,7 @@ export function Layout() {
 
       {/* ── Mobile Bottom Nav ── */}
       <nav className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50">
-        <div className="bg-[#0c0e17]/85 backdrop-blur-2xl border border-white/[0.1] shadow-[0_16px_40px_rgba(0,0,0,0.7)] rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center">
+        <div className="bg-slate-950/50 backdrop-blur-3xl border border-white/[0.12] border-t-white/[0.22] shadow-[0_16px_40px_rgba(0,0,0,0.7)] rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center">
           {[
             { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
             { to: '/habits', icon: Target, label: 'Habits' },

@@ -127,10 +127,10 @@ export function TactileHabitCard({
     >
       <div
         className={cn(
-          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl transition-[border-color,background-color,box-shadow] duration-200 backdrop-blur-md overflow-hidden will-change-transform card-horlogerie',
+          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl transition-[border-color,background-color,box-shadow] duration-200 backdrop-blur-2xl overflow-hidden will-change-transform card-horlogerie',
           isDone
-            ? 'bg-[#091512]/90 border-emerald-500/50 shadow-[0_12px_32px_rgba(16,185,129,0.20)]'
-            : 'bg-[#0d101a]/85 border-white/[0.08] hover:border-white/[0.22] hover:bg-[#121624]/90 shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.6)]'
+            ? 'bg-emerald-950/25 border-emerald-500/40 border-t-emerald-400/60 shadow-[0_16px_36px_rgba(16,185,129,0.18)]'
+            : 'bg-slate-950/35 border-white/[0.12] border-t-white/[0.25] hover:border-white/[0.25] hover:bg-slate-900/45 shadow-[0_16px_40px_rgba(0,0,0,0.45)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.65)]'
         )}
         style={{
           transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) ${isToggling ? 'translateZ(-8px) scale(0.985)' : 'translateZ(0px)'}`,

@@ -83,9 +83,9 @@ export function ChronoDialHUD() {
       {/* Outer Titanium Dock Glass Frame */}
       <motion.div
         layout
-        className="relative bg-[#0c0f1a]/85 backdrop-blur-2xl border border-white/[0.12] rounded-full shadow-[0_24px_60px_rgba(0,0,0,0.7)] px-4 sm:px-6 py-2.5 flex items-center gap-3 sm:gap-4 transition-all duration-300"
+        className="relative bg-slate-950/45 backdrop-blur-3xl border border-white/[0.14] border-t-white/[0.3] rounded-full shadow-[0_24px_60px_rgba(0,0,0,0.75)] px-4 sm:px-6 py-2.5 flex items-center gap-3 sm:gap-4 transition-all duration-300"
         style={{
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
         }}
       >
         {/* Epoch & Time Indicator */}

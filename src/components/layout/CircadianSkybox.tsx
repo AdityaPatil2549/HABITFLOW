@@ -4,36 +4,49 @@ import { useChronoStore } from '../../store/chronoStore';
 interface Star {
   x: number;
   y: number;
+  vx: number;
+  vy: number;
   size: number;
   baseAlpha: number;
   twinkleSpeed: number;
   twinklePhase: number;
+  colorOffset: number;
 }
 
-interface Meteor {
+interface CausticRipple {
+  x: number;
+  y: number;
+  radius: number;
+  maxRadius: number;
+  alpha: number;
+  expansionSpeed: number;
+  hue: string;
+}
+
+interface BolideMeteor {
   x: number;
   y: number;
   length: number;
   speed: number;
   angle: number;
   alpha: number;
-  active: boolean;
-}
-
-interface MistParticle {
-  x: number;
-  y: number;
-  size: number;
-  vx: number;
-  alpha: number;
 }
 
 export function CircadianSkybox() {
   const { currentEpoch, solarState, activeWorld } = useChronoStore();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const mouseRef = useRef({ x: 0.5, y: 0.5, targetX: 0.5, targetY: 0.5, speed: 0 });
+  
+  // Interactive mouse tracking with spring easing
+  const mouseRef = useRef({
+    x: 0.5,
+    y: 0.4,
+    targetX: 0.5,
+    targetY: 0.4,
+    prevX: 0.5,
+    prevY: 0.4,
+    speed: 0,
+  });
 
-  // Mouse vector tracking for interactive fluid deflection
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const x = e.clientX / window.innerWidth;
     const y = e.clientY / window.innerHeight;
@@ -42,10 +55,11 @@ export function CircadianSkybox() {
   }, []);
 
   useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [handleMouseMove]);
 
+  // Master Procedural Fluid & Quantum Particle Simulation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -63,40 +77,37 @@ export function CircadianSkybox() {
     };
     window.addEventListener('resize', handleResize);
 
-    // Initialize 100 celestial stars
-    const stars: Star[] = Array.from({ length: 90 }, () => ({
+    // 110 Quantum Stardust Particles
+    const stars: Star[] = Array.from({ length: 110 }, () => ({
       x: Math.random() * width,
-      y: Math.random() * height * 0.75, // Top 75% of sky
-      size: Math.random() * 1.8 + 0.6,
-      baseAlpha: Math.random() * 0.7 + 0.2,
-      twinkleSpeed: Math.random() * 0.04 + 0.015,
+      y: Math.random() * height * 0.85,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      size: Math.random() * 1.8 + 0.5,
+      baseAlpha: Math.random() * 0.65 + 0.25,
+      twinkleSpeed: Math.random() * 0.035 + 0.015,
       twinklePhase: Math.random() * Math.PI * 2,
+      colorOffset: Math.random(),
     }));
 
-    // Active meteors pool
-    const meteors: Meteor[] = [];
-    let lastMeteorTime = Date.now();
+    // Dynamic Iridescent Fluid Caustics pool
+    const ripples: CausticRipple[] = [];
+    let lastRippleTime = 0;
+
+    // Bolide meteors pool
+    const meteors: BolideMeteor[] = [];
+    let lastMeteorSpawn = Date.now();
 
     const spawnMeteor = () => {
       meteors.push({
-        x: Math.random() * width * 0.8 + width * 0.1,
-        y: Math.random() * height * 0.35,
-        length: Math.random() * 120 + 80,
-        speed: Math.random() * 14 + 10,
-        angle: Math.PI / 4 + (Math.random() - 0.5) * 0.2, // ~45 deg downward streak
+        x: Math.random() * width * 0.75 + width * 0.1,
+        y: Math.random() * height * 0.3,
+        length: Math.random() * 140 + 90,
+        speed: Math.random() * 16 + 12,
+        angle: Math.PI / 4 + (Math.random() - 0.5) * 0.25,
         alpha: 1,
-        active: true,
       });
     };
-
-    // Valley drifting mist particles
-    const mistParticles: MistParticle[] = Array.from({ length: 22 }, () => ({
-      x: Math.random() * width,
-      y: height * 0.65 + Math.random() * height * 0.3,
-      size: Math.random() * 140 + 80,
-      vx: Math.random() * 0.25 + 0.08,
-      alpha: Math.random() * 0.12 + 0.04,
-    }));
 
     let isVisible = true;
     const handleVisibilityChange = () => {
@@ -112,154 +123,194 @@ export function CircadianSkybox() {
         return;
       }
 
-      time += 0.012;
+      time += 0.014;
       ctx.clearRect(0, 0, width, height);
 
-      // Smooth mouse interpolation
-      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.05;
-      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.05;
+      // Smooth mouse interpolation (spring physics)
+      const mouse = mouseRef.current;
+      const dx = mouse.targetX - mouse.x;
+      const dy = mouse.targetY - mouse.y;
+      mouse.x += dx * 0.07;
+      mouse.y += dy * 0.07;
+      mouse.speed = Math.hypot(dx, dy);
+
+      // Spawn fluid caustic ripples on swift mouse movement
+      const now = Date.now();
+      if (mouse.speed > 0.008 && now - lastRippleTime > 120 && ripples.length < 12) {
+        lastRippleTime = now;
+        ripples.push({
+          x: mouse.x * width,
+          y: mouse.y * height,
+          radius: 10,
+          maxRadius: Math.min(width, height) * 0.28,
+          alpha: 0.35,
+          expansionSpeed: 2.8 + mouse.speed * 40,
+          hue: currentEpoch === 'zenith' ? '0, 240, 255' : currentEpoch === 'dawn' ? '245, 158, 11' : currentEpoch === 'dusk' ? '249, 115, 22' : '168, 85, 247',
+        });
+      }
+
+      // ── COLOR THEMES BASED ON CHRONO EPOCH ────────────────────────
+      let primaryRGB = '245, 158, 11';     // Gold/Amber
+      let secondaryRGB = '20, 184, 166';   // Verdigris Patina
+      let tertiaryRGB = '251, 113, 133';   // Rose Dawn
+
+      if (currentEpoch === 'zenith') {
+        primaryRGB = '0, 240, 255';        // Electric Cyan
+        secondaryRGB = '37, 99, 235';      // Hyper Cobalt
+        tertiaryRGB = '255, 255, 255';     // Diamond White
+      } else if (currentEpoch === 'dusk') {
+        primaryRGB = '249, 115, 22';       // Sunset Amber
+        secondaryRGB = '139, 92, 246';     // Royal Violet
+        tertiaryRGB = '236, 72, 153';      // Magenta Flame
+      } else if (currentEpoch === 'night') {
+        primaryRGB = '99, 102, 241';       // Velvet Indigo
+        secondaryRGB = '6, 182, 212';      // Bioluminescent Teal
+        tertiaryRGB = '168, 85, 247';      // Cosmic Amethyst
+      }
 
       const isNight = currentEpoch === 'night';
       const isDusk = currentEpoch === 'dusk';
-      const isDawn = currentEpoch === 'dawn';
 
-      // ── COLOR THEMATIC DEFINITIONS ──────────────────────────────
-      let primaryR = 245, primaryG = 158, primaryB = 11; // Gold/Amber
-      let secondaryR = 20, secondaryG = 184, secondaryB = 166; // Verdigris Patina
-      if (currentEpoch === 'zenith') {
-        primaryR = 6; primaryG = 182; primaryB = 212; // Polar Cyan
-        secondaryR = 59; secondaryG = 130; secondaryB = 246; // Cobalt Blue
-      } else if (currentEpoch === 'night') {
-        primaryR = 99; primaryG = 102; primaryB = 241; // Velvet Indigo
-        secondaryR = 168; secondaryG = 85; secondaryB = 247; // Cosmic Violet
-      }
-
-      const sunX = (solarState.sunXPercent / 100) * width;
-      const sunY = (solarState.sunYPercent / 100) * height;
-
-      // ── 1. VOLUMETRIC CREPUSCULAR GOD RAYS ─────────────────────────
-      if (!isNight) {
-        const rayCount = 9;
-        ctx.save();
-        for (let i = 0; i < rayCount; i++) {
-          const rayAngle = ((i - rayCount / 2) * 0.14) + Math.PI / 2 + Math.sin(time * 0.5 + i) * 0.04;
-          const rayLength = height * 1.2;
-          const rayWidth = Math.sin(time * 0.3 + i * 1.5) * 40 + 70;
-
-          const endX = sunX + Math.cos(rayAngle) * rayLength;
-          const endY = sunY + Math.sin(rayAngle) * rayLength;
-
-          const rayGrad = ctx.createLinearGradient(sunX, sunY, endX, endY);
-          const rayAlpha = (Math.sin(time * 0.8 + i) * 0.03 + 0.06) * solarState.glowOpacity;
-          rayGrad.addColorStop(0, `rgba(${primaryR}, ${primaryG}, ${primaryB}, ${rayAlpha * 1.8})`);
-          rayGrad.addColorStop(0.5, `rgba(${secondaryR}, ${secondaryG}, ${secondaryB}, ${rayAlpha * 0.8})`);
-          rayGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-          ctx.beginPath();
-          ctx.moveTo(sunX, sunY);
-          ctx.lineTo(endX - rayWidth, endY);
-          ctx.lineTo(endX + rayWidth, endY);
-          ctx.closePath();
-          ctx.fillStyle = rayGrad;
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-
-      // ── 2. LIVING FLUID AURORA SILK RIBBONS ────────────────────────
+      // ── 1. EXPANDING IRIDESCENT FLUID CAUSTIC RIPPLES ─────────────
       ctx.save();
-      const waveCount = 3;
-      for (let w = 0; w < waveCount; w++) {
-        const waveOffset = w * 1.8;
-        const waveYBase = height * (0.28 + w * 0.14);
-        const waveAlpha = (isNight ? 0.14 : isDusk ? 0.22 : 0.12) - w * 0.03;
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const r = ripples[i];
+        r.radius += r.expansionSpeed;
+        r.alpha -= 0.008;
+
+        if (r.alpha <= 0 || r.radius >= r.maxRadius) {
+          ripples.splice(i, 1);
+          continue;
+        }
+
+        const causticGrad = ctx.createRadialGradient(r.x, r.y, Math.max(0, r.radius - 20), r.x, r.y, r.radius);
+        causticGrad.addColorStop(0, `rgba(${r.hue}, 0)`);
+        causticGrad.addColorStop(0.7, `rgba(${r.hue}, ${r.alpha * 0.4})`);
+        causticGrad.addColorStop(1, `rgba(255, 255, 255, ${r.alpha * 0.2})`);
+
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = causticGrad;
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // ── 2. VOLUMETRIC AURORA SILK MESH (MULTIPLE FREQUENCIES) ─────
+      ctx.save();
+      const waveLayers = [
+        { yRel: 0.22, amp1: 42, amp2: 24, freq1: 0.0016, freq2: 0.003, speed: 0.8, alpha: isNight ? 0.22 : 0.28 },
+        { yRel: 0.38, amp1: 56, amp2: 30, freq1: 0.0012, freq2: 0.0022, speed: 0.6, alpha: isNight ? 0.16 : 0.20 },
+        { yRel: 0.55, amp1: 48, amp2: 20, freq1: 0.0018, freq2: 0.0035, speed: 1.0, alpha: isNight ? 0.12 : 0.15 },
+      ];
+
+      for (let idx = 0; idx < waveLayers.length; idx++) {
+        const wl = waveLayers[idx];
+        const yBase = height * wl.yRel;
 
         ctx.beginPath();
         ctx.moveTo(0, height);
-        ctx.lineTo(0, waveYBase);
+        ctx.lineTo(0, yBase);
 
-        const segments = 24;
-        const segmentWidth = width / segments;
+        const steps = 36;
+        const stepWidth = width / steps;
 
-        for (let s = 0; s <= segments; s++) {
-          const x = s * segmentWidth;
-          // Harmonic wave equation with cursor deflection
-          const distToMouse = Math.hypot(x - mouseRef.current.x * width, waveYBase - mouseRef.current.y * height);
-          const mouseDeflection = Math.max(0, 1 - distToMouse / 350) * 45;
+        for (let s = 0; s <= steps; s++) {
+          const x = s * stepWidth;
+          // Harmonic wave equation
+          const wave1 = Math.sin(time * wl.speed + x * wl.freq1 + idx) * wl.amp1;
+          const wave2 = Math.cos(time * (wl.speed * 0.7) + x * wl.freq2) * wl.amp2;
 
-          const y =
-            waveYBase +
-            Math.sin(time * 0.7 + s * 0.35 + waveOffset) * 35 +
-            Math.cos(time * 0.4 + s * 0.2) * 20 -
-            mouseDeflection;
+          // Interactive cursor repulsion
+          const distToCursor = Math.hypot(x - mouse.x * width, yBase - mouse.y * height);
+          const cursorDeflection = Math.max(0, 1 - distToCursor / 320) * 55;
 
+          const y = yBase + wave1 + wave2 - cursorDeflection;
           ctx.lineTo(x, y);
         }
 
         ctx.lineTo(width, height);
         ctx.closePath();
 
-        const waveGrad = ctx.createLinearGradient(0, waveYBase - 60, width, waveYBase + 180);
-        waveGrad.addColorStop(0, `rgba(${primaryR}, ${primaryG}, ${primaryB}, ${waveAlpha})`);
-        waveGrad.addColorStop(0.5, `rgba(${secondaryR}, ${secondaryG}, ${secondaryB}, ${waveAlpha * 0.6})`);
-        waveGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        const silkGrad = ctx.createLinearGradient(0, yBase - 80, width, yBase + 260);
+        silkGrad.addColorStop(0, `rgba(${primaryRGB}, ${wl.alpha})`);
+        silkGrad.addColorStop(0.45, `rgba(${secondaryRGB}, ${wl.alpha * 0.75})`);
+        silkGrad.addColorStop(0.85, `rgba(${tertiaryRGB}, ${wl.alpha * 0.3})`);
+        silkGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-        ctx.fillStyle = waveGrad;
+        ctx.fillStyle = silkGrad;
         ctx.fill();
       }
       ctx.restore();
 
-      // ── 3. CELESTIAL TWINKLING STARFIELD & CONSTELLATIONS ─────────
-      if (isNight || isDusk) {
-        ctx.save();
-        const starOpacityMultiplier = isNight ? 1 : 0.45;
+      // ── 3. QUANTUM STARDUST PARTICLES & CONSTELLATION FILAMENTS ───
+      ctx.save();
+      const mousePixelX = mouse.x * width;
+      const mousePixelY = mouse.y * height;
 
-        for (let i = 0; i < stars.length; i++) {
-          const star = stars[i];
-          star.twinklePhase += star.twinkleSpeed;
-          const twinkle = Math.sin(star.twinklePhase);
-          const currentAlpha = Math.max(0.08, star.baseAlpha + twinkle * 0.35) * starOpacityMultiplier;
+      for (let i = 0; i < stars.length; i++) {
+        const star = stars[i];
 
-          ctx.beginPath();
-          ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha.toFixed(3)})`;
-          ctx.fill();
+        // Brownian drift
+        star.x += star.vx;
+        star.y += star.vy;
+        if (star.x < 0) star.x = width;
+        if (star.x > width) star.x = 0;
+        if (star.y < 0) star.y = height;
+        if (star.y > height) star.y = 0;
 
-          // Subtle diamond diffraction spike for brighter stars
-          if (star.size > 2.0 && isNight) {
-            ctx.strokeStyle = `rgba(255, 255, 255, ${(currentAlpha * 0.3).toFixed(3)})`;
-            ctx.lineWidth = 0.6;
-            ctx.beginPath();
-            ctx.moveTo(star.x - star.size * 2.5, star.y);
-            ctx.lineTo(star.x + star.size * 2.5, star.y);
-            ctx.moveTo(star.x, star.y - star.size * 2.5);
-            ctx.lineTo(star.x, star.y + star.size * 2.5);
-            ctx.stroke();
-          }
+        // Interactive subtle gravitational pull toward mouse
+        const distToMouse = Math.hypot(star.x - mousePixelX, star.y - mousePixelY);
+        if (distToMouse < 180 && distToMouse > 5) {
+          const force = (1 - distToMouse / 180) * 0.22;
+          star.x += ((mousePixelX - star.x) / distToMouse) * force;
+          star.y += ((mousePixelY - star.y) / distToMouse) * force;
         }
 
-        // Faint Constellation Links (Between close stars)
-        ctx.strokeStyle = `rgba(${secondaryR}, ${secondaryG}, ${secondaryB}, ${isNight ? 0.08 : 0.03})`;
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < 20; i++) {
+        // Twinkle
+        star.twinklePhase += star.twinkleSpeed;
+        const twinkle = Math.sin(star.twinklePhase);
+        const alpha = Math.max(0.08, star.baseAlpha + twinkle * 0.35);
+
+        // Core particle
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        const particleColor = star.colorOffset > 0.6 ? primaryRGB : star.colorOffset > 0.3 ? secondaryRGB : '255, 255, 255';
+        ctx.fillStyle = `rgba(${particleColor}, ${alpha.toFixed(3)})`;
+        ctx.fill();
+
+        // Specular glow for prominent nodes
+        if (star.size > 1.6) {
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.size * 2.8, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${particleColor}, ${(alpha * 0.18).toFixed(3)})`;
+          ctx.fill();
+        }
+      }
+
+      // Constellation Laser Filaments (between close star nodes)
+      ctx.lineWidth = 0.6;
+      for (let i = 0; i < stars.length; i += 3) {
+        for (let j = i + 1; j < Math.min(stars.length, i + 8); j++) {
           const s1 = stars[i];
-          const s2 = stars[(i + 1) % 20];
-          const dist = Math.hypot(s1.x - s2.x, s1.y - s2.y);
-          if (dist < 180) {
+          const s2 = stars[j];
+          const d = Math.hypot(s1.x - s2.x, s1.y - s2.y);
+          if (d < 110) {
+            const lineAlpha = (1 - d / 110) * (isNight ? 0.14 : 0.08);
+            ctx.strokeStyle = `rgba(${primaryRGB}, ${lineAlpha})`;
             ctx.beginPath();
             ctx.moveTo(s1.x, s1.y);
             ctx.lineTo(s2.x, s2.y);
             ctx.stroke();
           }
         }
-        ctx.restore();
       }
+      ctx.restore();
 
-      // ── 4. PERIODIC CELESTIAL METEOR SHOOTING STARS ───────────────
-      const now = Date.now();
-      if ((isNight || isDusk) && now - lastMeteorTime > 14000) {
+      // ── 4. PERIODIC HYPER-SPEED BOLIDE METEORS ─────────────────────
+      if ((isNight || isDusk) && now - lastMeteorSpawn > 11000) {
         spawnMeteor();
-        lastMeteorTime = now;
+        lastMeteorSpawn = now;
       }
 
       if (meteors.length > 0) {
@@ -268,7 +319,7 @@ export function CircadianSkybox() {
           const m = meteors[i];
           m.x += Math.cos(m.angle) * m.speed;
           m.y += Math.sin(m.angle) * m.speed;
-          m.alpha -= 0.02;
+          m.alpha -= 0.018;
 
           if (m.alpha <= 0 || m.x > width || m.y > height) {
             meteors.splice(i, 1);
@@ -280,42 +331,73 @@ export function CircadianSkybox() {
 
           const meteorGrad = ctx.createLinearGradient(tailX, tailY, m.x, m.y);
           meteorGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-          meteorGrad.addColorStop(0.7, `rgba(${primaryR}, ${primaryG}, ${primaryB}, ${m.alpha * 0.7})`);
+          meteorGrad.addColorStop(0.7, `rgba(${primaryRGB}, ${m.alpha * 0.8})`);
           meteorGrad.addColorStop(1, `rgba(255, 255, 255, ${m.alpha})`);
 
           ctx.beginPath();
           ctx.moveTo(tailX, tailY);
           ctx.lineTo(m.x, m.y);
           ctx.strokeStyle = meteorGrad;
-          ctx.lineWidth = 1.8;
+          ctx.lineWidth = 2.0;
           ctx.stroke();
 
           // Spark head
           ctx.beginPath();
-          ctx.arc(m.x, m.y, 2, 0, Math.PI * 2);
+          ctx.arc(m.x, m.y, 2.5, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 255, 255, ${m.alpha})`;
           ctx.fill();
         }
         ctx.restore();
       }
 
-      // ── 5. VALLEY ROLLING FOG MIST PARTICLES ───────────────────────
+      // ── 5. QUANTUM UNDULATING HORIZON WAVE & LASER RAYS ───────────
+      // Sleek luxury horology horizon curve instead of flat vector mountains
       ctx.save();
-      for (let i = 0; i < mistParticles.length; i++) {
-        const p = mistParticles[i];
-        p.x += p.vx;
-        if (p.x > width + p.size) p.x = -p.size;
+      const horizonY = height * 0.82;
+      const gridSegments = 48;
+      const gridStep = width / gridSegments;
 
-        const mistGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-        mistGrad.addColorStop(0, `rgba(${primaryR}, ${primaryG}, ${primaryB}, ${p.alpha * 0.7})`);
-        mistGrad.addColorStop(0.5, `rgba(${secondaryR}, ${secondaryG}, ${secondaryB}, ${p.alpha * 0.3})`);
-        mistGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      ctx.lineTo(0, horizonY);
 
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = mistGrad;
-        ctx.fill();
+      for (let s = 0; s <= gridSegments; s++) {
+        const x = s * gridStep;
+        const normX = x / width;
+        // Natural multi-octave harmonic undulation
+        const wave =
+          Math.sin(normX * Math.PI * 4 + time * 0.6) * 16 +
+          Math.sin(normX * Math.PI * 8 - time * 0.3) * 8 +
+          Math.cos(normX * Math.PI * 2 + time * 0.2) * 12;
+
+        const y = horizonY + wave;
+        ctx.lineTo(x, y);
+
+        // Subtle vertical laser tick marks every 3rd node
+        if (s % 3 === 0) {
+          const tickHeight = 24 + Math.sin(time * 1.2 + s) * 12;
+          ctx.strokeStyle = `rgba(${primaryRGB}, 0.12)`;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y - tickHeight, 0.5, tickHeight);
+        }
       }
+
+      ctx.lineTo(width, height);
+      ctx.closePath();
+
+      // Atmospheric Ground Gradient
+      const groundGrad = ctx.createLinearGradient(0, horizonY - 40, 0, height);
+      groundGrad.addColorStop(0, `rgba(${primaryRGB}, 0.08)`);
+      groundGrad.addColorStop(0.3, `rgba(${secondaryRGB}, 0.04)`);
+      groundGrad.addColorStop(1, 'rgba(3, 5, 10, 0.95)');
+      ctx.fillStyle = groundGrad;
+      ctx.fill();
+
+      // Glowing Horizon Crest Laser Rule
+      ctx.strokeStyle = `rgba(${primaryRGB}, 0.45)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
       ctx.restore();
 
       animId = requestAnimationFrame(render);
@@ -330,188 +412,120 @@ export function CircadianSkybox() {
     };
   }, [currentEpoch, solarState]);
 
-  const { sunXPercent, sunYPercent, glowOpacity, elevationDeg } = solarState;
+  const { sunXPercent, sunYPercent, glowOpacity } = solarState;
   const isNight = currentEpoch === 'night';
   const isDusk = currentEpoch === 'dusk';
+  const isDawn = currentEpoch === 'dawn';
 
   return (
     <div
       className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden select-none"
       style={{
-        backgroundColor: 'var(--canvas-ground, #06080d)',
-        transition: 'background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+        backgroundColor: 'var(--canvas-ground, #04060d)',
+        transition: 'background-color 1s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
       aria-hidden="true"
     >
-      {/* ── LAYER 0: Astronomical Sun/Moon Atmospheric Radial Glow Orb ── */}
+      {/* ── LAYER 0: LIVING CHROMATIC VOLUMETRIC PLASMA NODES ── */}
+      {/* Node 1: Primary Celestial Diurnal Luminary (Sun/Moon focus) */}
       <div
-        className="absolute w-[950px] h-[950px] rounded-full blur-[130px] pointer-events-none transition-all duration-700 ease-out"
+        className="absolute w-[950px] h-[950px] rounded-full blur-[140px] pointer-events-none transition-all duration-1000 ease-out will-change-transform"
         style={{
           left: `${sunXPercent}%`,
           top: `${sunYPercent}%`,
           transform: 'translate(-50%, -50%)',
           background: isNight
-            ? 'radial-gradient(circle, rgba(99, 102, 241, 0.32) 0%, rgba(168, 85, 247, 0.16) 40%, transparent 70%)'
+            ? 'radial-gradient(circle, rgba(99, 102, 241, 0.42) 0%, rgba(168, 85, 247, 0.22) 38%, transparent 70%)'
             : isDusk
-            ? 'radial-gradient(circle, rgba(245, 158, 11, 0.45) 0%, rgba(255, 191, 36, 0.22) 35%, rgba(20, 184, 166, 0.10) 65%, transparent 75%)'
-            : currentEpoch === 'dawn'
-            ? 'radial-gradient(circle, rgba(251, 191, 36, 0.40) 0%, rgba(245, 158, 11, 0.18) 45%, transparent 70%)'
-            : 'radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(59, 130, 246, 0.15) 50%, transparent 70%)',
-          opacity: glowOpacity,
+            ? 'radial-gradient(circle, rgba(249, 115, 22, 0.48) 0%, rgba(217, 70, 239, 0.28) 40%, rgba(245, 158, 11, 0.15) 65%, transparent 75%)'
+            : isDawn
+            ? 'radial-gradient(circle, rgba(245, 158, 11, 0.46) 0%, rgba(251, 113, 133, 0.32) 35%, rgba(252, 211, 77, 0.18) 60%, transparent 72%)'
+            : 'radial-gradient(circle, rgba(0, 240, 255, 0.45) 0%, rgba(37, 99, 235, 0.28) 45%, rgba(59, 130, 246, 0.12) 70%, transparent 75%)',
+          opacity: glowOpacity * 1.25,
         }}
       />
 
-      {/* ── LAYER 1: Master Canvas (God Rays, Aurora Silk Waves, Stars, Meteors, Fog) ── */}
+      {/* Node 2: Secondary Chromatic Resonance Counter-Orb (Floating in lower quadrant) */}
+      <div
+        className="absolute w-[750px] h-[750px] rounded-full blur-[150px] pointer-events-none transition-all duration-1000 ease-out animate-pulse"
+        style={{
+          right: '8%',
+          bottom: '12%',
+          background: isNight
+            ? 'radial-gradient(circle, rgba(6, 182, 212, 0.30) 0%, rgba(99, 102, 241, 0.15) 50%, transparent 70%)'
+            : isDusk
+            ? 'radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(249, 115, 22, 0.18) 50%, transparent 70%)'
+            : isDawn
+            ? 'radial-gradient(circle, rgba(251, 113, 133, 0.35) 0%, rgba(245, 158, 11, 0.15) 50%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(37, 99, 235, 0.38) 0%, rgba(0, 240, 255, 0.18) 50%, transparent 70%)',
+          animationDuration: '8s',
+        }}
+      />
+
+      {/* Node 3: Deep Ambient Luminous Horizon Wash */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-[480px] pointer-events-none blur-[100px] transition-all duration-1000 ease-out"
+        style={{
+          background: isNight
+            ? 'radial-gradient(ellipse at 50% 100%, rgba(99, 102, 241, 0.22) 0%, rgba(3, 5, 10, 0.9) 70%)'
+            : isDusk
+            ? 'radial-gradient(ellipse at 50% 100%, rgba(249, 115, 22, 0.28) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(3, 5, 10, 0.9) 80%)'
+            : isDawn
+            ? 'radial-gradient(ellipse at 50% 100%, rgba(245, 158, 11, 0.30) 0%, rgba(251, 113, 133, 0.16) 45%, rgba(3, 5, 10, 0.9) 80%)'
+            : 'radial-gradient(ellipse at 50% 100%, rgba(0, 240, 255, 0.24) 0%, rgba(37, 99, 235, 0.14) 50%, rgba(3, 5, 10, 0.9) 80%)',
+        }}
+      />
+
+      {/* ── LAYER 1: MASTER HIGH-OCTAVE CANVAS (Silk Ribbons, Stardust, Caustics, Meteors) ── */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none"
       />
 
-      {/* ── LAYER 2: 4-Tier Japanese Yamato-e Mountain Landscape (High-Craft SVG) ── */}
-      <div className="absolute inset-x-0 bottom-0 h-[560px] pointer-events-none">
-        <svg
-          viewBox="0 0 1440 560"
-          className="w-full h-full object-cover preserve-3d"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            {/* Celestial Sun / Moon Specular Gradient */}
-            <radialGradient id="celestial-orb-grad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-              <stop offset="45%" stopColor="var(--chrono-accent, #f59e0b)" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="var(--chrono-secondary, #ffbf24)" stopOpacity="0" />
-            </radialGradient>
-
-            {/* Tier 1: Distant Spire Gradient */}
-            <linearGradient id="tier1-spires" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="var(--chrono-accent, #f59e0b)" stopOpacity="0.25" />
-              <stop offset="50%" stopColor="#0a0e1c" stopOpacity="0.75" />
-              <stop offset="100%" stopColor="var(--canvas-ground, #06080d)" stopOpacity="0.95" />
-            </linearGradient>
-
-            {/* Tier 2: Mid Alpine Ridge Gradient with Golden Edge */}
-            <linearGradient id="tier2-alpine" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#12182b" stopOpacity="0.92" />
-              <stop offset="100%" stopColor="var(--canvas-ground, #06080d)" stopOpacity="1" />
-            </linearGradient>
-
-            {/* Tier 3: Near Ridge Urushi Black */}
-            <linearGradient id="tier3-foreground" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#080a12" stopOpacity="0.98" />
-              <stop offset="100%" stopColor="var(--canvas-ground, #06080d)" stopOpacity="1" />
-            </linearGradient>
-          </defs>
-
-          {/* ── CELESTIAL SUN / MOON DISC ── */}
-          <circle
-            cx={`${sunXPercent}%`}
-            cy={`${sunYPercent}%`}
-            r={isNight ? 22 : 36}
-            className="transition-all duration-700 ease-out"
-            fill={isNight ? '#f1f5f9' : 'url(#celestial-orb-grad)'}
-            style={{
-              filter: isNight
-                ? 'drop-shadow(0 0 24px rgba(241, 245, 249, 0.85)) drop-shadow(0 0 50px rgba(99, 102, 241, 0.5))'
-                : 'drop-shadow(0 0 35px var(--chrono-accent, #f59e0b)) drop-shadow(0 0 70px var(--chrono-secondary, #ffbf24))',
-            }}
-          />
-
-          {/* Lunar Crater Caustics (Subtle detail when night) */}
-          {isNight && (
-            <g
-              transform={`translate(${((sunXPercent / 100) * 1440) - 22}, ${((sunYPercent / 100) * 560) - 22})`}
-              className="opacity-20 pointer-events-none"
-            >
-              <circle cx="16" cy="14" r="4.5" fill="#94a3b8" />
-              <circle cx="28" cy="22" r="6" fill="#94a3b8" />
-              <circle cx="20" cy="30" r="3.5" fill="#94a3b8" />
-            </g>
-          )}
-
-          {/* ── TIER 1: Distant Alpine Spires & Mount Fuji Silhouette ── */}
-          <path
-            d="M0 320 
-               L180 260 L240 290 
-               L360 210 L440 270 
-               L620 140 L700 120 L780 140 L860 260 
-               L1020 180 L1100 240 
-               L1260 190 L1340 250 L1440 220 
-               L1440 560 L0 560 Z"
-            fill="url(#tier1-spires)"
-            className="transition-all duration-700"
-          />
-
-          {/* Mount Fuji Sacred Peak Hairline Gilded Crest */}
-          <path
-            d="M620 140 L700 120 L780 140"
-            stroke="var(--chrono-accent, #f59e0b)"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            opacity={isNight ? 0.3 : 0.8}
-            className="transition-all duration-700"
-          />
-
-          {/* ── TIER 2: Mid Alpine Ridge with Specular Hairline Rim ── */}
-          <path
-            d="M0 390 
-               C200 330 320 410 480 340 
-               C660 260 800 370 980 310 
-               C1140 260 1300 360 1440 320 
-               L1440 560 L0 560 Z"
-            fill="url(#tier2-alpine)"
-            className="transition-all duration-700"
-          />
-          {/* Luminous Specular Rim Line for Tier 2 */}
-          <path
-            d="M0 390 
-               C200 330 320 410 480 340 
-               C660 260 800 370 980 310 
-               C1140 260 1300 360 1440 320"
-            stroke="var(--chrono-accent, #f59e0b)"
-            strokeWidth="1.2"
-            opacity={isNight ? 0.25 : 0.75}
-            fill="none"
-            className="transition-all duration-700"
-          />
-
-          {/* ── TIER 3: Near Ridge in Urushi Black ── */}
-          <path
-            d="M0 460 
-               C160 410 320 490 520 430 
-               C740 370 920 460 1120 410 
-               C1280 370 1380 440 1440 420 
-               L1440 560 L0 560 Z"
-            fill="url(#tier3-foreground)"
-            className="transition-all duration-700"
-          />
-        </svg>
+      {/* ── LAYER 2: CELESTIAL SPECULAR SUN/MOON EMBLEM ── */}
+      <div
+        className="absolute pointer-events-none transition-all duration-1000 ease-out"
+        style={{
+          left: `${sunXPercent}%`,
+          top: `${sunYPercent}%`,
+          transform: 'translate(-50%, -50%)',
+        }}
+      >
+        <div
+          className="rounded-full transition-all duration-700"
+          style={{
+            width: isNight ? '34px' : '52px',
+            height: isNight ? '34px' : '52px',
+            background: isNight
+              ? 'radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%)'
+              : isDusk
+              ? 'radial-gradient(circle at 35% 35%, #ffffff 0%, #fbbf24 40%, #f97316 100%)'
+              : isDawn
+              ? 'radial-gradient(circle at 35% 35%, #ffffff 0%, #fef08a 40%, #f59e0b 100%)'
+              : 'radial-gradient(circle at 35% 35%, #ffffff 0%, #a5f3fc 40%, #00f0ff 100%)',
+            boxShadow: isNight
+              ? '0 0 45px rgba(255, 255, 255, 0.8), 0 0 90px rgba(99, 102, 241, 0.6), inset -2px -2px 6px rgba(0,0,0,0.4)'
+              : '0 0 55px rgba(255, 255, 255, 0.9), 0 0 110px var(--chrono-accent, #00f0ff), 0 0 160px var(--chrono-secondary, #2563eb)',
+          }}
+        />
       </div>
 
-      {/* ── LAYER 3: Progressive Atmospheric Blur Mask ── */}
+      {/* ── LAYER 3: KINPAKU GOLD FLAKE / FILM GRAIN NOISE TEXTURE ── */}
+      {/* Eliminates color banding on OLED screens & gives luxury tactile finish */}
       <div
-        className="absolute inset-x-0 bottom-0 h-[420px] pointer-events-none backdrop-blur-[12px]"
+        className="absolute inset-0 opacity-[0.035] pointer-events-none mix-blend-screen"
         style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 55%, black 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 55%, black 100%)',
+          backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px), radial-gradient(var(--chrono-accent, #00f0ff) 1px, transparent 1px)`,
+          backgroundSize: '28px 28px, 14px 14px',
+          backgroundPosition: '0 0, 7px 7px',
         }}
       />
 
-      {/* ── LAYER 4: Japanese Makie 24k Gold Flake Micro-Shimmer & Film Grain ── */}
+      {/* ── LAYER 4: VIGNETTE & PROGRESSIVE SPATIAL ATTENUATION ── */}
       <div
-        className="absolute inset-0 opacity-[0.04] pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: `radial-gradient(rgba(245, 158, 11, 0.8) 1px, transparent 1px), radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px)`,
-          backgroundSize: '36px 36px, 18px 18px',
-          backgroundPosition: '0 0, 9px 9px',
-        }}
-      />
-
-      {/* Horizon Specular Laser Rule */}
-      <div
-        className="absolute inset-x-0 bottom-[260px] h-[1px] opacity-25 pointer-events-none"
-        style={{
-          background: 'linear-gradient(to right, transparent, var(--chrono-accent, #f59e0b), transparent)',
+          background: 'radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0, 0, 0, 0.55) 100%)',
         }}
       />
     </div>

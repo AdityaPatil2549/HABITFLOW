@@ -175,7 +175,7 @@ export function Dashboard() {
       {!zenMode && (
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4" aria-label="Momentum statistics">
           {/* 1. Momentum Score */}
-          <div className="relative p-5 rounded-2xl bg-[#0e101a]/70 border border-white/[0.08] backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] overflow-hidden group hover:border-emerald-500/30 transition-all">
+          <div className="relative p-5 rounded-2xl bg-slate-950/35 border border-white/[0.12] border-t-white/[0.25] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden group hover:border-emerald-500/40 hover:bg-slate-900/45 transition-all">
             <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-colors" />
             <div className="flex items-center justify-between text-slate-400 mb-2">
               <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-semibold">Momentum</span>
@@ -194,7 +194,7 @@ export function Dashboard() {
           </div>
 
           {/* 2. Completion Rate */}
-          <div className="relative p-5 rounded-2xl bg-[#0e101a]/70 border border-white/[0.08] backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] overflow-hidden group hover:border-blue-500/30 transition-all">
+          <div className="relative p-5 rounded-2xl bg-slate-950/35 border border-white/[0.12] border-t-white/[0.25] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden group hover:border-blue-500/40 hover:bg-slate-900/45 transition-all">
             <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-blue-500/10 blur-2xl pointer-events-none group-hover:bg-blue-500/20 transition-colors" />
             <div className="flex items-center justify-between text-slate-400 mb-2">
               <span className="text-[11px] font-mono uppercase tracking-wider text-blue-400 font-semibold">Today's Rate</span>
@@ -210,7 +210,7 @@ export function Dashboard() {
           </div>
 
           {/* 3. Top Streak */}
-          <div className="relative p-5 rounded-2xl bg-[#0e101a]/70 border border-white/[0.08] backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] overflow-hidden group hover:border-amber-500/30 transition-all">
+          <div className="relative p-5 rounded-2xl bg-slate-950/35 border border-white/[0.12] border-t-white/[0.25] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden group hover:border-amber-500/40 hover:bg-slate-900/45 transition-all">
             <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-amber-500/10 blur-2xl pointer-events-none group-hover:bg-amber-500/20 transition-colors" />
             <div className="flex items-center justify-between text-slate-400 mb-2">
               <span className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold">Peak Streak</span>
@@ -226,7 +226,7 @@ export function Dashboard() {
           </div>
 
           {/* 4. Energy XP */}
-          <div className="relative p-5 rounded-2xl bg-[#0e101a]/70 border border-white/[0.08] backdrop-blur-2xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] overflow-hidden group hover:border-purple-500/30 transition-all">
+          <div className="relative p-5 rounded-2xl bg-slate-950/35 border border-white/[0.12] border-t-white/[0.25] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden group hover:border-purple-500/40 hover:bg-slate-900/45 transition-all">
             <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-purple-500/10 blur-2xl pointer-events-none group-hover:bg-purple-500/20 transition-colors" />
             <div className="flex items-center justify-between text-slate-400 mb-2">
               <span className="text-[11px] font-mono uppercase tracking-wider text-purple-400 font-semibold">Total XP</span>
