@@ -1,30 +1,24 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Flame,
-  Zap,
-  CheckCircle2,
-  Sparkles,
-  Plus,
-  Maximize2,
-  Minimize2,
-  TrendingUp,
-  Target,
-  ArrowRight,
-  Clock,
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { format, subDays } from 'date-fns';
+import { Plus, Maximize2, Minimize2, Sparkles, ArrowRight, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
 import { useGamificationStore } from '../store/gamificationStore';
 import { useModalStore } from '../store/modalStore';
-import { momentumEngine, DailyRitualGroup } from '../services/momentumEngine';
+import { db, getOrCreateSettings } from '../db';
+import { momentumEngine } from '../services/momentumEngine';
+import { calculateStats } from '../services/gamificationService';
+import { aiCoachService } from '../services/aiCoachService';
+import { resolveTelemetryMode } from '../lib/theme';
 import { TactileHabitCard } from '../components/habits/TactileHabitCard';
+import { RelayRail } from '../components/habits/RelayRail';
 import { HabitEditorDrawer } from '../components/habits/workstation/HabitEditorDrawer';
-import type { Habit, HabitWithStreak } from '../types';
-import { format } from 'date-fns';
+import { MomentumHorizon } from '../components/dashboard/MomentumHorizon';
+import { TodayTasks } from '../components/dashboard/TodayTasks';
+import { MoodPulse } from '../components/dashboard/MoodPulse';
+import type { AIInsight, Habit, HabitLog, HabitWithStreak, TelemetryMode } from '../types';
 import { cn } from '../lib/utils';
-import { getHabitEmoji } from '../lib/emoji';
 import { soundService } from '../services/soundService';
 
 interface StarterHabitTemplate {
@@ -38,26 +32,29 @@ interface StarterHabitTemplate {
 }
 
 const STARTER_HABITS: StarterHabitTemplate[] = [
-  { name: 'Drink 500ml Water', icon: '💧', category: 'health', timeOfDay: 'morning', color: '#10B981', desc: 'Hydrate immediately upon waking' },
+  { name: 'Drink 500ml Water', icon: '💧', category: 'health', timeOfDay: 'morning', color: '#22C55E', desc: 'Hydrate immediately upon waking' },
   { name: '10m Mindfulness Meditation', icon: '🧘', category: 'mindfulness', timeOfDay: 'morning', color: '#06B6D4', desc: 'Clear mental noise and sharpen focus', stackAfterName: 'Drink 500ml Water' },
-  { name: 'Read 10 Pages', icon: '📖', category: 'learning', timeOfDay: 'evening', color: '#6366F1', desc: 'Daily compounding knowledge' },
-  { name: '20m Brisk Walk', icon: '🚶', category: 'fitness', timeOfDay: 'afternoon', color: '#10B981', desc: 'Physical vitality & active rest' },
+  { name: 'Read 10 Pages', icon: '📖', category: 'learning', timeOfDay: 'evening', color: '#8B5CF6', desc: 'Daily compounding knowledge' },
+  { name: '20m Brisk Walk', icon: '🚶', category: 'fitness', timeOfDay: 'afternoon', color: '#3B82F6', desc: 'Physical vitality & active rest' },
 ];
 
 export function Dashboard() {
-  const navigate = useNavigate();
   const { habits, loading, loadHabits, logHabit, incrementHabit, unlogHabit, addHabit, updateHabit } = useHabitStore();
   const { loadTasks } = useTaskStore();
   const { userXP, loadXP } = useGamificationStore();
   const { setQuickAddOpen } = useModalStore();
 
   const [globalMomentum, setGlobalMomentum] = useState<number>(0);
+  const [recentLogs, setRecentLogs] = useState<HabitLog[]>([]);
+  const [quickInsight, setQuickInsight] = useState<AIInsight | null>(null);
+  const [telemetryMode, setTelemetryMode] = useState<TelemetryMode>('scaffold');
   const [zenMode, setZenMode] = useState<boolean>(false);
   const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(null);
+  const [bypassedHabitIds, setBypassedHabitIds] = useState<Set<string>>(new Set());
 
   const handleAddStarter = async (starter: StarterHabitTemplate) => {
     soundService.playBadge();
-    let stackAfterHabitId: string | undefined = undefined;
+    let stackAfterHabitId: string | undefined;
     if (starter.stackAfterName) {
       const parent = habits.find(h => h.name.includes(starter.stackAfterName!));
       if (parent) stackAfterHabitId = parent.id;
@@ -85,10 +82,84 @@ export function Dashboard() {
     loadXP();
   }, [loadHabits, loadTasks, loadXP]);
 
-  // Recalculate client-side momentum whenever habits change
+  const numericLevel = calculateStats(userXP?.total ?? 0).numericLevel;
+
   useEffect(() => {
-    momentumEngine.calculateGlobalMomentum().then(setGlobalMomentum).catch(console.warn);
+    const syncTelemetry = async () => {
+      const s = await getOrCreateSettings();
+      setTelemetryMode(resolveTelemetryMode(s, numericLevel));
+    };
+    syncTelemetry();
+    window.addEventListener('habitflow-appearance-changed', syncTelemetry);
+    return () => window.removeEventListener('habitflow-appearance-changed', syncTelemetry);
+  }, [numericLevel]);
+
+  // Fetch recent logs (30d window for momentum + 7d continuity tape + weekly sparkline)
+  useEffect(() => {
+    let active = true;
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const windowStartStr = format(subDays(new Date(), 30), 'yyyy-MM-dd');
+
+    Promise.all([
+      momentumEngine.calculateGlobalMomentum(),
+      db.habitLogs.where('date').between(windowStartStr, todayStr, true, true).toArray(),
+      aiCoachService.getRecentInsights(1),
+    ])
+      .then(([momentumScore, logs, insights]) => {
+        if (!active) return;
+        setGlobalMomentum(momentumScore);
+        setRecentLogs(logs);
+        setQuickInsight(insights[0] ?? null);
+      })
+      .catch(() => null);
+
+    return () => {
+      active = false;
+    };
   }, [habits]);
+
+  // Per-habit grouped logs & individual momentum score
+  const habitMetricsMap = useMemo(() => {
+    const logsByHabit = new Map<string, HabitLog[]>();
+    for (const log of recentLogs) {
+      const arr = logsByHabit.get(log.habitId) || [];
+      arr.push(log);
+      logsByHabit.set(log.habitId, arr);
+    }
+
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const map = new Map<string, { logs: HabitLog[]; score: number }>();
+
+    for (const h of habits) {
+      const hLogs = logsByHabit.get(h.id) || [];
+      const target = h.targetValue || 1;
+      const completedDates = hLogs
+        .filter(l => !l.isFrozen && l.value >= target)
+        .map(l => l.date);
+      const metrics = momentumEngine.calculateHabitMomentum(completedDates, todayStr);
+      map.set(h.id, { logs: hLogs, score: metrics.score });
+    }
+    return map;
+  }, [habits, recentLogs]);
+
+  // 7-day daily completion sparkline for MomentumHorizon
+  const weeklySeries = useMemo(() => {
+    if (habits.length === 0) return [0, 0, 0, 0, 0, 0, 0];
+    const targetMap = new Map(habits.map(h => [h.id, h.targetValue || 1]));
+    const today = new Date();
+    const series: number[] = [];
+
+    for (let offset = 6; offset >= 0; offset--) {
+      const dateStr = format(subDays(today, offset), 'yyyy-MM-dd');
+      const doneSet = new Set(
+        recentLogs
+          .filter(l => l.date === dateStr && !l.isFrozen && l.value >= (targetMap.get(l.habitId) ?? 1))
+          .map(l => l.habitId)
+      );
+      series.push(Math.round((doneSet.size / habits.length) * 100));
+    }
+    return series;
+  }, [habits, recentLogs]);
 
   // Set of completed habit IDs for today
   const completedHabitIds = useMemo(() => {
@@ -99,20 +170,17 @@ export function Dashboard() {
     );
   }, [habits]);
 
-  // Group habits by Morning, Afternoon, Evening, Anytime rituals
   const ritualGroups = useMemo(() => {
     return momentumEngine.groupHabitsByRitual(habits, completedHabitIds);
   }, [habits, completedHabitIds]);
 
-  // Daily statistics
   const totalHabits = habits.length;
   const completedCount = completedHabitIds.size;
-  const completionPercentage = totalHabits > 0 ? Math.round((completedCount / totalHabits) * 100) : 0;
-  const maxStreak = useMemo(() => {
-    return habits.reduce((max, h) => Math.max(max, h.streak?.current || 0), 0);
-  }, [habits]);
+  const maxStreak = useMemo(
+    () => habits.reduce((max, h) => Math.max(max, h.streak?.current || 0), 0),
+    [habits]
+  );
 
-  // Toggle / increment habit handler
   const handleToggleHabit = useCallback(
     async (habit: HabitWithStreak) => {
       const target = habit.targetValue || 1;
@@ -124,7 +192,7 @@ export function Dashboard() {
         const hasChildren = habits.some(h => h.stackAfterHabitId === habit.id);
         if (hasChildren) {
           soundService.playSynapseSpark();
-          setTimeout(() => soundService.playUnlatchClick(), 260);
+          setTimeout(() => soundService.playUnlatchClick(), 140);
         }
       } else {
         await incrementHabit(habit.id, 1);
@@ -151,6 +219,14 @@ export function Dashboard() {
     [logHabit, unlogHabit]
   );
 
+  const handleBypassLock = useCallback((habitId: string) => {
+    setBypassedHabitIds(prev => {
+      const next = new Set(prev);
+      next.add(habitId);
+      return next;
+    });
+  }, []);
+
   const handleSaveHabitDetails = useCallback(
     async (data: Omit<Habit, 'id' | 'createdAt' | 'order'>, habitId?: string) => {
       if (habitId) {
@@ -162,7 +238,7 @@ export function Dashboard() {
     [addHabit, updateHabit]
   );
 
-  // Keyboard shortcut listener
+  // Keyboard shortcuts (`Z` for Zen, `1..9` quick toggle)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
@@ -183,312 +259,305 @@ export function Dashboard() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [habits, handleToggleHabit]);
 
-  // First incomplete habit for Zen mode
-  const nextUpHabit = useMemo(() => {
-    return habits.find(h => (h.todayLog?.value ?? 0) < (h.targetValue || 1));
-  }, [habits]);
+  const isMonastic = telemetryMode === 'monastic';
 
-  return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 pb-40 lg:pb-16 space-y-8">
-      {/* ── TOP HEADER / MOMENTUM PULSE ──────────────────────────── */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/[0.08] relative">
-        <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Today's Habits</span>
-            <span className="text-slate-600">•</span>
-            <span className="text-slate-300 font-sans">{format(new Date(), 'EEEE, MMMM d')}</span>
+  const renderRitualList = (zenExpanded = false) => (
+    <div className={cn(zenExpanded ? 'space-y-6' : 'space-y-6')}>
+      {loading && habits.length === 0 ? (
+        <div className="space-y-3 py-2">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-20 rounded-xl bg-[var(--sf-raised)] border border-[var(--border-default)] p-4 flex items-center justify-between animate-pulse"
+            >
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-10 h-10 rounded-lg bg-[var(--sf-overlay)]" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-40 bg-[var(--sf-overlay)] rounded" />
+                  <div className="h-3 w-28 bg-[var(--sf-overlay)] rounded" />
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[var(--sf-overlay)]" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        ritualGroups.map(group => {
+          const nodes = momentumEngine.resolveHabitStack(group.habits, completedHabitIds);
+          const groupIcon =
+            group.timeSlot === 'morning'
+              ? '🌅'
+              : group.timeSlot === 'afternoon'
+                ? '☀️'
+                : group.timeSlot === 'evening'
+                  ? '🌙'
+                  : '📌';
+
+          return (
+            <section
+              key={group.timeSlot}
+              className="space-y-2"
+              aria-labelledby={`ritual-${group.timeSlot}`}
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--border-default)]">
+                <div className="flex items-center gap-2">
+                  <span aria-hidden="true" className="text-base">
+                    {groupIcon}
+                  </span>
+                  <h2
+                    id={`ritual-${group.timeSlot}`}
+                    className="text-sm font-semibold text-[var(--tx-primary)] tracking-tight"
+                  >
+                    {group.label}
+                  </h2>
+                </div>
+                {!isMonastic && (
+                  <span className="font-data text-xs text-[var(--tx-secondary)] px-2 py-0.5 rounded-md bg-[var(--sf-overlay)] border border-[var(--border-default)]">
+                    {group.completedCount}/{group.totalCount}
+                  </span>
+                )}
+              </div>
+
+              <div>
+                {nodes.map((node, idx) => {
+                  const habitWithStreak = node.habit as HabitWithStreak;
+                  const habitMetrics = habitMetricsMap.get(node.habit.id);
+                  const nextHabit = node.nextInChain
+                    ? habits.find(h => h.id === node.nextInChain)
+                    : undefined;
+                  const showRailAbove = Boolean(node.parentHabit && idx > 0);
+
+                  return (
+                    <div key={node.habit.id}>
+                      {showRailAbove && (
+                        <RelayRail
+                          active={Boolean(
+                            node.parentHabit && completedHabitIds.has(node.parentHabit.id)
+                          )}
+                          primed={node.isPrimed}
+                          locked={node.isLocked && !bypassedHabitIds.has(node.habit.id)}
+                        />
+                      )}
+                      <TactileHabitCard
+                        habit={habitWithStreak}
+                        onToggle={handleToggleHabit}
+                        onIncrement={handleIncrementHabit}
+                        onSetValue={handleSetHabitValue}
+                        onOpenDetails={setEditingHabit}
+                        onBypassLock={handleBypassLock}
+                        isBypassed={bypassedHabitIds.has(node.habit.id)}
+                        isPrimed={node.isPrimed}
+                        isLocked={node.isLocked}
+                        parentHabitName={node.parentHabit?.name}
+                        nextHabitName={nextHabit?.name}
+                        recentLogs={habitMetrics?.logs}
+                        momentumScore={habitMetrics?.score}
+                        telemetryMode={telemetryMode}
+                        zenExpanded={zenExpanded}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })
+      )}
+    </div>
+  );
+
+  // ── Zen Mode Overlay ────────────────────────────────────────────
+  if (zenMode) {
+    return (
+      <div
+        className="min-h-[calc(100dvh-5rem)] bg-[var(--sf-dim)] rounded-2xl p-4 sm:p-8 flex flex-col items-center cursor-pointer"
+        onClick={e => {
+          if (e.target === e.currentTarget) setZenMode(false);
+        }}
+      >
+        <div
+          className="w-full max-w-2xl space-y-6 cursor-default"
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between pb-4 border-b border-[var(--border-default)]">
+            <div>
+              <p className="font-label-caps">Zen Execution Mode</p>
+              <h1 className="font-h1 text-[var(--tx-primary)] mt-1">Today's Rituals</h1>
+            </div>
+            <button
+              type="button"
+              onClick={() => setZenMode(false)}
+              className="btn-secondary px-3.5 py-2 text-xs inline-flex items-center gap-2"
+            >
+              <Minimize2 size={14} />
+              <span>Exit (Z)</span>
+            </button>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-3 font-display">
-            Daily Momentum
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-lg">
-            Build unbroken daily consistency and watch your compounding momentum grow.
-          </p>
+          {habits.length === 0 ? (
+            <p className="text-sm text-[var(--tx-secondary)] py-8 text-center">
+              No habits scheduled yet. Exit Zen mode to add one.
+            </p>
+          ) : (
+            renderRitualList(true)
+          )}
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-3 self-start md:self-auto">
+        <HabitEditorDrawer
+          isOpen={Boolean(editingHabit)}
+          onClose={() => setEditingHabit(null)}
+          onSave={handleSaveHabitDetails}
+          initialHabit={editingHabit}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full space-y-6">
+      {/* ── Top Workspace Header ── */}
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[var(--border-default)]">
+        <div>
+          <p className="font-label-caps">{format(new Date(), 'EEEE, MMMM d')}</p>
+          <h1 className="font-h1 text-[var(--tx-primary)] mt-1">Today</h1>
+        </div>
+
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <button
-            onClick={() => setZenMode(prev => !prev)}
-            aria-label="Toggle Zen Focus Mode"
-            className={cn(
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-mono font-semibold uppercase tracking-wider transition-all cursor-pointer backdrop-blur-xl border active:scale-95',
-              zenMode
-                ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.3)]'
-                : 'bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border-white/[0.08]'
-            )}
+            type="button"
+            onClick={() => setZenMode(true)}
+            aria-label="Enter Zen Focus Mode"
+            className="btn-secondary px-3.5 py-2 text-xs inline-flex items-center gap-2"
           >
-            {zenMode ? <Minimize2 className="w-3.5 h-3.5 text-purple-400" /> : <Maximize2 className="w-3.5 h-3.5 text-slate-400" />}
-            <span>Zen ({zenMode ? 'On' : 'Z'})</span>
+            <Maximize2 size={14} />
+            <span>Zen (Z)</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setQuickAddOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:shadow-[0_0_32px_rgba(16,185,129,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
+            <Plus size={15} />
             <span>New Habit</span>
           </button>
         </div>
       </header>
 
-      {/* ── ZEN FOCUS MODE (Distraction-Free) ─────────────────────── */}
-      <AnimatePresence>
-        {zenMode && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="my-8 p-8 sm:p-14 rounded-3xl bg-[#0e101a]/85 border border-purple-500/30 text-center shadow-[0_24px_80px_rgba(0,0,0,0.8)] backdrop-blur-3xl relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 via-transparent to-transparent pointer-events-none" />
-
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono uppercase tracking-widest text-purple-300 bg-purple-500/15 border border-purple-500/30 mb-8 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-              <Zap className="w-3.5 h-3.5 text-purple-400" />
-              <span>Zen Focus Active</span>
+      {/* ── Empty State Onboarding ── */}
+      {!loading && habits.length === 0 && (
+        <div className="card-raised p-6 sm:p-10 text-center space-y-6">
+          <div className="max-w-md mx-auto space-y-2">
+            <div className="w-12 h-12 rounded-xl bg-[var(--accent-subtle)] border border-[var(--border-default)] flex items-center justify-center mx-auto text-xl">
+              ◉
             </div>
-
-            {nextUpHabit ? (
-              <div className="max-w-md mx-auto relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-3xl mx-auto mb-6">
-                  {getHabitEmoji(nextUpHabit.icon)}
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-3 tracking-tight">
-                  {nextUpHabit.name}
-                </h2>
-                <p className="text-sm text-slate-400 mb-8 leading-relaxed">
-                  Focus purely on this single ritual right now. Press <kbd className="px-2 py-1 rounded-lg bg-white/10 font-mono text-xs text-white border border-white/10">1</kbd> or click below to mark it done.
-                </p>
-
-                <button
-                  onClick={() => handleToggleHabit(nextUpHabit)}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-base shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:shadow-[0_0_40px_rgba(16,185,129,0.6)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 cursor-pointer"
-                >
-                  <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
-                  <span>Mark Done & Advance</span>
-                </button>
-              </div>
-            ) : (
-              <div className="py-8 relative z-10">
-                <div className="text-6xl mb-4">🏆</div>
-                <h2 className="text-2xl font-black text-white mb-2">All Daily Rituals Complete!</h2>
-                <p className="text-sm text-slate-400 max-w-sm mx-auto">
-                  You have conquered today's momentum. Take time to rest and recharge for tomorrow's flow.
-                </p>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── ONBOARDING EMPTY STATE (When user has 0 habits) ─────────── */}
-      {!zenMode && !loading && habits.length === 0 && (
-        <div className="text-center py-12 px-6 sm:px-10 rounded-3xl border border-white/[0.1] bg-[#0c0f18]/80 backdrop-blur-2xl my-6 shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
-
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 text-3xl shadow-[0_0_24px_rgba(16,185,129,0.25)]">
-            ✨
+            <h2 className="font-h2 text-[var(--tx-primary)]">Initialize Your Daily Sequence</h2>
+            <p className="text-sm text-[var(--tx-secondary)]">
+              Consistency begins with one atomic cue. Select a starter template or build a custom habit.
+            </p>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">
-            Welcome to HabitFlow
-          </h2>
-          <p className="text-sm text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
-            Consistency begins with a single atomic step. Pick a starter habit below to activate your daily momentum tracking.
-          </p>
 
-          {/* Quick Starter Templates */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto mb-8 text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto text-left">
             {STARTER_HABITS.map(starter => (
               <button
                 key={starter.name}
+                type="button"
                 onClick={() => handleAddStarter(starter)}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.03] hover:bg-emerald-500/10 border border-white/[0.08] hover:border-emerald-500/30 transition-all group cursor-pointer"
+                className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--accent)] transition-colors cursor-pointer group"
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <span className="text-2xl shrink-0">{starter.icon}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xl shrink-0">{starter.icon}</span>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors truncate">
+                    <p className="text-sm font-semibold text-[var(--tx-primary)] truncate">
                       {starter.name}
-                    </div>
-                    <div className="text-[11px] text-slate-400 truncate">
-                      {starter.desc}
-                    </div>
+                    </p>
+                    <p className="text-xs text-[var(--tx-secondary)] truncate">{starter.desc}</p>
                   </div>
                 </div>
-                <span className="ml-2 text-xs font-mono font-semibold px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-colors">
+                <span className="ml-2 text-xs font-mono font-semibold text-[var(--accent-ink)] shrink-0">
                   + Add
                 </span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center justify-center gap-4">
+          <div>
             <button
+              type="button"
               onClick={() => setQuickAddOpen(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] font-semibold text-xs transition-all cursor-pointer"
+              className="btn-secondary px-5 py-2.5 text-xs inline-flex items-center gap-2"
             >
-              <Plus className="w-4 h-4" />
-              <span>Custom Habit</span>
+              <Plus size={14} />
+              <span>Create Custom Habit</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* ── 2-COLUMN SPLIT DESKTOP LAYOUT (HABITS FRONT & CENTER) ──── */}
-      {!zenMode && (habits.length > 0 || loading) && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* ── LEFT PANE: HABITS & RITUAL TIMELINE (7 COLS ON DESKTOP) ── */}
-          <div className="lg:col-span-7 space-y-8 order-1">
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-              <div className="flex items-center gap-2.5">
-                <Target className="w-5 h-5 text-emerald-400" />
-                <h2 className="text-lg font-bold text-white tracking-tight">Today's Flow</h2>
+      {/* ── 8/4 Execution Split (Centered Single Column in Monastic Mode) ── */}
+      {(habits.length > 0 || loading) && (
+        <div
+          className={cn(
+            'grid grid-cols-1 gap-6 items-start',
+            isMonastic ? 'max-w-2xl mx-auto' : 'lg:grid-cols-12'
+          )}
+        >
+          {/* Top / Primary 8 Columns: Active Rituals */}
+          <div className={cn('space-y-5', !isMonastic && 'lg:col-span-8')}>
+            {!isMonastic && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Target size={16} className="text-[var(--accent-ink)]" />
+                  <span className="font-label-caps">Daily Rituals</span>
+                </div>
+                <span className="font-data text-xs text-[var(--tx-secondary)]">
+                  {completedCount} of {totalHabits} complete
+                </span>
               </div>
-              <span className="text-xs font-mono text-slate-400 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
-                <span className="text-emerald-400 font-bold">{completedCount}</span> of {totalHabits} completed
-              </span>
-            </div>
-
-            {loading && habits.length === 0 ? (
-              <div className="space-y-4 py-2">
-                {[1, 2, 3, 4].map(i => (
-                  <div
-                    key={i}
-                    className="h-[88px] rounded-2xl bg-white/[0.02] border border-white/[0.06] p-4 flex items-center justify-between animate-pulse relative overflow-hidden"
-                  >
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex-shrink-0" />
-                      <div className="space-y-2 flex-1">
-                        <div className="h-4 w-40 bg-white/[0.08] rounded-md" />
-                        <div className="h-3 w-24 bg-white/[0.04] rounded-md" />
-                      </div>
-                    </div>
-                    <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex-shrink-0 ml-4" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              ritualGroups.map(group => (
-                <section key={group.timeSlot} className="space-y-4" aria-labelledby={`ritual-${group.timeSlot}`}>
-                  {/* Ritual Header Capsule */}
-                  <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06]">
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">
-                        {group.timeSlot === 'morning' ? '🌅' : group.timeSlot === 'afternoon' ? '☀️' : group.timeSlot === 'evening' ? '🌙' : '✨'}
-                      </span>
-                      <h3 id={`ritual-${group.timeSlot}`} className="text-base font-bold text-white tracking-tight">
-                        {group.label}
-                      </h3>
-                    </div>
-
-                    <span className="text-xs font-mono text-slate-400 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.06]">
-                      <span className="text-emerald-400 font-bold">{group.completedCount}</span> of {group.totalCount} completed
-                    </span>
-                  </div>
-
-                  {/* Atomic Habit Stacking Pipeline */}
-                  <div className="relative space-y-1">
-                    {(() => {
-                      const nodes = momentumEngine.resolveHabitStack(group.habits, completedHabitIds);
-                      return nodes.map((node, idx) => {
-                        const habitWithStreak = node.habit as HabitWithStreak;
-                        const isDone = node.isCompletedToday;
-                        const hasNext = idx < nodes.length - 1;
-                        const nextNode = hasNext ? nodes[idx + 1] : null;
-
-                        return (
-                          <div key={node.habit.id} className="relative">
-                            <TactileHabitCard
-                              habit={habitWithStreak}
-                              onToggle={handleToggleHabit}
-                              onIncrement={handleIncrementHabit}
-                              onSetValue={handleSetHabitValue}
-                              onOpenDetails={setEditingHabit}
-                              index={idx}
-                              isPrimed={node.isPrimed}
-                              isLocked={node.isLocked}
-                              parentHabitName={node.parentHabit?.name}
-                              chainPosition={{ current: node.chainDepth + 1, total: node.chainTotal }}
-                            />
-                          </div>
-                        );
-                      });
-                    })()}
-                  </div>
-                </section>
-              ))
             )}
+            {renderRitualList(false)}
           </div>
 
-          {/* ── RIGHT PANE: SUMMARY METRICS (5 COLS) ─ */}
-          <div className="lg:col-span-5 space-y-6 order-2 lg:sticky lg:top-6">
-            {/* 2x2 Summary KPI Quad */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-3.5" aria-label="Momentum statistics">
-              {/* 1. Momentum Score */}
-              <div className="p-4 sm:p-4.5 rounded-xl bg-neutral-900/60 border border-white/10 transition-colors hover:border-white/20">
-                <div className="flex items-center justify-between text-neutral-400 mb-1.5">
-                  <span className="text-xs font-mono uppercase tracking-wider font-semibold">Momentum</span>
-                  <TrendingUp size={14} />
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold text-white font-mono flex items-baseline gap-1 tabular-nums">
-                  <span>{globalMomentum}</span>
-                  <span className="text-xs text-neutral-400 font-normal">/ 100</span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-white/[0.08] overflow-hidden mt-2.5">
-                  <div
-                    className="h-full rounded-full bg-white transition-all duration-500"
-                    style={{ width: `${Math.min(100, Math.max(5, globalMomentum))}%` }}
-                  />
-                </div>
-              </div>
+          {/* Bottom / Secondary 4 Columns: Horizon, Tasks, Mood, Quick Insights */}
+          {!isMonastic && (
+            <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-6">
+              <MomentumHorizon
+                globalMomentum={globalMomentum}
+                completedCount={completedCount}
+                totalHabits={totalHabits}
+                maxStreak={maxStreak}
+                weeklySeries={weeklySeries}
+              />
 
-              {/* 2. Completion Rate */}
-              <div className="p-4 sm:p-4.5 rounded-xl bg-neutral-900/60 border border-white/10 transition-colors hover:border-white/20">
-                <div className="flex items-center justify-between text-neutral-400 mb-1.5">
-                  <span className="text-xs font-mono uppercase tracking-wider font-semibold">Today's Rate</span>
-                  <CheckCircle2 size={14} />
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold text-white font-mono flex items-baseline gap-1 tabular-nums">
-                  <span>{completionPercentage}</span>
-                  <span className="text-xs text-neutral-400 font-normal">%</span>
-                </div>
-                <p className="mt-2 text-xs font-mono text-neutral-400 truncate tabular-nums">
-                  <span className="text-white font-semibold">{completedCount}</span> / <span className="text-white font-semibold">{totalHabits}</span> habits
-                </p>
-              </div>
+              <TodayTasks />
 
-              {/* 3. Top Streak */}
-              <div className="p-4 sm:p-4.5 rounded-xl bg-neutral-900/60 border border-white/10 transition-colors hover:border-white/20">
-                <div className="flex items-center justify-between text-neutral-400 mb-1.5">
-                  <span className="text-xs font-mono uppercase tracking-wider font-semibold">Peak Streak</span>
-                  <Flame size={14} />
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold text-white font-mono flex items-baseline gap-1 tabular-nums">
-                  <span>{maxStreak}</span>
-                  <span className="text-xs text-neutral-400 font-normal">days</span>
-                </div>
-                <p className="mt-2 text-xs font-mono text-neutral-400">
-                  Longest active streak
-                </p>
-              </div>
+              <MoodPulse />
 
-              {/* 4. Energy XP */}
-              <div className="p-4 sm:p-4.5 rounded-xl bg-neutral-900/60 border border-white/10 transition-colors hover:border-white/20">
-                <div className="flex items-center justify-between text-neutral-400 mb-1.5">
-                  <span className="text-xs font-mono uppercase tracking-wider font-semibold">Total XP</span>
-                  <Zap size={14} />
+              {/* Quick Insights (1-Sentence Summary) */}
+              <section aria-label="Quick Insights" className="card-raised p-4 sm:p-5 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-[var(--accent-ink)]" />
+                    <span className="font-label-caps">Quick Insight</span>
+                  </div>
+                  <Link
+                    to="/insights"
+                    className="text-xs font-medium text-[var(--accent-ink)] hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Insights</span>
+                    <ArrowRight size={12} />
+                  </Link>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-white font-mono tabular-nums">
-                  <span>{userXP?.total || 0}</span>
-                </div>
-                <p className="mt-2 text-xs font-mono text-neutral-400 truncate">
-                  Rank: <span className="text-neutral-200 font-semibold">{userXP?.level || 'Initiate'}</span>
+                <p className="text-xs text-[var(--tx-secondary)] leading-relaxed">
+                  {quickInsight
+                    ? `${quickInsight.title}: ${quickInsight.body}`
+                    : completedCount === totalHabits && totalHabits > 0
+                      ? 'All scheduled rituals executed today — momentum is compounding cleanly.'
+                      : 'Complete your earliest anchor habit to prime downstream chain links.'}
                 </p>
-              </div>
+              </section>
             </div>
-          </div>
+          )}
         </div>
       )}
 

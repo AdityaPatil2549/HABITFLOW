@@ -58,10 +58,13 @@ export function WeeklyReviewPage() {
     db.habitLogs
       .where('date')
       .between(startStr, endStr, true, true)
-      .filter(l => l.value >= 1 && !l.isFrozen)
+      .filter(l => !l.isFrozen)
       .toArray()
-      .then(logs => {
-        if (mounted) setWeeklyHabitsDone(logs.length);
+      .then(async logs => {
+        const habitRows = await db.habits.toArray();
+        const targetMap = new Map(habitRows.map(h => [h.id, h.targetValue || 1]));
+        const completed = logs.filter(l => l.value >= (targetMap.get(l.habitId) ?? 1));
+        if (mounted) setWeeklyHabitsDone(completed.length);
       })
       .catch(() => {
         if (mounted) setWeeklyHabitsDone(0);

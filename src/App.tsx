@@ -9,7 +9,8 @@ import { ReloadPrompt } from './components/layout/ReloadPrompt';
 import { FocusOverlay } from './components/focus/FocusOverlay';
 import { OnboardingWizard, useOnboarding } from './components/onboarding/OnboardingWizard';
 import { ToastProvider } from './components/common/Toast';
-import { getOrCreateSettings } from './db';
+import { getOrCreateSettings, getOrCreateUserXP } from './db';
+import { applyAppearanceToDocument, resolvePolarityMode } from './lib/theme';
 import { gamificationService } from './services/gamificationService';
 import { ScrollToTop } from './components/ui/ScrollToTop';
 import { useModalStore } from './store/modalStore';
@@ -31,17 +32,17 @@ import { useMoodStore } from './store/moodStore';
 
 const HabitsPage = lazy(() => import('./pages/HabitsPage').then(m => ({ default: m.HabitsPage })));
 const TasksPage = lazy(() => import('./pages/TasksPage').then(m => ({ default: m.TasksPage })));
-const AnalyticsPage = lazy(() =>
-  import('./pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage }))
-);
 const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage }))
 );
 const ProfilePage = lazy(() =>
   import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage }))
 );
-const WeeklyReviewPage = lazy(() =>
-  import('./pages/WeeklyReviewPage').then(m => ({ default: m.WeeklyReviewPage }))
+const InsightsPage = lazy(() =>
+  import('./pages/InsightsPage').then(m => ({ default: m.InsightsPage }))
+);
+const HubPage = lazy(() =>
+  import('./pages/HubPage').then(m => ({ default: m.HubPage }))
 );
 const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })));
 const ShopPage = lazy(() => import('./pages/ShopPage').then(m => ({ default: m.ShopPage })));
@@ -89,15 +90,32 @@ function App() {
   }, [user, isGuest]);
 
   useEffect(() => {
-    getOrCreateSettings().then(settings => {
-      const root = document.documentElement;
-      root.classList.remove('light');
-      if (settings.theme) {
-        if (settings.theme === 'indigo') root.removeAttribute('data-theme');
-        else root.setAttribute('data-theme', settings.theme);
-      }
+    let cleanupSystemListener: (() => void) | undefined;
+
+    const syncAppearance = async () => {
+      const [settings] = await Promise.all([getOrCreateSettings(), getOrCreateUserXP()]);
+      const polarity = resolvePolarityMode(settings);
+      applyAppearanceToDocument(polarity, settings.theme);
       soundService.setEnabled(settings.soundEnabled !== false, settings.hapticEnabled !== false);
-    });
+
+      cleanupSystemListener?.();
+      cleanupSystemListener = undefined;
+
+      if (polarity === 'system' && typeof window !== 'undefined' && window.matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: light)');
+        const onChange = () => applyAppearanceToDocument('system', settings.theme);
+        mq.addEventListener?.('change', onChange);
+        cleanupSystemListener = () => mq.removeEventListener?.('change', onChange);
+      }
+    };
+
+    syncAppearance();
+    window.addEventListener('habitflow-appearance-changed', syncAppearance);
+
+    return () => {
+      window.removeEventListener('habitflow-appearance-changed', syncAppearance);
+      cleanupSystemListener?.();
+    };
   }, []);
 
   useEffect(() => {
@@ -135,21 +153,30 @@ function App() {
           <Routes>
             <Route path="/login" element={<AuthPage />} />
             <Route path="/" element={<Layout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
+              <Route index element={<Dashboard />} />
               <Route path="habits" element={<HabitsPage />} />
-              <Route path="tasks" element={<TasksPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="review" element={<WeeklyReviewPage />} />
-              <Route path="shop" element={<ShopPage />} />
-              <Route path="squad" element={<SquadPage />} />
+              <Route path="habits/:id" element={<HabitsPage />} />
+              <Route path="insights" element={<InsightsPage />} />
+              <Route path="hub" element={<HubPage />} />
+              <Route path="hub/profile" element={<ProfilePage />} />
+              <Route path="hub/shop" element={<ShopPage />} />
+              <Route path="hub/squad" element={<SquadPage />} />
+              <Route path="hub/tasks" element={<TasksPage />} />
+              <Route path="hub/settings" element={<SettingsPage />} />
               <Route path="privacy" element={<PrivacyPage />} />
               <Route path="terms" element={<TermsPage />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              {/* Backward-compatible route redirects */}
+              <Route path="dashboard" element={<Navigate to="/" replace />} />
+              <Route path="analytics" element={<Navigate to="/insights" replace />} />
+              <Route path="review" element={<Navigate to="/insights?tab=review" replace />} />
+              <Route path="profile" element={<Navigate to="/hub/profile" replace />} />
+              <Route path="shop" element={<Navigate to="/hub/shop" replace />} />
+              <Route path="squad" element={<Navigate to="/hub/squad" replace />} />
+              <Route path="tasks" element={<Navigate to="/hub/tasks" replace />} />
+              <Route path="settings" element={<Navigate to="/hub/settings" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
         <ModalContainer />

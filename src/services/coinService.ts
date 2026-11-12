@@ -1,256 +1,161 @@
-/**
- * Coin Service — Manages the HabitFlow economy
- * Users earn coins alongside XP and spend them in the Rewards Shop.
- */
 import { db, getOrCreateUserXP } from '@/db';
+import { normalizeAccentTheme, normalizeShopItemId } from '@/lib/theme';
 import type { ShopItem, ShopPurchase } from '@/types';
 
-// ─── Shop Catalog ────────────────────────────────────────────
 const SHOP_CATALOG: ShopItem[] = [
-  // Themes
-  {
-    id: 'neon',
-    name: 'Neon Pulse',
-    description: 'Electric neon accents that glow in the dark',
-    icon: '💜',
-    category: 'theme',
-    price: 200,
-    rarity: 'rare',
-    preview: 'neon',
-  },
-  {
-    id: 'cyberpunk',
-    name: 'Cyberpunk',
-    description: 'Futuristic cyber aesthetic with sharp edges',
-    icon: '🤖',
-    category: 'theme',
-    price: 300,
-    rarity: 'epic',
-    preview: 'cyberpunk',
-  },
-  {
-    id: 'sunset',
-    name: 'Sunset Glow',
-    description: 'Warm sunset gradients for a cozy feel',
-    icon: '🌅',
-    category: 'theme',
-    price: 200,
-    rarity: 'rare',
-    preview: 'sunset',
-  },
+  // ── Signal Inks (Tier 2 Accent Cartridges) ──────────────────
   {
     id: 'ocean',
-    name: 'Deep Ocean',
-    description: 'Calm ocean depths with aqua accents',
-    icon: '🌊',
+    name: 'Cobalt Blue Ink',
+    description: 'Precision drafting blue cartridge for calm structural focus.',
+    icon: '🖋️',
     category: 'theme',
-    price: 150,
+    price: 100,
     rarity: 'common',
     preview: 'ocean',
   },
   {
     id: 'forest',
-    name: 'Enchanted Forest',
-    description: 'Mystical green tones of the deep woods',
-    icon: '🌲',
+    name: 'Signal Green Ink',
+    description: 'Clean instrument emerald ink for momentum and continuity.',
+    icon: '🖋️',
     category: 'theme',
-    price: 150,
-    rarity: 'common',
+    price: 120,
+    rarity: 'rare',
     preview: 'forest',
   },
   {
-    id: 'aurora',
-    name: 'Aurora Borealis',
-    description: 'Shimmering northern lights across your UI',
-    icon: '🌌',
+    id: 'violet',
+    name: 'Ultraviolet Ink',
+    description: 'Deep studio violet cartridge for deliberate deep-work sessions.',
+    icon: '🖋️',
     category: 'theme',
-    price: 500,
-    rarity: 'legendary',
-    preview: 'aurora',
+    price: 150,
+    rarity: 'rare',
+    preview: 'violet',
   },
   {
-    id: 'cherry',
-    name: 'Cherry Blossom',
-    description: 'Delicate pink petals and soft hues',
-    icon: '🌸',
+    id: 'gold',
+    name: 'Amber Brass Ink',
+    description: 'Warm precision brass ink inspired by chronograph indices.',
+    icon: '🖋️',
+    category: 'theme',
+    price: 200,
+    rarity: 'epic',
+    preview: 'gold',
+  },
+  {
+    id: 'rose',
+    name: 'Crimson Ink',
+    description: 'Sharp Swiss vermilion-rose cartridge for urgent execution.',
+    icon: '🖋️',
+    category: 'theme',
+    price: 200,
+    rarity: 'epic',
+    preview: 'rose',
+  },
+  {
+    id: 'cyan',
+    name: 'Cyan Grid Ink',
+    description: 'Technical blueprint cyan ink for crisp telemetry readouts.',
+    icon: '🖋️',
     category: 'theme',
     price: 250,
-    rarity: 'rare',
-    preview: 'cherry',
-  },
-  {
-    id: 'volcanic',
-    name: 'Volcanic Core',
-    description: 'Molten lava intensity for maximum focus',
-    icon: '🌋',
-    category: 'theme',
-    price: 350,
-    rarity: 'epic',
-    preview: 'volcanic',
+    rarity: 'legendary',
+    preview: 'cyan',
   },
 
-  // Avatar Frames
+  // ── Protection Gear (Continuity Shields & Identity Frames) ───
   {
-    id: 'frame_gold',
-    name: 'Gold Frame',
-    description: 'Prestigious gold border for your avatar',
-    icon: '👑',
-    category: 'avatar',
-    price: 100,
-    rarity: 'rare',
-  },
-  {
-    id: 'frame_fire',
-    name: 'Fire Frame',
-    description: 'Burning streak frame — show your dedication',
-    icon: '🔥',
-    category: 'avatar',
+    id: 'streak_freeze',
+    name: 'Continuity Shield',
+    description: 'Missed a day? Deploy a freeze token to preserve momentum without guilt.',
+    icon: '🛡️',
+    category: 'consumable',
     price: 150,
     rarity: 'epic',
   },
   {
-    id: 'frame_diamond',
-    name: 'Diamond Frame',
-    description: 'Sparkling diamond edge — ultimate flex',
-    icon: '💎',
-    category: 'avatar',
-    price: 400,
-    rarity: 'legendary',
-  },
-  {
     id: 'frame_emerald',
-    name: 'Emerald Frame',
-    description: 'Lush green gemstone border',
+    name: 'Emerald Chassis',
+    description: 'Lush signal-green perimeter bezel for your operator profile.',
     icon: '💚',
     category: 'avatar',
     price: 120,
     rarity: 'rare',
   },
-
-  // Icon Packs
   {
-    id: 'icons_minimal',
-    name: 'Minimal Pack',
-    description: '20 clean minimal habit icons',
-    icon: '✨',
-    category: 'icon_pack',
-    price: 75,
-    rarity: 'common',
-  },
-  {
-    id: 'icons_kawaii',
-    name: 'Kawaii Pack',
-    description: 'Adorable Japanese-style icons',
-    icon: '🌸',
-    category: 'icon_pack',
-    price: 100,
+    id: 'frame_gold',
+    name: 'Brass Bezel Frame',
+    description: 'Brushed chronograph brass avatar bezel.',
+    icon: '🥇',
+    category: 'avatar',
+    price: 150,
     rarity: 'rare',
   },
   {
-    id: 'icons_space',
-    name: 'Space Pack',
-    description: 'Cosmic and astronaut-themed icons',
-    icon: '🚀',
-    category: 'icon_pack',
-    price: 120,
-    rarity: 'rare',
+    id: 'frame_fire',
+    name: 'Ember Ring Frame',
+    description: 'High-contrast orange signal ring frame.',
+    icon: '🔥',
+    category: 'avatar',
+    price: 200,
+    rarity: 'epic',
   },
-
-  // Badge Frames
+  {
+    id: 'frame_diamond',
+    name: 'Diamond Precision Frame',
+    description: 'Crystal facet precision bezel for top-tier consistency.',
+    icon: '💎',
+    category: 'avatar',
+    price: 350,
+    rarity: 'legendary',
+  },
   {
     id: 'badge_neon',
-    name: 'Neon Badge Frame',
-    description: 'Make your badges glow with neon',
-    icon: '💡',
+    name: 'Signal Badge Mount',
+    description: 'Crisp high-contrast border mount for earned milestones.',
+    icon: '◈',
     category: 'badge_frame',
     price: 80,
     rarity: 'common',
   },
   {
     id: 'badge_royal',
-    name: 'Royal Badge Frame',
-    description: 'Royal purple and gold badge border',
-    icon: '🏰',
+    name: 'Executive Crest Mount',
+    description: 'Archival violet-brass mount for milestone commendations.',
+    icon: '🏛️',
     category: 'badge_frame',
     price: 200,
     rarity: 'epic',
   },
 
-  // --- New Additions ---
+  // ── Acoustic Switch Packs ────────────────────────────────────
   {
-    id: 'streak_freeze',
-    name: 'Streak Freeze',
-    description: 'Missed a day? Use this to save your streak!',
-    icon: '🧊',
-    category: 'consumable',
-    price: 150,
-    rarity: 'epic',
-  },
-  {
-    id: 'midnight',
-    name: 'Midnight Dark',
-    description: 'Pure black background for OLED screens',
-    icon: '🌙',
-    category: 'theme',
-    price: 300,
-    rarity: 'epic',
-    preview: 'midnight',
-  },
-  {
-    id: 'pastel',
-    name: 'Pastel Dream',
-    description: 'Soft and soothing pastel colors',
-    icon: '🎨',
-    category: 'theme',
-    price: 150,
-    rarity: 'common',
-    preview: 'pastel',
-  },
-  {
-    id: 'monochrome',
-    name: 'Monochrome',
-    description: 'Minimalist black and white elegance',
-    icon: '⬛',
-    category: 'theme',
-    price: 250,
-    rarity: 'rare',
-    preview: 'monochrome',
-  },
-  {
-    id: 'galaxy',
-    name: 'Deep Galaxy',
-    description: 'Stars and nebulae across your app',
-    icon: '⭐',
-    category: 'theme',
-    price: 450,
-    rarity: 'legendary',
-    preview: 'galaxy',
-  },
-  {
-    id: 'icons_pixel',
-    name: 'Pixel Art Pack',
-    description: 'Retro 8-bit style icons',
-    icon: '👾',
-    category: 'icon_pack',
-    price: 150,
-    rarity: 'rare',
-  },
-  {
-    id: 'icons_3d',
-    name: '3D Render Pack',
-    description: 'Beautifully rendered 3D habit icons',
-    icon: '🧊',
-    category: 'icon_pack',
+    id: 'acoustic_switch_pack',
+    name: 'Tactile Switch Pack',
+    description: 'Crisp 40ms mechanical detent & relay latch release acoustics.',
+    icon: '🎚️',
+    category: 'acoustic_pack',
     price: 300,
     rarity: 'epic',
   },
   {
-    id: 'icons_nature',
-    name: 'Nature Pack',
-    description: 'Leaves, trees, and organic shapes',
-    icon: '🌿',
-    category: 'icon_pack',
-    price: 100,
+    id: 'acoustic_chime_pack',
+    name: 'Studio Brass Pack',
+    description: 'Warm damped wooden click and soft brass harmonic latch.',
+    icon: '🎛️',
+    category: 'acoustic_pack',
+    price: 180,
+    rarity: 'rare',
+  },
+  {
+    id: 'acoustic_pulse_pack',
+    name: 'Monastic Pulse Pack',
+    description: 'Ultra-dry sub-audible studio tap for low-distraction focus.',
+    icon: '📻',
+    category: 'acoustic_pack',
+    price: 120,
     rarity: 'common',
   },
 ];
@@ -288,11 +193,11 @@ async function spendCoins(amount: number): Promise<boolean> {
   xp.coins = (xp.coins || 0) - amount;
 
   await db.userXP.put(xp);
-  
+
   // Dispatch event so header updates instantly
   window.dispatchEvent(new CustomEvent('coins-updated'));
   window.dispatchEvent(new CustomEvent('xp-updated'));
-  
+
   return true;
 }
 
@@ -301,16 +206,21 @@ function getShopItems(): ShopItem[] {
 }
 
 async function getPurchasedItems(): Promise<ShopPurchase[]> {
-  return db.shop_purchases.toArray();
+  const purchases = await db.shop_purchases.toArray();
+  return purchases.map(p => ({
+    ...p,
+    item_id: normalizeShopItemId(p.item_id),
+  }));
 }
 
 async function isItemPurchased(itemId: string): Promise<boolean> {
-  const purchase = await db.shop_purchases.where('item_id').equals(itemId).first();
-  return !!purchase;
+  const normalizedTarget = normalizeShopItemId(itemId);
+  const all = await getPurchasedItems();
+  return all.some(p => p.item_id === normalizedTarget || p.item_id === itemId);
 }
 
 async function purchaseItem(item: ShopItem): Promise<boolean> {
-  // Check if already owned
+  // Check if already owned (supporting legacy item aliases)
   if (await isItemPurchased(item.id)) return false;
 
   // Check balance
@@ -329,8 +239,9 @@ async function purchaseItem(item: ShopItem): Promise<boolean> {
   if (item.category === 'theme') {
     const xp = await getOrCreateUserXP();
     if (!xp.unlockedThemes) xp.unlockedThemes = [];
-    if (!xp.unlockedThemes.includes(item.id)) {
-      xp.unlockedThemes.push(item.id);
+    const normalizedTheme = normalizeAccentTheme(item.id);
+    if (!xp.unlockedThemes.includes(normalizedTheme)) {
+      xp.unlockedThemes.push(normalizedTheme);
       await db.userXP.put(xp);
     }
   }

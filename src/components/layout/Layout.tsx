@@ -1,8 +1,6 @@
 import { Outlet, NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useHabitStore } from '../../store/habitStore';
-import { useTaskStore } from '../../store/taskStore';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useProfileStore } from '../../store/profileStore';
 import { HabitFlowLogo } from '../common/HabitFlowLogo';
 import { cn } from '../../lib/utils';
@@ -14,140 +12,128 @@ import { useToast } from '../common/Toast';
 import { CommandMenu } from '../common/CommandMenu';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useModalStore } from '../../store/modalStore';
-import { IconRenderer } from '../common/IconRenderer';
 import { ShortcutsModal } from '../ui/ShortcutsModal';
 import { AchievementToast, useAchievementToast } from '../ui/AchievementToast';
 import { soundService } from '../../services/soundService';
+import { getOrCreateSettings } from '../../db';
+import { resolveTelemetryMode } from '../../lib/theme';
+import type { TelemetryMode } from '../../types';
 import {
   Search,
   Settings,
   User,
-  LayoutDashboard,
-  Target,
-  CheckSquare,
-  BarChart2,
+  CircleDot,
+  LayoutGrid,
+  Diamond,
+  Menu,
   Plus,
   LogOut,
-  X,
   Zap,
-  CheckCircle2,
   Timer,
   Cloud,
   CloudOff,
   Users,
-  Compass,
+  ShoppingBag,
 } from 'lucide-react';
 
+interface ProfileSummary {
+  name: string;
+  bio: string;
+  avatar: string | null;
+}
+
+const WORKSPACES = [
+  { to: '/', icon: CircleDot, label: 'Today', end: true },
+  { to: '/habits', icon: LayoutGrid, label: 'Plan', end: false },
+  { to: '/insights', icon: Diamond, label: 'Insights', end: false },
+  { to: '/hub', icon: Menu, label: 'Hub', end: false },
+] as const;
 
 // ── Account dropdown ───────────────────────────────────────────
-function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: any }) {
+function AccountDropdown({
+  onClose,
+  profile,
+}: {
+  onClose: () => void;
+  profile: ProfileSummary;
+}) {
   const { isGuest, signOut } = useAuthStore();
   const navigate = useNavigate();
   const toast = useToast();
+
   const go = (path: string) => {
     navigate(path);
     onClose();
   };
 
-  const menuVariants = {
-    hidden: { opacity: 0, rotateX: -15, y: -20, scale: 0.95 },
-    visible: { 
-      opacity: 1, 
-      rotateX: 0, 
-      y: 0, 
-      scale: 1,
-      transition: { 
-        type: "spring" as const, stiffness: 300, damping: 24,
-        staggerChildren: 0.05,
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: { opacity: 1, x: 0 }
-  };
-
   return (
-    <motion.div 
-      initial="hidden"
-      animate="visible"
-      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.1 } }}
-      variants={menuVariants}
-      style={{ transformOrigin: 'top right', perspective: 1000 }}
-      className="w-full rounded-2xl shadow-2xl shadow-black/60 z-[100] overflow-hidden bg-slate-900 border border-white/10 backdrop-blur-3xl"
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.14, ease: 'easeOut' }}
+      className="w-full rounded-2xl z-[100] overflow-hidden bg-[var(--sf-raised)] border border-[var(--border-strong)]"
     >
       {/* Profile header */}
-      <div className="px-5 py-5 border-b border-white/10 relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="w-12 h-12 rounded-2xl overflow-hidden bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform duration-300">
+      <div className="px-4 py-4 border-b border-[var(--border-default)]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl overflow-hidden bg-[var(--accent)] text-[var(--accent-fg)] flex items-center justify-center font-bold text-base shrink-0">
             {profile.avatar ? (
-              <img src={profile.avatar} className="w-full h-full object-cover" />
+              <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
-              profile.name[0]?.toUpperCase()
+              profile.name?.[0]?.toUpperCase() || 'O'
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-base font-bold text-white truncate group-hover:text-brand-400 transition-colors">
-              {isGuest ? 'Guest User' : profile.name}
+            <p className="text-sm font-semibold text-[var(--tx-primary)] truncate">
+              {isGuest ? 'Guest Operator' : profile.name}
             </p>
-            <p className="text-[11px] font-semibold tracking-wide uppercase text-slate-300 mt-0.5 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              {isGuest ? 'Local Mode Only' : 'Peak Performer'}
+            <p className="text-[11px] font-mono uppercase tracking-wider text-[var(--tx-secondary)] mt-0.5">
+              {isGuest ? 'Local Mode Only' : 'Synced Vault'}
             </p>
           </div>
         </div>
       </div>
 
       {/* Menu items */}
-      <div className="p-2 space-y-1">
+      <div className="p-1.5 space-y-0.5">
         {[
-          { icon: Zap, label: 'Rewards Shop', path: '/shop' },
-          { icon: Users, label: 'Squad', path: '/squad' },
-          { icon: BarChart2, label: 'Analytics', path: '/analytics' },
-          { icon: User, label: 'Profile', path: '/profile' },
-          { icon: Settings, label: 'Settings', path: '/settings' },
+          { icon: ShoppingBag, label: 'Armory & Inks', path: '/hub/shop' },
+          { icon: Users, label: 'Squad', path: '/hub/squad' },
+          { icon: User, label: 'Profile', path: '/hub/profile' },
+          { icon: Settings, label: 'Settings', path: '/hub/settings' },
         ].map(item => {
           const Icon = item.icon;
           return (
-            <motion.button
-              variants={itemVariants}
+            <button
               key={item.label}
+              type="button"
               onClick={() => go(item.path)}
-              whileHover={{ scale: 1.02, x: 4 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors group"
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[var(--tx-secondary)] hover:bg-[var(--sf-overlay)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-lg bg-slate-800/50 border border-white/5 flex items-center justify-center group-hover:bg-brand-500/20 group-hover:border-brand-500/30 group-hover:text-brand-400 transition-colors shadow-sm">
-                <Icon size={16} />
-              </div>
-              {item.label}
-            </motion.button>
+              <Icon size={15} className="text-[var(--accent-ink)] shrink-0" />
+              <span>{item.label}</span>
+            </button>
           );
         })}
       </div>
 
-      <div className="border-t border-white/10 p-2 space-y-1 bg-black/20">
+      <div className="border-t border-[var(--border-default)] p-1.5 space-y-0.5">
         {isGuest ? (
-          <motion.button
-            variants={itemVariants}
+          <button
+            type="button"
             onClick={() => {
               onClose();
               navigate('/login');
             }}
-            whileHover={{ scale: 1.02, x: 4 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-bold text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 transition-all group"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-semibold text-[var(--accent-ink)] bg-[var(--accent-subtle)] hover:opacity-90 transition-opacity cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-brand-400">
-              <Cloud size={18} className="group-hover:scale-110 transition-transform" />
-            </div>
-            Sign in to Sync Data
-          </motion.button>
+            <Cloud size={15} />
+            <span>Sign in to Sync Data</span>
+          </button>
         ) : (
-          <motion.button
-            variants={itemVariants}
+          <button
+            type="button"
             onClick={() => {
               onClose();
               toast.confirm(
@@ -156,25 +142,22 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
                   try {
                     await signOut();
                     navigate('/login');
-                  } catch (err) {
+                  } catch {
                     toast.error('Failed to sign out. Please try again.');
                   }
                 },
                 { confirmLabel: 'Sign Out' }
               );
             }}
-            whileHover={{ scale: 1.02, x: 4 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-colors group"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[var(--tx-secondary)] hover:bg-[var(--sf-overlay)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-              <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" />
-            </div>
-            Sign Out
-          </motion.button>
+            <LogOut size={15} />
+            <span>Sign Out</span>
+          </button>
         )}
-        <motion.button
-          variants={itemVariants}
+
+        <button
+          type="button"
           onClick={() => {
             onClose();
             toast.confirm(
@@ -196,33 +179,26 @@ function AccountDropdown({ onClose, profile }: { onClose: () => void; profile: a
               { confirmLabel: 'Erase Everything', cancelLabel: 'Keep My Data', danger: true }
             );
           }}
-          whileHover={{ scale: 1.02, x: 4 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors group"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-            <LogOut size={16} className="text-red-500/70 group-hover:scale-110 transition-transform" />
-          </div>
-          Reset All Data
-        </motion.button>
+          <LogOut size={15} />
+          <span>Reset All Data</span>
+        </button>
       </div>
     </motion.div>
   );
 }
-
-
-
 
 // ── Layout ─────────────────────────────────────────────────────
 export function Layout() {
   const { setQuickAddOpen, setCommandMenuOpen } = useModalStore();
   const [showAccount, setShowAccount] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [telemetryMode, setTelemetryMode] = useState<TelemetryMode>('scaffold');
   const { profile } = useProfileStore();
   const { userXP, loadXP } = useGamificationStore();
   const { isActive: focusActive, startFocus, stopFocus, openPicker } = useFocusStore();
-  const { user, isGuest, signOut } = useAuthStore();
-  const toast = useToast();
+  const { user, isGuest } = useAuthStore();
   const accountRef = useRef<HTMLDivElement>(null);
   const mobileAccountRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -239,7 +215,7 @@ export function Layout() {
       navigate('/habits');
       setQuickAddOpen(true);
     },
-    onNewTask: () => navigate('/tasks'),
+    onNewTask: () => navigate('/hub/tasks'),
     onShowShortcuts: () => setShowShortcuts(v => !v),
     onEscape: () => {
       setCommandMenuOpen(false);
@@ -254,15 +230,23 @@ export function Layout() {
 
   const xpStats = userXP ? calculateStats(userXP.total) : null;
 
+  useEffect(() => {
+    const syncTelemetry = async () => {
+      const s = await getOrCreateSettings();
+      setTelemetryMode(resolveTelemetryMode(s, xpStats?.numericLevel));
+    };
+    syncTelemetry();
+    window.addEventListener('habitflow-appearance-changed', syncTelemetry);
+    return () => window.removeEventListener('habitflow-appearance-changed', syncTelemetry);
+  }, [xpStats?.numericLevel]);
+
   // Close account dropdown on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (
-        accountRef.current &&
-        !accountRef.current.contains(e.target as Node) &&
-        mobileAccountRef.current &&
-        !mobileAccountRef.current.contains(e.target as Node)
-      ) {
+      const target = e.target as Node;
+      const inDesktop = accountRef.current?.contains(target);
+      const inMobile = mobileAccountRef.current?.contains(target);
+      if (!inDesktop && !inMobile) {
         setShowAccount(false);
       }
     }
@@ -270,141 +254,151 @@ export function Layout() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    cn(
-      'relative flex items-center lg:justify-center xl:justify-start gap-3 lg:px-2.5 xl:px-3.5 py-2.5 lg:mx-2 xl:mx-2.5 rounded-xl text-xs tracking-tight transition-all duration-200 group cursor-pointer',
-      isActive
-        ? 'text-white font-semibold bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.22] shadow-[0_4px_20px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.14)]'
-        : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-transparent'
-    );
+  const showXPCapsule = telemetryMode === 'scaffold';
 
   return (
-    <div className="min-h-[100dvh] flex text-neutral-100 relative z-0 bg-neutral-950">
+    <div className="min-h-[100dvh] flex bg-[var(--sf-base)] text-[var(--tx-primary)] relative z-0">
       {/* Skip to Content for Accessibility */}
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] px-4 py-2 bg-white text-neutral-950 rounded-lg font-bold">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-[9999] px-4 py-2 bg-[var(--accent)] text-[var(--accent-fg)] rounded-lg font-bold"
+      >
         Skip to content
       </a>
 
-      {/* ── Mobile Top Header (Hidden on Desktop) ── */}
-      <nav className="lg:hidden fixed top-[max(1rem,env(safe-area-inset-top))] left-4 right-4 z-40 bg-slate-950/45 backdrop-blur-3xl border border-white/[0.12] border-t-white/[0.22] rounded-2xl flex items-center justify-between px-5 h-14 shadow-2xl">
+      {/* ── Mobile Top Header (< 768px) ── */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 px-4 bg-[var(--sf-raised)] border-b border-[var(--border-default)] flex items-center justify-between">
         <NavLink
-          to="/dashboard"
+          to="/"
+          end
+          aria-label="HabitFlow Today"
           className="flex items-center cursor-pointer hover:opacity-90 transition-opacity"
         >
           <HabitFlowLogo size="sm" showBadge={false} />
         </NavLink>
-        <div className="flex items-center gap-3 sm:gap-4">
+
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => {
               if (focusActive) stopFocus();
               else openPicker();
             }}
-            aria-label="Toggle Focus Mode"
+            aria-label={focusActive ? 'Stop focus timer' : 'Start focus timer'}
             className={cn(
-              'transition-colors',
-              focusActive ? 'text-rose-400' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              'p-2 rounded-lg transition-colors cursor-pointer',
+              focusActive
+                ? 'text-[var(--accent-ink)] bg-[var(--accent-subtle)]'
+                : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
             )}
           >
-            <Timer size={22} className={focusActive ? 'animate-pulse' : ''} />
-          </button>
-          <button
-            onClick={() => setCommandMenuOpen(true)}
-            className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-          >
-            <Search size={22} />
+            <Timer size={19} />
           </button>
 
-          <div className="relative ml-2" ref={mobileAccountRef}>
+          <button
+            type="button"
+            onClick={() => setCommandMenuOpen(true)}
+            aria-label="Open Command HUD"
+            className="p-2 rounded-lg text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
+          >
+            <Search size={19} />
+          </button>
+
+          <div className="relative ml-1" ref={mobileAccountRef}>
             <button
-              onClick={() => {
-                setShowAccount(v => !v);
-              }}
-              className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center text-white border border-white/10 overflow-hidden shadow-lg"
+              type="button"
+              onClick={() => setShowAccount(v => !v)}
+              aria-label="Open account menu"
+              className="w-8 h-8 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-[var(--tx-primary)] overflow-hidden cursor-pointer"
             >
               {user?.photoURL || profile.avatar ? (
                 <img
                   src={user?.photoURL || profile.avatar || undefined}
-                  className="w-full h-full object-cover"
                   alt=""
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <User size={16} />
+                <User size={15} />
               )}
             </button>
 
-            {showAccount && (
-              <div className="absolute right-0 top-full mt-2 w-56 z-[100]">
-                <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
-              </div>
-            )}
+            <AnimatePresence>
+              {showAccount && (
+                <div className="absolute right-0 top-full mt-2 w-56 z-[100]">
+                  <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* ── Desktop Sidebar (Responsive Icon Rail on lg, Expanded on xl) ── */}
-      <aside data-tour="sidebar-nav" className="fixed left-0 top-0 h-[100dvh] w-20 xl:w-64 border-r border-white/[0.1] bg-slate-950/45 backdrop-blur-3xl flex flex-col py-5 z-40 hidden lg:flex shadow-2xl transition-[width] duration-300">
+      {/* ── Desktop Left Rail (>= 768px, 220px wide) ── */}
+      <aside
+        data-tour="sidebar-nav"
+        className="hidden md:flex fixed left-0 top-0 h-[100dvh] w-[220px] border-r border-[var(--border-default)] bg-[var(--sf-raised)] flex-col py-5 z-40"
+      >
         {/* Brand Header */}
-        <div className="px-4 xl:px-5 mb-5 flex items-center justify-center xl:justify-between">
-          <NavLink
-            to="/dashboard"
-            className="flex items-center cursor-pointer hover:opacity-90 transition-opacity"
-          >
-            <HabitFlowLogo size="md" showBadge={true} hideTextOnMedium={true} />
+        <div className="px-4 mb-5 flex items-center justify-between">
+          <NavLink to="/" end className="flex items-center cursor-pointer hover:opacity-90 transition-opacity">
+            <HabitFlowLogo size="md" showBadge={true} />
           </NavLink>
         </div>
 
-        {/* Quick Search HUD Pill */}
-        <div className="px-3 xl:px-4 mb-4">
+        {/* Command HUD Button */}
+        <div className="px-3 mb-4">
           <button
+            type="button"
             onClick={() => setCommandMenuOpen(true)}
             title="Command HUD (⌘K / Ctrl K)"
-            className="w-full flex items-center justify-center xl:justify-between p-2.5 xl:px-3.5 xl:py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.16] text-slate-400 hover:text-slate-200 transition-all text-xs group cursor-pointer shadow-sm"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[var(--sf-base)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors text-xs cursor-pointer"
           >
-            <div className="flex items-center gap-2">
-              <Search size={16} className="text-slate-400 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
-              <span className="font-normal text-slate-400 group-hover:text-slate-300 hidden xl:inline">Command HUD...</span>
-            </div>
-            <kbd className="text-xs font-mono px-2 py-0.5 rounded-md bg-white/[0.08] border border-white/[0.12] text-slate-300 hidden xl:inline">
-              {typeof window !== 'undefined' && /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent || navigator.platform) ? '⌘K' : 'Ctrl K'}
+            <span className="flex items-center gap-2">
+              <Search size={14} className="shrink-0" />
+              <span>Search…</span>
+            </span>
+            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--sf-overlay)] border border-[var(--border-default)] text-[var(--tx-muted)]">
+              {typeof window !== 'undefined' &&
+              /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent || navigator.platform)
+                ? '⌘K'
+                : 'Ctrl K'}
             </kbd>
           </button>
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 space-y-1 px-1 overflow-y-auto">
-          {[
-            { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-            { to: '/habits', icon: Target, label: 'Habits' },
-            { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
-            { to: '/analytics', icon: BarChart2, label: 'Analytics' },
-            { to: '/review', icon: CheckCircle2, label: 'Weekly Review' },
-            { to: '/squad', icon: Users, label: 'Squad' },
-          ].map(l => {
-            const Icon = l.icon;
+        {/* 4 Workspaces */}
+        <nav aria-label="Primary workspaces" className="flex-1 space-y-1 px-3 overflow-y-auto">
+          {WORKSPACES.map(item => {
+            const Icon = item.icon;
             return (
               <NavLink
-                key={l.to}
-                to={l.to}
-                title={l.label}
-                className={navLinkClass}
+                key={item.to}
+                to={item.to}
+                end={item.end}
                 onMouseEnter={() => soundService.playHover()}
                 onClick={() => soundService.playTransition()}
+                className={({ isActive }) =>
+                  cn(
+                    'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer border',
+                    isActive
+                      ? 'bg-[var(--sf-overlay)] text-[var(--tx-primary)] border-[var(--border-strong)] font-semibold'
+                      : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] border-transparent'
+                  )
+                }
               >
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-gradient-to-b from-emerald-400 to-teal-400 shadow-[0_0_12px_rgba(16,185,129,0.85)]" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[var(--accent)]" />
                     )}
                     <Icon
-                      size={18}
+                      size={17}
                       className={cn(
-                        'transition-all duration-200 flex-shrink-0',
-                        isActive
-                          ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.7)]'
-                          : 'text-slate-400 group-hover:text-slate-200 group-hover:scale-105'
+                        'shrink-0',
+                        isActive ? 'text-[var(--accent-ink)]' : 'text-[var(--tx-muted)]'
                       )}
                     />
-                    <span className="truncate hidden xl:inline">{l.label}</span>
+                    <span className="truncate">{item.label}</span>
                   </>
                 )}
               </NavLink>
@@ -412,122 +406,129 @@ export function Layout() {
           })}
         </nav>
 
-        {/* ── Actions Dock ── */}
-        <div className="px-3 xl:px-4 mb-3 space-y-2 pt-2 border-t border-white/[0.06]">
+        {/* Actions Dock */}
+        <div className="px-3 mb-3 space-y-2 pt-3 border-t border-[var(--border-default)]">
           <button
+            type="button"
             onClick={() => setQuickAddOpen(true)}
-            title="New Habit"
-            className="w-full py-2.5 px-2 xl:px-4 rounded-xl font-bold text-xs text-slate-950 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-300 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer border border-emerald-300/30"
+            className="w-full py-2.5 px-3 btn-primary text-xs flex items-center justify-center gap-2"
           >
-            <Plus size={16} className="stroke-[3] flex-shrink-0" />
-            <span className="hidden xl:inline">New Habit</span>
+            <Plus size={15} />
+            <span>New Entry</span>
           </button>
 
           <button
+            type="button"
             onClick={() => {
-              if (focusActive) {
-                stopFocus();
-              } else {
-                openPicker();
-              }
+              if (focusActive) stopFocus();
+              else openPicker();
             }}
-            title={focusActive ? 'End Focus' : 'Deep Focus'}
             className={cn(
-              'w-full py-2 px-2 xl:px-3 rounded-xl font-medium text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer backdrop-blur-xl border',
+              'w-full py-2 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-2 border transition-colors cursor-pointer',
               focusActive
-                ? 'bg-rose-500/15 border-rose-500/35 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.25)]'
-                : 'bg-white/[0.03] border-white/[0.08] hover:border-purple-500/30 hover:bg-purple-500/10 text-slate-300 hover:text-purple-300'
+                ? 'bg-[var(--accent-subtle)] border-[var(--accent)] text-[var(--accent-ink)]'
+                : 'bg-[var(--sf-base)] border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
             )}
           >
-            <Timer size={16} className={cn('flex-shrink-0', focusActive ? 'animate-pulse text-rose-400' : 'text-purple-400')} />
-            <span className="truncate hidden xl:inline">{focusActive ? 'End Focus' : 'Deep Focus'}</span>
+            <Timer size={15} />
+            <span>{focusActive ? 'End Focus' : 'Deep Focus'}</span>
           </button>
         </div>
 
-        {/* ── User Profile & XP Vault Capsule ── */}
-        <div className="px-3 xl:px-4 pt-3 border-t border-white/[0.08]">
+        {/* Account & Scaffold-Only XP Capsule */}
+        <div className="px-3 pt-3 border-t border-[var(--border-default)]">
           <div className="relative" ref={accountRef}>
             <button
+              type="button"
               onClick={() => setShowAccount(v => !v)}
-              title="Account & Settings"
-              className="w-full flex items-center justify-center xl:justify-start gap-2.5 p-1.5 xl:p-2 rounded-xl hover:bg-white/[0.05] transition-all cursor-pointer group text-left border border-transparent hover:border-white/[0.08]"
+              aria-label="Account and workspace settings"
+              className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-[var(--sf-overlay)] transition-colors cursor-pointer text-left border border-transparent hover:border-[var(--border-default)]"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold overflow-hidden ring-1 ring-white/20 shadow-[0_0_10px_rgba(0,240,255,0.25)] flex-shrink-0 relative">
+              <div className="w-8 h-8 rounded-lg bg-[var(--accent)] text-[var(--accent-fg)] flex items-center justify-center font-bold overflow-hidden shrink-0">
                 {user?.photoURL || profile.avatar ? (
                   <img
                     src={user?.photoURL || profile.avatar || undefined}
-                    className="w-full h-full object-cover"
                     alt=""
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-xs font-mono font-bold">{profile.name?.[0]?.toUpperCase() || 'U'}</span>
-                )}
-                {xpStats && (
-                  <span className="xl:hidden absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 text-[10px] font-mono font-bold flex items-center justify-center text-slate-950 border border-slate-900">
-                    {xpStats.numericLevel}
+                  <span className="text-xs font-mono font-bold">
+                    {profile.name?.[0]?.toUpperCase() || 'O'}
                   </span>
                 )}
               </div>
 
-              <div className="min-w-0 flex-1 hidden xl:block">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <p className="text-xs font-semibold text-white leading-tight truncate group-hover:text-emerald-400 transition-colors">
-                    {isGuest ? 'Guest User' : profile.name}
+                  <p className="text-xs font-semibold text-[var(--tx-primary)] leading-tight truncate">
+                    {isGuest ? 'Guest' : profile.name}
                   </p>
-                  {xpStats && (
-                    <span className="text-[11px] font-mono font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0">
-                      <Zap size={10} className="text-emerald-400" />
-                      Lv.{xpStats.numericLevel}
+                  {showXPCapsule && xpStats && (
+                    <span className="text-[10px] font-mono font-bold text-[var(--accent-ink)] bg-[var(--accent-subtle)] px-1.5 py-0.5 rounded flex items-center gap-0.5 shrink-0">
+                      <Zap size={9} />
+                      {xpStats.numericLevel}
                     </span>
                   )}
                 </div>
 
-                {xpStats ? (
-                  <div className="mt-1.5 w-full h-1 rounded-full bg-white/[0.08] overflow-hidden">
+                {showXPCapsule && xpStats ? (
+                  <div className="mt-1.5 w-full h-1 rounded-full bg-[var(--sf-overlay)] overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-amber-400 transition-all duration-700 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                      className="h-full rounded-full bg-[var(--accent)] transition-all duration-150"
                       style={{ width: `${xpStats.levelProgress}%` }}
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400 font-mono tracking-wide uppercase font-semibold mt-0.5">
-                    Local Vault
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-[var(--tx-muted)] mt-0.5">
+                    {telemetryMode === 'monastic' ? 'Monastic' : 'Instrument'}
                   </p>
                 )}
               </div>
 
-              <div className="text-slate-500 group-hover:text-slate-300 transition-colors flex-shrink-0 hidden xl:block">
-                {isGuest ? <CloudOff size={13} /> : <Cloud size={13} className="text-emerald-400" />}
+              <div className="text-[var(--tx-muted)] shrink-0">
+                {isGuest ? <CloudOff size={13} /> : <Cloud size={13} className="text-[var(--accent-ink)]" />}
               </div>
             </button>
 
-            {showAccount && (
-              <div className="absolute left-0 bottom-full mb-3 w-56 z-[100]">
-                <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
-              </div>
-            )}
+            <AnimatePresence>
+              {showAccount && (
+                <div className="absolute left-0 bottom-full mb-2 w-56 z-[100]">
+                  <AccountDropdown onClose={() => setShowAccount(false)} profile={profile} />
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         {/* Legal Links */}
-        <div className="px-5 pt-2 text-center text-xs text-slate-400 hidden xl:flex justify-center gap-3">
-          <Link to="/privacy" className="hover:text-slate-200 transition-colors">Privacy</Link>
-          <Link to="/terms" className="hover:text-slate-200 transition-colors">Terms</Link>
+        <div className="px-4 pt-2 flex justify-center gap-3 text-[11px] text-[var(--tx-muted)]">
+          <Link to="/privacy" className="hover:text-[var(--tx-primary)] transition-colors">
+            Privacy
+          </Link>
+          <Link to="/terms" className="hover:text-[var(--tx-primary)] transition-colors">
+            Terms
+          </Link>
         </div>
       </aside>
 
-      {/* ── Main content ── */}
-      <main id="main-content" className="flex-1 lg:ml-20 xl:ml-64 w-full max-w-[100vw] overflow-x-hidden transition-[margin] duration-300">
-        {/* On mobile, add padding to clear the top nav. On all screens, add bottom padding to clear mobile nav if visible. */}
-        <div className="pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-8 pb-40 lg:pb-8 px-3 sm:px-4 md:px-8 max-w-7xl mx-auto min-h-[100dvh]">
-          <Suspense fallback={<div className="flex items-center justify-center h-[50vh] text-slate-500 font-medium">Loading...</div>}>
+      {/* ── Main Content ── */}
+      <main id="main-content" className="flex-1 md:ml-[220px] w-full max-w-[100vw] overflow-x-hidden">
+        <div className="pt-16 md:pt-8 pb-20 md:pb-10 px-4 sm:px-6 md:px-8 max-w-6xl mx-auto min-h-[100dvh]">
+          <Suspense
+            fallback={
+              <div className="space-y-4 py-8">
+                <div className="h-8 w-48 rounded-lg bg-[var(--sf-raised)] border border-[var(--border-default)] animate-pulse" />
+                <div className="h-32 rounded-2xl bg-[var(--sf-raised)] border border-[var(--border-default)] animate-pulse" />
+              </div>
+            }
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.1, ease: 'easeIn' }}
                 className="w-full"
               >
                 <Outlet />
@@ -537,66 +538,46 @@ export function Layout() {
         </div>
       </main>
 
-      {/* ── Mobile Bottom Nav ── */}
-      <nav className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50">
-        <div className="bg-slate-950/50 backdrop-blur-3xl border border-white/[0.12] border-t-white/[0.22] shadow-[0_16px_40px_rgba(0,0,0,0.7)] rounded-[2rem] h-[4.5rem] px-6 grid grid-cols-5 items-center justify-items-center">
-          {[
-            { to: '/dashboard', icon: LayoutDashboard, label: 'Flow' },
-            { to: '/habits', icon: Target, label: 'Habits' },
-          ].map((l, i) => {
-            const Icon = l.icon;
-            return (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                onClick={() => soundService.playTransition()}
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center w-full h-full gap-1 transition-all active:scale-95 ${isActive ? 'text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.6)] font-semibold' : 'text-slate-400 hover:text-slate-200'}`
-                }
-              >
-                <Icon size={22} className="" />
-              </NavLink>
-            );
-          })}
-
-          <div className="relative w-full h-full flex items-center justify-center">
-            <button
-              onClick={() => {
-                soundService.playTransition();
-                setQuickAddOpen(true);
-              }}
-              aria-label="Create new entry"
-              className="absolute -top-6 z-[60] w-12 h-12 cursor-pointer bg-gradient-to-tr from-emerald-500 to-teal-400 hover:brightness-110 text-[#07080b] rounded-full flex items-center justify-center border-4 border-[#07080b] shadow-[0_0_24px_rgba(16,185,129,0.5)] active:scale-95 transition-all"
+      {/* ── Mobile Bottom Dock (< 768px, 56px tall, 4 icon-only destinations) ── */}
+      <nav
+        aria-label="Mobile workspaces"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-14 bg-[var(--sf-raised)] border-t border-[var(--border-default)] px-2 grid grid-cols-4 items-center"
+      >
+        {WORKSPACES.map(item => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              aria-label={item.label}
+              onClick={() => soundService.playTransition()}
+              className="relative flex flex-col items-center justify-center h-full transition-colors cursor-pointer"
             >
-              <Plus size={22} className="stroke-[2.5]" />
-            </button>
-          </div>
-
-          {[
-            { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
-            { to: '/analytics', icon: BarChart2, label: 'Stats' },
-          ].map((l, i) => {
-            const Icon = l.icon;
-            return (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                onClick={() => soundService.playTransition()}
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center w-full h-full gap-1 transition-all active:scale-95 ${isActive ? 'text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.6)] font-semibold' : 'text-slate-400 hover:text-slate-200'}`
-                }
-              >
-                <Icon size={22} className="" />
-              </NavLink>
-            );
-          })}
-        </div>
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    size={21}
+                    strokeWidth={isActive ? 2.4 : 1.75}
+                    className={cn(
+                      'transition-colors',
+                      isActive ? 'text-[var(--accent-ink)]' : 'text-[var(--tx-muted)]'
+                    )}
+                  />
+                  {isActive && (
+                    <span className="absolute bottom-1 w-6 h-[2px] rounded-full bg-[var(--accent)]" />
+                  )}
+                </>
+              )}
+            </NavLink>
+          );
+        })}
       </nav>
 
       {/* ── Overlays ── */}
       <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
       <CommandMenu />
-      {achievement && (
+      {achievement && telemetryMode === 'scaffold' && (
         <AchievementToast
           title={achievement.title}
           description={achievement.description}

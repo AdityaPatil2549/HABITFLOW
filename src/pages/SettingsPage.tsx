@@ -18,11 +18,22 @@ import {
   Youtube,
 } from 'lucide-react';
 import { db, getOrCreateSettings } from '../db';
-import type { Settings, Theme } from '../types';
+import type { PolarityMode, Settings, TelemetryMode, Theme } from '../types';
+import {
+  ACCENT_CARTRIDGES,
+  applyAppearanceToDocument,
+  getEffectivePolarity,
+  normalizeAccentTheme,
+  normalizeUnlockedThemes,
+  resolvePolarityMode,
+  resolveTelemetryMode,
+} from '../lib/theme';
+import { Sun, Moon, Monitor, Lock as CartridgeLock, Gauge } from 'lucide-react';
 import { format } from 'date-fns';
 import { notificationService } from '../services/notificationService';
 import { motion } from 'framer-motion';
 import { useGamificationStore } from '../store/gamificationStore';
+import { calculateStats } from '../services/gamificationService';
 import { useToast } from '../components/common/Toast';
 import { calendarService } from '../services/calendarService';
 import { useAuthStore } from '../store/authStore';
@@ -31,15 +42,16 @@ import { driveService } from '../services/driveService';
 import { healthSyncService } from '../services/healthSyncService';
 import { storageService } from '../services/storageService';
 
-const THEMES: { value: Theme; label: string; color: string }[] = [
-  { value: 'indigo', label: 'Indigo', color: '#6366f1' },
-  { value: 'violet', label: 'Violet', color: '#8b5cf6' },
-  { value: 'emerald', label: 'Emerald', color: '#10b981' },
-  { value: 'rose', label: 'Rose', color: '#f43f5e' },
-  { value: 'amber', label: 'Amber', color: '#f59e0b' },
-  { value: 'neon', label: 'Neon Pink', color: '#ec4899' },
-  { value: 'cyberpunk', label: 'Cyberpunk', color: '#eab308' },
-  { value: 'sunset', label: 'Sunset Glow', color: '#f97316' },
+const POLARITY_OPTIONS: { value: PolarityMode; label: string; icon: typeof Sun }[] = [
+  { value: 'dark', label: 'Carbon Dark', icon: Moon },
+  { value: 'light', label: 'Warm Paper', icon: Sun },
+  { value: 'system', label: 'System', icon: Monitor },
+];
+
+const TELEMETRY_OPTIONS: { value: TelemetryMode; label: string; detail: string }[] = [
+  { value: 'scaffold', label: 'Scaffold', detail: 'XP bar, coins, celebration toasts & milestone feedback.' },
+  { value: 'instrument', label: 'Instrument', detail: 'Momentum %, continuity tape & streaks. Rewards accumulate silently.' },
+  { value: 'monastic', label: 'Monastic', detail: 'Pure execution checklist. No scores, flames, or XP telemetry.' },
 ];
 
 export function SettingsPage() {
@@ -69,15 +81,18 @@ export function SettingsPage() {
 
   async function saveSetting(update: Partial<Settings>) {
     if (!settings) return;
-    const updated = { ...settings, ...update };
-    await db.settings.update(settings.id, update);
+    const syncedUpdate: Partial<Settings> = { ...update };
+    if (update.polarity) {
+      syncedUpdate.darkMode = update.polarity;
+    }
+    const updated = { ...settings, ...syncedUpdate };
+    await db.settings.update(settings.id, syncedUpdate);
     setSettings(updated);
 
-    const root = document.documentElement;
-    if (update.theme) {
-      if (update.theme === 'indigo') root.removeAttribute('data-theme');
-      else root.setAttribute('data-theme', update.theme);
-    }
+    const nextPolarity = resolvePolarityMode(updated);
+    const nextTheme = normalizeAccentTheme(updated.theme);
+    applyAppearanceToDocument(nextPolarity, nextTheme);
+    window.dispatchEvent(new CustomEvent('habitflow-appearance-changed'));
   }
 
   async function handleExport() {
@@ -147,8 +162,8 @@ export function SettingsPage() {
       ]);
       await driveService.saveBackupToDrive({ habits, habitLogs, tasks, projects, moods, app: 'HabitFlow', exportedAt: new Date().toISOString() });
       toast.success('Backup saved to Google Drive! ☁️');
-    } catch (e: any) {
-      toast.error(e.message || 'Drive backup failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Drive backup failed');
     } finally {
       setDriveLoading(false);
     }
@@ -179,12 +194,10 @@ export function SettingsPage() {
     if (isGuest) { toast.error('Sign in to upload a profile photo'); return; }
     setPhotoUploading(true);
     try {
-      const url = await storageService.uploadProfilePhoto(file);
+      await storageService.uploadProfilePhoto(file);
       toast.success('Profile photo updated! 📸');
-      // Trigger a re-render by updating a URL state if needed
-      console.log('[Settings] Profile photo uploaded:', url);
-    } catch (e: any) {
-      toast.error(e.message || 'Photo upload failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Photo upload failed');
     } finally {
       setPhotoUploading(false);
       if (photoInputRef.current) photoInputRef.current.value = '';
@@ -246,8 +259,15 @@ export function SettingsPage() {
       }
 
       // Check that arrays contain objects with id fields
-      const hasIds = (arr: any[]) =>
-        arr.length === 0 || arr.every((item: any) => item && typeof item.id !== 'undefined');
+      const hasIds = (arr: unknown[]) =>
+        arr.length === 0 ||
+        arr.every(
+          (item): item is { id: unknown } =>
+            typeof item === 'object' &&
+            item !== null &&
+            'id' in item &&
+            (item as { id?: unknown }).id !== undefined
+        );
       if (
         (data.habits && !hasIds(data.habits)) ||
         (data.tasks && !hasIds(data.tasks)) ||
@@ -354,37 +374,131 @@ export function SettingsPage() {
       </div>
 
       {/* ─── Appearance ─── */}
-      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-6">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Palette size={18} className="text-brand-400" /> Appearance
+      <section className="card-raised p-6 space-y-6">
+        <h2 className="text-base font-bold text-[var(--tx-primary)] flex items-center gap-2">
+          <Palette size={18} className="text-[var(--accent-ink)]" /> Appearance & Telemetry
         </h2>
 
-
-
+        {/* Polarity Selector */}
         <div>
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block flex items-center justify-between">
-            <span>Accent Color</span>
+          <span className="font-label-caps mb-3 block">Surface Polarity</span>
+          <div className="grid grid-cols-3 gap-2">
+            {POLARITY_OPTIONS.map(opt => {
+              const Icon = opt.icon;
+              const activePolarity = resolvePolarityMode(settings);
+              const isSelected = activePolarity === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => saveSetting({ polarity: opt.value })}
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-[var(--accent)] text-[var(--accent-fg)] border-[var(--accent)]'
+                      : 'bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border-[var(--border-default)] hover:border-[var(--border-strong)]'
+                  }`}
+                >
+                  <Icon size={14} />
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Accent Ink Cartridges */}
+        <div>
+          <label className="font-label-caps mb-3 flex items-center justify-between">
+            <span>Accent Ink Cartridge</span>
             <Link
-              to="/profile"
-              className="text-xs text-brand-400 hover:underline flex items-center gap-1.5"
+              to="/hub/shop"
+              className="text-xs text-[var(--accent-ink)] hover:underline flex items-center gap-1.5 normal-case tracking-normal"
             >
-              <Palette size={12} /> Get more themes
+              <Palette size={12} /> Armory Inks
             </Link>
           </label>
-          <div className="flex flex-wrap gap-4">
-            {THEMES.filter(t => userXP?.unlockedThemes?.includes(t.value)).map(t => (
-              <button
-                key={t.value}
-                onClick={() => saveSetting({ theme: t.value })}
-                title={t.label}
-                className={`w-9 h-9 rounded-full transition-all flex items-center justify-center ${settings.theme === t.value ? 'scale-110 ring-2 ring-white/20' : 'hover:scale-105 opacity-60 hover:opacity-100'}`}
-                style={{ background: t.color }}
-              >
-                {settings.theme === t.value && (
-                  <div className="w-2 h-2 rounded-full bg-white shadow-sm" />
-                )}
-              </button>
-            ))}
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
+            {ACCENT_CARTRIDGES.map(t => {
+              const unlockedSet = normalizeUnlockedThemes(userXP?.unlockedThemes);
+              const isUnlocked = unlockedSet.includes(t.id);
+              const activeTheme = normalizeAccentTheme(settings.theme);
+              const isSelected = activeTheme === t.id;
+              const effectivePolarity = getEffectivePolarity(resolvePolarityMode(settings));
+              const swatch = effectivePolarity === 'light' ? t.swatchLight : t.swatchDark;
+
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  disabled={!isUnlocked}
+                  onClick={() => isUnlocked && saveSetting({ theme: t.id as Theme })}
+                  title={isUnlocked ? t.label : `${t.label} — Unlock in Armory`}
+                  aria-label={isUnlocked ? `Select ${t.label}` : `${t.label} (locked)`}
+                  className={`group relative flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-transform ${
+                    isSelected
+                      ? 'border-[var(--accent)] bg-[var(--sf-overlay)] scale-105'
+                      : isUnlocked
+                        ? 'border-[var(--border-default)] bg-[var(--sf-base)] hover:border-[var(--border-strong)] cursor-pointer'
+                        : 'border-[var(--border-default)] bg-[var(--sf-base)] opacity-45 cursor-not-allowed'
+                  }`}
+                >
+                  <span
+                    className="w-6 h-6 rounded-full border border-[var(--border-strong)] flex items-center justify-center"
+                    style={{ backgroundColor: swatch }}
+                  >
+                    {isSelected && (
+                      <span
+                        className="w-2 h-2 rounded-full"
+                        style={{
+                          backgroundColor:
+                            t.id === 'obsidian'
+                              ? effectivePolarity === 'dark'
+                                ? '#0B0B0E'
+                                : '#FFFFFF'
+                              : '#FFFFFF',
+                        }}
+                      />
+                    )}
+                    {!isUnlocked && <CartridgeLock size={10} className="text-white" />}
+                  </span>
+                  <span className="text-[10px] font-medium text-[var(--tx-secondary)] truncate w-full text-center">
+                    {t.label.split(' ')[0]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Telemetry Discipline Mode */}
+        <div className="pt-2 border-t border-[var(--border-default)]">
+          <div className="flex items-center gap-2 mb-3">
+            <Gauge size={14} className="text-[var(--accent-ink)]" />
+            <span className="font-label-caps">Telemetry Mode</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {TELEMETRY_OPTIONS.map(opt => {
+              const numericLevel = calculateStats(userXP?.total ?? 0).numericLevel;
+              const currentMode = resolveTelemetryMode(settings, numericLevel);
+              const isSelected = currentMode === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => saveSetting({ telemetryMode: opt.value })}
+                  className={`text-left p-3 rounded-xl border transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'border-[var(--accent)] bg-[var(--accent-subtle)]'
+                      : 'border-[var(--border-default)] bg-[var(--sf-overlay)] hover:border-[var(--border-strong)]'
+                  }`}
+                >
+                  <p className="text-xs font-bold text-[var(--tx-primary)]">{opt.label}</p>
+                  <p className="text-[11px] text-[var(--tx-secondary)] mt-0.5 leading-snug">
+                    {opt.detail}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </div>
 

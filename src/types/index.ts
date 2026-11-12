@@ -6,15 +6,33 @@ export type HabitType = 'boolean' | 'count' | 'duration' | 'rating';
 export type HabitFrequency = 'daily' | 'weekly' | 'custom';
 export type Priority = 0 | 1 | 2 | 3;
 export type MoodScore = 1 | 2 | 3 | 4 | 5;
-export type Theme =
-  | 'indigo'
+export type AccentTheme =
+  | 'obsidian'
+  | 'ember'
+  | 'ocean'
+  | 'forest'
   | 'violet'
-  | 'emerald'
+  | 'gold'
   | 'rose'
+  | 'cyan';
+
+export type LegacyTheme =
+  | 'indigo'
+  | 'emerald'
   | 'amber'
   | 'neon'
   | 'cyberpunk'
-  | 'sunset';
+  | 'sunset'
+  | 'midnight'
+  | 'pastel'
+  | 'monochrome'
+  | 'galaxy';
+
+export type Theme = AccentTheme | LegacyTheme;
+
+export type PolarityMode = 'dark' | 'light' | 'system';
+
+export type TelemetryMode = 'scaffold' | 'instrument' | 'monastic';
 export type Level = 'Beginner' | 'Builder' | 'Achiever' | 'Champion' | 'Grandmaster';
 
 // ─── Habit ───────────────────────────────────────────────────
@@ -146,7 +164,9 @@ export interface Settings {
   id: string; // always 'singleton'
   user_id?: string;
   theme: Theme;
+  polarity?: PolarityMode;
   darkMode: 'system' | 'dark' | 'light';
+  telemetryMode?: TelemetryMode;
   weekStartsOnMonday: boolean;
   notificationsEnabled: boolean;
   soundEnabled: boolean;
@@ -198,7 +218,7 @@ export interface ShopItem {
   name: string;
   description: string;
   icon: string;
-  category: 'theme' | 'avatar' | 'icon_pack' | 'badge_frame' | 'consumable';
+  category: 'theme' | 'avatar' | 'icon_pack' | 'badge_frame' | 'consumable' | 'acoustic_pack';
   price: number;
   preview?: string; // CSS class or image URL
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
