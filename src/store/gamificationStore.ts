@@ -1,9 +1,11 @@
 import { create } from 'zustand';
-import { gamificationService } from '@/services/gamificationService';
+import { calculateStats, gamificationService } from '@/services/gamificationService';
 import type { UserXP } from '@/types';
 import { queueAchievement, checkStreakMilestone } from '@/components/ui/AchievementToast';
 import { soundService } from '@/services/soundService';
 import { triggerConfetti, triggerLevelUpConfetti } from '@/lib/confetti';
+import { getOrCreateSettings } from '@/db';
+import { resolveTelemetryMode } from '@/lib/theme';
 
 interface GamificationState {
   userXP: UserXP | null;
@@ -39,37 +41,42 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
 
   recordHabitCompletion: async (habitId: string, streak: number) => {
     const result = await gamificationService.recordHabitCompletion(habitId);
+    const settings = await getOrCreateSettings();
+    const numericLevel = calculateStats(result.newTotal).numericLevel;
+    const telemetryMode = resolveTelemetryMode(settings, numericLevel);
 
-    // Level Up / Badge toasts
-    result.badgesUnlocked.forEach(badge => {
-      const isLevelUp = badge.id.startsWith('level');
-      if (isLevelUp) {
-        soundService.playLevelUp();
-        triggerLevelUpConfetti();
-      } else {
+    // Three-Stage Telemetry: only fire celebration toasts/confetti in Scaffold mode;
+    // XP, coins & badges still accumulate silently in Instrument & Monastic modes.
+    if (telemetryMode === 'scaffold') {
+      result.badgesUnlocked.forEach(badge => {
+        const isLevelUp = badge.id.startsWith('level');
+        if (isLevelUp) {
+          soundService.playLevelUp();
+          triggerLevelUpConfetti();
+        } else {
+          soundService.playBadge();
+          triggerConfetti();
+        }
+
+        queueAchievement({
+          title: badge.name,
+          description: badge.description,
+          icon: badge.icon,
+          type: isLevelUp ? 'level_up' : 'badge',
+        });
+      });
+
+      const milestone = checkStreakMilestone(streak);
+      if (milestone) {
         soundService.playBadge();
         triggerConfetti();
+        queueAchievement({
+          title: milestone.title,
+          description: milestone.description,
+          icon: milestone.icon,
+          type: 'milestone',
+        });
       }
-      
-      queueAchievement({
-        title: badge.name,
-        description: badge.description,
-        icon: badge.icon,
-        type: isLevelUp ? 'level_up' : 'badge',
-      });
-    });
-
-    // Check custom streak milestones
-    const milestone = checkStreakMilestone(streak);
-    if (milestone) {
-      soundService.playBadge();
-      triggerConfetti();
-      queueAchievement({
-        title: milestone.title,
-        description: milestone.description,
-        icon: milestone.icon,
-        type: 'milestone',
-      });
     }
 
     await get().loadXP();

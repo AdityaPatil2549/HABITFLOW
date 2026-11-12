@@ -34,7 +34,7 @@ export function TaskFilterBar({
   ];
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 pb-4 border-b border-white/[0.06]">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 pb-4 border-b border-[var(--border-default)]">
       {/* View Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
         {tabs.map(t => (
@@ -44,15 +44,15 @@ export function TaskFilterBar({
             className={cn(
               'flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer',
               currentTab === t.id
-                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-white/[0.05]'
+                ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/30'
+                : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] border border-[var(--border-default)]'
             )}
           >
             <span>{t.label}</span>
             <span
               className={cn(
                 'px-1.5 py-0.5 rounded-full text-xs font-mono font-bold',
-                currentTab === t.id ? 'bg-emerald-500/25 text-emerald-200' : 'bg-white/[0.06] text-slate-400'
+                currentTab === t.id ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : 'bg-[var(--sf-overlay)] text-[var(--tx-muted)]'
               )}
             >
               {t.count}
@@ -67,29 +67,31 @@ export function TaskFilterBar({
           value={selectedPriority}
           onChange={e => onSelectPriority(e.target.value === 'all' ? 'all' : (parseInt(e.target.value, 10) as Priority))}
           aria-label="Filter by priority"
-          className="bg-[#0c0e17]/80 border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500/40 cursor-pointer backdrop-blur-md"
+          className="input w-auto px-3 py-2 text-xs cursor-pointer"
         >
-          <option value="all" className="bg-[#0c0e17] text-white">All Priorities</option>
-          <option value="0" className="bg-[#0c0e17] text-rose-400">Urgent</option>
-          <option value="1" className="bg-[#0c0e17] text-orange-400">High</option>
-          <option value="2" className="bg-[#0c0e17] text-blue-400">Normal</option>
-          <option value="3" className="bg-[#0c0e17] text-slate-400">Low</option>
+          <option value="all">All Priorities</option>
+          <option value="0">Urgent</option>
+          <option value="1">High</option>
+          <option value="2">Normal</option>
+          <option value="3">Low</option>
         </select>
 
         <div className="relative flex-1 sm:w-56">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[var(--tx-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             placeholder="Search tasks... (/)"
-            className="w-full bg-[#0c0e17]/60 border border-white/[0.1] focus:border-emerald-500/40 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-400 focus:outline-none transition-all backdrop-blur-md focus:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+            className="input pl-9 pr-8 py-2 text-xs"
           />
           {searchQuery && (
             <button
+              type="button"
+              aria-label="Clear search"
               onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--tx-muted)] hover:text-[var(--tx-primary)] cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>

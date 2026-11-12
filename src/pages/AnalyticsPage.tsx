@@ -89,10 +89,10 @@ export function AnalyticsPage() {
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Telemetry & Insights</span>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
+          <h1 className="text-3xl font-black text-[var(--tx-primary)] tracking-tight">
             Your Progress Report
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[var(--tx-secondary)] text-sm mt-1">
             Track, analyze, and compound your habit consistency over time.
           </p>
         </div>
@@ -102,7 +102,7 @@ export function AnalyticsPage() {
       </div>
 
       {/* Modern Tactile Segmented Tabs */}
-      <div className="flex flex-wrap gap-1.5 p-1.5 bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
+      <div className="flex flex-wrap gap-1.5 p-1.5 bg-[var(--sf-raised)] rounded-xl border border-[var(--border-default)]">
         {TABS.map(t => (
           <button
             key={t}
@@ -111,10 +111,10 @@ export function AnalyticsPage() {
               soundService.playTick();
             }}
             className={cn(
-              'px-4 py-2 sm:px-5 sm:py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 whitespace-nowrap flex-grow sm:flex-grow-0 text-center cursor-pointer',
+              'px-4 py-2 sm:px-5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-150 whitespace-nowrap flex-grow sm:flex-grow-0 text-center cursor-pointer',
               tab === t
-                ? 'bg-emerald-500/20 text-emerald-300 shadow-sm border border-emerald-500/30 backdrop-blur-md'
-                : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/30'
+                : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] border border-transparent'
             )}
           >
             {t}
@@ -123,7 +123,7 @@ export function AnalyticsPage() {
       </div>
 
       {/* Tab Content Panes */}
-      <Suspense fallback={<div className="h-64 rounded-xl border border-white/10 bg-neutral-900/40 animate-pulse" />}>
+      <Suspense fallback={<div className="h-64 rounded-xl border border-[var(--border-default)] bg-[var(--sf-raised)] animate-pulse" />}>
         {tab === 'Overview' && (
           <AnalyticsOverviewTab
             habits={habits}

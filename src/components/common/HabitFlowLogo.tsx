@@ -20,7 +20,7 @@ export function HabitFlowLogo({
 
   return (
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      <div className="flex items-center justify-center rounded-lg bg-white text-neutral-950 p-1.5 flex-shrink-0">
+      <div className="flex items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-fg)] p-1.5 flex-shrink-0">
         <svg
           width={current.w}
           height={current.h}
@@ -39,7 +39,7 @@ export function HabitFlowLogo({
       </div>
 
       <div className={`items-center gap-2 min-w-0 ${hideTextOnMedium ? 'hidden xl:flex' : 'flex'}`}>
-        <span className={`${current.fontSize} font-bold tracking-tight flex items-baseline leading-none text-white`}>
+        <span className={`${current.fontSize} font-bold tracking-tight flex items-baseline leading-none text-[var(--tx-primary)]`}>
           HabitFlow
         </span>
       </div>

@@ -158,7 +158,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
       {/* Full-screen backdrop */}
       <dialog
         ref={dialogRef}
-        className="dark-overlay m-0 p-0 border-0 outline-none open:animate-in open:fade-in duration-300 z-[9999]"
+        className="m-0 p-0 border-0 outline-none open:animate-in open:fade-in duration-150 z-[9999]"
         style={{
           position: 'fixed',
           inset: 0,
@@ -167,14 +167,12 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
           maxWidth: '100vw',
           maxHeight: '100vh',
           boxSizing: 'border-box',
-          backgroundColor: '#030208',
+          backgroundColor: 'var(--sf-base)',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        {/* Neutral backdrop */}
-
         {/* Centered content wrapper */}
         <div className="flex-1 w-full flex flex-col items-center justify-center p-4 md:p-6 relative z-10 my-auto">
           
@@ -185,10 +183,10 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
                     i < step
-                      ? 'bg-white text-neutral-950'
+                      ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
                       : i === step
-                      ? 'bg-neutral-800 text-white border border-white/30'
-                      : 'bg-neutral-900 text-neutral-500 border border-white/10'
+                      ? 'bg-[var(--sf-overlay)] text-[var(--tx-primary)] border border-[var(--border-strong)]'
+                      : 'bg-[var(--sf-raised)] text-[var(--tx-muted)] border border-[var(--border-default)]'
                   }`}
                 >
                   {i < step ? <Check size={12} /> : i + 1}
@@ -196,7 +194,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                 {i < STEPS.length - 1 && (
                   <div
                     className={`w-6 h-[1px] ${
-                      i < step ? 'bg-white/60' : 'bg-white/10'
+                      i < step ? 'bg-[var(--accent)]' : 'bg-[var(--border-default)]'
                     }`}
                   />
                 )}
@@ -207,45 +205,40 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
           <div className="w-full min-w-[320px] max-w-[460px] relative mx-auto">
 
             {/* Main Front Card Container */}
-            <div className="relative rounded-2xl border border-white/10 bg-neutral-900/90 px-8 py-10 overflow-hidden">
+            <div className="relative rounded-2xl border border-[var(--border-strong)] bg-[var(--sf-raised)] px-8 py-10 overflow-hidden shadow-2xl">
               
               <AnimatePresence mode="wait">
                 {/* ── Step 0: Welcome ── */}
                 {step === 0 && (
                   <motion.div
                     key="welcome"
-                    initial={{ opacity: 0, y: 24 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -24 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.14, ease: 'easeOut' }}
                     className="text-center relative z-10 flex flex-col items-center w-full"
                   >
-                    <motion.div
-                      animate={{ y: [0, -5, 0] }}
-                      transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                    >
-                      <div className="w-16 h-16 mx-auto mb-6 rounded-[20px] bg-[#0c081e] border border-purple-500/30 p-2.5 shadow-[0_0_30px_rgba(168,85,247,0.25)] flex items-center justify-center relative group hover:scale-105 transition-transform duration-300">
-                        <div className="absolute inset-0 bg-purple-500/10 rounded-[20px] blur-sm group-hover:bg-purple-500/20 transition-all" />
-                        <img
-                          src="/logo.png"
-                          alt="HabitFlow"
-                          className="w-full h-full object-contain rounded-xl relative z-10 opacity-90"
-                        />
-                      </div>
-                    </motion.div>
+                    <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[var(--sf-overlay)] border border-[var(--border-strong)] p-2.5 flex items-center justify-center">
+                      <img
+                        src="/logo.png"
+                        alt="HabitFlow"
+                        className="w-full h-full object-contain rounded-xl opacity-95"
+                      />
+                    </div>
 
-                    <h1 className="text-3xl font-bold text-white mb-4 tracking-tight leading-tight">
+                    <h1 className="text-3xl font-bold text-[var(--tx-primary)] mb-4 tracking-tight leading-tight">
                       Welcome to{' '}
-                      <span className="text-purple-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                      <span className="text-[var(--accent-ink)]">
                         HabitFlow
                       </span>
                     </h1>
 
-                    <p className="text-[#8b949e] text-[14px] leading-relaxed mb-8 w-full">
+                    <p className="text-[var(--tx-secondary)] text-[14px] leading-relaxed mb-8 w-full">
                       Build powerful daily routines with a system that actually works. Let's get you set up in 60 seconds.
                     </p>
 
                     <div className="mb-6 w-full flex flex-col items-center">
-                      <label className="text-[9px] font-bold tracking-[0.25em] text-[#6b7280] uppercase mb-4 text-center">
+                      <label className="text-[10px] font-mono font-bold tracking-[0.2em] text-[var(--tx-muted)] uppercase mb-4 text-center">
                         WHAT SHOULD WE CALL YOU?
                       </label>
                       <input
@@ -255,20 +248,20 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                         onChange={e => setName(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && setStep(1)}
                         autoFocus
-                        className="w-full bg-neutral-950 border border-white/15 focus:border-white/40 rounded-lg px-4 py-3 text-white text-center text-sm outline-none transition-colors placeholder:text-neutral-500"
+                        className="input py-3 text-center text-sm"
                       />
                     </div>
 
                     <button
                       onClick={() => setStep(1)}
-                      className="w-full py-3 px-5 rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 font-semibold text-sm flex items-center justify-center gap-2 transition-colors mb-4"
+                      className="btn-primary w-full py-3 px-5 font-semibold text-sm flex items-center justify-center gap-2 mb-4"
                     >
                       Let's get started <ArrowRight size={14} />
                     </button>
 
                     <button
                       onClick={onComplete}
-                      className="text-[11px] text-[#4b5563] hover:text-[#6b7280] transition-colors tracking-wide"
+                      className="text-xs text-[var(--tx-muted)] hover:text-[var(--tx-secondary)] transition-colors tracking-wide cursor-pointer"
                     >
                       Skip setup
                     </button>
@@ -279,90 +272,61 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
               {step === 1 && (
                 <motion.div
                   key="goal"
-                  initial={{ opacity: 0, y: 24 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -24 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.14, ease: 'easeOut' }}
                 >
-                  <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <p
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: '0.2em',
-                        color: '#818cf8',
-                        textTransform: 'uppercase',
-                        marginBottom: 8,
-                      }}
-                    >
+                  <div className="text-center mb-6">
+                    <p className="text-[11px] font-bold font-mono tracking-[0.2em] text-[var(--accent-ink)] uppercase mb-2">
                       Step 2 of 4
                     </p>
-                    <h2 style={{ fontSize: 30, fontWeight: 900, color: 'white', marginBottom: 8 }}>
+                    <h2 className="text-2xl sm:text-3xl font-black text-[var(--tx-primary)] mb-2">
                       What's your main goal?
                     </h2>
-                    <p style={{ color: '#64748b', fontSize: 14 }}>
+                    <p className="text-[var(--tx-secondary)] text-sm">
                       We'll suggest the perfect starter habits for you.
                     </p>
                   </div>
 
-                  <div
-                    style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}
-                  >
+                  <div className="flex flex-col gap-3 mb-6">
                     {(
                       Object.entries(GOAL_TEMPLATES) as [
                         GoalKey,
                         (typeof GOAL_TEMPLATES)[GoalKey],
                       ][]
-                    ).map(([key, t], idx) => (
-                      <motion.div
+                    ).map(([key, t]) => (
+                      <button
                         key={key}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.05 }}
+                        onClick={() => {
+                          setGoal(key);
+                          setSelected([true, true, true]);
+                          setStep(2);
+                        }}
+                        className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left group cursor-pointer ${
+                          goal === key
+                            ? 'border-[var(--accent)] bg-[var(--accent-subtle)]'
+                            : 'border-[var(--border-default)] bg-[var(--sf-overlay)] hover:border-[var(--border-strong)]'
+                        }`}
                       >
-                          <button
-                            onClick={() => {
-                              setGoal(key);
-                              setSelected([true, true, true]);
-                              setStep(2);
-                            }}
-                            className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group
-                              ${
-                                goal === key
-                                  ? 'border-indigo-500/50 bg-indigo-500/10 shadow-[0_0_30px_rgba(99,102,241,0.15)]'
-                                  : 'border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20'
-                              }
-                            `}
-                          >
-                            <span style={{ fontSize: 32, flexShrink: 0, transform: 'translateZ(20px)' }} className="group-hover:scale-110 transition-transform">{t.icon}</span>
-                            <div style={{ flex: 1, minWidth: 0, transform: 'translateZ(10px)' }}>
-                              <p className={`font-bold mb-1 transition-colors ${goal === key ? 'text-indigo-300' : 'text-white'}`}>
-                                {t.label}
-                              </p>
-                              <p style={{ fontSize: 12, color: '#94a3b8' }}>
-                                {t.habits.map(h => h.name.split(' ').slice(0, 3).join(' ')).join(' · ')}
-                              </p>
-                            </div>
-                            <div style={{ transform: 'translateZ(10px)' }}>
-                              <ChevronRight size={18} className={`transition-colors ${goal === key ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} style={{ flexShrink: 0 }} />
-                            </div>
-                          </button>
-                      </motion.div>
+                        <span className="text-3xl shrink-0">{t.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-bold mb-1 transition-colors ${goal === key ? 'text-[var(--accent-ink)]' : 'text-[var(--tx-primary)]'}`}>
+                            {t.label}
+                          </p>
+                          <p className="text-xs text-[var(--tx-muted)]">
+                            {t.habits.map(h => h.name.split(' ').slice(0, 3).join(' ')).join(' · ')}
+                          </p>
+                        </div>
+                        <ChevronRight size={18} className={`shrink-0 transition-colors ${goal === key ? 'text-[var(--accent-ink)]' : 'text-[var(--tx-muted)] group-hover:text-[var(--tx-primary)]'}`} />
+                      </button>
                     ))}
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div className="flex justify-center">
                     <button
                       onClick={() => setStep(0)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#475569',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                      }}
+                      className="text-xs font-bold tracking-widest uppercase text-[var(--tx-muted)] hover:text-[var(--tx-primary)] cursor-pointer transition-colors"
                     >
                       ← Back
                     </button>
@@ -374,194 +338,80 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
               {step === 2 && selectedGoal && (
                 <motion.div
                   key="habits"
-                  initial={{ opacity: 0, y: 24 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -24 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.14, ease: 'easeOut' }}
                 >
-                  <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-neutral-800 border border-white/10 mb-3">
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] mb-3">
                       <span className="text-3xl">{selectedGoal.icon}</span>
                     </div>
-                    <p
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: '0.2em',
-                        color: '#818cf8',
-                        textTransform: 'uppercase',
-                        margin: '8px 0 4px',
-                      }}
-                    >
+                    <p className="text-[11px] font-bold font-mono tracking-[0.2em] text-[var(--accent-ink)] uppercase mt-2 mb-1">
                       Step 3 of 4
                     </p>
-                    <h2 style={{ fontSize: 28, fontWeight: 900, color: 'white', marginBottom: 8 }}>
+                    <h2 className="text-2xl sm:text-3xl font-black text-[var(--tx-primary)] mb-2">
                       Your starter habits
                     </h2>
-                    <p style={{ color: '#64748b', fontSize: 14 }}>
+                    <p className="text-[var(--tx-secondary)] text-sm">
                       Tap to toggle — start with all 3, or pick your favourites.
                     </p>
                   </div>
 
-                  <div
-                    style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}
-                  >
+                  <div className="flex flex-col gap-3 mb-6">
                     {selectedGoal.habits.map((h, i) => (
-                      <motion.div
+                      <button
                         key={h.name}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: i * 0.05 }}
+                        onClick={() => setSelected(s => s.map((v, idx) => (idx === i ? !v : v)))}
+                        className={`flex items-center gap-4 p-4 w-full rounded-xl border text-left transition-all duration-150 cursor-pointer ${
+                          selected[i]
+                            ? 'border-[var(--accent)] bg-[var(--accent-subtle)]'
+                            : 'border-[var(--border-default)] bg-[var(--sf-overlay)] opacity-65 hover:opacity-100'
+                        }`}
                       >
-                          <motion.button
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setSelected(s => s.map((v, idx) => (idx === i ? !v : v)))}
-                            className={`flex items-center gap-4 p-4 w-full rounded-2xl border text-left transition-all duration-300
-                              ${
-                                selected[i]
-                                  ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
-                                  : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 opacity-70 hover:opacity-100'
-                              }
-                            `}
-                          >
-                            <div
-                              style={{
-                                width: 44,
-                                height: 44,
-                                borderRadius: 12,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: h.color + (selected[i] ? '30' : '15'),
-                                color: h.color,
-                                flexShrink: 0,
-                                fontSize: 18,
-                                transform: 'translateZ(15px)',
-                              }}
-                              className="transition-colors"
-                            >
-                              <AnimatePresence mode="popLayout">
-                                {selected[i] ? (
-                                  <motion.div
-                                    key="check"
-                                    initial={{ scale: 0, rotate: -180 }}
-                                    animate={{ scale: 1, rotate: 0 }}
-                                    exit={{ scale: 0, rotate: 180 }}
-                                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                  >
-                                    <Check size={24} color={h.color} />
-                                  </motion.div>
-                                ) : (
-                                  <motion.span
-                                    key="empty"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                  >
-                                    ○
-                                  </motion.span>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                            <div style={{ flex: 1, transform: 'translateZ(5px)' }}>
-                              <p
-                                style={{
-                                  fontWeight: 700,
-                                  color: 'white',
-                                  fontSize: 15,
-                                  marginBottom: 4,
-                                }}
-                              >
-                                {h.name}
-                              </p>
-                              <p style={{ fontSize: 13, color: '#94a3b8' }}>{h.category} · Daily</p>
-                            </div>
-                            <div
-                              style={{
-                                width: 24,
-                                height: 24,
-                                borderRadius: '50%',
-                                border: `2px solid ${selected[i] ? '#10b981' : 'rgba(255,255,255,0.2)'}`,
-                                background: selected[i] ? '#10b981' : 'transparent',
-                                flexShrink: 0,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transform: 'translateZ(15px)',
-                              }}
-                              className="transition-colors"
-                            >
-                              <AnimatePresence>
-                                {selected[i] && (
-                                  <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    exit={{ scale: 0 }}
-                                  >
-                                    <Check size={14} color="white" strokeWidth={3} />
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          </motion.button>
-                      </motion.div>
+                        <div
+                          style={{
+                            background: h.color + (selected[i] ? '24' : '12'),
+                            color: h.color,
+                          }}
+                          className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-lg transition-colors"
+                        >
+                          {selected[i] ? <Check size={22} color={h.color} /> : <span>○</span>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-[var(--tx-primary)] text-sm mb-0.5">
+                            {h.name}
+                          </p>
+                          <p className="text-xs text-[var(--tx-muted)]">{h.category} · Daily</p>
+                        </div>
+                        <div
+                          className={`w-6 h-6 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
+                            selected[i]
+                              ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-fg)]'
+                              : 'border-[var(--border-strong)] bg-transparent'
+                          }`}
+                        >
+                          {selected[i] && <Check size={14} strokeWidth={3} />}
+                        </div>
+                      </button>
                     ))}
                   </div>
 
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                  <div className="flex gap-3">
+                    <button
                       onClick={() => setStep(1)}
-                      style={{
-                        padding: '14px 24px',
-                        borderRadius: 14,
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        background: 'rgba(255,255,255,0.05)',
-                        color: '#cbd5e1',
-                        fontWeight: 600,
-                        fontSize: 14,
-                        cursor: 'pointer',
-                      }}
-                      className="hover:bg-white/10 hover:text-white transition-colors"
+                      className="btn-secondary px-5 py-3.5 font-semibold text-sm"
                     >
                       ← Back
-                    </motion.button>
-                    <motion.button
-                      whileHover={!adding && selected.some(Boolean) ? { scale: 1.02 } : {}}
-                      whileTap={!adding && selected.some(Boolean) ? { scale: 0.98 } : {}}
+                    </button>
+                    <button
                       onClick={handleFinish}
                       disabled={adding || !selected.some(Boolean)}
-                      style={{
-                        flex: 1,
-                        padding: '14px 20px',
-                        borderRadius: 14,
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        cursor: adding ? 'not-allowed' : 'pointer',
-                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: 15,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        opacity: adding || !selected.some(Boolean) ? 0.5 : 1,
-                        boxShadow: '0 12px 40px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-                      }}
+                      className="btn-primary flex-1 py-3.5 px-5 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {adding ? (
                         <>
-                          <span
-                            style={{
-                              width: 16,
-                              height: 16,
-                              border: '2px solid rgba(255,255,255,0.3)',
-                              borderTopColor: 'white',
-                              borderRadius: '50%',
-                              display: 'inline-block',
-                              animation: 'spin 0.8s linear infinite',
-                            }}
-                          />{' '}
+                          <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin inline-block" />{' '}
                           Adding habits…
                         </>
                       ) : (
@@ -570,7 +420,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                           {selected.filter(Boolean).length !== 1 ? 's' : ''} & Start!
                         </>
                       )}
-                    </motion.button>
+                    </button>
                   </div>
                 </motion.div>
               )}
@@ -579,60 +429,25 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
               {step === 3 && (
                 <motion.div
                   key="done"
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
-                  style={{ textAlign: 'center', padding: '32px 0' }}
+                  transition={{ duration: 0.14 }}
+                  className="text-center py-8"
                 >
-                  <motion.div
-                    initial={{ scale: 0, rotate: -10 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                      style={{
-                        width: 120,
-                        height: 120,
-                        margin: '0 auto 24px',
-                        borderRadius: 32,
-                        background: 'linear-gradient(135deg, #34d399, #10b981)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 64,
-                        boxShadow: '0 30px 80px rgba(52,211,153,0.5), inset 0 2px 0 rgba(255,255,255,0.4)',
-                        border: '1px solid rgba(255,255,255,0.3)',
-                        transform: 'translateZ(30px)'
-                      }}
-                    >
-                      🎉
-                    </motion.div>
-                  <h2 style={{ fontSize: 36, fontWeight: 900, color: 'white', marginBottom: 12 }}>
+                  <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-[var(--accent)] text-[var(--accent-fg)] flex items-center justify-center text-5xl">
+                    🎉
+                  </div>
+                  <h2 className="text-3xl font-black text-[var(--tx-primary)] mb-3">
                     You're all set!
                   </h2>
-                  <p style={{ color: '#94a3b8', fontSize: 16, marginBottom: 16 }}>
+                  <p className="text-[var(--tx-secondary)] text-base mb-4">
                     Your habits are ready. Day 1 starts now.
                   </p>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ delay: 0.6, type: 'spring' }}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      color: '#fbbf24',
-                      fontWeight: 800,
-                      marginTop: 24,
-                      background: 'rgba(251, 191, 36, 0.15)',
-                      padding: '12px 24px',
-                      borderRadius: 100,
-                      border: '1px solid rgba(251, 191, 36, 0.3)',
-                      boxShadow: '0 0 40px rgba(251, 191, 36, 0.2)'
-                    }}
-                  >
-                    <Sparkles size={20} className="animate-pulse" />
+                  <div className="inline-flex items-center justify-center gap-2 text-amber-400 font-bold mt-4 bg-amber-500/15 px-5 py-2.5 rounded-full border border-amber-500/30">
+                    <Sparkles size={18} />
                     <span>+10 XP bonus for setting up!</span>
-                  </motion.div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

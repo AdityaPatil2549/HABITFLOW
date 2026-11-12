@@ -17,7 +17,7 @@ export interface SyncQueueItem {
   table_name: string;
   record_id: string;
   operation: 'upsert' | 'delete';
-  payload: any;
+  payload: Record<string, unknown>;
   created_at: string;
 }
 

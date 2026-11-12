@@ -70,46 +70,45 @@ export function AuthPage() {
   // Show a loading screen while processing OAuth callback
   if ((loading && isOAuthCallback) || (user && isOAuthCallback)) {
     return (
-      <div className="relative min-h-screen w-screen flex items-center justify-center overflow-hidden px-4">
+      <div className="relative min-h-screen w-screen flex items-center justify-center overflow-hidden px-4 bg-[var(--sf-base)]">
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5"
-            style={{ background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' }}
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5 bg-[var(--accent)] text-[var(--accent-fg)]"
           >
-            <Sparkles className="w-8 h-8 text-white" />
+            <Sparkles className="w-8 h-8" />
           </motion.div>
-          <h2 className="text-xl font-bold text-white mt-4">Signing you in...</h2>
-          <p className="text-slate-400 mt-2">Connecting to your Google account</p>
+          <h2 className="text-xl font-bold text-[var(--tx-primary)] mt-4">Signing you in...</h2>
+          <p className="text-[var(--tx-muted)] mt-2">Connecting to your Google account</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative md:h-screen md:overflow-hidden w-full bg-neutral-950 text-neutral-100">
+    <div className="relative md:h-screen md:overflow-hidden w-full bg-[var(--sf-base)] text-[var(--tx-primary)]">
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-4">
         <motion.div 
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="mx-auto space-y-6 sm:w-[400px] bg-neutral-900/70 p-8 rounded-2xl border border-white/10"
+          transition={{ duration: 0.14 }}
+          className="mx-auto space-y-6 sm:w-[400px] card-raised p-8 rounded-2xl"
         >
           <div className="flex items-center gap-3">
-            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 border border-white/10">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)]">
+              <Sparkles className="w-5 h-5 text-[var(--accent)]" />
             </div>
-            <p className="text-2xl font-bold tracking-tight text-white">
-              Habit<span className="text-brand-400">Flow</span>
+            <p className="text-2xl font-bold tracking-tight text-[var(--tx-primary)]">
+              Habit<span className="text-[var(--accent)]">Flow</span>
             </p>
           </div>
           
           <div className="flex flex-col space-y-2">
-            <h1 className="font-heading text-3xl font-bold tracking-tight text-white">
+            <h1 className="font-heading text-3xl font-bold tracking-tight text-[var(--tx-primary)]">
               Sign In or Join Now
             </h1>
-            <p className="text-neutral-400 text-base leading-relaxed">
+            <p className="text-[var(--tx-secondary)] text-base leading-relaxed">
               Login to sync your habits across devices, or continue as a guest to store data locally.
             </p>
           </div>
@@ -127,20 +126,20 @@ export function AuthPage() {
             <button 
               type="button" 
               onClick={handleGuestMode}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl text-slate-300 font-semibold text-[15px] cursor-pointer transition-all hover:text-white bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02] active:scale-[0.98]"
+              className="btn-secondary w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl font-semibold text-[15px]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               Continue as Guest
             </button>
           </div>
           
-          <p className="text-slate-500 mt-8 text-sm text-center pt-4">
+          <p className="text-[var(--tx-muted)] mt-8 text-sm text-center pt-4">
             By clicking continue, you agree to our{' '}
-            <a href="/terms" className="hover:text-brand-400 underline underline-offset-4 transition-colors">
+            <a href="/terms" className="hover:text-[var(--accent)] underline underline-offset-4 transition-colors duration-150">
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="/privacy" className="hover:text-brand-400 underline underline-offset-4 transition-colors">
+            <a href="/privacy" className="hover:text-[var(--accent)] underline underline-offset-4 transition-colors duration-150">
               Privacy Policy
             </a>
             .

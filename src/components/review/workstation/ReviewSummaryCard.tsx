@@ -40,17 +40,17 @@ export function ReviewSummaryCard({
   return (
     <div className="space-y-6">
       {/* Top Banner & Radial Metric */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-neutral-900/70 border border-white/10 relative overflow-hidden">
+      <div className="card-raised p-6 sm:p-8 rounded-2xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           {/* Left: Week context & motivational synthesis */}
           <div className="flex-1 text-center md:text-left space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-widest text-neutral-400 bg-white/[0.04] border border-white/[0.08]">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-widest text-[var(--tx-muted)] bg-[var(--sf-overlay)] border border-[var(--border-default)]">
               {weekLabel}
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--tx-primary)] tracking-tight">
               {headline}
             </h2>
-            <p className="text-sm text-neutral-400 max-w-xl">
+            <p className="text-sm text-[var(--tx-secondary)] max-w-xl">
               "{quote}"
             </p>
           </div>
@@ -63,7 +63,7 @@ export function ReviewSummaryCard({
                 cx="80"
                 cy="80"
                 r={R}
-                className="stroke-white/[0.06]"
+                stroke="var(--border-default)"
                 strokeWidth="8"
                 fill="none"
               />
@@ -78,18 +78,18 @@ export function ReviewSummaryCard({
                 fill="none"
                 initial={{ strokeDashoffset: C }}
                 animate={{ strokeDashoffset }}
-                transition={{ duration: 1.4, ease: 'easeOut', delay: 0.2 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
                 style={{ strokeDasharray: C }}
               />
             </svg>
 
             {/* Inner tabular velocity metric */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="flex items-baseline font-mono font-bold text-3xl tracking-tight text-white tabular-nums">
+              <div className="flex items-baseline font-mono font-bold text-3xl tracking-tight text-[var(--tx-primary)] tabular-nums">
                 <span>{score}</span>
-                <span className="text-sm font-sans font-semibold text-neutral-400 ml-0.5">%</span>
+                <span className="text-sm font-sans font-semibold text-[var(--tx-muted)] ml-0.5">%</span>
               </div>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--tx-muted)]">
                 Score
               </span>
             </div>
@@ -100,53 +100,53 @@ export function ReviewSummaryCard({
       {/* KPI Quad Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Habits Completed */}
-        <div className="p-4 sm:p-5 rounded-xl bg-neutral-900/60 border border-white/10">
-          <div className="flex items-center justify-between text-neutral-400 mb-2">
+        <div className="card-raised p-4 sm:p-5 rounded-xl">
+          <div className="flex items-center justify-between text-[var(--tx-secondary)] mb-2">
             <span className="text-xs font-mono uppercase tracking-wider">Habits Done</span>
             <Target size={15} />
           </div>
-          <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight tabular-nums">
+          <div className="text-2xl sm:text-3xl font-mono font-bold text-[var(--tx-primary)] tracking-tight tabular-nums">
             {habitsCompleted}
           </div>
-          <p className="text-[11px] text-neutral-500 font-mono mt-1">This 7-day cycle</p>
+          <p className="text-[11px] text-[var(--tx-muted)] font-mono mt-1">This 7-day cycle</p>
         </div>
 
         {/* Tasks Completed */}
-        <div className="p-4 sm:p-5 rounded-xl bg-neutral-900/60 border border-white/10">
-          <div className="flex items-center justify-between text-neutral-400 mb-2">
+        <div className="card-raised p-4 sm:p-5 rounded-xl">
+          <div className="flex items-center justify-between text-[var(--tx-secondary)] mb-2">
             <span className="text-xs font-mono uppercase tracking-wider">Tasks Closed</span>
             <CheckCircle2 size={15} />
           </div>
-          <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight tabular-nums">
+          <div className="text-2xl sm:text-3xl font-mono font-bold text-[var(--tx-primary)] tracking-tight tabular-nums">
             {tasksCompleted}
           </div>
-          <p className="text-[11px] text-neutral-500 font-mono mt-1">Direct task throughput</p>
+          <p className="text-[11px] text-[var(--tx-muted)] font-mono mt-1">Direct task throughput</p>
         </div>
 
         {/* Peak Streak */}
-        <div className="p-4 sm:p-5 rounded-xl bg-neutral-900/60 border border-white/10">
-          <div className="flex items-center justify-between text-neutral-400 mb-2">
+        <div className="card-raised p-4 sm:p-5 rounded-xl">
+          <div className="flex items-center justify-between text-[var(--tx-secondary)] mb-2">
             <span className="text-xs font-mono uppercase tracking-wider">Top Streak</span>
             <Flame size={15} />
           </div>
-          <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight flex items-baseline gap-1 tabular-nums">
+          <div className="text-2xl sm:text-3xl font-mono font-bold text-[var(--tx-primary)] tracking-tight flex items-baseline gap-1 tabular-nums">
             <span>{bestStreak}</span>
-            <span className="text-xs font-sans text-neutral-400 font-semibold">days</span>
+            <span className="text-xs font-sans text-[var(--tx-muted)] font-semibold">days</span>
           </div>
-          <p className="text-[11px] text-neutral-500 font-mono mt-1">Consecutive discipline</p>
+          <p className="text-[11px] text-[var(--tx-muted)] font-mono mt-1">Consecutive discipline</p>
         </div>
 
         {/* Weekly XP */}
-        <div className="p-4 sm:p-5 rounded-xl bg-neutral-900/60 border border-white/10">
-          <div className="flex items-center justify-between text-neutral-400 mb-2">
+        <div className="card-raised p-4 sm:p-5 rounded-xl">
+          <div className="flex items-center justify-between text-[var(--tx-secondary)] mb-2">
             <span className="text-xs font-mono uppercase tracking-wider">Weekly XP</span>
             <Zap size={15} />
           </div>
-          <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight flex items-baseline gap-0.5 tabular-nums">
-            <span className="text-neutral-400 text-lg">+</span>
+          <div className="text-2xl sm:text-3xl font-mono font-bold text-[var(--tx-primary)] tracking-tight flex items-baseline gap-0.5 tabular-nums">
+            <span className="text-[var(--tx-muted)] text-lg">+</span>
             <span>{weeklyXp}</span>
           </div>
-          <p className="text-[11px] text-neutral-500 font-mono mt-1">Gamification score</p>
+          <p className="text-[11px] text-[var(--tx-muted)] font-mono mt-1">Gamification score</p>
         </div>
       </div>
     </div>

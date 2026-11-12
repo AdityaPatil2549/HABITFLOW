@@ -10,7 +10,8 @@ import { FocusOverlay } from './components/focus/FocusOverlay';
 import { OnboardingWizard, useOnboarding } from './components/onboarding/OnboardingWizard';
 import { ToastProvider } from './components/common/Toast';
 import { getOrCreateSettings, getOrCreateUserXP } from './db';
-import { applyAppearanceToDocument, resolvePolarityMode } from './lib/theme';
+import { applyAppearanceToDocument, resolvePolarityMode, resolveTelemetryMode } from './lib/theme';
+import { calculateStats } from './services/gamificationService';
 import { gamificationService } from './services/gamificationService';
 import { ScrollToTop } from './components/ui/ScrollToTop';
 import { useModalStore } from './store/modalStore';
@@ -93,10 +94,13 @@ function App() {
     let cleanupSystemListener: (() => void) | undefined;
 
     const syncAppearance = async () => {
-      const [settings] = await Promise.all([getOrCreateSettings(), getOrCreateUserXP()]);
+      const [settings, xp] = await Promise.all([getOrCreateSettings(), getOrCreateUserXP()]);
       const polarity = resolvePolarityMode(settings);
+      const numericLevel = calculateStats(xp.total).numericLevel;
+      const telemetryMode = resolveTelemetryMode(settings, numericLevel);
       applyAppearanceToDocument(polarity, settings.theme);
       soundService.setEnabled(settings.soundEnabled !== false, settings.hapticEnabled !== false);
+      soundService.setTelemetryMode(telemetryMode);
 
       cleanupSystemListener?.();
       cleanupSystemListener = undefined;

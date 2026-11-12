@@ -76,7 +76,12 @@ export function useToast() {
 // ── Icon + Color config ─────────────────────────────────────────
 const TOAST_CONFIG: Record<
   ToastType,
-  { icon: React.FC<any>; color: string; bg: string; border: string }
+  {
+    icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; className?: string }>;
+    color: string;
+    bg: string;
+    border: string;
+  }
 > = {
   success: {
     icon: CheckCircle2,
@@ -121,24 +126,24 @@ function ToastCard({ toast }: { toast: ToastItem }) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      initial={{ opacity: 0, y: 12, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 60, scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className={`flex items-start gap-3 px-4 py-3.5 rounded-2xl shadow-2xl w-[320px] sm:w-[380px] max-w-[calc(100vw-2rem)] bg-slate-900`}
+      exit={{ opacity: 0, x: 40, scale: 0.98 }}
+      transition={{ duration: 0.14, ease: 'easeOut' }}
+      className="flex items-start gap-3 px-4 py-3.5 rounded-2xl shadow-2xl w-[320px] sm:w-[380px] max-w-[calc(100vw-2rem)] bg-[var(--sf-raised)]"
       style={{
-        backdropFilter: 'blur(16px)',
         border: `1px solid ${cfg.border}`,
-        boxShadow: `0 8px 32px rgba(0,0,0,0.2), inset 0 0 0 1px ${cfg.border}`,
       }}
     >
       <Icon size={18} style={{ color: cfg.color }} className="flex-shrink-0 mt-0.5" />
-      <p className="text-sm font-semibold text-white flex-1 leading-relaxed break-words">
+      <p className="text-sm font-semibold text-[var(--tx-primary)] flex-1 leading-relaxed break-words">
         {toast.message}
       </p>
       <button
+        type="button"
+        aria-label="Dismiss notification"
         onClick={() => remove(toast.id)}
-        className="text-slate-500 hover:text-white transition-colors flex-shrink-0 ml-1 mt-0.5"
+        className="text-[var(--tx-muted)] hover:text-[var(--tx-primary)] transition-colors flex-shrink-0 ml-1 mt-0.5 cursor-pointer"
       >
         <X size={15} />
       </button>
@@ -169,8 +174,8 @@ function ConfirmDialog() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[10001] flex items-center justify-center p-6"
-      style={{ background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(8px)' }}
+      transition={{ duration: 0.14 }}
+      className="fixed inset-0 z-[10001] flex items-center justify-center p-6 bg-black/65"
       onClick={e => {
         if (e.target === e.currentTarget) {
           confirm.onCancel?.();
@@ -179,14 +184,11 @@ function ConfirmDialog() {
       }}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 10 }}
+        initial={{ opacity: 0, scale: 0.98, y: 6 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 10 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-        className="w-[90vw] sm:w-[380px] max-w-sm min-w-[280px] shrink-0 rounded-2xl overflow-hidden bg-slate-900 border border-white/10"
-        style={{
-          boxShadow: '0 40px 80px rgba(0,0,0,0.2)',
-        }}
+        exit={{ opacity: 0, scale: 0.98, y: 6 }}
+        transition={{ duration: 0.14, ease: 'easeOut' }}
+        className="w-[90vw] sm:w-[380px] max-w-sm min-w-[280px] shrink-0 rounded-2xl overflow-hidden bg-[var(--sf-raised)] border border-[var(--border-strong)] shadow-2xl"
       >
         <div className="p-6 space-y-5">
           <div className="flex items-start gap-4">
@@ -201,7 +203,7 @@ function ConfirmDialog() {
                 <AlertTriangle size={20} className="text-amber-400" />
               )}
             </div>
-            <p className="text-white font-semibold text-base leading-relaxed pt-1">
+            <p className="text-[var(--tx-primary)] font-semibold text-base leading-relaxed pt-1">
               {confirm.message}
             </p>
           </div>
@@ -213,7 +215,7 @@ function ConfirmDialog() {
                 confirm.onCancel?.();
                 dismissConfirm();
               }}
-              className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm hover:bg-white/10 transition-colors"
+              className="btn-secondary flex-1 py-2.5 font-semibold text-sm"
             >
               {confirm.cancelLabel ?? 'Cancel'}
             </button>
@@ -223,10 +225,10 @@ function ConfirmDialog() {
                 confirm.onConfirm();
                 dismissConfirm();
               }}
-              className={`flex-1 py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95 ${
+              className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 cursor-pointer ${
                 confirm.danger
-                  ? 'bg-gradient-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/30'
-                  : 'bg-gradient-to-r from-brand-500 to-brand-600 shadow-lg shadow-brand-500/30'
+                  ? 'bg-red-600 hover:bg-red-500 text-white'
+                  : 'btn-primary'
               }`}
             >
               {confirm.confirmLabel ?? 'Confirm'}

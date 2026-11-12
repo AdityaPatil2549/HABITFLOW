@@ -72,40 +72,40 @@ export function HabitMoodCorrelationMatrix() {
   return (
     <div className="space-y-4">
       {/* Header with filter tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.06]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--border-default)]">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+          <div className="w-7 h-7 rounded-lg bg-[var(--accent-subtle)] border border-[var(--accent)]/25 flex items-center justify-center text-[var(--accent-ink)]">
             <Brain size={15} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[var(--tx-primary)] flex items-center gap-2">
               Behavioral Pearson Correlation Engine
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25">
                 In-Browser r-calc
               </span>
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[var(--tx-secondary)]">
               Statistical relationships between daily habit execution, mood valence, and day of week.
             </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-1 bg-[#13151f] p-1 rounded-lg border border-white/[0.06] self-start sm:self-auto">
-          {[
+        <div className="flex items-center gap-1 bg-[var(--sf-raised)] p-1 rounded-lg border border-[var(--border-default)] self-start sm:self-auto">
+          {([
             { id: 'all', label: 'All Patterns' },
             { id: 'mood', label: 'Mood' },
             { id: 'day', label: 'Day of Week' },
             { id: 'habit', label: 'Habit Pairs' },
-          ].map(f => (
+          ] as const).map(f => (
             <button
               key={f.id}
-              onClick={() => setActiveFilter(f.id as any)}
+              onClick={() => setActiveFilter(f.id)}
               className={cn(
-                'px-2.5 py-1 text-xs font-mono rounded-md transition-all',
+                'px-2.5 py-1 text-xs font-mono rounded-md transition-all cursor-pointer',
                 activeFilter === f.id
-                  ? 'bg-purple-500/20 text-purple-200 border border-purple-500/30 font-semibold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/30 font-semibold'
+                  : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
               )}
             >
               {f.label}
@@ -117,14 +117,14 @@ export function HabitMoodCorrelationMatrix() {
       {/* Content list */}
       {loading ? (
         <div className="py-12 flex flex-col items-center justify-center gap-3">
-          <div className="w-6 h-6 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin" />
-          <span className="text-xs font-mono text-slate-500">Computing correlation vectors...</span>
+          <div className="w-6 h-6 border-2 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
+          <span className="text-xs font-mono text-[var(--tx-muted)]">Computing correlation vectors...</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="p-8 rounded-xl bg-neutral-900/60 border border-white/10 text-center space-y-2">
-          <Activity size={24} className="mx-auto text-neutral-600 mb-2" />
-          <h4 className="text-sm font-medium text-neutral-300">Insufficient Local Variance Data</h4>
-          <p className="text-xs text-neutral-500 max-w-md mx-auto">
+        <div className="card-raised p-8 rounded-xl text-center space-y-2">
+          <Activity size={24} className="mx-auto text-[var(--tx-muted)] mb-2" />
+          <h4 className="text-sm font-medium text-[var(--tx-primary)]">Insufficient Local Variance Data</h4>
+          <p className="text-xs text-[var(--tx-secondary)] max-w-md mx-auto">
             Log at least 5 days of habits and mood ratings to activate the Pearson mathematical correlation engine.
           </p>
         </div>
@@ -133,22 +133,20 @@ export function HabitMoodCorrelationMatrix() {
           {filtered.map((item, idx) => {
             const badge = getCorrelationBadge(item.correlation);
             const IconComponent = badge.icon;
-            const isDay = item.factorBType === 'day';
-            const isMood = item.factorBType === 'mood';
 
             return (
               <div
                 key={`${item.habitA}-${item.factorB}-${idx}`}
-                className="p-4 rounded-xl bg-neutral-900/60 border border-white/10 hover:border-white/20 transition-colors flex flex-col justify-between"
+                className="card-raised p-4 rounded-xl hover:border-[var(--border-strong)] transition-colors flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white truncate max-w-[140px] sm:max-w-[180px]">
+                      <span className="text-xs font-bold text-[var(--tx-primary)] truncate max-w-[140px] sm:max-w-[180px]">
                         {item.habitAName}
                       </span>
-                      <ArrowRight size={12} className="text-slate-500 flex-shrink-0" />
-                      <span className="text-xs font-mono text-purple-300 truncate max-w-[120px]">
+                      <ArrowRight size={12} className="text-[var(--tx-muted)] flex-shrink-0" />
+                      <span className="text-xs font-mono text-[var(--accent-ink)] truncate max-w-[120px]">
                         {item.factorB}
                       </span>
                     </div>
@@ -165,14 +163,14 @@ export function HabitMoodCorrelationMatrix() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                  <p className="text-xs text-[var(--tx-secondary)] leading-relaxed mb-3">
                     {item.description}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-2 border-t border-white/[0.04]">
-                  <span className="flex items-center gap-1 text-slate-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                <div className="flex items-center justify-between text-[10px] font-mono text-[var(--tx-muted)] pt-2 border-t border-[var(--border-default)]">
+                  <span className="flex items-center gap-1 text-[var(--tx-secondary)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
                     {badge.label}
                   </span>
                   <span>n = {item.sampleSize} days sampled</span>

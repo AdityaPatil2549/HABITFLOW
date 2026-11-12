@@ -13,7 +13,7 @@ import {
 import { subDays, format } from 'date-fns';
 import { correlationService } from '../../services/correlationService';
 import { habitService } from '../../services/habitService';
-import type { HabitWithStreak, Mood, CorrelationResult } from '../../types';
+import type { HabitWithStreak, HabitLog, Mood, CorrelationResult } from '../../types';
 import {
   ChartCard,
   EmptyChart,
@@ -28,7 +28,7 @@ import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 interface CorrelationTabProps {
   habits: HabitWithStreak[];
   moods: Mood[];
-  logsByDate: Map<string, any[]>;
+  logsByDate: Map<string, HabitLog[]>;
 }
 
 // ─── Deep Insights / Correlation Engine ───────────────────────
@@ -80,12 +80,12 @@ function CorrelationInsights() {
         {correlations.map((corr, i) => (
           <div
             key={i}
-            className="rounded-xl bg-slate-900/60 border border-white/10 p-4 hover:border-emerald-500/30 transition-colors"
+            className="rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] p-4 hover:border-[var(--accent)] transition-colors"
           >
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-bold text-emerald-300">{corr.habitAName}</h4>
+              <h4 className="text-sm font-bold text-[var(--accent-ink)]">{corr.habitAName}</h4>
               <span
-                className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                className={`px-2 py-0.5 rounded-md text-[10px] font-bold font-mono ${
                   corr.correlation > 0
                     ? 'bg-emerald-500/20 text-emerald-400'
                     : 'bg-red-500/20 text-red-400'
@@ -95,7 +95,7 @@ function CorrelationInsights() {
                 {Math.round(corr.correlation * 100)}%
               </span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-[var(--tx-secondary)] leading-relaxed">
               {corr.description}
             </p>
           </div>
@@ -113,7 +113,7 @@ function HabitMoodCorrelation({
 }: {
   habits: HabitWithStreak[];
   moods: Mood[];
-  logsByDate: Map<string, any[]>;
+  logsByDate: Map<string, HabitLog[]>;
 }) {
   const data = useMemo(() => {
     const days = Array.from({ length: 30 }, (_, i) =>

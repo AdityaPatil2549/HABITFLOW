@@ -79,10 +79,10 @@ export function HabitRow({
     <div
       onClick={() => onEdit(habit)}
       className={cn(
-        'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-xl border transition-colors cursor-pointer select-none',
+        'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-xl border transition-colors duration-150 cursor-pointer select-none',
         isDone
-          ? 'bg-neutral-900/80 border-white/20 text-neutral-300'
-          : 'bg-neutral-900/40 border-white/10 hover:border-white/20 hover:bg-neutral-900/60 text-neutral-100'
+          ? 'bg-[var(--sf-raised)] border-[var(--border-strong)] text-[var(--tx-secondary)]'
+          : 'bg-[var(--sf-raised)] border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--tx-primary)]'
       )}
     >
       {/* ── Left Side: Checkbox + Icon + Name + Category ──────── */}
@@ -93,20 +93,20 @@ export function HabitRow({
           disabled={isToggling}
           aria-label={isDone ? `Mark ${habit.name} incomplete` : `Mark ${habit.name} complete`}
           className={cn(
-            'w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200 shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/40 active:scale-90',
+            'w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-150 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-90',
             isDone
-              ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 shadow-[0_0_14px_rgba(16,185,129,0.5)]'
-              : 'border border-white/20 hover:border-emerald-400/50 bg-white/[0.04] hover:bg-white/[0.08]'
+              ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
+              : 'border border-[var(--border-strong)] hover:border-[var(--accent)] bg-[var(--sf-overlay)]'
           )}
         >
           <AnimatePresence mode="wait">
             {isDone ? (
               <motion.div
                 key="check"
-                initial={{ scale: 0, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0, rotate: 20 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                initial={{ scale: 0.7, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.7, opacity: 0 }}
+                transition={{ duration: 0.12, ease: 'easeOut' }}
               >
                 <Check className="w-4 h-4 stroke-[3]" />
               </motion.div>
@@ -115,7 +115,7 @@ export function HabitRow({
         </button>
 
         {/* Habit Emoji */}
-        <span className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center text-base shrink-0">
+        <span className="w-8 h-8 rounded-lg bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-base shrink-0">
           {getHabitEmoji(habit.icon)}
         </span>
 
@@ -125,7 +125,7 @@ export function HabitRow({
             <span
               className={cn(
                 'text-sm font-semibold tracking-tight truncate transition-colors',
-                isDone ? 'text-slate-400 line-through decoration-emerald-500/50' : 'text-slate-100 group-hover:text-emerald-300'
+                isDone ? 'text-[var(--tx-muted)] line-through decoration-[var(--accent)]/50' : 'text-[var(--tx-primary)] group-hover:text-[var(--accent-ink)]'
               )}
             >
               {habit.name}
@@ -134,7 +134,7 @@ export function HabitRow({
             {/* Target Value stepper or badge */}
             {isStepperHabit && (
               <div
-                className="inline-flex items-center gap-1 font-mono text-[11px] bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.08]"
+                className="inline-flex items-center gap-1 font-mono text-[11px] bg-[var(--sf-overlay)] px-1.5 py-0.5 rounded border border-[var(--border-default)]"
                 onClick={e => e.stopPropagation()}
               >
                 <button
@@ -142,11 +142,11 @@ export function HabitRow({
                   onClick={e => handleStep(e, -1)}
                   disabled={isToggling || todayValue <= 0}
                   aria-label={`Decrease ${habit.name}`}
-                  className="p-0.5 rounded hover:bg-white/10 disabled:opacity-35 cursor-pointer"
+                  className="p-0.5 rounded hover:bg-[var(--sf-dim)] disabled:opacity-35 cursor-pointer"
                 >
                   <Minus className="w-3 h-3" />
                 </button>
-                <span className="tabular-nums text-slate-200 px-1">
+                <span className="tabular-nums text-[var(--tx-primary)] px-1">
                   {todayValue}/{target} {habit.unit || ''}
                 </span>
                 <button
@@ -154,7 +154,7 @@ export function HabitRow({
                   onClick={e => handleStep(e, 1)}
                   disabled={isToggling}
                   aria-label={`Increase ${habit.name}`}
-                  className="p-0.5 rounded hover:bg-white/10 cursor-pointer"
+                  className="p-0.5 rounded hover:bg-[var(--sf-dim)] cursor-pointer"
                 >
                   <Plus className="w-3 h-3" />
                 </button>
@@ -168,27 +168,27 @@ export function HabitRow({
       <div className="flex items-center gap-3 sm:gap-4 shrink-0 text-xs">
         {/* Category Tag */}
         {habit.category && (
-          <span className="hidden md:inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/[0.05] text-slate-300 border border-white/[0.08]">
+          <span className="hidden md:inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">
             {habit.category}
           </span>
         )}
 
         {/* Frequency */}
-        <span className="hidden sm:inline-flex text-[11px] font-mono text-slate-400 capitalize">
+        <span className="hidden sm:inline-flex text-[11px] font-mono text-[var(--tx-muted)] capitalize">
           {habit.frequency}
         </span>
 
         {/* 30-Day Completion Rate */}
-        <div className="hidden lg:flex items-center gap-1.5 font-mono text-[11px] text-slate-400 bg-white/[0.03] px-2 py-1 rounded-lg border border-white/[0.06]">
-          <span className="text-slate-500">30d:</span>
-          <span className="text-emerald-400 font-semibold">{completionRate}%</span>
+        <div className="hidden lg:flex items-center gap-1.5 font-mono text-[11px] text-[var(--tx-secondary)] bg-[var(--sf-overlay)] px-2 py-1 rounded-lg border border-[var(--border-default)]">
+          <span className="text-[var(--tx-muted)]">30d:</span>
+          <span className="text-[var(--accent-ink)] font-semibold">{completionRate}%</span>
         </div>
 
         {/* Streak Indicator */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/10 text-neutral-300 font-mono text-xs font-semibold min-w-[56px] justify-center tabular-nums">
-          <Flame className="w-3.5 h-3.5 text-neutral-400" />
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] text-[var(--tx-secondary)] font-mono text-xs font-semibold min-w-[56px] justify-center tabular-nums">
+          <Flame className="w-3.5 h-3.5 text-[var(--tx-muted)]" />
           <span>{currentStreak}</span>
-          <span className="text-[10px] font-normal text-neutral-500">d</span>
+          <span className="text-[10px] font-normal text-[var(--tx-muted)]">d</span>
         </div>
 
         {/* Action Menu Trigger */}
@@ -199,7 +199,7 @@ export function HabitRow({
               setShowMenu(prev => !prev);
             }}
             aria-label="Habit options"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-[var(--tx-muted)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] transition-colors cursor-pointer"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
@@ -214,16 +214,16 @@ export function HabitRow({
                   setShowMenu(false);
                 }}
               />
-              <div className="absolute right-0 top-full mt-1.5 w-40 rounded-2xl bg-[#0c0e17]/95 backdrop-blur-2xl border border-white/[0.12] shadow-2xl z-50 p-1.5 text-xs">
+              <div className="absolute right-0 top-full mt-1.5 w-40 rounded-xl bg-[var(--sf-raised)] border border-[var(--border-strong)] shadow-xl z-50 p-1.5 text-xs">
                 <button
                   onClick={e => {
                     e.stopPropagation();
                     setShowMenu(false);
                     onEdit(habit);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/[0.06] rounded-xl transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] rounded-lg transition-colors text-left"
                 >
-                  <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+                  <Edit2 className="w-3.5 h-3.5 text-[var(--tx-muted)]" />
                   <span>Edit Habit</span>
                 </button>
                 <button
@@ -232,19 +232,19 @@ export function HabitRow({
                     setShowMenu(false);
                     await onArchive(habit.id);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/[0.06] rounded-xl transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] rounded-lg transition-colors text-left"
                 >
-                  <Archive className="w-3.5 h-3.5 text-slate-400" />
+                  <Archive className="w-3.5 h-3.5 text-[var(--tx-muted)]" />
                   <span>{habit.archived ? 'Unarchive' : 'Archive'}</span>
                 </button>
-                <div className="h-px bg-white/[0.08] my-1" />
+                <div className="h-px bg-[var(--border-default)] my-1" />
                 <button
                   onClick={async e => {
                     e.stopPropagation();
                     setShowMenu(false);
                     await onDelete(habit.id);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/15 rounded-xl transition-colors text-left font-semibold"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/15 rounded-lg transition-colors text-left font-semibold"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Delete</span>

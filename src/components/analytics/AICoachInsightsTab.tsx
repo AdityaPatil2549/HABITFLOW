@@ -7,9 +7,16 @@ import { Skeleton } from '../ui/Skeleton';
 import { EmptyChart } from './shared';
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 
+interface CoachVideo {
+  videoId: string;
+  thumbnailUrl: string;
+  title: string;
+  channelTitle: string;
+}
+
 export function AICoachInsightsTab() {
   const [insights, setInsights] = useState<AIInsight[]>([]);
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<CoachVideo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,19 +67,19 @@ export function AICoachInsightsTab() {
     <WidgetErrorBoundary title="AI Coach Recommendations">
       <div className="space-y-6">
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold text-[var(--tx-primary)] flex items-center gap-2">
             ✨ AI Insights & Behavioral Guidance
           </h3>
           {insights.length === 0 ? (
-            <p className="text-xs text-slate-500">No AI insights generated yet today.</p>
+            <p className="text-xs text-[var(--tx-muted)]">No AI insights generated yet today.</p>
           ) : (
             insights.map(insight => (
-              <div key={insight.id} className="p-4 flex gap-4 border border-white/10 bg-neutral-900/60 rounded-2xl">
+              <div key={insight.id} className="card-raised p-4 flex gap-4 rounded-2xl">
                 <div className="text-3xl select-none">{insight.icon}</div>
                 <div>
-                  <h4 className="font-bold text-white">{insight.title}</h4>
-                  <p className="text-sm text-slate-300 mt-1 leading-relaxed">{insight.body}</p>
-                  <span className="text-xs text-slate-500 mt-2 block font-mono">
+                  <h4 className="font-bold text-[var(--tx-primary)]">{insight.title}</h4>
+                  <p className="text-sm text-[var(--tx-secondary)] mt-1 leading-relaxed">{insight.body}</p>
+                  <span className="text-xs text-[var(--tx-muted)] mt-2 block font-mono">
                     {format(new Date(insight.created_at), 'MMM d, yyyy h:mm a')}
                   </span>
                 </div>
@@ -82,8 +89,8 @@ export function AICoachInsightsTab() {
         </div>
 
         {videos.length > 0 && (
-          <div className="space-y-4 pt-4 border-t border-white/10">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          <div className="space-y-4 pt-4 border-t border-[var(--border-default)]">
+            <h3 className="text-sm font-bold text-[var(--tx-primary)] flex items-center gap-2">
               📺 Recommended Mindset & Flow Sessions
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -95,11 +102,11 @@ export function AICoachInsightsTab() {
                   rel="noreferrer"
                   className="block group cursor-pointer"
                 >
-                  <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 relative hover:border-emerald-500/40 transition-colors">
+                  <div className="rounded-xl overflow-hidden bg-[var(--sf-raised)] border border-[var(--border-default)] relative hover:border-[var(--accent)] transition-colors">
                     <img
                       src={video.thumbnailUrl}
                       alt={video.title}
-                      className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-150"
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white pl-1 shadow-lg">
@@ -107,10 +114,10 @@ export function AICoachInsightsTab() {
                       </div>
                     </div>
                     <div className="p-3">
-                      <h4 className="text-xs font-bold text-white line-clamp-2 leading-snug group-hover:text-emerald-300 transition-colors">
+                      <h4 className="text-xs font-bold text-[var(--tx-primary)] line-clamp-2 leading-snug group-hover:text-[var(--accent-ink)] transition-colors">
                         {video.title}
                       </h4>
-                      <p className="text-[10px] text-slate-400 mt-1">{video.channelTitle}</p>
+                      <p className="text-[10px] text-[var(--tx-muted)] mt-1">{video.channelTitle}</p>
                     </div>
                   </div>
                 </a>

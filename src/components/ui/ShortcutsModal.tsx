@@ -18,27 +18,29 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/65" />
 
           <motion.div
-            className="relative z-10 max-w-md w-full mx-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-6 modal-glow"
-            initial={{ scale: 0.95, y: 10 }}
+            className="relative z-10 max-w-md w-full mx-4 bg-[var(--sf-raised)] border border-[var(--border-strong)] rounded-2xl p-6 shadow-2xl"
+            initial={{ scale: 0.98, y: 6 }}
             animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.95, y: 10 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            exit={{ scale: 0.98, y: 6 }}
+            transition={{ duration: 0.14, ease: 'easeOut' }}
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                  <Keyboard size={18} className="text-emerald-400" />
+                <div className="w-9 h-9 rounded-xl bg-[var(--accent-subtle)] border border-[var(--accent)]/25 flex items-center justify-center">
+                  <Keyboard size={18} className="text-[var(--accent-ink)]" />
                 </div>
-                <h2 className="text-lg font-bold text-white">Keyboard Shortcuts</h2>
+                <h2 className="text-lg font-bold text-[var(--tx-primary)]">Keyboard Shortcuts</h2>
               </div>
               <button
+                type="button"
+                aria-label="Close keyboard shortcuts"
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                className="w-8 h-8 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -46,28 +48,25 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
 
             {/* Shortcuts list */}
             <div className="space-y-1">
-              {SHORTCUT_DEFINITIONS.map((shortcut, i) => (
-                <motion.div
+              {SHORTCUT_DEFINITIONS.map((shortcut) => (
+                <div
                   key={shortcut.key}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-white/5 transition-colors"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
+                  className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-[var(--sf-overlay)] transition-colors"
                 >
-                  <span className="text-sm text-slate-300">{shortcut.description}</span>
-                  <kbd className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 text-xs font-mono font-bold text-slate-300 border border-white/10 shadow-sm">
-                    {shortcut.shift && <span className="text-slate-500">Shift+</span>}
+                  <span className="text-sm text-[var(--tx-secondary)]">{shortcut.description}</span>
+                  <kbd className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--sf-overlay)] text-xs font-mono font-bold text-[var(--tx-primary)] border border-[var(--border-default)]">
+                    {shortcut.shift && <span className="text-[var(--tx-muted)]">Shift+</span>}
                     {shortcut.key === 'Escape' ? 'Esc' : shortcut.key}
                   </kbd>
-                </motion.div>
+                </div>
               ))}
             </div>
 
             {/* Footer hint */}
-            <div className="mt-4 pt-3 border-t border-white/5 text-center">
-              <p className="text-xs text-slate-500">
+            <div className="mt-4 pt-3 border-t border-[var(--border-default)] text-center">
+              <p className="text-xs text-[var(--tx-muted)]">
                 Press{' '}
-                <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-slate-400 font-mono">?</kbd>{' '}
+                <kbd className="px-1.5 py-0.5 rounded bg-[var(--sf-overlay)] text-[var(--tx-secondary)] font-mono border border-[var(--border-default)]">?</kbd>{' '}
                 anytime to toggle this
               </p>
             </div>

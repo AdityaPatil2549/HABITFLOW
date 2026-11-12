@@ -161,7 +161,8 @@ export const momentumEngine = {
       if (h.archived) continue;
 
       // Check explicit habit metadata or fall back to reminder time heuristic
-      const explicitSlot = h.timeOfDay || (h as any).routine;
+      const legacyRoutine = (h as Habit & { routine?: string }).routine;
+      const explicitSlot = h.timeOfDay || legacyRoutine;
       if (explicitSlot && explicitSlot in groups) {
         groups[explicitSlot as DailyRitualGroup['timeSlot']].push(h);
       } else if (h.reminderTime) {

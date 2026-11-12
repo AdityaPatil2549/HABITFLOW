@@ -147,17 +147,17 @@ export function WeeklyReviewPage() {
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-default)]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-[var(--tx-primary)] tracking-tight">
               Weekly Retrospective
             </h1>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/[0.04] text-slate-400 border border-white/[0.08]">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[var(--sf-overlay)] text-[var(--tx-muted)] border border-[var(--border-default)]">
               {weekLabel}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[var(--tx-secondary)] mt-1">
             Offline algorithmic synthesis of your habits, mood vectors, and task throughput.
           </p>
         </div>
@@ -168,40 +168,40 @@ export function WeeklyReviewPage() {
             setShareModalOpen(true);
             soundService.playTick();
           }}
-          className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-white text-xs font-mono flex items-center gap-2 transition-all self-start sm:self-auto active:scale-95"
+          className="btn-secondary px-4 py-2 text-xs font-mono flex items-center gap-2 self-start sm:self-auto"
         >
-          <Share2 size={14} className="text-purple-400" />
-          Export Artifact <span className="text-xs text-slate-300 font-mono">[E]</span>
+          <Share2 size={14} className="text-[var(--accent-ink)]" />
+          Export Artifact <span className="text-xs text-[var(--tx-muted)] font-mono">[E]</span>
         </button>
       </div>
 
       {/* Modern Segmented Navigation Tabs */}
-      <div className="flex items-center gap-1.5 p-1 bg-[#13151f] rounded-xl border border-white/[0.06] overflow-x-auto">
-        {[
+      <div className="flex items-center gap-1.5 p-1 bg-[var(--sf-raised)] rounded-xl border border-[var(--border-default)] overflow-x-auto">
+        {([
           { id: 'summary', label: 'Executive Summary', icon: Sparkles, hotkey: '1' },
           { id: 'habits', label: 'Habit Breakdown', icon: BarChart3, hotkey: '2' },
           { id: 'correlation', label: 'Pearson Matrix', icon: Brain, hotkey: '3' },
           { id: 'reflection', label: 'Reflection & Intention', icon: FileText, hotkey: '4' },
-        ].map(tab => {
+        ] as const).map(tab => {
           const IconComponent = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => {
-                setActiveTab(tab.id as any);
+                setActiveTab(tab.id);
                 soundService.playTick();
               }}
               className={cn(
-                'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono transition-all whitespace-nowrap',
+                'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono transition-all whitespace-nowrap cursor-pointer',
                 isActive
-                  ? 'bg-white text-black font-semibold shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]'
+                  ? 'bg-[var(--accent)] text-[var(--accent-fg)] font-semibold'
+                  : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)]'
               )}
             >
-              <IconComponent size={14} className={isActive ? 'text-black' : 'text-slate-400'} />
+              <IconComponent size={14} className={isActive ? 'text-[var(--accent-fg)]' : 'text-[var(--tx-muted)]'} />
               <span>{tab.label}</span>
-              <span className={cn('text-xs opacity-80 font-mono', isActive ? 'text-black/70' : 'text-slate-400')}>
+              <span className={cn('text-xs opacity-80 font-mono', isActive ? 'text-[var(--accent-fg)]' : 'text-[var(--tx-muted)]')}>
                 [{tab.hotkey}]
               </span>
             </button>
@@ -212,18 +212,18 @@ export function WeeklyReviewPage() {
       {/* Main Tab Panels with Smooth Motion */}
       {loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" />
-          <span className="text-xs font-mono text-slate-500">Compiling retrospective data...</span>
+          <div className="w-8 h-8 border-2 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
+          <span className="text-xs font-mono text-[var(--tx-muted)]">Compiling retrospective data...</span>
         </div>
       ) : (
         <AnimatePresence mode="wait">
           {activeTab === 'summary' && (
             <motion.div
               key="tab-summary"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.14 }}
             >
               <ReviewSummaryCard
                 score={score}
@@ -241,10 +241,10 @@ export function WeeklyReviewPage() {
           {activeTab === 'habits' && (
             <motion.div
               key="tab-habits"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.14 }}
             >
               <HabitPerformanceList habits={habitItems} />
             </motion.div>
@@ -253,10 +253,10 @@ export function WeeklyReviewPage() {
           {activeTab === 'correlation' && (
             <motion.div
               key="tab-correlation"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.14 }}
             >
               <HabitMoodCorrelationMatrix />
             </motion.div>
@@ -265,10 +265,10 @@ export function WeeklyReviewPage() {
           {activeTab === 'reflection' && (
             <motion.div
               key="tab-reflection"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.14 }}
             >
               <WeeklyReflectionCard />
             </motion.div>

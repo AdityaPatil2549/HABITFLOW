@@ -158,13 +158,13 @@ function YearlyHeatmap({ habits }: { habits: HabitWithStreak[] }) {
             )}
           </svg>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
+        <div className="flex items-center gap-2 text-xs text-[var(--tx-muted)]">
           <span>Less</span>
           {[0, 0.25, 0.5, 0.75, 1].map(v => (
             <div key={v} className="w-3 h-3 rounded-sm" style={{ background: colorFor(v) }} />
           ))}
           <span>More</span>
-          <span className="ml-auto text-slate-500 font-mono text-[11px]">
+          <span className="ml-auto text-[var(--tx-muted)] font-mono text-[11px]">
             {days.length} days logged
           </span>
         </div>
@@ -309,13 +309,13 @@ function MoodYearlyHeatmap({ moods }: { moods: Mood[] }) {
             )}
           </svg>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
+        <div className="flex items-center gap-2 text-xs text-[var(--tx-muted)]">
           <span>Awful</span>
           {[1, 2, 3, 4, 5].map(v => (
             <div key={v} className="w-3 h-3 rounded-sm" style={{ background: colorFor(v) }} />
           ))}
           <span>Awesome</span>
-          <span className="ml-auto text-slate-500 font-mono text-[11px]">
+          <span className="ml-auto text-[var(--tx-muted)] font-mono text-[11px]">
             {days.length} days
           </span>
         </div>
@@ -341,10 +341,10 @@ export function HabitHeatmapMatrix({ habits, moods }: HeatmapMatrixProps) {
     <div className="space-y-6">
       <div className="card-raised rounded-2xl p-6">
         <div className="mb-5">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <h3 className="text-base font-bold text-[var(--tx-primary)] flex items-center gap-2">
             🟩 Habit Activity Heatmap
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[var(--tx-secondary)] mt-1">
             Your overall habit completion matrix across the entire last year, styled like GitHub.
           </p>
         </div>
@@ -356,21 +356,21 @@ export function HabitHeatmapMatrix({ habits, moods }: HeatmapMatrixProps) {
       <div className="card-raised rounded-2xl p-6">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <h3 className="text-base font-bold text-[var(--tx-primary)] flex items-center gap-2">
               🎨 Year in Pixels (Mood)
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-[var(--tx-secondary)] mt-1">
               Your daily emotional energy painted across all 365 days.
             </p>
           </div>
           <button
             onClick={handleExportMood}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-colors flex items-center gap-2 cursor-pointer"
+            className="btn-secondary px-3 py-1.5 text-xs font-bold flex items-center gap-2"
           >
             <span>📸</span> Download Image
           </button>
         </div>
-        <div id="mood-heatmap-export" className="p-4 rounded-xl bg-slate-950/40">
+        <div id="mood-heatmap-export" className="p-4 rounded-xl bg-[var(--sf-base)] border border-[var(--border-default)]">
           <WidgetErrorBoundary title="Mood Heatmap">
             {moods.length > 0 ? <MoodYearlyHeatmap moods={moods} /> : <EmptyChart />}
           </WidgetErrorBoundary>

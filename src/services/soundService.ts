@@ -4,10 +4,25 @@
  * Respects user's soundEnabled and hapticEnabled settings.
  */
 
+import type { TelemetryMode } from '@/types';
+
+export type AcousticPackId =
+  | 'default'
+  | 'acoustic_switch_pack'
+  | 'acoustic_chime_pack'
+  | 'acoustic_pulse_pack';
+
+const ACOUSTIC_PACK_KEY = 'habitflow_acoustic_pack';
+
 class SoundService {
   private ctx: AudioContext | null = null;
   private enabled = true;
   private hapticEnabled = true;
+  private telemetryMode: TelemetryMode = 'scaffold';
+  private activePack: AcousticPackId =
+    (typeof localStorage !== 'undefined' &&
+      (localStorage.getItem(ACOUSTIC_PACK_KEY) as AcousticPackId)) ||
+    'default';
 
   private ambientSource: AudioBufferSourceNode | null = null;
   private ambientGain: GainNode | null = null;
@@ -16,6 +31,33 @@ class SoundService {
   setEnabled(sound: boolean, haptic: boolean) {
     this.enabled = sound;
     this.hapticEnabled = haptic;
+  }
+
+  setTelemetryMode(mode: TelemetryMode) {
+    this.telemetryMode = mode;
+  }
+
+  getAcousticPack(): AcousticPackId {
+    return this.activePack;
+  }
+
+  setAcousticPack(pack: AcousticPackId) {
+    this.activePack = pack;
+    try {
+      localStorage.setItem(ACOUSTIC_PACK_KEY, pack);
+    } catch {
+      /* ignore storage quota errors */
+    }
+  }
+
+  previewPack(pack: AcousticPackId) {
+    const prev = this.activePack;
+    this.activePack = pack;
+    this.playTick();
+    setTimeout(() => {
+      this.playUnlatchClick();
+      this.activePack = prev;
+    }, 90);
   }
 
   private getCtx(): AudioContext {
@@ -58,11 +100,19 @@ class SoundService {
     osc.stop(end);
   }
 
-  /** Soft tick — played when a habit is checked off */
+  /** 40ms mechanical click — tuned by equipped acoustic pack */
   playTick() {
     if (!this.enabled) return;
     try {
-      this.playTone(880, 0.08, 'sine', 0.14);
+      if (this.activePack === 'acoustic_switch_pack') {
+        this.playTone(1120, 0.04, 'triangle', 0.16);
+      } else if (this.activePack === 'acoustic_chime_pack') {
+        this.playTone(698.46, 0.045, 'sine', 0.14);
+      } else if (this.activePack === 'acoustic_pulse_pack') {
+        this.playTone(320, 0.035, 'sine', 0.09);
+      } else {
+        this.playTone(880, 0.04, 'sine', 0.14);
+      }
     } catch {
       /* silently ignore AudioContext errors */
     }
@@ -72,41 +122,40 @@ class SoundService {
   playUncheck() {
     if (!this.enabled) return;
     try {
-      this.playTone(440, 0.08, 'sine', 0.1);
+      this.playTone(440, 0.05, 'sine', 0.1);
     } catch {
       /**/
     }
   }
 
-  /** Ascending celebratory arpeggio — played when all habits for the day are done */
+  /** Ascending celebratory arpeggio — gated to Scaffold telemetry mode */
   playCelebration() {
-    if (!this.enabled) return;
+    if (!this.enabled || this.telemetryMode !== 'scaffold') return;
     try {
       const ctx = this.getCtx();
       // C5 - E5 - G5 - C6 arpeggio
       const notes = [523.25, 659.25, 783.99, 1046.5];
-      notes.forEach((freq, i) => this.playTone(freq, 0.18, 'sine', 0.16, i * 0.1, ctx));
+      notes.forEach((freq, i) => this.playTone(freq, 0.18, 'sine', 0.16, i * 0.08, ctx));
     } catch {
       /**/
     }
   }
 
-  /** 3-note rising chime — played on XP level-up */
+  /** 3-note rising chime (~200ms) — gated to Scaffold telemetry mode */
   playLevelUp() {
-    if (!this.enabled) return;
+    if (!this.enabled || this.telemetryMode !== 'scaffold') return;
     try {
       const ctx = this.getCtx();
-      // G4 - B4 - D5 - G5
-      const notes = [392, 493.88, 587.33, 783.99];
-      notes.forEach((freq, i) => this.playTone(freq, 0.22, 'triangle', 0.2, i * 0.12, ctx));
+      const notes = [440, 554.37, 659.25];
+      notes.forEach((freq, i) => this.playTone(freq, 0.14, 'triangle', 0.18, i * 0.06, ctx));
     } catch {
       /**/
     }
   }
 
-  /** Short reward pop — for earning badges */
+  /** Short reward pop — gated to Scaffold telemetry mode */
   playBadge() {
-    if (!this.enabled) return;
+    if (!this.enabled || this.telemetryMode !== 'scaffold') return;
     try {
       const ctx = this.getCtx();
       this.playTone(660, 0.06, 'sine', 0.15, 0, ctx);
@@ -116,9 +165,9 @@ class SoundService {
     }
   }
 
-  /** Resonant two-tone chime for hitting streak milestones (7, 14, 30, 100 days) */
+  /** Resonant two-tone chime for streak milestones — gated to Scaffold telemetry mode */
   playStreakMilestone() {
-    if (!this.enabled) return;
+    if (!this.enabled || this.telemetryMode !== 'scaffold') return;
     try {
       const ctx = this.getCtx();
       // D5 (587.33) -> A5 (880.00) resonant chime

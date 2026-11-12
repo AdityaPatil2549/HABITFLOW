@@ -31,8 +31,8 @@ export function DatePicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-[280px] justify-start text-left font-normal bg-slate-950/40 border-white/10 hover:bg-slate-900 hover:text-white",
-            !date && "text-slate-400",
+            "w-[280px] justify-start text-left font-normal bg-[var(--sf-raised)] border-[var(--border-default)] text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)]",
+            !date && "text-[var(--tx-muted)]",
             className
           )}
         >
@@ -40,7 +40,7 @@ export function DatePicker({
           {date ? format(date, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-white/10 bg-slate-900 text-white">
+      <PopoverContent className="w-auto p-0 border-[var(--border-default)] bg-[var(--sf-raised)] text-[var(--tx-primary)]">
         <Calendar
           mode="single"
           selected={date}

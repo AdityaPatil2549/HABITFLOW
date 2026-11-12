@@ -39,9 +39,10 @@ export function ExportReportButton() {
   return (
     <>
       <button
+        type="button"
         onClick={handleExport}
         disabled={isExporting}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-500 to-indigo-600 text-white font-bold hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+        className="btn-primary flex items-center gap-2 px-4 py-2 text-xs font-semibold disabled:opacity-50"
       >
         <Download size={16} />
         {isExporting ? 'Generating...' : 'Export Weekly Report'}

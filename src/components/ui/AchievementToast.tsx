@@ -1,27 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star, Flame, X, Sparkles } from 'lucide-react';
+import { Trophy, Star, Flame, X } from 'lucide-react';
 import { triggerConfetti } from '../../lib/confetti';
-
-function CelebrationBadge() {
-  return (
-    <div className="h-32 w-full mb-4 relative flex items-center justify-center">
-      <motion.div 
-        className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-200 flex items-center justify-center shadow-xl shadow-amber-500/30"
-        initial={{ scale: 0, rotate: -20 }}
-        animate={{ scale: [0, 1.15, 1], rotate: [0, 10, 0] }}
-        transition={{ type: 'spring', stiffness: 350, damping: 18 }}
-      >
-        <Trophy className="w-12 h-12 text-slate-950" />
-      </motion.div>
-    </div>
-  );
-}
 
 interface AchievementToastProps {
   title: string;
   description: string;
-  icon: string; // emoji
+  icon: string;
   type: 'milestone' | 'badge' | 'level_up';
   onClose: () => void;
 }
@@ -33,16 +18,12 @@ export function AchievementToast({
   type,
   onClose,
 }: AchievementToastProps) {
-  // confetti on mount
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    // Fire confetti on mount
     triggerConfetti();
-    // celebration fired
 
-    // Auto-dismiss timer
-    const timer = setTimeout(onClose, 4500);
+    const timer = setTimeout(onClose, 4200);
     const interval = setInterval(() => {
       setProgress(prev => Math.max(0, prev - 2.5));
     }, 100);
@@ -53,13 +34,6 @@ export function AchievementToast({
     };
   }, [onClose]);
 
-  const bgGradient =
-    type === 'level_up'
-      ? 'linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%)'
-      : type === 'milestone'
-        ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%)'
-        : 'linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%)';
-
   const TypeIcon = type === 'level_up' ? Star : type === 'milestone' ? Flame : Trophy;
 
   return (
@@ -69,87 +43,54 @@ export function AchievementToast({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.12 }}
         onClick={onClose}
       >
-        {/* Backdrop */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-black/65" />
 
-        {/* Card */}
         <motion.div
           className="relative z-10 max-w-sm w-full mx-4"
-          initial={{ scale: 0.5, y: 50, opacity: 0 }}
+          initial={{ scale: 0.96, y: 8, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
-          exit={{ scale: 0.8, y: -30, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          exit={{ scale: 0.96, y: 8, opacity: 0 }}
+          transition={{ duration: 0.14, ease: 'easeOut' }}
           onClick={e => e.stopPropagation()}
         >
-          <div className="rounded-3xl p-1 shadow-2xl" style={{ background: bgGradient }}>
-            <div className="bg-slate-900/95 backdrop-blur-xl rounded-[22px] p-8 text-center">
-              {/* Close button */}
-              <button
-                onClick={onClose}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-all"
-              >
-                <X size={16} />
-              </button>
+          <div className="card-raised p-7 text-center relative border-[var(--accent)]">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Dismiss achievement notification"
+              className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
+            >
+              <X size={15} />
+            </button>
 
-              {/* Type badge */}
-              <motion.div
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4"
-                style={{ background: bgGradient, color: '#fff' }}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 400 }}
-              >
-                <TypeIcon size={12} />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider mb-4 bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]">
+              <TypeIcon size={12} />
+              <span>
                 {type === 'level_up'
-                  ? 'Level Up!'
+                  ? 'Level Up'
                   : type === 'milestone'
-                    ? 'Milestone!'
-                    : 'Badge Earned!'}
-              </motion.div>
+                    ? 'Milestone'
+                    : 'Badge Earned'}
+              </span>
+            </div>
 
-              {type === 'level_up' ? (
-                <CelebrationBadge />
-              ) : (
-                <motion.div
-                  className="text-7xl mb-4"
-                  initial={{ scale: 0, rotate: -30 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 12 }}
-                >
-                  {icon}
-                </motion.div>
-              )}
+            <div className="text-5xl mb-3" aria-hidden="true">
+              {type === 'level_up' ? '🏆' : icon}
+            </div>
 
-              {/* Title */}
-              <motion.h2
-                className="text-2xl font-black text-white mb-2"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                {title}
-              </motion.h2>
+            <h2 className="font-h2 text-[var(--tx-primary)] mb-1.5">{title}</h2>
+            <p className="text-xs text-[var(--tx-secondary)] leading-relaxed mb-5">
+              {description}
+            </p>
 
-              {/* Description */}
-              <motion.p
-                className="text-sm text-slate-400 leading-relaxed mb-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                {description}
-              </motion.p>
-
-              {/* Progress bar */}
-              <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full"
-                  style={{ background: bgGradient, width: `${progress}%` }}
-                  transition={{ ease: 'linear' }}
-                />
-              </div>
+            <div className="h-1 bg-[var(--sf-overlay)] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-[var(--accent)] transition-all duration-100"
+                style={{ width: `${progress}%` }}
+              />
             </div>
           </div>
         </motion.div>
@@ -159,7 +100,6 @@ export function AchievementToast({
 }
 
 // ── Achievement Queue Manager ────────────────────────────────
-// Manages a queue of achievements to show one at a time
 
 interface QueuedAchievement {
   id: string;
@@ -183,7 +123,7 @@ export function queueAchievement(achievement: Omit<QueuedAchievement, 'id'>) {
 function showNext() {
   achievementQueue.shift();
   if (achievementQueue.length > 0 && showCallback) {
-    setTimeout(() => showCallback!(achievementQueue[0]), 500);
+    setTimeout(() => showCallback!(achievementQueue[0]), 250);
   } else if (showCallback) {
     showCallback(null);
   }
@@ -194,7 +134,6 @@ export function useAchievementToast() {
 
   useEffect(() => {
     showCallback = setCurrent;
-    // Show any queued achievement
     if (achievementQueue.length > 0) {
       setTimeout(() => setCurrent(achievementQueue[0]), 0);
     }
@@ -211,7 +150,6 @@ export function useAchievementToast() {
   return { current, dismiss };
 }
 
-// ── Streak Milestone Definitions ─────────────────────────────
 export const STREAK_MILESTONES = [
   {
     days: 7,
@@ -266,4 +204,3 @@ export const STREAK_MILESTONES = [
 export function checkStreakMilestone(streak: number): (typeof STREAK_MILESTONES)[0] | null {
   return STREAK_MILESTONES.find(m => m.days === streak) ?? null;
 }
-

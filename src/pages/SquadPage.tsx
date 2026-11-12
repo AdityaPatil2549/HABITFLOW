@@ -175,7 +175,7 @@ export function SquadPage() {
     return (
       <div className="flex items-center justify-center h-[50vh]">
         {/* loading */}
-        <div className="w-8 h-8 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
       </div>
     );
   }
@@ -188,11 +188,11 @@ export function SquadPage() {
             👥
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Accountability Squads</h1>
-          <p className="text-sm text-neutral-400 leading-relaxed">
+          <p className="text-sm text-[var(--tx-secondary)] leading-relaxed">
             Sign in to your HabitFlow account to create or join a private accountability squad synced in real time.
           </p>
           <div className="pt-2">
-            <Link to="/auth" className="btn-primary inline-flex items-center gap-2">
+            <Link to="/login" className="btn-primary inline-flex items-center gap-2">
               <LogIn size={16} />
               Sign in to join Squads
             </Link>
@@ -207,14 +207,14 @@ export function SquadPage() {
       <div className="space-y-6 relative pb-10">
         {/* loading */}
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 mb-2 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-[var(--accent-ink)] bg-[var(--accent-subtle)] border border-[var(--accent)]/25 mb-2">
+            <span className="w-2 h-2 rounded-full bg-[var(--accent)]" />
             <span>Multiplayer Momentum</span>
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight">
             Accountability Squads
           </h1>
-          <p className="text-sm text-slate-400 mt-1">Consistency compounds faster when shared with peers.</p>
+          <p className="text-sm text-[var(--tx-secondary)] mt-1">Consistency compounds faster when shared with peers.</p>
         </div>
 
         {/* Hero */}
@@ -223,21 +223,21 @@ export function SquadPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div>
-            <div className="relative overflow-hidden rounded-3xl bg-[#0e111a]/75 backdrop-blur-2xl border border-white/[0.08] p-8 sm:p-12 text-center shadow-[0_16px_36px_rgba(0,0,0,0.45)] group">
+            <div className="card-raised relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center group">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-emerald-500/5 pointer-events-none" />
               <div className="relative z-10">
-                <div className="w-20 h-20 rounded-3xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center mx-auto mb-5 text-4xl shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                <div className="w-20 h-20 rounded-2xl bg-[var(--accent-subtle)] border border-[var(--accent)]/25 flex items-center justify-center mx-auto mb-5 text-4xl">
                   👥
                 </div>
                 <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Better Together</h2>
-                <p className="text-sm text-slate-300 w-full max-w-md mx-auto mb-8 leading-relaxed">
+                <p className="text-sm text-[var(--tx-secondary)] w-full max-w-md mx-auto mb-8 leading-relaxed">
                   You're <span className="text-emerald-400 font-bold">65% more likely</span> to maintain atomic habits with an accountability squad. Form or join a private circle of up to 5 performers.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3.5 justify-center relative z-20">
                   <button
                     onClick={() => setShowCreate(true)}
-                    className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-sm shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                    className="btn-primary flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-bold"
                   >
                     <Plus size={18} strokeWidth={2.5} />
                     Create a Squad
@@ -269,10 +269,10 @@ export function SquadPage() {
               transition={{ delay: 0.1 + i * 0.1 }}
             >
               <div className="h-full">
-                <div className="rounded-2xl bg-[#0e111a]/60 backdrop-blur-xl border border-white/[0.08] p-6 text-center h-full relative z-10 shadow-lg">
+                <div className="card-raised rounded-2xl p-6 text-center h-full relative z-10">
                   <div className="text-3xl mb-3 drop-shadow-md">{item.icon}</div>
                   <h3 className="text-base font-bold text-white mb-1.5">{item.title}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+                  <p className="text-xs text-[var(--tx-secondary)] leading-relaxed">{item.desc}</p>
                 </div>
               </div>
             </motion.div>
@@ -287,7 +287,7 @@ export function SquadPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[200] bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
+                className="fixed inset-0 z-[200] bg-black/65 flex items-center justify-center p-4"
                 onClick={() => setShowCreate(false)}
               >
                 <motion.div
@@ -295,13 +295,13 @@ export function SquadPage() {
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.95, y: 20 }}
                   onClick={e => e.stopPropagation()}
-                  className="w-[400px] max-w-[90vw] rounded-3xl bg-[#0e111a]/95 backdrop-blur-2xl border border-white/[0.12] p-7 flex flex-col shadow-2xl relative overflow-hidden"
+                  className="w-[400px] max-w-[90vw] rounded-2xl bg-[var(--sf-raised)] border border-[var(--border-strong)] p-7 flex flex-col shadow-2xl relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="text-xl font-black text-white">Create Squad</h3>
                     <button
                       onClick={() => setShowCreate(false)}
-                      className="w-8 h-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                      className="w-8 h-8 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
                     >
                       <X size={16} />
                     </button>
@@ -313,7 +313,7 @@ export function SquadPage() {
                     placeholder="Squad name (e.g. 5AM Club)..."
                     maxLength={30}
                     autoFocus
-                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 mb-5"
+                    className="input mb-5"
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleCreate();
                     }}
@@ -321,7 +321,7 @@ export function SquadPage() {
                   <button
                     onClick={handleCreate}
                     disabled={!squadName.trim() || loading}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                    className="btn-primary w-full py-3.5 font-bold disabled:opacity-50"
                   >
                     {loading ? 'Creating...' : 'Create Squad'}
                   </button>
@@ -340,7 +340,7 @@ export function SquadPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[200] bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
+                className="fixed inset-0 z-[200] bg-black/65 flex items-center justify-center p-4"
                 onClick={() => setShowJoin(false)}
               >
                 <motion.div
@@ -348,13 +348,13 @@ export function SquadPage() {
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.95, y: 20 }}
                   onClick={e => e.stopPropagation()}
-                  className="w-[400px] max-w-[90vw] rounded-3xl bg-[#0e111a]/95 backdrop-blur-2xl border border-white/[0.12] p-7 flex flex-col shadow-2xl relative overflow-hidden"
+                  className="w-[400px] max-w-[90vw] rounded-2xl bg-[var(--sf-raised)] border border-[var(--border-strong)] p-7 flex flex-col shadow-2xl relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="text-xl font-black text-white">Join Squad</h3>
                     <button
                       onClick={() => setShowJoin(false)}
-                      className="w-8 h-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                      className="w-8 h-8 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
                     >
                       <X size={16} />
                     </button>
@@ -366,7 +366,7 @@ export function SquadPage() {
                     placeholder="Enter 6-character code"
                     maxLength={6}
                     autoFocus
-                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 mb-5 text-center tracking-[0.3em] font-mono text-lg"
+                    className="input mb-5 text-center tracking-[0.3em] font-mono text-lg"
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleJoin();
                     }}
@@ -374,7 +374,7 @@ export function SquadPage() {
                   <button
                     onClick={handleJoin}
                     disabled={inviteCode.length !== 6 || loading}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                    className="btn-primary w-full py-3.5 font-bold disabled:opacity-50"
                   >
                     {loading ? 'Joining...' : 'Join Squad'}
                   </button>
@@ -400,8 +400,8 @@ export function SquadPage() {
               onClick={() => setActiveSquadId(s.id)}
               className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                 s.id === activeSquadId
-                  ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20'
-                  : 'dark:bg-white/5 bg-slate-900/5 dark:text-slate-400 text-slate-600 hover:bg-slate-900/10'
+                  ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
+                  : 'bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)]'
               }`}
             >
               {s.name}
@@ -409,7 +409,7 @@ export function SquadPage() {
           ))}
           <button
             onClick={() => setShowJoin(true)}
-            className="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap dark:bg-white/5 bg-slate-900/5 dark:text-brand-400 text-brand-600 border border-brand-500/20 hover:bg-brand-500/10 transition-all flex items-center gap-1"
+            className="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 hover:opacity-90 transition-all flex items-center gap-1"
           >
             <Plus size={14} /> Join Another
           </button>
@@ -420,7 +420,7 @@ export function SquadPage() {
         <div className="flex justify-end mb-4">
           <button
             onClick={() => setShowJoin(true)}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold dark:bg-white/5 bg-slate-900/5 dark:text-brand-400 text-brand-600 border border-brand-500/20 hover:bg-brand-500/10 transition-all flex items-center gap-1"
+            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 hover:opacity-90 transition-all flex items-center gap-1"
           >
             <Plus size={12} /> Join Another Squad
           </button>
@@ -436,13 +436,13 @@ export function SquadPage() {
                   {activeSquad.name}
                 </h1>
               </div>
-              <p className="text-sm dark:text-slate-400 text-slate-600 mt-1">
+              <p className="text-sm text-[var(--tx-secondary)] mt-1">
                 {activeSquad.members.length} member{activeSquad.members.length !== 1 ? 's' : ''}
               </p>
             </div>
             <button
               onClick={copyCode}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl dark:bg-white/5 bg-slate-900/5 border dark:border-white/10 border-slate-900/10 dark:text-slate-300 text-slate-600 dark:hover:text-white hover:text-slate-900 dark:hover:bg-white/10 hover:bg-slate-900/10 transition-all w-full sm:w-auto"
+              className="btn-secondary flex items-center justify-center gap-2 px-4 py-2 w-full sm:w-auto"
             >
               <Copy size={14} />
               <span className="font-mono text-sm tracking-wider">{activeSquad.invite_code}</span>
@@ -454,10 +454,10 @@ export function SquadPage() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-500/10 border border-brand-500/20"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--accent-subtle)] border border-[var(--accent)]/25"
             >
-              <UserPlus size={18} className="text-brand-400 flex-shrink-0" />
-              <p className="text-xs text-brand-300">
+              <UserPlus size={18} className="text-[var(--accent)] flex-shrink-0" />
+              <p className="text-xs text-[var(--accent)]">
                 Share code <span className="font-mono font-bold">{activeSquad.invite_code}</span> with friends
                 to invite them!
               </p>
@@ -481,17 +481,17 @@ export function SquadPage() {
             >
               <div>
                 <div className={`relative overflow-hidden rounded-2xl border ${
-                  idx < 3 ? `bg-gradient-to-r ${medalColor}` : 'dark:bg-black/20 bg-white/50 backdrop-blur-md dark:border-white/10 border-slate-900/10'
+                  idx < 3 ? `bg-gradient-to-r ${medalColor}` : 'bg-[var(--sf-raised)] border-[var(--border-default)]'
                 } p-4`}
                 >
                   <div className="flex items-center gap-4">
                 {/* Rank */}
                 <div className="text-2xl w-8 text-center flex-shrink-0">
-                  {medal || <span className="text-sm text-slate-500 font-bold">#{idx + 1}</span>}
+                  {medal || <span className="text-sm text-[var(--tx-muted)] font-bold font-mono">#{idx + 1}</span>}
                 </div>
 
                 {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[var(--accent)] text-[var(--accent-fg)] flex items-center justify-center overflow-hidden flex-shrink-0">
                   {member.avatar_url ? (
                     <img src={member.avatar_url} className="w-full h-full object-cover" alt="" />
                   ) : (
@@ -504,18 +504,18 @@ export function SquadPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold dark:text-white text-slate-900 truncate">
+                    <span className="text-sm font-bold text-[var(--tx-primary)] truncate">
                       {member.display_name}
                     </span>
                     {isMe && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-brand-500/20 text-brand-400 text-[9px] font-bold">
+                      <span className="px-1.5 py-0.5 rounded-md bg-[var(--accent-subtle)] text-[var(--accent-ink)] text-[9px] font-bold">
                         YOU
                       </span>
                     )}
                     {isOwner && <Crown size={12} className="text-amber-400" />}
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
-                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                    <span className="flex items-center gap-1 text-xs text-[var(--tx-secondary)]">
                       <Flame size={12} className="text-orange-400" />
                       {member.streak} day streak
                     </span>
@@ -531,7 +531,7 @@ export function SquadPage() {
                       r="15"
                       fill="none"
                       stroke="currentColor"
-                      className="dark:text-white/5 text-slate-900/10"
+                      className="text-[var(--sf-dim)]"
                       strokeWidth="3"
                     />
                     <circle
@@ -546,12 +546,12 @@ export function SquadPage() {
                     />
                     <defs>
                       <linearGradient id="squadGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="var(--brand-400, #818cf8)" />
-                        <stop offset="100%" stopColor="var(--brand-600, #4f46e5)" />
+                        <stop offset="0%" stopColor="var(--accent)" />
+                        <stop offset="100%" stopColor="var(--accent-hover)" />
                       </linearGradient>
                     </defs>
                   </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold dark:text-white text-slate-900">
+                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[var(--tx-primary)] font-mono">
                     {Math.round(member.completion_today * 100)}%
                   </span>
                 </div>
@@ -567,7 +567,7 @@ export function SquadPage() {
       <div className="pt-4 border-t border-white/5">
         {confirmLeave ? (
           <div className="flex items-center gap-3">
-            <p className="text-xs text-slate-400">Are you sure?</p>
+            <p className="text-xs text-[var(--tx-secondary)]">Are you sure?</p>
             <button
               onClick={handleLeave}
               className="px-4 py-2 rounded-xl bg-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/30 transition-all"
@@ -576,7 +576,7 @@ export function SquadPage() {
             </button>
             <button
               onClick={() => setConfirmLeave(false)}
-              className="px-4 py-2 rounded-xl bg-white/5 text-slate-400 text-xs font-bold hover:bg-white/10 transition-all"
+              className="btn-secondary px-4 py-2 text-xs font-bold"
             >
               Cancel
             </button>
@@ -584,7 +584,7 @@ export function SquadPage() {
         ) : (
           <button
             onClick={() => setConfirmLeave(true)}
-            className="flex items-center gap-2 text-xs text-slate-500 hover:text-red-400 transition-colors"
+            className="flex items-center gap-2 text-xs text-[var(--tx-muted)] hover:text-red-400 transition-colors"
           >
             <LogOut size={14} />
             Leave Squad

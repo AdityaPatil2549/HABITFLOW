@@ -357,18 +357,18 @@ export function SettingsPage() {
     }
   }
 
-  if (!settings) return <div className="text-center py-16 text-slate-500">Loading settings…</div>;
+  if (!settings) return <div className="text-center py-16 text-[var(--tx-muted)]">Loading settings…</div>;
 
   return (
     <div className="space-y-10 max-w-2xl mx-auto">
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">
+        <p className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] mb-1">
           Preferences
         </p>
         <h1 className="text-3xl font-bold text-white">
           Settings
         </h1>
-        <p className="text-neutral-400 text-sm mt-1">
+        <p className="text-[var(--tx-secondary)] text-sm mt-1">
           Configure your experience and manage your local data.
         </p>
       </div>
@@ -505,14 +505,14 @@ export function SettingsPage() {
         <div className="flex items-center justify-between pt-2">
           <div>
             <p className="text-sm font-semibold text-white">Week starts on Monday</p>
-            <p className="text-xs text-slate-500">Affects all charts and weekly views.</p>
+            <p className="text-xs text-[var(--tx-muted)]">Affects all charts and weekly views.</p>
           </div>
           <button
             role="switch"
             aria-checked={settings.weekStartsOnMonday}
             aria-label="Toggle week starts on Monday"
             onClick={() => saveSetting({ weekStartsOnMonday: !settings.weekStartsOnMonday })}
-            className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.weekStartsOnMonday ? 'bg-brand-500' : 'bg-slate-700'}`}
+            className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.weekStartsOnMonday ? 'bg-[var(--accent)]' : 'bg-[var(--sf-dim)] border border-[var(--border-default)]'}`}
           >
             <motion.div
               layout
@@ -525,7 +525,7 @@ export function SettingsPage() {
         <div className="flex items-center justify-between pt-2">
           <div>
             <p className="text-sm font-semibold text-white">Sound Effects</p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[var(--tx-secondary)]">
               Audible feedback when completing habits and leveling up.
             </p>
           </div>
@@ -541,7 +541,7 @@ export function SettingsPage() {
                 m.soundService.setEnabled(next, settings.hapticEnabled !== false)
               );
             }}
-            className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.soundEnabled !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
+            className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.soundEnabled !== false ? 'bg-[var(--accent)]' : 'bg-[var(--sf-dim)] border border-[var(--border-default)]'}`}
           >
             <motion.div
               layout
@@ -554,7 +554,7 @@ export function SettingsPage() {
         <div className="flex items-center justify-between pt-2">
           <div>
             <p className="text-sm font-semibold text-white">Haptic Feedback</p>
-            <p className="text-xs text-slate-400">Vibration on habit completion (mobile only).</p>
+            <p className="text-xs text-[var(--tx-secondary)]">Vibration on habit completion (mobile only).</p>
           </div>
           <button
             role="switch"
@@ -568,7 +568,7 @@ export function SettingsPage() {
                 m.soundService.setEnabled(settings.soundEnabled !== false, next)
               );
             }}
-            className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.hapticEnabled !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
+            className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.hapticEnabled !== false ? 'bg-[var(--accent)]' : 'bg-[var(--sf-dim)] border border-[var(--border-default)]'}`}
           >
             <motion.div
               layout
@@ -580,18 +580,18 @@ export function SettingsPage() {
       </section>
 
       {/* ─── Notifications ─── */}
-      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-4">
+      <section className="card-raised p-6 space-y-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Bell size={18} className="text-brand-400" /> Notifications
+          <Bell size={18} className="text-[var(--accent)]" /> Notifications
         </h2>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold text-white">Browser Notifications</p>
-            <p className="text-xs text-slate-500">Get reminders for your daily habits and tasks.</p>
+            <p className="text-xs text-[var(--tx-muted)]">Get reminders for your daily habits and tasks.</p>
           </div>
           {!settings.notificationsEnabled ? (
             <button
-              className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-all"
+              className="px-4 py-2 rounded-xl bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 text-xs font-bold hover:opacity-90 transition-all"
               onClick={requestNotificationPermission}
             >
               Enable
@@ -605,14 +605,14 @@ export function SettingsPage() {
       </section>
 
       {/* ─── Integrations ─── */}
-      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-4">
+      <section className="card-raised p-6 space-y-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Calendar size={18} className="text-brand-400" /> Calendar Sync
+          <Calendar size={18} className="text-[var(--accent)]" /> Calendar Sync
         </h2>
 
         {isGuest ? (
           <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3 text-slate-400">
+            <div className="flex items-center gap-3 text-[var(--tx-secondary)]">
               <CloudOff size={20} />
               <div className="text-sm">
                 <p className="font-bold text-white">Google Calendar</p>
@@ -621,7 +621,7 @@ export function SettingsPage() {
             </div>
             <button
               onClick={() => useAuthStore.getState().signInWithGoogle()}
-              className="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-400 text-xs font-bold hover:bg-brand-500/30 transition-colors"
+              className="px-4 py-2 rounded-xl bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 text-xs font-bold hover:opacity-90 transition-colors"
             >
               Sign In
             </button>
@@ -646,13 +646,13 @@ export function SettingsPage() {
             <div className="flex items-center justify-between pt-2">
               <div>
                 <p className="text-sm font-semibold text-white">Sync Habits to Calendar</p>
-                <p className="text-xs text-slate-500">Create recurring events for your habits.</p>
+                <p className="text-xs text-[var(--tx-muted)]">Create recurring events for your habits.</p>
               </div>
               <button
                 role="switch"
                 aria-checked={settings.googleCalendarSync !== false}
                 onClick={() => saveSetting({ googleCalendarSync: !settings.googleCalendarSync })}
-                className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.googleCalendarSync !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
+                className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.googleCalendarSync !== false ? 'bg-[var(--accent)]' : 'bg-[var(--sf-dim)] border border-[var(--border-default)]'}`}
               >
                 <motion.div
                   layout
@@ -665,7 +665,7 @@ export function SettingsPage() {
             <div className="flex items-center justify-between pt-2">
               <div>
                 <p className="text-sm font-semibold text-white">Log Completions to Calendar</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[var(--tx-muted)]">
                   Create daily events when you complete habits.
                 </p>
               </div>
@@ -675,7 +675,7 @@ export function SettingsPage() {
                 onClick={() =>
                   saveSetting({ googleCalendarCompletions: !settings.googleCalendarCompletions })
                 }
-                className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.googleCalendarCompletions !== false ? 'bg-brand-500' : 'bg-slate-700'}`}
+                className={`relative flex items-center w-11 h-6 rounded-full transition-colors ${settings.googleCalendarCompletions !== false ? 'bg-[var(--accent)]' : 'bg-[var(--sf-dim)] border border-[var(--border-default)]'}`}
               >
                 <motion.div
                   layout
@@ -689,15 +689,15 @@ export function SettingsPage() {
       </section>
 
       {/* ── Health & Fitness ── */}
-      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-6">
+      <section className="card-raised p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Activity size={18} className="text-brand-400" /> Health & Fitness
+          <Activity size={18} className="text-[var(--accent)]" /> Health & Fitness
         </h2>
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+          <div className="flex items-center justify-between p-4 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-xl">
             <div>
               <p className="text-sm font-bold text-white">Google Fit / Health Connect</p>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-[var(--tx-secondary)] mt-1">
                 {fitConnected ? '✅ Connected — steps & sleep syncing' : 'Auto-complete fitness habits from your phone data'}
               </p>
             </div>
@@ -707,38 +707,38 @@ export function SettingsPage() {
               className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors ${
                 fitConnected
                   ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                  : 'bg-brand-500/20 text-brand-400 hover:bg-brand-500/30'
+                  : 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 hover:opacity-90'
               }`}
             >
               {fitLoading ? '…' : fitConnected ? 'Disconnect' : 'Connect'}
             </button>
           </div>
-          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl opacity-60">
+          <div className="flex items-center justify-between p-4 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-xl opacity-60">
             <div>
               <p className="text-sm font-bold text-white">Apple Health (iOS)</p>
-              <p className="text-xs text-slate-300 mt-1">Requires native app installation</p>
+              <p className="text-xs text-[var(--tx-secondary)] mt-1">Requires native app installation</p>
             </div>
-            <button disabled className="px-4 py-2 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl">Coming Soon</button>
+            <button disabled className="px-4 py-2 bg-[var(--sf-overlay)] text-[var(--tx-muted)] border border-[var(--border-default)] text-xs font-bold rounded-xl">Coming Soon</button>
           </div>
         </div>
       </section>
 
       {/* ── Google Integrations ── */}
-      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-6">
+      <section className="card-raised p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Zap size={18} className="text-yellow-400" /> Google Integrations
         </h2>
         <div className="space-y-3">
 
           {/* Google Drive Backup */}
-          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+          <div className="flex items-center justify-between p-4 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-xl">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <HardDrive size={16} className="text-blue-400" />
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Google Drive Backup</p>
-                <p className="text-xs text-slate-300 mt-0.5">
+                <p className="text-xs text-[var(--tx-secondary)] mt-0.5">
                   {driveConnected ? '✅ Connected — auto-backup ready' : 'Save & restore backups to your Drive'}
                 </p>
               </div>
@@ -768,14 +768,14 @@ export function SettingsPage() {
           </div>
 
           {/* Profile Photo Upload */}
-          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+          <div className="flex items-center justify-between p-4 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-xl">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
                 <Camera size={16} className="text-purple-400" />
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Profile Photo</p>
-                <p className="text-xs text-slate-300 mt-0.5">Upload to Firebase Cloud Storage</p>
+                <p className="text-xs text-[var(--tx-secondary)] mt-0.5">Upload to Firebase Cloud Storage</p>
               </div>
             </div>
             <label className={`px-3 py-1.5 bg-purple-500/20 text-purple-400 text-xs font-bold rounded-lg cursor-pointer hover:bg-purple-500/30 transition-colors ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -785,14 +785,14 @@ export function SettingsPage() {
           </div>
 
           {/* Google Maps — Location Triggers */}
-          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+          <div className="flex items-center justify-between p-4 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-xl">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center">
                 <MapPin size={16} className="text-green-400" />
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Location Triggers</p>
-                <p className="text-xs text-slate-300 mt-0.5">Remind me when I arrive at a location</p>
+                <p className="text-xs text-[var(--tx-secondary)] mt-0.5">Remind me when I arrive at a location</p>
               </div>
             </div>
             <div className="px-3 py-1.5 bg-green-500/10 text-green-400 text-xs font-bold rounded-lg">
@@ -801,14 +801,14 @@ export function SettingsPage() {
           </div>
 
           {/* YouTube Recommendations */}
-          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
+          <div className="flex items-center justify-between p-4 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-xl">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center">
                 <Youtube size={16} className="text-red-400" />
               </div>
               <div>
                 <p className="text-sm font-bold text-white">YouTube Recommendations</p>
-                <p className="text-xs text-slate-300 mt-0.5">Habit videos in your AI Coach tab</p>
+                <p className="text-xs text-[var(--tx-secondary)] mt-0.5">Habit videos in your AI Coach tab</p>
               </div>
             </div>
             <div className="px-3 py-1.5 bg-red-500/10 text-red-400 text-xs font-bold rounded-lg">
@@ -820,9 +820,9 @@ export function SettingsPage() {
       </section>
 
       {/* ── Data ── */}
-      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-6">
+      <section className="card-raised p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Database size={18} className="text-brand-400" /> Data Management
+          <Database size={18} className="text-[var(--accent)]" /> Data Management
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -837,7 +837,7 @@ export function SettingsPage() {
               <p className="text-sm font-bold text-white">
                 {exported ? 'Exported!' : 'Export JSON'}
               </p>
-              <p className="text-xs text-slate-400">Backup your data as a file.</p>
+              <p className="text-xs text-[var(--tx-secondary)]">Backup your data as a file.</p>
             </div>
           </button>
 
@@ -852,7 +852,7 @@ export function SettingsPage() {
               <p className="text-sm font-bold text-white">
                 {csvExported ? 'CSV Saved!' : 'Export CSV'}
               </p>
-              <p className="text-xs text-slate-400">View logs in Excel/Sheets.</p>
+              <p className="text-xs text-[var(--tx-secondary)]">View logs in Excel/Sheets.</p>
             </div>
           </button>
 
@@ -862,7 +862,7 @@ export function SettingsPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-white">Import Backup</p>
-              <p className="text-xs text-slate-400">Restore from a JSON file.</p>
+              <p className="text-xs text-[var(--tx-secondary)]">Restore from a JSON file.</p>
             </div>
             <input type="file" accept=".json" className="sr-only" onChange={handleImport} />
           </label>
@@ -883,14 +883,14 @@ export function SettingsPage() {
       </section>
 
       {/* ─── Privacy ─── */}
-      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6">
+      <section className="card-raised p-6">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 flex-shrink-0">
             <Shield size={20} />
           </div>
           <div>
             <h2 className="text-sm font-bold text-white">Privacy & Security</h2>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+            <p className="text-xs text-[var(--tx-secondary)] mt-1 leading-relaxed">
               HabitFlow uses secure cloud sync so your data is backed up and available across your devices.
               All syncing happens securely through our database infrastructure, ensuring your habits and progress
               remain private to you.
@@ -907,23 +907,23 @@ export function SettingsPage() {
           className="h-20 w-auto mx-auto mb-4 object-contain drop-shadow-xl"
         />
         <p className="text-sm font-bold text-white">HabitFlow v1.2</p>
-        <p className="text-xs text-slate-500 mt-1">Built with precision for peak performance.</p>
+        <p className="text-xs text-[var(--tx-muted)] mt-1">Built with precision for peak performance.</p>
         <div className="flex items-center justify-center gap-4 mt-4">
           <Link
             to="/privacy"
-            className="text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-brand-300 transition-colors"
+            className="text-xs font-semibold uppercase tracking-wider text-[var(--tx-secondary)] hover:text-[var(--accent-ink)] transition-colors"
           >
             Privacy Policy
           </Link>
           <Link
             to="/terms"
-            className="text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-brand-300 transition-colors"
+            className="text-xs font-semibold uppercase tracking-wider text-[var(--tx-secondary)] hover:text-[var(--accent-ink)] transition-colors"
           >
             Terms of Use
           </Link>
           <button
             onClick={() => toast.info('HabitFlow is an open-source project.')}
-            className="text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-brand-300 transition-colors"
+            className="text-xs font-semibold uppercase tracking-wider text-[var(--tx-secondary)] hover:text-[var(--accent-ink)] transition-colors"
           >
             Source Code
           </button>

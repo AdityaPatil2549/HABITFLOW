@@ -76,39 +76,36 @@ export function CommandMenu() {
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-xl flex items-start justify-center pt-[10vh] sm:pt-[14vh] p-4 animate-in fade-in duration-200"
+        className="fixed inset-0 z-[9999] bg-black/65 flex items-start justify-center pt-[10vh] sm:pt-[14vh] p-4 animate-in fade-in duration-150"
         onClick={() => setCommandMenuOpen(false)}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: -16 }}
+          initial={{ opacity: 0, scale: 0.98, y: -8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: -16 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 28 }}
+          exit={{ opacity: 0, scale: 0.98, y: -8 }}
+          transition={{ duration: 0.14, ease: 'easeOut' }}
           onClick={e => e.stopPropagation()}
-          className="relative w-full max-w-2xl bg-[#0a0d14]/95 border border-white/[0.12] rounded-3xl overflow-hidden shadow-[0_32px_120px_rgba(0,0,0,0.95)] backdrop-blur-3xl flex flex-col"
+          className="relative w-full max-w-2xl bg-[var(--sf-raised)] border border-[var(--border-strong)] rounded-2xl overflow-hidden shadow-2xl flex flex-col"
         >
-          {/* Specular top rim */}
-          <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent pointer-events-none" />
-
           <Command
             label="Universal Command HUD"
-            className="flex flex-col w-full h-full text-slate-100"
+            className="flex flex-col w-full h-full text-[var(--tx-primary)]"
           >
             {/* Search Input Bar */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.08] bg-white/[0.02]">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border-default)] bg-[var(--sf-base)]">
               <Search className="w-5 h-5 text-emerald-400 shrink-0" />
               <Command.Input
                 placeholder="Type a command, habit, task, or page…"
-                className="flex-1 bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-slate-500 font-medium text-white"
+                className="flex-1 bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-[var(--tx-muted)] font-medium text-[var(--tx-primary)]"
                 autoFocus
               />
               <div className="flex items-center gap-1.5 shrink-0">
-                <kbd className="px-2 py-0.5 rounded-lg text-[10px] font-mono text-slate-400 bg-white/[0.06] border border-white/[0.08]">
+                <kbd className="px-2 py-0.5 rounded-lg text-[10px] font-mono text-[var(--tx-muted)] bg-[var(--sf-overlay)] border border-[var(--border-default)]">
                   ESC
                 </kbd>
                 <button
                   onClick={() => setCommandMenuOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+                  className="p-1 rounded-lg text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] transition-colors cursor-pointer"
                 >
                   <X size={16} />
                 </button>
@@ -117,7 +114,7 @@ export function CommandMenu() {
 
             {/* Scrollable Command List */}
             <Command.List className="max-h-[380px] sm:max-h-[460px] overflow-y-auto p-3 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-              <Command.Empty className="py-12 text-center text-sm text-slate-500">
+              <Command.Empty className="py-12 text-center text-sm text-[var(--tx-muted)]">
                 <span className="block text-2xl mb-2">🔭</span>
                 No matching rituals, tasks, or commands found.
               </Command.Empty>
@@ -126,7 +123,7 @@ export function CommandMenu() {
               {habits.length > 0 && (
                 <Command.Group
                   heading={
-                    <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-widest text-slate-400 font-semibold flex items-center justify-between">
+                    <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-widest text-[var(--tx-muted)] font-semibold flex items-center justify-between">
                       <span>Daily Rituals (Press Enter to Toggle)</span>
                       <span className="text-[10px] text-emerald-400 font-normal">Instant Action</span>
                     </div>
@@ -138,10 +135,10 @@ export function CommandMenu() {
                       <Command.Item
                         key={habit.id}
                         onSelect={() => handleToggleHabit(habit as HabitWithStreak)}
-                        className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-2xl cursor-pointer hover:bg-white/[0.06] aria-selected:bg-emerald-500/15 aria-selected:border aria-selected:border-emerald-500/30 transition-all mb-1 group"
+                        className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl cursor-pointer hover:bg-[var(--sf-overlay)] aria-selected:bg-[var(--accent-subtle)] aria-selected:border aria-selected:border-[var(--accent)]/30 transition-all mb-1 group"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center text-base shrink-0">
+                          <span className="w-8 h-8 rounded-lg bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-base shrink-0">
                             {getHabitEmoji(habit.icon)}
                           </span>
                           <div className="min-w-0">
@@ -149,13 +146,13 @@ export function CommandMenu() {
                               className={cn(
                                 'text-sm font-semibold truncate block transition-colors',
                                 isDone
-                                  ? 'text-slate-400 line-through decoration-emerald-400/50'
-                                  : 'text-white group-hover:text-emerald-300'
+                                  ? 'text-[var(--tx-muted)] line-through decoration-[var(--accent)]/50'
+                                  : 'text-[var(--tx-primary)] group-hover:text-[var(--accent-ink)]'
                               )}
                             >
                               {habit.name}
                             </span>
-                            <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                            <div className="flex items-center gap-2 text-[11px] text-[var(--tx-muted)] font-mono">
                               {habit.category && <span>{habit.category}</span>}
                               <span>•</span>
                               <span className="text-amber-400 font-semibold inline-flex items-center gap-0.5">
@@ -171,8 +168,8 @@ export function CommandMenu() {
                             className={cn(
                               'px-2 py-0.5 rounded-full text-[10px] font-mono border transition-colors',
                               isDone
-                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                                : 'bg-white/[0.04] text-slate-400 border-white/[0.08]'
+                                ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border-[var(--accent)]/40'
+                                : 'bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border-[var(--border-default)]'
                             )}
                           >
                             {isDone ? 'Completed' : 'Tap to Log'}
@@ -180,7 +177,7 @@ export function CommandMenu() {
                           <div
                             className={cn(
                               'w-7 h-7 rounded-lg flex items-center justify-center transition-colors',
-                              isDone ? 'bg-emerald-500 text-slate-950 font-bold' : 'bg-white/[0.05] text-slate-400'
+                              isDone ? 'bg-[var(--accent)] text-[var(--accent-fg)] font-bold' : 'bg-[var(--sf-overlay)] text-[var(--tx-muted)]'
                             )}
                           >
                             <Check size={14} className={isDone ? 'stroke-[3]' : 'opacity-40'} />
@@ -195,7 +192,7 @@ export function CommandMenu() {
               {/* 2. Quick Actions */}
               <Command.Group
                 heading={
-                  <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-widest text-slate-400 font-semibold">
+                  <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-widest text-[var(--tx-muted)] font-semibold">
                     Quick Pro Actions
                   </div>
                 }
@@ -207,36 +204,36 @@ export function CommandMenu() {
                       setQuickAddOpen(true);
                     })
                   }
-                  className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer hover:bg-white/[0.06] aria-selected:bg-white/[0.08] transition-colors mb-1"
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer hover:bg-[var(--sf-overlay)] aria-selected:bg-[var(--sf-overlay)] transition-colors mb-1"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-[var(--accent-subtle)] text-[var(--accent-ink)] flex items-center justify-center">
                       <Plus size={16} />
                     </div>
                     <div>
-                      <span className="text-sm font-semibold text-white block">Create New Habit</span>
-                      <span className="text-xs text-slate-500">Add an atomic ritual with custom frequency</span>
+                      <span className="text-sm font-semibold text-[var(--tx-primary)] block">Create New Habit</span>
+                      <span className="text-xs text-[var(--tx-muted)]">Add an atomic ritual with custom frequency</span>
                     </div>
                   </div>
-                  <kbd className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.06] text-slate-400 border border-white/[0.08]">
+                  <kbd className="px-2 py-0.5 rounded text-[10px] font-mono bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">
                     N
                   </kbd>
                 </Command.Item>
 
                 <Command.Item
-                  onSelect={() => runAction(() => navigate('/tasks'))}
-                  className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer hover:bg-white/[0.06] aria-selected:bg-white/[0.08] transition-colors mb-1"
+                  onSelect={() => runAction(() => navigate('/hub/tasks'))}
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer hover:bg-[var(--sf-overlay)] aria-selected:bg-[var(--sf-overlay)] transition-colors mb-1"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-[var(--accent-subtle)] text-[var(--accent-ink)] flex items-center justify-center">
                       <CheckSquare size={16} />
                     </div>
                     <div>
-                      <span className="text-sm font-semibold text-white block">Create New Task</span>
-                      <span className="text-xs text-slate-500">Add a time-blocked task with priority</span>
+                      <span className="text-sm font-semibold text-[var(--tx-primary)] block">Create New Task</span>
+                      <span className="text-xs text-[var(--tx-muted)]">Add a time-blocked task with priority</span>
                     </div>
                   </div>
-                  <kbd className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.06] text-slate-400 border border-white/[0.08]">
+                  <kbd className="px-2 py-0.5 rounded text-[10px] font-mono bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">
                     T
                   </kbd>
                 </Command.Item>
@@ -247,15 +244,15 @@ export function CommandMenu() {
                       soundService.playTick();
                     })
                   }
-                  className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer hover:bg-white/[0.06] aria-selected:bg-white/[0.08] transition-colors mb-1"
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer hover:bg-[var(--sf-overlay)] aria-selected:bg-[var(--sf-overlay)] transition-colors mb-1"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
                       <Volume2 size={16} />
                     </div>
                     <div>
-                      <span className="text-sm font-semibold text-white block">Test Audio Engine</span>
-                      <span className="text-xs text-slate-500">Synthesize haptic sound cue</span>
+                      <span className="text-sm font-semibold text-[var(--tx-primary)] block">Test Audio Engine</span>
+                      <span className="text-xs text-[var(--tx-muted)]">Synthesize haptic sound cue</span>
                     </div>
                   </div>
                 </Command.Item>
@@ -264,36 +261,36 @@ export function CommandMenu() {
               {/* 3. Global Navigation */}
               <Command.Group
                 heading={
-                  <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-widest text-slate-400 font-semibold">
+                  <div className="px-3 py-1 text-[11px] font-mono uppercase tracking-widest text-[var(--tx-muted)] font-semibold">
                     Navigation
                   </div>
                 }
               >
                 {[
-                  { label: 'Dashboard', path: '/', icon: LayoutDashboard, color: 'text-emerald-400', keyHint: '1' },
-                  { label: 'Habits Workstation', path: '/habits', icon: Target, color: 'text-teal-400', keyHint: '2' },
-                  { label: 'Tasks Command Center', path: '/tasks', icon: CheckSquare, color: 'text-indigo-400', keyHint: '3' },
-                  { label: 'Analytics & Heatmap', path: '/analytics', icon: BarChart2, color: 'text-cyan-400', keyHint: '4' },
-                  { label: 'Squad & Leaderboards', path: '/squad', icon: Users, color: 'text-blue-400' },
-                  { label: 'Weekly Review', path: '/review', icon: RotateCcw, color: 'text-purple-400' },
-                  { label: 'Rewards Shop', path: '/shop', icon: ShoppingBag, color: 'text-rose-400' },
-                  { label: 'Settings', path: '/settings', icon: Settings, color: 'text-slate-400' },
+                  { label: 'Today', path: '/', icon: LayoutDashboard, color: 'text-[var(--accent-ink)]', keyHint: '1' },
+                  { label: 'Plan & Chains', path: '/habits', icon: Target, color: 'text-[var(--tx-secondary)]', keyHint: '2' },
+                  { label: 'Insights & Review', path: '/insights', icon: BarChart2, color: 'text-[var(--tx-secondary)]', keyHint: '3' },
+                  { label: 'Tasks Command Center', path: '/hub/tasks', icon: CheckSquare, color: 'text-[var(--tx-secondary)]', keyHint: '4' },
+                  { label: 'Squad & Leaderboards', path: '/hub/squad', icon: Users, color: 'text-[var(--tx-secondary)]' },
+                  { label: 'Weekly Review', path: '/insights?tab=review', icon: RotateCcw, color: 'text-[var(--tx-secondary)]' },
+                  { label: 'Armory & Inks', path: '/hub/shop', icon: ShoppingBag, color: 'text-[var(--tx-secondary)]' },
+                  { label: 'Settings', path: '/hub/settings', icon: Settings, color: 'text-[var(--tx-muted)]' },
                 ].map(item => {
                   const Icon = item.icon;
                   return (
                     <Command.Item
                       key={item.path}
                       onSelect={() => runAction(() => navigate(item.path))}
-                      className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl cursor-pointer hover:bg-white/[0.06] aria-selected:bg-white/[0.08] transition-colors mb-1 group"
+                      className="flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer hover:bg-[var(--sf-overlay)] aria-selected:bg-[var(--sf-overlay)] transition-colors mb-1 group"
                     >
                       <div className="flex items-center gap-3">
-                        <Icon size={18} className={cn(item.color, 'transition-transform group-hover:scale-110')} />
-                        <span className="text-sm font-medium text-slate-200 group-hover:text-white">
+                        <Icon size={18} className={cn(item.color, 'transition-transform group-hover:scale-105')} />
+                        <span className="text-sm font-medium text-[var(--tx-secondary)] group-hover:text-[var(--tx-primary)]">
                           {item.label}
                         </span>
                       </div>
                       {item.keyHint && (
-                        <kbd className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.05] text-slate-500 border border-white/[0.06]">
+                        <kbd className="px-2 py-0.5 rounded text-[10px] font-mono bg-[var(--sf-overlay)] text-[var(--tx-muted)] border border-[var(--border-default)]">
                           {item.keyHint}
                         </kbd>
                       )}
@@ -304,19 +301,19 @@ export function CommandMenu() {
             </Command.List>
 
             {/* Bottom Keyboard Telemetry Footer */}
-            <div className="px-5 py-3 border-t border-white/[0.08] bg-white/[0.02] flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <div className="px-5 py-3 border-t border-[var(--border-default)] bg-[var(--sf-base)] flex items-center justify-between text-[11px] font-mono text-[var(--tx-muted)]">
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-slate-300">↑↓</kbd> Navigate
+                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">↑↓</kbd> Navigate
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-slate-300">↵</kbd> Select / Toggle
+                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">↵</kbd> Select / Toggle
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-slate-300">ESC</kbd> Close
+                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">ESC</kbd> Close
                 </span>
               </div>
-              <span className="text-emerald-400 font-semibold hidden sm:inline">
+              <span className="text-[var(--accent-ink)] font-semibold hidden sm:inline">
                 HabitFlow HUD
               </span>
             </div>

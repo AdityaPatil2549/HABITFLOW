@@ -69,8 +69,21 @@ export const youtubeService = {
       const res = await fetch(`${YOUTUBE_SEARCH_BASE}?${params}`);
       if (!res.ok) throw new Error(`YouTube API error: ${res.statusText}`);
 
-      const data = await res.json();
-      const videos: YouTubeVideo[] = (data.items || []).map((item: any) => ({
+      const data = await res.json() as {
+        items?: Array<{
+          id: { videoId: string };
+          snippet: {
+            title: string;
+            channelTitle: string;
+            publishedAt: string;
+            thumbnails?: {
+              medium?: { url?: string };
+              default?: { url?: string };
+            };
+          };
+        }>;
+      };
+      const videos: YouTubeVideo[] = (data.items || []).map(item => ({
         videoId: item.id.videoId,
         title: item.snippet.title,
         channelTitle: item.snippet.channelTitle,

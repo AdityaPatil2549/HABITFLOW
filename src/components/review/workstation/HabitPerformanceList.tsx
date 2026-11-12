@@ -53,15 +53,15 @@ function MiniDayGrid({ habitId }: { habitId: string }) {
           <div key={key} className="flex flex-col items-center gap-0.5">
             <div
               className={cn(
-                'w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold transition-all',
+                'w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold transition-colors duration-150',
                 done
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_8px_rgba(52,211,153,0.15)]'
-                  : 'bg-white/[0.03] border border-white/[0.06] text-transparent'
+                  ? 'bg-[var(--ok-subtle)] text-[var(--ok)] border border-[var(--ok)]/30'
+                  : 'bg-[var(--sf-overlay)] border border-[var(--border-default)] text-transparent'
               )}
             >
               {done ? <Check size={10} strokeWidth={3} /> : ''}
             </div>
-            <span className="text-[10px] font-mono font-medium text-slate-400 uppercase">
+            <span className="text-[10px] font-mono font-medium text-[var(--tx-muted)] uppercase">
               {format(d, 'eeeee')}
             </span>
           </div>
@@ -83,28 +83,29 @@ export function HabitPerformanceList({ habits }: HabitPerformanceListProps) {
   return (
     <div className="space-y-4">
       {/* Subheader and Filter */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.06]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--border-default)]">
         <div className="flex items-center gap-2">
-          <TrendingUp size={16} className="text-emerald-400" />
-          <h3 className="text-sm font-bold text-white">
+          <TrendingUp size={16} className="text-[var(--ok)]" />
+          <h3 className="text-sm font-bold text-[var(--tx-primary)]">
             Habit Execution Roster ({habits.length})
           </h3>
         </div>
 
-        <div className="flex items-center gap-1 bg-[#13151f] p-1 rounded-lg border border-white/[0.06]">
-          {[
+        <div className="flex items-center gap-1 bg-[var(--sf-overlay)] p-1 rounded-lg border border-[var(--border-default)]">
+          {([
             { id: 'all', label: 'All Habits' },
             { id: 'star', label: 'Top Performers' },
             { id: 'struggling', label: 'Needs Focus' },
-          ].map(f => (
+          ] as const).map(f => (
             <button
               key={f.id}
-              onClick={() => setFilter(f.id as any)}
+              type="button"
+              onClick={() => setFilter(f.id)}
               className={cn(
-                'px-2.5 py-1 text-xs font-mono rounded-md transition-all',
+                'px-2.5 py-1 text-xs font-mono rounded-md transition-colors duration-150 cursor-pointer',
                 filter === f.id
-                  ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 font-semibold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[var(--ok-subtle)] text-[var(--ok)] border border-[var(--ok)]/30 font-semibold'
+                  : 'text-[var(--tx-muted)] hover:text-[var(--tx-primary)]'
               )}
             >
               {f.label}
@@ -114,7 +115,7 @@ export function HabitPerformanceList({ habits }: HabitPerformanceListProps) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-8 text-slate-500 text-xs font-mono">
+        <div className="text-center py-8 text-[var(--tx-muted)] text-xs font-mono">
           No habits matched the selected filter.
         </div>
       ) : (
@@ -123,35 +124,34 @@ export function HabitPerformanceList({ habits }: HabitPerformanceListProps) {
             <div
               key={h.id}
               className={cn(
-                'p-3.5 sm:p-4 rounded-xl bg-neutral-900/60 border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3',
-                h.isBest && 'border-white/25',
-                h.isStruggling && 'border-white/15',
-                !h.isBest && !h.isStruggling && 'border-white/10'
+                'p-3.5 sm:p-4 rounded-xl card-raised transition-colors duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3',
+                h.isBest && 'border-[var(--border-strong)]',
+                h.isStruggling && 'border-[var(--danger)]/30'
               )}
             >
               {/* Left: Icon, Name, Category */}
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-slate-300 flex-shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-[var(--tx-secondary)] flex-shrink-0">
                   <IconRenderer name={h.icon || 'zap'} size={18} />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-white truncate">
+                    <span className="text-sm font-semibold text-[var(--tx-primary)] truncate">
                       {h.name}
                     </span>
                     {h.isBest && (
-                      <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-[var(--warn-subtle)] text-[var(--warn)] border border-[var(--warn)]/30 flex items-center gap-1">
                         <Star size={11} /> Top
                       </span>
                     )}
                     {h.isStruggling && (
-                      <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-[var(--danger-subtle)] text-[var(--danger)] border border-[var(--danger)]/30 flex items-center gap-1">
                         <AlertTriangle size={11} /> Needs Care
                       </span>
                     )}
                   </div>
                   {h.category && (
-                    <span className="text-xs font-mono text-slate-300">
+                    <span className="text-xs font-mono text-[var(--tx-secondary)]">
                       {h.category}
                     </span>
                   )}
@@ -167,14 +167,14 @@ export function HabitPerformanceList({ habits }: HabitPerformanceListProps) {
               <div className="flex items-center gap-4 flex-shrink-0 justify-between sm:justify-end">
                 {/* 30-day completion rate */}
                 <div className="flex flex-col items-end w-20">
-                  <span className="text-xs font-mono font-bold text-white">
+                  <span className="text-xs font-mono font-bold text-[var(--tx-primary)] tabular-nums">
                     {h.rate}%
                   </span>
-                  <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden mt-1">
+                  <div className="w-full h-1.5 rounded-full bg-[var(--sf-overlay)] overflow-hidden mt-1">
                     <div
                       className={cn(
-                        'h-full rounded-full transition-all duration-500',
-                        h.rate >= 75 ? 'bg-emerald-400' : h.rate >= 50 ? 'bg-blue-400' : 'bg-rose-400'
+                        'h-full rounded-full transition-all duration-150',
+                        h.rate >= 75 ? 'bg-[var(--ok)]' : h.rate >= 50 ? 'bg-[var(--accent)]' : 'bg-[var(--danger)]'
                       )}
                       style={{ width: `${h.rate}%` }}
                     />
@@ -182,7 +182,7 @@ export function HabitPerformanceList({ habits }: HabitPerformanceListProps) {
                 </div>
 
                 {/* Streak Badge */}
-                <div className="flex items-center gap-1 px-2 py-1 rounded bg-white/[0.04] border border-white/10 text-neutral-300 text-xs font-mono">
+                <div className="flex items-center gap-1 px-2 py-1 rounded bg-[var(--sf-overlay)] border border-[var(--border-default)] text-[var(--tx-secondary)] text-xs font-mono tabular-nums">
                   <Flame size={12} />
                   <span>{h.streak}d</span>
                 </div>

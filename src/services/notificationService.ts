@@ -1,6 +1,7 @@
 import { db, getOrCreateSettings } from '../db';
 import { format } from 'date-fns';
 import { Habit, HabitLog } from '../types';
+import { habitService } from './habitService';
 
 class NotificationService {
   private checkInterval: number | null = null;
@@ -129,14 +130,16 @@ class NotificationService {
       const streakSaverKey = `streak-saver-${today}`;
       if (currentHour >= 18 && currentHour <= 23 && !this.notifiedToday.has(streakSaverKey)) {
         const pending = await this.getPendingHabitsForToday(habits, today);
-        const atRisk = pending.find(h => h.streak.current >= 3);
-
-        if (atRisk) {
-          this.sendNotification(
-            `You're about to lose your ${atRisk.streak.current}-day "${atRisk.name}" streak! 1 hour left.`,
-            '🚨'
-          );
-          this.notifiedToday.add(streakSaverKey);
+        for (const candidate of pending) {
+          const streak = await habitService.getStreakInfo(candidate);
+          if (streak.current >= 3) {
+            this.sendNotification(
+              `You're about to lose your ${streak.current}-day "${candidate.name}" streak! 1 hour left.`,
+              '🚨'
+            );
+            this.notifiedToday.add(streakSaverKey);
+            break;
+          }
         }
       }
     } catch (error) {
@@ -145,7 +148,7 @@ class NotificationService {
   }
 
    
-  private async getPendingHabitsForToday(habits: any[], today: string) {
+  private async getPendingHabitsForToday(habits: Habit[], today: string) {
     const logs = await db.habitLogs.where('date').equals(today).toArray();
     const currentDay = new Date().getDay(); // 0 = Sunday, 6 = Saturday
 
@@ -158,7 +161,7 @@ class NotificationService {
       }
 
        
-      const log = logs.find((l: any) => l.habitId === habit.id);
+      const log = logs.find((l: HabitLog) => l.habitId === habit.id);
       if (!log) return true;
       return log.value < (habit.type === 'boolean' ? 1 : habit.targetValue);
     });

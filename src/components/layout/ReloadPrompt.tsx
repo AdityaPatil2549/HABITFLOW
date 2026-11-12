@@ -7,11 +7,11 @@ export function ReloadPrompt() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r: ServiceWorkerRegistration | undefined) {
-      console.log('SW Registered: ' + r);
+    onRegistered() {
+      // Service worker registered silently
     },
     onRegisterError(error: Error) {
-      console.log('SW registration error', error);
+      console.error('SW registration error', error);
     },
   });
 
@@ -24,22 +24,23 @@ export function ReloadPrompt() {
     <AnimatePresence>
       {(offlineReady || needRefresh) && (
         <motion.div
-          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[100] card-raised p-4 w-[calc(100vw-2rem)] sm:w-80 border border-brand-500/30"
-          initial={{ opacity: 0, y: 20 }}
+          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[100] card-raised p-4 w-[calc(100vw-2rem)] sm:w-80 border border-[var(--border-strong)]"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
+          exit={{ opacity: 0, y: 12 }}
+          transition={{ duration: 0.14 }}
         >
           <div className="mb-3">
             {offlineReady ? (
-              <p className="text-sm font-medium text-[var(--text-primary)]">
+              <p className="text-sm font-medium text-[var(--tx-primary)]">
                 App ready to work offline
               </p>
             ) : (
-              <p className="text-sm font-medium text-[var(--text-primary)] mb-1">
+              <p className="text-sm font-medium text-[var(--tx-primary)] mb-1">
                 New content available
               </p>
             )}
-            <p className="text-xs text-[var(--text-secondary)]">
+            <p className="text-xs text-[var(--tx-secondary)]">
               {offlineReady
                 ? 'HabitFlow can now be used without an internet connection.'
                 : 'Click reload to update HabitFlow to the latest version.'}

@@ -153,23 +153,23 @@ export function HabitsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-100 pb-28 pt-2 sm:pt-4 px-2 sm:px-4 max-w-5xl mx-auto selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className="min-h-screen bg-transparent text-[var(--tx-primary)] pb-28 pt-2 sm:pt-4 px-2 sm:px-4 max-w-5xl mx-auto">
       {/* ── Page Header ─────────────────────────────────────────── */}
-      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-white/[0.08]">
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[var(--border-default)]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">Habit Workstation</span>
+          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--tx-secondary)] mb-1.5">
+            <span className="px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 font-bold">Habit Workstation</span>
             <span>•</span>
-            <span className="text-emerald-300 font-semibold">{habits.filter(h => !h.archived).length} active</span>
+            <span className="text-[var(--accent-ink)] font-semibold">{habits.filter(h => !h.archived).length} active</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--tx-primary)]">
             Habit Library
           </h1>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline-flex text-[11px] font-mono text-slate-500">
-            Press <kbd className="px-1.5 py-0.5 rounded-md bg-white/10 text-slate-300 border border-white/10">C</kbd> to create
+          <span className="hidden md:inline-flex text-[11px] font-mono text-[var(--tx-muted)]">
+            Press <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">C</kbd> to create
           </span>
 
           <button
@@ -177,7 +177,7 @@ export function HabitsPage() {
               setEditingHabit(null);
               setIsDrawerOpen(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-tr from-emerald-500 to-teal-400 hover:brightness-110 text-slate-950 transition-all cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95"
+            className="btn-primary flex items-center gap-2 px-4 py-2.5 text-xs font-bold"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>New Habit</span>
@@ -206,28 +206,28 @@ export function HabitsPage() {
             {[1, 2, 3, 4, 5].map(i => (
               <div
                 key={i}
-                className="h-14 rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 flex items-center justify-between animate-pulse"
+                className="h-14 rounded-xl bg-[var(--sf-raised)] border border-[var(--border-default)] px-4 flex items-center justify-between animate-pulse"
               >
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex-shrink-0" />
-                  <div className="h-4 w-36 bg-white/[0.08] rounded" />
+                  <div className="w-8 h-8 rounded-lg bg-[var(--sf-overlay)] flex-shrink-0" />
+                  <div className="h-4 w-36 bg-[var(--sf-overlay)] rounded" />
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="h-3 w-16 bg-white/[0.04] rounded hidden sm:block" />
-                  <div className="w-7 h-7 rounded-lg bg-white/[0.06]" />
+                  <div className="h-3 w-16 bg-[var(--sf-overlay)] rounded hidden sm:block" />
+                  <div className="w-7 h-7 rounded-lg bg-[var(--sf-overlay)]" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredHabits.length === 0 ? (
-          <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.01] my-4">
-            <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3 text-2xl">
+          <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--sf-raised)] my-4">
+            <div className="w-12 h-12 rounded-xl bg-[var(--sf-overlay)] flex items-center justify-center mx-auto mb-3 text-2xl">
               🎯
             </div>
-            <h3 className="text-base font-semibold text-white mb-1">
+            <h3 className="text-base font-semibold text-[var(--tx-primary)] mb-1">
               {showArchived ? 'No archived habits' : 'No habits found'}
             </h3>
-            <p className="text-xs text-slate-400 max-w-xs mx-auto mb-4">
+            <p className="text-xs text-[var(--tx-secondary)] max-w-xs mx-auto mb-4">
               {searchQuery
                 ? `No habits match "${searchQuery}". Try clearing filters.`
                 : 'Get started by creating your first atomic habit.'}
@@ -238,7 +238,7 @@ export function HabitsPage() {
                   setEditingHabit(null);
                   setIsDrawerOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 text-slate-950 transition-all cursor-pointer"
+                className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Create Habit</span>

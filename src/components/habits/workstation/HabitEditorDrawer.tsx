@@ -117,8 +117,9 @@ export function HabitEditorDrawer({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.14 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/60"
       />
 
       {/* Slide-over Drawer */}
@@ -126,18 +127,20 @@ export function HabitEditorDrawer({
         initial={{ x: '100%' }}
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
-        transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-        className="relative w-full max-w-md h-full bg-[#0d1017] border-l border-white/10 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto z-10"
+        transition={{ duration: 0.16, ease: 'easeOut' }}
+        className="relative w-full max-w-md h-full bg-[var(--sf-raised)] border-l border-[var(--border-strong)] shadow-2xl p-6 flex flex-col justify-between overflow-y-auto z-10"
       >
         <div>
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
-            <h2 className="text-base font-semibold text-white">
+          <div className="flex items-center justify-between pb-4 border-b border-[var(--border-default)]">
+            <h2 className="text-base font-semibold text-[var(--tx-primary)]">
               {initialHabit ? 'Edit Habit' : 'New Habit'}
             </h2>
             <button
+              type="button"
               onClick={onClose}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Close habit editor"
+              className="p-1 rounded-lg text-[var(--tx-muted)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -147,7 +150,7 @@ export function HabitEditorDrawer({
           <form id="habit-form" onSubmit={handleSubmit} className="space-y-5 mt-5">
             {/* Habit Name */}
             <div>
-              <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--tx-secondary)] mb-1.5">
                 Habit Name
               </label>
               <input
@@ -157,13 +160,13 @@ export function HabitEditorDrawer({
                 onChange={e => setName(e.target.value)}
                 placeholder="e.g. Read 20 pages, Morning meditation..."
                 required
-                className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none transition-colors"
+                className="input"
               />
             </div>
 
             {/* Icon Picker */}
             <div>
-              <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--tx-secondary)] mb-1.5">
                 Icon
               </label>
               <div className="flex flex-wrap gap-2">
@@ -177,8 +180,8 @@ export function HabitEditorDrawer({
                     className={cn(
                       'w-9 h-9 rounded-lg border flex items-center justify-center text-base transition-colors cursor-pointer',
                       icon === i
-                        ? 'bg-emerald-500/20 border-emerald-500/50 text-white'
-                        : 'bg-white/[0.03] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]'
+                        ? 'bg-[var(--accent-subtle)] border-[var(--accent)]/50 text-[var(--tx-primary)]'
+                        : 'bg-[var(--sf-overlay)] border-[var(--border-default)] text-[var(--tx-secondary)] hover:border-[var(--border-strong)]'
                     )}
                   >
                     {getHabitEmoji(i)}
@@ -189,7 +192,7 @@ export function HabitEditorDrawer({
 
             {/* Category Selector */}
             <div>
-              <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--tx-secondary)] mb-1.5">
                 Category
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -201,8 +204,8 @@ export function HabitEditorDrawer({
                     className={cn(
                       'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer',
                       category === cat
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-white/[0.02] text-slate-400 hover:text-white border border-white/[0.05]'
+                        ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/35'
+                        : 'bg-[var(--sf-overlay)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] border border-[var(--border-default)]'
                     )}
                   >
                     {cat}
@@ -213,7 +216,7 @@ export function HabitEditorDrawer({
 
             {/* Habit Type (Boolean, Count, Duration) */}
             <div>
-              <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--tx-secondary)] mb-1.5">
                 Tracking Type
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -231,8 +234,8 @@ export function HabitEditorDrawer({
                       className={cn(
                         'p-2.5 rounded-xl border flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer',
                         type === item.id
-                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                          : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                          ? 'bg-[var(--accent-subtle)] border-[var(--accent)]/40 text-[var(--accent-ink)]'
+                          : 'bg-[var(--sf-overlay)] border-[var(--border-default)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
                       )}
                     >
                       <Icon className="w-4 h-4" />
@@ -245,9 +248,9 @@ export function HabitEditorDrawer({
 
             {/* Target Value & Unit if Count/Duration */}
             {type !== 'boolean' && (
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)]">
                 <div>
-                  <label className="block text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--tx-muted)] mb-1">
                     Target Value
                   </label>
                   <input
@@ -255,11 +258,11 @@ export function HabitEditorDrawer({
                     min={1}
                     value={targetValue}
                     onChange={e => setTargetValue(parseInt(e.target.value, 10) || 1)}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none"
+                    className="input px-2.5 py-1.5 text-xs font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--tx-muted)] mb-1">
                     Unit
                   </label>
                   <input
@@ -267,7 +270,7 @@ export function HabitEditorDrawer({
                     value={unit}
                     onChange={e => setUnit(e.target.value)}
                     placeholder="e.g. pages, mins, cups"
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"
+                    className="input px-2.5 py-1.5 text-xs"
                   />
                 </div>
               </div>
@@ -275,25 +278,25 @@ export function HabitEditorDrawer({
 
             {/* Ritual Window */}
             <div>
-              <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--tx-secondary)] mb-1.5">
                 Ritual Window
               </label>
               <div className="grid grid-cols-4 gap-1.5">
-                {[
+                {([
                   { id: 'morning', label: 'Morning', icon: '🌅' },
                   { id: 'afternoon', label: 'Afternoon', icon: '☀️' },
                   { id: 'evening', label: 'Evening', icon: '🌙' },
                   { id: 'anytime', label: 'Anytime', icon: '✨' },
-                ].map(slot => (
+                ] as const).map(slot => (
                   <button
                     key={slot.id}
                     type="button"
-                    onClick={() => setTimeOfDay(slot.id as any)}
+                    onClick={() => setTimeOfDay(slot.id)}
                     className={cn(
                       'py-2 px-1.5 rounded-xl border flex flex-col items-center gap-1 text-center transition-all cursor-pointer',
                       timeOfDay === slot.id
-                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                        : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                        ? 'bg-[var(--accent-subtle)] border-[var(--accent)]/40 text-[var(--accent-ink)]'
+                        : 'bg-[var(--sf-overlay)] border-[var(--border-default)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
                     )}
                   >
                     <span className="text-sm">{slot.icon}</span>
@@ -303,28 +306,28 @@ export function HabitEditorDrawer({
               </div>
             </div>
 
-            {/* Atomic Habit Stacking (James Clear Protocol) */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-teal-500/[0.08] to-emerald-500/[0.03] border border-teal-500/20 space-y-2">
+            {/* Atomic Habit Stacking */}
+            <div className="p-3.5 rounded-xl bg-[var(--accent-subtle)] border border-[var(--accent)]/25 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Zap size={14} className="text-teal-400 fill-teal-400/30" />
-                  <span className="text-xs font-bold text-white tracking-wide">Atomic Habit Stacking</span>
+                  <Zap size={14} className="text-[var(--accent-ink)]" />
+                  <span className="text-xs font-bold text-[var(--tx-primary)] tracking-wide">Atomic Habit Stacking</span>
                 </div>
-                <span className="text-[10px] font-mono text-teal-300 bg-teal-500/15 px-2 py-0.5 rounded-full border border-teal-400/30">
-                  James Clear
+                <span className="text-[10px] font-mono text-[var(--accent-ink)] bg-[var(--sf-raised)] px-2 py-0.5 rounded-full border border-[var(--accent)]/30">
+                  Chain Link
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Stack this ritual immediately after an anchor habit to ignite a kinetic synaptic laser spark when the anchor finishes.
+              <p className="text-[11px] text-[var(--tx-secondary)] leading-relaxed">
+                Stack this ritual immediately after an anchor habit so it primes right when the anchor finishes.
               </p>
               <div>
-                <label className="block text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-1">
+                <label className="block text-[10px] font-medium uppercase tracking-wider text-[var(--tx-muted)] mb-1">
                   Anchor Habit (Trigger):
                 </label>
                 <select
                   value={stackAfterHabitId}
                   onChange={e => setStackAfterHabitId(e.target.value)}
-                  className="w-full bg-[#0b0e14] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-teal-400/50 focus:outline-none cursor-pointer"
+                  className="input px-3 py-2 text-xs cursor-pointer"
                 >
                   <option value="">None (Independent Ritual)</option>
                   {habits
@@ -341,11 +344,11 @@ export function HabitEditorDrawer({
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-4 border-t border-white/[0.08] flex items-center justify-end gap-3 mt-8">
+        <div className="pt-4 border-t border-[var(--border-default)] flex items-center justify-end gap-3 mt-8">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="btn-secondary px-4 py-2 text-xs font-medium"
           >
             Cancel
           </button>
@@ -353,7 +356,7 @@ export function HabitEditorDrawer({
             type="submit"
             form="habit-form"
             disabled={isSubmitting || !name.trim()}
-            className="px-5 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+            className="btn-primary px-5 py-2 text-xs font-semibold disabled:opacity-50"
           >
             {initialHabit ? 'Save Changes' : 'Create Habit'}
           </button>

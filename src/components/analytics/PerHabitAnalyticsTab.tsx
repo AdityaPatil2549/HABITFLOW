@@ -57,7 +57,7 @@ function Heatmap({ logs }: { logs: Record<string, number> }) {
           ))
         )}
       </svg>
-      <div className="flex items-center gap-2 mt-3 text-xs text-slate-400">
+      <div className="flex items-center gap-2 mt-3 text-xs text-[var(--tx-muted)]">
         <span>Less</span>
         {[0, 0.3, 0.6, 1].map(v => (
           <div key={v} className="w-3 h-3 rounded-sm" style={{ background: colorFor(v) }} />
@@ -123,8 +123,8 @@ export function PerHabitAnalyticsTab({ habits }: PerHabitTabProps) {
             onClick={() => setSelectedHabitId(h.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border cursor-pointer ${
               selectedHabit?.id === h.id
-                ? 'bg-emerald-500 text-slate-950 shadow-lg border-emerald-400 font-extrabold'
-                : 'bg-slate-900/60 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+                ? 'bg-[var(--accent)] text-[var(--accent-fg)] border-[var(--accent)] font-extrabold'
+                : 'bg-[var(--sf-raised)] border-[var(--border-default)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:border-[var(--border-strong)]'
             }`}
           >
             <span>
@@ -139,23 +139,23 @@ export function PerHabitAnalyticsTab({ habits }: PerHabitTabProps) {
         <>
           {/* Date range selector */}
           <div className="flex items-center gap-2 mb-4">
-            <div className="flex bg-slate-900/60 p-1 rounded-xl border border-white/10 relative shadow-inner">
+            <div className="flex bg-[var(--sf-raised)] p-1 rounded-xl border border-[var(--border-default)] relative">
               {([7, 30, 90] as const).map(days => (
                 <button
                   key={days}
                   onClick={() => setPerHabitDays(days)}
                   className={`relative z-10 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                     perHabitDays === days
-                      ? 'text-white'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'text-[var(--accent-fg)]'
+                      : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
                   }`}
                 >
                   {perHabitDays === days && (
                     <motion.div
                       layoutId="per-habit-timeframe-pill"
-                      className="absolute inset-0 bg-emerald-500/80 rounded-lg shadow-sm"
+                      className="absolute inset-0 bg-[var(--accent)] rounded-lg"
                       style={{ zIndex: -1 }}
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+                      transition={{ duration: 0.14, ease: 'easeOut' }}
                     />
                   )}
                   {days} Days

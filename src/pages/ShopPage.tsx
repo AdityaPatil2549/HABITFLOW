@@ -1,80 +1,109 @@
 import { useState, useEffect } from 'react';
 import { coinService } from '@/services/coinService';
-import type { ShopItem } from '@/types';
+import type { ShopItem, Theme } from '@/types';
 import {
-  Crown,
   Palette,
-  Package,
+  Shield,
+  Volume2,
   Check,
   Lock,
-  ShoppingBag,
+  Layers,
   Zap,
-  Star,
+  Play,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useToast } from '@/components/common/Toast';
-import { soundService } from '@/services/soundService';
+import { soundService, type AcousticPackId } from '@/services/soundService';
+import {
+  ACCENT_CARTRIDGES,
+  applyAppearanceToDocument,
+  normalizeAccentTheme,
+  resolvePolarityMode,
+} from '@/lib/theme';
 
-const CATEGORY_TABS = [
-  { id: 'all', label: 'All', icon: ShoppingBag },
-  { id: 'theme', label: 'Themes', icon: Palette },
-  { id: 'avatar', label: 'Frames', icon: Crown },
-  { id: 'icon_pack', label: 'Icons', icon: Package },
-  { id: 'badge_frame', label: 'Badges', icon: Star },
-  { id: 'consumable', label: 'Power-ups', icon: Zap },
-] as const;
+type ArmoryFilter = 'all' | 'theme' | 'gear' | 'acoustic_pack';
 
-const RARITY_STYLES: Record<string, { border: string; glow: string; badge: string }> = {
-  common: { border: 'border-slate-500/30', glow: '', badge: 'bg-slate-500/20 text-slate-400' },
-  rare: {
-    border: 'border-blue-500/30',
-    glow: 'shadow-blue-500/10',
-    badge: 'bg-blue-500/20 text-blue-400',
-  },
-  epic: {
-    border: 'border-purple-500/30',
-    glow: 'shadow-purple-500/15',
-    badge: 'bg-purple-500/20 text-purple-400',
-  },
-  legendary: {
-    border: 'border-amber-400/40',
-    glow: 'shadow-amber-400/20',
-    badge: 'bg-amber-400/20 text-amber-400',
-  },
+const ARMORY_TABS: { id: ArmoryFilter; label: string; icon: typeof Layers }[] = [
+  { id: 'all', label: 'All Gear', icon: Layers },
+  { id: 'theme', label: 'Signal Inks', icon: Palette },
+  { id: 'gear', label: 'Protection Gear', icon: Shield },
+  { id: 'acoustic_pack', label: 'Acoustic Packs', icon: Volume2 },
+];
+
+const RARITY_BORDER: Record<ShopItem['rarity'], string> = {
+  common: 'border-[var(--border-default)]',
+  rare: 'border-[var(--accent)]',
+  epic: 'border-[var(--accent)]',
+  legendary: 'border-amber-500/60',
 };
+
+function matchesArmoryTab(item: ShopItem, filter: ArmoryFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'theme') return item.category === 'theme';
+  if (filter === 'acoustic_pack') return item.category === 'acoustic_pack';
+  return (
+    item.category === 'consumable' ||
+    item.category === 'avatar' ||
+    item.category === 'badge_frame'
+  );
+}
 
 export function ShopPage() {
   const [balance, setBalance] = useState(0);
-  const [category, setCategory] = useState('all');
+  const [filter, setFilter] = useState<ArmoryFilter>('all');
   const [purchased, setPurchased] = useState<Set<string>>(new Set());
   const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [activeTheme, setActiveTheme] = useState<string>('obsidian');
+  const [equippedPack, setEquippedPack] = useState<AcousticPackId>(soundService.getAcousticPack());
+  const [hoveredTheme, setHoveredTheme] = useState<string | null>(null);
   const toast = useToast();
 
   const shopItems = coinService.getShopItems();
 
   async function loadData() {
-    const [bal, purchases] = await Promise.all([
+    const [{ getOrCreateSettings }, bal, purchases] = await Promise.all([
+      import('@/db'),
       coinService.getBalance(),
       coinService.getPurchasedItems(),
     ]);
+    const settings = await getOrCreateSettings();
     setBalance(bal);
     setPurchased(new Set(purchases.map(p => p.item_id)));
+    setActiveTheme(normalizeAccentTheme(settings.theme));
   }
 
   useEffect(() => {
-    document.title = 'Rewards Shop — HabitFlow';
+    document.title = 'Armory — HabitFlow';
     const timer = setTimeout(() => {
       loadData();
     }, 0);
     return () => clearTimeout(timer);
   }, []);
 
-  const filtered = category === 'all' ? shopItems : shopItems.filter(i => i.category === category);
+  const filtered = shopItems.filter(item => matchesArmoryTab(item, filter));
+
+  async function handleEquipTheme(themeId: string) {
+    const normalized = normalizeAccentTheme(themeId);
+    const { db, getOrCreateSettings } = await import('@/db');
+    const settings = await getOrCreateSettings();
+    await db.settings.update(settings.id, { theme: normalized as Theme });
+    applyAppearanceToDocument(resolvePolarityMode(settings), normalized);
+    window.dispatchEvent(new CustomEvent('habitflow-appearance-changed'));
+    setActiveTheme(normalized);
+    soundService.playTick();
+    toast.success('Ink cartridge equipped');
+  }
+
+  function handleEquipPack(packId: AcousticPackId) {
+    soundService.setAcousticPack(packId);
+    soundService.previewPack(packId);
+    setEquippedPack(packId);
+    toast.success('Acoustic switch pack active');
+  }
 
   async function handlePurchase(item: ShopItem) {
-    if (purchased.has(item.id)) return;
+    if (item.category !== 'consumable' && purchased.has(item.id)) return;
     if (balance < item.price) {
-      toast.error('Not enough Coins!');
+      toast.error('Insufficient coins');
       return;
     }
 
@@ -87,12 +116,11 @@ export function ShopPage() {
         xp.streakFreezes = (xp.streakFreezes || 0) + 1;
         await db.userXP.put(xp);
 
-        // Reactively notify gamification store so all badges/counters update instantly
         const { useGamificationStore } = await import('@/store/gamificationStore');
         await useGamificationStore.getState().loadXP();
 
-        soundService.playLevelUp();
-        toast.success(`🎉 Bought ${item.name}!`);
+        soundService.playUnlatchClick();
+        toast.success(`Acquired ${item.name}`);
         await loadData();
       } else {
         toast.error('Purchase failed');
@@ -106,22 +134,14 @@ export function ShopPage() {
       const { useGamificationStore } = await import('@/store/gamificationStore');
       await useGamificationStore.getState().loadXP();
 
-      soundService.playLevelUp();
-      toast.success(`🎉 Unlocked ${item.name}!`);
+      soundService.playUnlatchClick();
+      toast.success(`Unlocked ${item.name}`);
       await loadData();
 
-      // Apply theme instantly if it's a theme item
       if (item.category === 'theme' && item.preview) {
-        const root = document.documentElement;
-        if (item.preview === 'indigo') {
-          root.removeAttribute('data-theme');
-        } else {
-          root.setAttribute('data-theme', item.preview);
-        }
-        // Persist to Settings so it survives page reload
-        const { db, getOrCreateSettings } = await import('@/db');
-        const s = await getOrCreateSettings();
-        await db.settings.update(s.id, { theme: item.preview as any });
+        await handleEquipTheme(item.preview);
+      } else if (item.category === 'acoustic_pack') {
+        handleEquipPack(item.id as AcousticPackId);
       }
     } else {
       toast.error('Purchase failed');
@@ -130,166 +150,209 @@ export function ShopPage() {
   }
 
   return (
-    <div className="space-y-6 relative pb-10">
-
+    <div className="space-y-6 pb-12 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[var(--border-default)]">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 mb-2 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-            <span>Coins & Rewards Economy</span>
-          </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
-            Rewards Marketplace
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">Reinvest consistency coins into exclusive visual artifacts.</p>
+          <p className="font-label-caps">Workspace / Armory</p>
+          <h1 className="font-h1 text-[var(--tx-primary)] mt-1">Armory</h1>
+          <p className="text-sm text-[var(--tx-secondary)] mt-1">
+            Reinvest execution coins into Signal Inks, Continuity Shields, and Acoustic Packs.
+          </p>
         </div>
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-400/10 border border-amber-400/25 shadow-[0_0_20px_rgba(245,158,11,0.2)] font-mono self-start sm:self-auto"
-        >
-          <Zap size={20} className="text-amber-400" />
-          <span className="text-lg font-black text-amber-400 tabular-nums">{balance}</span>
-          <span className="text-xs text-amber-400/70 uppercase tracking-widest font-sans font-bold">Coins</span>
-        </motion.div>
+
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--sf-raised)] border border-[var(--border-strong)] font-mono self-start sm:self-auto">
+          <Zap size={16} className="text-[var(--accent-ink)]" />
+          <span className="font-data text-lg font-bold text-[var(--tx-primary)]">{balance}</span>
+          <span className="text-xs uppercase tracking-wider text-[var(--tx-muted)]">Coins</span>
+        </div>
       </div>
 
       {/* Category Tabs */}
-      <div className="flex gap-1.5 p-1.5 bg-[#0e111a]/80 backdrop-blur-xl rounded-2xl border border-white/[0.08] overflow-x-auto hide-scrollbar shadow-lg">
-        {CATEGORY_TABS.map(tab => {
+      <div
+        role="tablist"
+        aria-label="Armory categories"
+        className="flex gap-1.5 p-1 bg-[var(--sf-raised)] rounded-xl border border-[var(--border-default)] overflow-x-auto"
+      >
+        {ARMORY_TABS.map(tab => {
           const Icon = tab.icon;
-          const isActive = category === tab.id;
+          const isActive = filter === tab.id;
           return (
             <button
               key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
               onClick={() => {
-                setCategory(tab.id);
+                setFilter(tab.id);
                 soundService.playTick();
               }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex-shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                 isActive
-                  ? 'bg-white/15 text-white shadow-sm border border-white/20 backdrop-blur-md'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                  ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
+                  : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
               }`}
             >
-              <Icon size={14} className={isActive ? 'text-amber-400' : ''} />
-              {tab.label}
+              <Icon size={14} />
+              <span>{tab.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Items Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 auto-rows-fr">
-        {filtered.map((item, idx) => {
+      {/* Armory Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map(item => {
           const owned = item.category === 'consumable' ? false : purchased.has(item.id);
           const canAfford = balance >= item.price;
-          const rarity = RARITY_STYLES[item.rarity];
           const isPurchasing = purchasing === item.id;
+          const cartridge =
+            item.category === 'theme'
+              ? ACCENT_CARTRIDGES.find(c => c.id === item.id)
+              : undefined;
+          const isEquippedTheme =
+            item.category === 'theme' && activeTheme === normalizeAccentTheme(item.id);
+          const isEquippedPack =
+            item.category === 'acoustic_pack' && equippedPack === item.id;
 
           return (
-            <motion.div
+            <div
               key={item.id}
-              initial={{ opacity: 0, y: 10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: idx * 0.04, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-              className={`h-full ${item.category === 'theme' ? 'col-span-2' : 'col-span-1'}`}
+              onMouseEnter={() => {
+                if (cartridge) setHoveredTheme(cartridge.swatchDark);
+              }}
+              onMouseLeave={() => {
+                if (cartridge) setHoveredTheme(null);
+              }}
+              className={`card-raised p-5 flex flex-col justify-between gap-4 transition-colors duration-100 ${RARITY_BORDER[item.rarity]}`}
             >
-              <div className="h-full">
-                <div className={`relative h-full rounded-2xl border ${rarity.border} overflow-hidden group bg-[#0e111a]/75 backdrop-blur-2xl shadow-lg transition-[transform,box-shadow,border-color] duration-300 ease-out hover:border-amber-400/40 ${rarity.glow ? `shadow-lg ${rarity.glow}` : ''}`}>
-                  {/* Legendary shimmer */}
-                  {item.rarity === 'legendary' && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  {cartridge ? (
+                    <span
+                      className="w-10 h-10 rounded-xl border border-[var(--border-strong)] flex items-center justify-center shrink-0"
+                      style={{
+                        backgroundColor: cartridge.swatchDark,
+                        outline:
+                          hoveredTheme === cartridge.swatchDark
+                            ? `2px solid ${cartridge.swatchDark}`
+                            : undefined,
+                        outlineOffset: '2px',
+                      }}
+                    >
+                      <Palette size={16} className="text-white" />
+                    </span>
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-xl shrink-0">
+                      <span aria-hidden="true">{item.icon}</span>
+                    </div>
                   )}
 
-                  <div className="relative p-5 flex flex-col items-center text-center">
-                    {/* Rarity badge */}
-                    <span
-                      className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider ${rarity.badge}`}
-                    >
-                      {item.rarity}
-                    </span>
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-wider bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">
+                    {item.rarity}
+                  </span>
+                </div>
 
-                    {/* Icon */}
-                    <div className={`text-4xl mb-3 group-hover:scale-110 transition-transform duration-300 ease-out ${item.category === 'theme' ? 'text-5xl' : ''}`}>
-                      {item.icon}
-                    </div>
-
-                    {/* Name & Description */}
-                    <h3 className="text-sm font-bold text-white mb-1 tracking-tight">{item.name}</h3>
-                    <p className="text-xs text-slate-300 leading-relaxed mb-4 line-clamp-2">
-                      {item.description}
-                    </p>
-
-                    {/* Price / Status */}
-                    {owned ? (
-                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
-                        <Check size={14} />
-                        Owned
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => handlePurchase(item)}
-                        disabled={!canAfford || isPurchasing}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
-                          canAfford
-                            ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-extrabold shadow-[0_0_15px_rgba(245,158,11,0.35)] hover:brightness-110'
-                            : 'bg-white/5 border border-white/5 text-slate-500 cursor-not-allowed'
-                        }`}
-                      >
-                        {isPurchasing ? (
-                          <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : !canAfford ? (
-                          <Lock size={12} />
-                        ) : (
-                          <Zap size={12} className="stroke-[3]" />
-                        )}
-                        <span>{item.price} Coins</span>
-                      </button>
-                    )}
-                  </div>
+                <div>
+                  <h2 className="text-sm font-bold text-[var(--tx-primary)]">{item.name}</h2>
+                  <p className="text-xs text-[var(--tx-secondary)] mt-1 leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
               </div>
-            </motion.div>
+
+              <div className="flex items-center justify-between gap-2 pt-3 border-t border-[var(--border-default)]">
+                {item.category === 'acoustic_pack' && (
+                  <button
+                    type="button"
+                    onClick={() => soundService.previewPack(item.id as AcousticPackId)}
+                    aria-label={`Sample ${item.name}`}
+                    className="btn-secondary px-2.5 py-1.5 text-xs inline-flex items-center gap-1.5"
+                  >
+                    <Play size={11} />
+                    <span>Sample</span>
+                  </button>
+                )}
+
+                <div className="ml-auto flex items-center gap-2">
+                  {owned ? (
+                    item.category === 'theme' ? (
+                      <button
+                        type="button"
+                        disabled={isEquippedTheme}
+                        onClick={() => handleEquipTheme(item.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 border ${
+                          isEquippedTheme
+                            ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border-[var(--accent)] cursor-default'
+                            : 'btn-secondary'
+                        }`}
+                      >
+                        <Check size={13} />
+                        <span>{isEquippedTheme ? 'Equipped' : 'Equip'}</span>
+                      </button>
+                    ) : item.category === 'acoustic_pack' ? (
+                      <button
+                        type="button"
+                        disabled={isEquippedPack}
+                        onClick={() => handleEquipPack(item.id as AcousticPackId)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 border ${
+                          isEquippedPack
+                            ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border-[var(--accent)] cursor-default'
+                            : 'btn-secondary'
+                        }`}
+                      >
+                        <Check size={13} />
+                        <span>{isEquippedPack ? 'Active' : 'Activate'}</span>
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--accent-subtle)] text-[var(--accent-ink)] text-xs font-semibold border border-[var(--border-default)]">
+                        <Check size={13} />
+                        <span>Owned</span>
+                      </span>
+                    )
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handlePurchase(item)}
+                      disabled={!canAfford || isPurchasing}
+                      className="btn-primary px-3.5 py-1.5 text-xs inline-flex items-center gap-1.5"
+                    >
+                      {!canAfford ? <Lock size={12} /> : <Zap size={12} />}
+                      <span className="font-data">{item.price} Coins</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
 
       {/* How to earn coins */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-      >
-        <div>
-          <div className="rounded-2xl dark:bg-black/20 bg-slate-100 backdrop-blur-md border dark:border-white/10 border-slate-900/5 p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Zap size={18} className="text-amber-400" />
-              <h3 className="text-sm font-bold dark:text-white text-slate-900">How to Earn Coins</h3>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: 'Complete habit', coins: 10, icon: '✅' },
-                { label: 'Complete task', coins: 20, icon: '📋' },
-                { label: 'Consistency', coins: 'Bonus', icon: '🔥' },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-900 border border-white/10 h-full"
-                >
-                    <span className="text-lg">{item.icon}</span>
-                    <div>
-                      <p className="text-xs dark:text-slate-300 text-slate-600 font-medium">{item.label}</p>
-                      <p className="text-xs font-bold text-amber-500 dark:text-amber-400">{typeof item.coins === 'number' ? `+${item.coins}` : item.coins}</p>
-                    </div>
-                  </div>
-              ))}
-            </div>
-          </div>
+      <section className="card-raised p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Zap size={15} className="text-[var(--accent-ink)]" />
+          <h2 className="font-label-caps">Coin Yield Schedule</h2>
         </div>
-      </motion.div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { label: 'Complete daily habit', coins: '+5 Coins' },
+            { label: 'Complete tactical task', coins: '+10 Coins' },
+            { label: 'All daily habits & streaks', coins: '+20 to +500' },
+          ].map(row => (
+            <div
+              key={row.label}
+              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)]"
+            >
+              <span className="text-xs text-[var(--tx-secondary)]">{row.label}</span>
+              <span className="font-data text-xs font-bold text-[var(--accent-ink)]">
+                {row.coins}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
+export default ShopPage;

@@ -19,7 +19,7 @@ import {
 import { format, subDays, getDay } from 'date-fns';
 import { db } from '../../db';
 import { habitService } from '../../services/habitService';
-import type { HabitWithStreak, Mood } from '../../types';
+import type { HabitWithStreak, HabitLog, Mood } from '../../types';
 import {
   StatCard,
   ChartCard,
@@ -35,7 +35,7 @@ import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 interface OverviewTabProps {
   habits: HabitWithStreak[];
   moods: Mood[];
-  logs30Days: Map<string, any[]>;
+  logs30Days: Map<string, HabitLog[]>;
   bestStreak: number;
   avgCompletion: number;
   avgMood: string | null;
@@ -158,17 +158,17 @@ function BestWorstDay({ habits }: { habits: HabitWithStreak[] }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl p-4 text-center border border-emerald-500/20 bg-emerald-500/5">
+        <div className="rounded-xl p-4 text-center border border-emerald-500/25 bg-emerald-500/5">
           <div className="text-2xl mb-1 select-none">🏆</div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Best Day</p>
-          <p className="font-bold text-slate-900 dark:text-white">{best.day}</p>
-          <p className="text-emerald-400 text-sm font-bold">{best.pct}%</p>
+          <p className="text-xs text-[var(--tx-muted)] mb-1">Best Day</p>
+          <p className="font-bold text-[var(--tx-primary)]">{best.day}</p>
+          <p className="text-emerald-400 text-sm font-bold font-mono">{best.pct}%</p>
         </div>
-        <div className="rounded-xl p-4 text-center border border-red-500/20 bg-red-500/5">
+        <div className="rounded-xl p-4 text-center border border-red-500/25 bg-red-500/5">
           <div className="text-2xl mb-1 select-none">⚠️</div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Weakest Day</p>
-          <p className="font-bold text-slate-900 dark:text-white">{worst.day}</p>
-          <p className="text-orange-400 text-sm font-bold">{worst.pct}%</p>
+          <p className="text-xs text-[var(--tx-muted)] mb-1">Weakest Day</p>
+          <p className="font-bold text-[var(--tx-primary)]">{worst.day}</p>
+          <p className="text-orange-400 text-sm font-bold font-mono">{worst.pct}%</p>
         </div>
       </div>
       <div style={{ width: '100%', height: 180, minWidth: 0 }}>
@@ -180,7 +180,7 @@ function BestWorstDay({ habits }: { habits: HabitWithStreak[] }) {
               contentStyle={TOOLTIP_STYLE}
               itemStyle={TOOLTIP_ITEM_STYLE}
               labelStyle={TOOLTIP_LABEL_STYLE}
-              formatter={(v: any) => [`${v}%`, 'Completion']}
+              formatter={(v: unknown) => [`${v}%`, 'Completion']}
             />
             <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={48}>
               {dayData.map((d, i) => (
@@ -204,7 +204,7 @@ function BestWorstDay({ habits }: { habits: HabitWithStreak[] }) {
 }
 
 // ─── 30-day Completion Trend Line ─────────────────────────────
-function TrendLine({ habits, logsByDate }: { habits: HabitWithStreak[]; logsByDate: Map<string, any[]> }) {
+function TrendLine({ habits, logsByDate }: { habits: HabitWithStreak[]; logsByDate: Map<string, HabitLog[]> }) {
   const data = useMemo(() => {
     const days = Array.from({ length: 30 }, (_, i) =>
       format(subDays(new Date(), 29 - i), 'yyyy-MM-dd')
@@ -239,7 +239,7 @@ function TrendLine({ habits, logsByDate }: { habits: HabitWithStreak[]; logsByDa
             contentStyle={TOOLTIP_STYLE}
             itemStyle={TOOLTIP_ITEM_STYLE}
             labelStyle={TOOLTIP_LABEL_STYLE}
-            formatter={(v: any) => [`${v}%`, 'Completion']}
+            formatter={(v: unknown) => [`${v}%`, 'Completion']}
           />
           <Area
             type="monotone"
@@ -287,7 +287,7 @@ function MoodTrend({ moods }: { moods: Mood[] }) {
             contentStyle={TOOLTIP_STYLE}
             itemStyle={TOOLTIP_ITEM_STYLE}
             labelStyle={TOOLTIP_LABEL_STYLE}
-            formatter={(v: any) => [`${v}/5`, 'Mood Score']}
+            formatter={(v: unknown) => [`${v}/5`, 'Mood Score']}
           />
           <Area
             type="monotone"

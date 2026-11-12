@@ -38,10 +38,11 @@ function DurationPicker({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      className="dark-overlay fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/95 backdrop-blur-xl"
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.14, ease: 'easeOut' }}
+      className="fixed inset-0 z-[9998] flex items-center justify-center bg-[var(--sf-base)]"
       style={{
         position: 'fixed',
         top: 0,
@@ -55,24 +56,21 @@ function DurationPicker({
         justifyContent: 'center',
       }}
     >
-      {/* Glow orb */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl opacity-10 bg-brand-400 pointer-events-none" />
-
       <div
         className="relative z-10 px-6 w-full max-w-sm"
         style={{ display: 'block', width: '100%', maxWidth: '384px', flexShrink: 0 }}
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
-            <Timer size={28} className="text-brand-400" />
+          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-[var(--accent-subtle)] border border-[var(--accent)]/25 flex items-center justify-center">
+            <Timer size={28} className="text-[var(--accent-ink)]" />
           </div>
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-brand-400 mb-2">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--accent-ink)] mb-2">
             Focus Mode
           </p>
-          <h2 className="text-2xl font-black text-white mb-2">Set your duration</h2>
+          <h2 className="text-2xl font-black text-[var(--tx-primary)] mb-2">Set your duration</h2>
           {targetTitle && (
-            <p className="text-sm text-slate-500 truncate px-4">
-              for: <span className="text-slate-300 font-semibold">{targetTitle}</span>
+            <p className="text-sm text-[var(--tx-muted)] truncate px-4">
+              for: <span className="text-[var(--tx-secondary)] font-semibold">{targetTitle}</span>
             </p>
           )}
         </div>
@@ -86,10 +84,10 @@ function DurationPicker({
                 setSelected(min);
                 setCustom('');
               }}
-              className={`py-3 rounded-2xl text-sm font-bold transition-all border ${
+              className={`py-3 rounded-xl text-sm font-bold font-mono transition-all border cursor-pointer ${
                 selected === min && !custom
-                  ? 'bg-brand-500/20 border-brand-500/50 text-brand-300 shadow-lg shadow-brand-500/10'
-                  : 'bg-white/[0.03] border-white/8 text-slate-400 hover:border-white/20 hover:text-white'
+                  ? 'bg-[var(--accent-subtle)] border-[var(--accent)] text-[var(--accent-ink)]'
+                  : 'bg-[var(--sf-raised)] border-[var(--border-default)] text-[var(--tx-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--tx-primary)]'
               }`}
             >
               {min}
@@ -110,10 +108,10 @@ function DurationPicker({
               setCustom(e.target.value);
               setSelected(0);
             }}
-            className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-5 py-3.5 text-white text-sm font-medium outline-none placeholder-slate-600 focus:border-brand-500/40 transition-all text-center"
+            className="input rounded-xl px-5 py-3.5 text-sm font-medium text-center"
           />
           {custom && parseInt(custom) > 0 && (
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-400 font-bold">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[var(--accent-ink)] font-bold">
               ✓
             </span>
           )}
@@ -122,55 +120,55 @@ function DurationPicker({
         {/* Strict Mode Toggle */}
         <div
           onClick={() => setIsStrict(!isStrict)}
-          className={`flex items-center justify-between px-4 py-3 rounded-2xl mb-6 cursor-pointer border transition-all ${
-            isStrict ? 'bg-rose-500/10 border-rose-500/30' : 'bg-white/[0.02] border-white/5'
+          className={`flex items-center justify-between px-4 py-3 rounded-xl mb-6 cursor-pointer border transition-all ${
+            isStrict ? 'bg-rose-500/10 border-rose-500/30' : 'bg-[var(--sf-raised)] border-[var(--border-default)]'
           }`}
         >
           <div>
             <h4
-              className={`text-sm font-bold flex items-center gap-2 ${isStrict ? 'text-rose-400' : 'text-slate-300'}`}
+              className={`text-sm font-bold flex items-center gap-2 ${isStrict ? 'text-rose-400' : 'text-[var(--tx-secondary)]'}`}
             >
               <ShieldAlert size={14} /> Strict Mode
             </h4>
-            <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+            <p className="text-[10px] text-[var(--tx-muted)] mt-0.5 leading-tight">
               Timer fails if you leave the app for &gt;5 seconds.
             </p>
           </div>
           <div
-            className={`w-10 h-5 rounded-full transition-colors relative flex items-center px-1 ${isStrict ? 'bg-rose-500' : 'bg-slate-800'}`}
+            className={`w-10 h-5 rounded-full transition-colors relative flex items-center px-1 ${isStrict ? 'bg-rose-500' : 'bg-[var(--sf-dim)] border border-[var(--border-default)]'}`}
           >
             <motion.div
               layout
               className="w-3 h-3 bg-white rounded-full shadow-sm"
               animate={{ x: isStrict ? 20 : 0 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              transition={{ duration: 0.12 }}
             />
           </div>
         </div>
 
         {/* XP preview */}
-        <div className="flex items-center justify-center gap-2 mb-6 py-3 px-4 rounded-2xl bg-amber-500/8 border border-amber-500/15">
+        <div className="flex items-center justify-center gap-2 mb-6 py-3 px-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
           <Zap size={14} className="text-amber-400" />
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-[var(--tx-secondary)]">
             Complete session → earn{' '}
-            <span className="text-amber-400 font-black">
+            <span className="text-amber-400 font-black font-mono">
               {xpPreview > 0 ? `~${xpPreview} XP` : '—'}
             </span>
           </p>
         </div>
-        <p className="text-center text-xs text-slate-600 mb-6">1 XP per minute · minimum 5 XP</p>
+        <p className="text-center text-xs text-[var(--tx-muted)] mb-6">1 XP per minute · minimum 5 XP</p>
 
         {/* Actions */}
         <button
           onClick={() => onStart(minutes, isStrict)}
           disabled={minutes < 1 || minutes > 480}
-          className="w-full py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-brand-500 to-violet-600 shadow-xl shadow-brand-500/25 active:scale-95 transition-all text-base mb-3 disabled:opacity-40"
+          className="btn-primary w-full py-4 font-bold text-base mb-3 disabled:opacity-40"
         >
           Start {minutes}min Focus ⏱
         </button>
         <button
           onClick={onCancel}
-          className="w-full py-3 rounded-2xl text-slate-500 text-sm font-semibold hover:text-slate-300 transition-colors"
+          className="w-full py-3 rounded-xl text-[var(--tx-muted)] text-sm font-semibold hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
         >
           Cancel
         </button>
@@ -318,22 +316,27 @@ export function FocusOverlay() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="dark-overlay fixed inset-0 z-[9999] flex flex-col items-center justify-center text-white overflow-hidden"
+        transition={{ duration: 0.14 }}
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[var(--sf-base)] text-[var(--tx-primary)] overflow-hidden"
       >
 
         {/* Ambient Sound Controls */}
         <div className="absolute top-6 right-6 z-50">
-          <div className="flex bg-slate-900/50 backdrop-blur-md rounded-full border border-white/10 p-1 shadow-xl">
+          <div className="flex bg-[var(--sf-raised)] rounded-full border border-[var(--border-default)] p-1 shadow-lg">
             <button
+              type="button"
+              aria-label="Turn ambient sound off"
               onClick={() => setAmbientSound('off')}
-              className={`p-2 rounded-full transition-colors ${ambientSound === 'off' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`p-2 rounded-full transition-colors cursor-pointer ${ambientSound === 'off' ? 'bg-[var(--sf-overlay)] text-[var(--tx-primary)]' : 'text-[var(--tx-muted)] hover:text-[var(--tx-secondary)]'}`}
               title="Sound Off"
             >
               <VolumeX size={16} />
             </button>
             <button
+              type="button"
+              aria-label="Enable brown noise ambient audio"
               onClick={() => setAmbientSound('brown')}
-              className={`p-2 rounded-full transition-colors ${ambientSound === 'brown' ? 'bg-brand-500/20 text-brand-400' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`p-2 rounded-full transition-colors cursor-pointer ${ambientSound === 'brown' ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)]' : 'text-[var(--tx-muted)] hover:text-[var(--tx-secondary)]'}`}
               title="Brown Noise"
             >
               <Music size={16} />
@@ -345,10 +348,11 @@ export function FocusOverlay() {
         <AnimatePresence>
           {strictWarning && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: -20 }}
+              initial={{ opacity: 0, scale: 0.96, y: -8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute top-20 z-50 bg-rose-500/90 backdrop-blur-md text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-2xl shadow-rose-500/20 border border-white/20"
+              transition={{ duration: 0.14 }}
+              className="absolute top-20 z-50 bg-rose-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-xl border border-rose-400/30"
             >
               <AlertTriangle size={20} />
               Careful! Stay on this screen to keep your XP.
@@ -357,9 +361,9 @@ export function FocusOverlay() {
         </AnimatePresence>
 
         {/* Bottom progress bar */}
-        <div className="absolute bottom-0 left-0 h-1 w-full bg-white/5">
+        <div className="absolute bottom-0 left-0 h-1 w-full bg-[var(--sf-overlay)]">
           <div
-            className={`h-full transition-all duration-1000 ${isFocus ? 'bg-gradient-to-r from-brand-500 to-violet-600' : 'bg-gradient-to-r from-emerald-500 to-emerald-400'}`}
+            className="h-full transition-all duration-1000 bg-[var(--accent)]"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -370,7 +374,7 @@ export function FocusOverlay() {
         >
           {/* Mode label */}
           {isFocus ? (
-            <p className="text-brand-400 font-black tracking-[0.25em] uppercase text-[11px] mb-3">
+            <p className="text-[var(--accent-ink)] font-black tracking-[0.25em] uppercase text-[11px] mb-3">
               🎯 Deep Focus
             </p>
           ) : (
@@ -381,11 +385,11 @@ export function FocusOverlay() {
 
           {/* Target title */}
           {target && isFocus && (
-            <h2 className="text-lg font-bold text-white/60 mb-8 truncate w-full">{target.title}</h2>
+            <h2 className="text-lg font-bold text-[var(--tx-secondary)] mb-8 truncate w-full">{target.title}</h2>
           )}
           {!isFocus && (
-            <h2 className="text-lg font-bold text-white/60 mb-8">
-              You earned <span className="text-amber-400 font-black">+{xpEarned} XP</span>! Take a
+            <h2 className="text-lg font-bold text-[var(--tx-secondary)] mb-8">
+              You earned <span className="text-amber-400 font-black font-mono">+{xpEarned} XP</span>! Take a
               breather.
             </h2>
           )}
@@ -399,7 +403,7 @@ export function FocusOverlay() {
                 cy="100"
                 r="88"
                 fill="none"
-                stroke="rgba(255,255,255,0.04)"
+                stroke="var(--border-default)"
                 strokeWidth="6"
               />
               <circle
@@ -407,22 +411,21 @@ export function FocusOverlay() {
                 cy="100"
                 r="88"
                 fill="none"
-                stroke={isFocus ? '#818cf8' : '#34d399'}
+                stroke={isFocus ? 'var(--accent)' : '#34d399'}
                 strokeWidth="6"
                 strokeLinecap="round"
                 strokeDasharray={`${2 * Math.PI * 88}`}
                 strokeDashoffset={`${2 * Math.PI * 88 * (1 - progress / 100)}`}
                 className="transition-all duration-1000"
-                style={{ filter: `drop-shadow(0 0 12px ${isFocus ? '#818cf8' : '#34d399'})` }}
               />
             </svg>
 
             {/* Timer text on top */}
             <div className="text-center z-20 relative">
-              <span className="text-6xl font-black tabular-nums tracking-tight text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+              <span className="text-6xl font-black font-mono tabular-nums tracking-tight text-[var(--tx-primary)]">
                 {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
               </span>
-              <p className="text-blue-300/50 text-sm mt-1 font-medium">
+              <p className="text-[var(--tx-muted)] text-sm mt-1 font-medium">
                 {isFocus ? 'remaining' : 'break time'}
               </p>
             </div>
@@ -433,10 +436,11 @@ export function FocusOverlay() {
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-2 mb-6 py-2 px-5 rounded-full bg-amber-500/10 border border-amber-500/20 whitespace-nowrap shadow-lg shadow-amber-500/5"
+              transition={{ duration: 0.14 }}
+              className="flex items-center justify-center gap-2 mb-6 py-2 px-5 rounded-full bg-amber-500/10 border border-amber-500/20 whitespace-nowrap"
             >
               <Zap size={14} className="text-amber-400" />
-              <span className="text-sm font-black text-amber-400">{liveXP} XP earned so far</span>
+              <span className="text-sm font-black font-mono text-amber-400">{liveXP} XP earned so far</span>
             </motion.div>
           )}
           {(!isFocus || totalFocusSeconds === 0) && <div className="mb-6" />}
@@ -445,17 +449,21 @@ export function FocusOverlay() {
           <div className="flex items-center justify-center gap-5">
             {/* Stop / Give Up */}
             <button
+              type="button"
               onClick={stopFocus}
+              aria-label="End focus session"
               title="End session"
-              className="w-14 h-14 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/10 hover:bg-red-500/15 hover:border-red-500/30 text-white/50 hover:text-red-400 transition-all"
+              className="w-14 h-14 rounded-full flex items-center justify-center bg-[var(--sf-raised)] border border-[var(--border-default)] hover:bg-red-500/15 hover:border-red-500/30 text-[var(--tx-muted)] hover:text-red-400 transition-all cursor-pointer"
             >
               <XCircle size={22} />
             </button>
 
             {/* Play / Pause */}
             <button
+              type="button"
               onClick={toggleTimer}
-              className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-95 text-white ${isFocus ? 'bg-gradient-to-r from-brand-500 to-violet-600 shadow-brand-500/30' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30'}`}
+              aria-label={isRunning ? 'Pause focus timer' : 'Resume focus timer'}
+              className={`w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-150 active:scale-95 cursor-pointer ${isFocus ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : 'bg-[var(--ok)] text-[var(--accent-fg)]'}`}
             >
               {isRunning ? (
                 <Pause size={30} fill="currentColor" />
@@ -466,15 +474,17 @@ export function FocusOverlay() {
 
             {/* Mark done early */}
             <button
+              type="button"
               onClick={handleCompleteEarly}
+              aria-label={isFocus ? 'Complete focus session early' : 'End break early'}
               title={isFocus ? 'Mark done & take break' : 'End break'}
-              className="w-14 h-14 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/10 hover:bg-emerald-500/15 hover:border-emerald-500/30 text-white/50 hover:text-emerald-400 transition-all"
+              className="w-14 h-14 rounded-full flex items-center justify-center bg-[var(--sf-raised)] border border-[var(--border-default)] hover:bg-emerald-500/15 hover:border-emerald-500/30 text-[var(--tx-muted)] hover:text-emerald-400 transition-all cursor-pointer"
             >
               <CheckCircle2 size={22} />
             </button>
           </div>
 
-          <p className="text-slate-600 text-xs mt-8 leading-relaxed whitespace-nowrap">
+          <p className="text-[var(--tx-muted)] text-xs mt-8 leading-relaxed whitespace-nowrap">
             {isFocus
               ? `Stay focused — you earn 1 XP per minute.`
               : "The next session starts when you're ready."}

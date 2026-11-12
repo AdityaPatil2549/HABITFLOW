@@ -8,42 +8,42 @@ export function TermsPage() {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] px-6 py-12 max-w-3xl mx-auto">
+    <div className="min-h-[100dvh] px-6 py-12 max-w-3xl mx-auto text-[var(--tx-primary)]">
       <Link
-        to="/dashboard"
-        className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-8 active:scale-[0.98]"
+        to="/"
+        className="inline-flex items-center gap-2 text-sm text-[var(--tx-muted)] hover:text-[var(--tx-primary)] transition-colors duration-150 mb-8 active:scale-[0.98]"
       >
         <ArrowLeft size={16} />
-        Back to Dashboard
+        Back to Today
       </Link>
 
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-          <FileText size={20} className="text-emerald-400" />
+        <div className="w-10 h-10 rounded-xl bg-[var(--ok-subtle)] flex items-center justify-center">
+          <FileText size={20} className="text-[var(--ok)]" />
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-white">Terms of Service</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--tx-primary)]">Terms of Service</h1>
       </div>
 
-      <div className="prose prose-invert prose-sm max-w-none space-y-6 text-slate-300 leading-relaxed">
-        <p className="text-slate-400 text-sm">Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+      <div className="prose prose-invert prose-sm max-w-none space-y-6 text-[var(--tx-secondary)] leading-relaxed">
+        <p className="text-[var(--tx-muted)] text-sm">Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">1. Acceptance of Terms</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">1. Acceptance of Terms</h2>
           <p>By using HabitFlow, you agree to these terms. If you do not agree, please do not use the application.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">2. Description of Service</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">2. Description of Service</h2>
           <p>HabitFlow is a personal habit tracking and productivity application. It provides tools for habit management, task tracking, mood logging, analytics, and gamified progress visualization. The service is provided "as is" without warranty of any kind.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">3. User Accounts</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">3. User Accounts</h2>
           <p>Account creation is optional. Creating an account enables cloud backup and cross-device sync. You are responsible for maintaining the confidentiality of your login credentials.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">4. User Data</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">4. User Data</h2>
           <p>You retain full ownership of all data you create within HabitFlow. We do not claim any intellectual property rights over your habits, tasks, mood entries, or any other user-generated content.</p>
         </section>
 

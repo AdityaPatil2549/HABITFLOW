@@ -40,20 +40,21 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-[100dvh] flex items-center justify-center bg-[var(--bg-base,#0f0f13)] text-[var(--text-primary,white)] p-6 text-center">
-          <div className="max-w-md">
-            <h1 className="text-3xl font-black text-brand-400 mb-4">Something went wrong</h1>
-            <p className="text-slate-400 mb-6 font-medium">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-[var(--sf-base)] text-[var(--tx-primary)] p-6 text-center">
+          <div className="max-w-md card-raised p-8 rounded-2xl">
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--danger)] mb-3">Something went wrong</h1>
+            <p className="text-[var(--tx-secondary)] mb-6 text-sm">
               An unexpected error occurred in the application. Please try reloading the page.
             </p>
             <button
+              type="button"
               onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-brand-500 hover:bg-brand-600 rounded-xl font-bold transition-colors"
+              className="btn-primary px-6 py-2.5 text-sm font-semibold"
             >
               Reload Application
             </button>
-            <div className="mt-8 p-4 bg-black/50 border border-white/10 rounded-lg text-left overflow-x-auto">
-              <pre className="text-xs text-red-400">{this.state.error?.message}</pre>
+            <div className="mt-6 p-3.5 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-lg text-left overflow-x-auto">
+              <pre className="text-xs font-mono text-[var(--danger)]">{this.state.error?.message}</pre>
             </div>
           </div>
         </div>
