@@ -191,9 +191,21 @@ export function HabitsPage() {
       {/* ── Habits Workstation List ─────────────────────────────── */}
       <main className="space-y-2">
         {loading && habits.length === 0 ? (
-          <div className="space-y-3 py-6">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-14 rounded-xl bg-white/[0.02] animate-pulse" />
+          <div className="space-y-2 py-2">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div
+                key={i}
+                className="h-14 rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 flex items-center justify-between animate-pulse"
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex-shrink-0" />
+                  <div className="h-4 w-36 bg-white/[0.08] rounded" />
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="h-3 w-16 bg-white/[0.04] rounded hidden sm:block" />
+                  <div className="w-7 h-7 rounded-lg bg-white/[0.06]" />
+                </div>
+              </div>
             ))}
           </div>
         ) : filteredHabits.length === 0 ? (

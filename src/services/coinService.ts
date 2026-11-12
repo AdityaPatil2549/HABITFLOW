@@ -268,7 +268,11 @@ export const COIN_RATES = {
 
 async function getBalance(): Promise<number> {
   const xp = await getOrCreateUserXP();
-  return xp.total || 0;
+  if (xp.coins === undefined || xp.coins === null) {
+    xp.coins = Math.max(0, Math.floor((xp.total || 0) / 2));
+    await db.userXP.update(xp.id, { coins: xp.coins }).catch(() => null);
+  }
+  return xp.coins;
 }
 
 async function addCoins(amount: number, _reason: string): Promise<number> {

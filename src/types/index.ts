@@ -43,6 +43,10 @@ export interface Habit {
   healthSyncEnabled?: boolean;
   healthMetric?: 'steps' | 'sleep' | 'water' | 'calories' | 'meditation';
 
+  // Atomic Habit Stacking (James Clear Protocol)
+  stackAfterHabitId?: string;
+  timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'anytime';
+
   createdAt: string; // ISO
   updated_at?: string; // ISO — used by sync engine
   deleted_at?: string; // ISO — soft delete for sync

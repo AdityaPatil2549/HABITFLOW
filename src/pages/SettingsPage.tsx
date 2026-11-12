@@ -30,8 +30,6 @@ import { Link } from 'react-router-dom';
 import { driveService } from '../services/driveService';
 import { healthSyncService } from '../services/healthSyncService';
 import { storageService } from '../services/storageService';
-import { InView } from '../components/ui/in-view';
-import { TextEffect } from '../components/ui/text-effect';
 
 const THEMES: { value: Theme; label: string; color: string }[] = [
   { value: 'indigo', label: 'Indigo', color: '#6366f1' },
@@ -348,20 +346,15 @@ export function SettingsPage() {
           Preferences
         </p>
         <h1 className="text-3xl font-bold text-white">
-          <TextEffect as="span" per="word" preset="blur">Settings</TextEffect>
+          Settings
         </h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <p className="text-neutral-400 text-sm mt-1">
           Configure your experience and manage your local data.
         </p>
       </div>
 
       {/* ─── Appearance ─── */}
-      <InView
-        as="section"
-        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6"
-      >
+      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Palette size={18} className="text-brand-400" /> Appearance
         </h2>
@@ -418,7 +411,7 @@ export function SettingsPage() {
         <div className="flex items-center justify-between pt-2">
           <div>
             <p className="text-sm font-semibold text-white">Sound Effects</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               Audible feedback when completing habits and leveling up.
             </p>
           </div>
@@ -427,7 +420,8 @@ export function SettingsPage() {
             aria-checked={settings.soundEnabled !== false}
             aria-label="Toggle sound effects"
             onClick={() => {
-              const next = !settings.soundEnabled;
+              const current = settings.soundEnabled !== false;
+              const next = !current;
               saveSetting({ soundEnabled: next });
               import('../services/soundService').then(m =>
                 m.soundService.setEnabled(next, settings.hapticEnabled !== false)
@@ -446,14 +440,15 @@ export function SettingsPage() {
         <div className="flex items-center justify-between pt-2">
           <div>
             <p className="text-sm font-semibold text-white">Haptic Feedback</p>
-            <p className="text-xs text-slate-500">Vibration on habit completion (mobile only).</p>
+            <p className="text-xs text-slate-400">Vibration on habit completion (mobile only).</p>
           </div>
           <button
             role="switch"
             aria-checked={settings.hapticEnabled !== false}
             aria-label="Toggle haptic feedback"
             onClick={() => {
-              const next = !settings.hapticEnabled;
+              const current = settings.hapticEnabled !== false;
+              const next = !current;
               saveSetting({ hapticEnabled: next });
               import('../services/soundService').then(m =>
                 m.soundService.setEnabled(settings.soundEnabled !== false, next)
@@ -468,15 +463,10 @@ export function SettingsPage() {
             />
           </button>
         </div>
-      </InView>
+      </section>
 
       {/* ─── Notifications ─── */}
-      <InView
-        as="section"
-        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-4"
-      >
+      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Bell size={18} className="text-brand-400" /> Notifications
         </h2>
@@ -493,20 +483,15 @@ export function SettingsPage() {
               Enable
             </button>
           ) : (
-            <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold border border-emerald-500/20 flex items-center gap-1">
-              <CheckCircle2 size={10} /> Enabled
+            <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-bold border border-emerald-500/20 flex items-center gap-1">
+              <CheckCircle2 size={12} /> Enabled
             </span>
           )}
         </div>
-      </InView>
+      </section>
 
       {/* ─── Integrations ─── */}
-      <InView
-        as="section"
-        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-4"
-      >
+      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Calendar size={18} className="text-brand-400" /> Calendar Sync
         </h2>
@@ -587,15 +572,10 @@ export function SettingsPage() {
             </div>
           </div>
         )}
-      </InView>
+      </section>
 
       {/* ── Health & Fitness ── */}
-      <InView
-        as="section"
-        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6"
-      >
+      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Activity size={18} className="text-brand-400" /> Health & Fitness
         </h2>
@@ -603,7 +583,7 @@ export function SettingsPage() {
           <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl">
             <div>
               <p className="text-sm font-bold text-white">Google Fit / Health Connect</p>
-              <p className="text-[10px] text-slate-400 mt-1">
+              <p className="text-xs text-slate-300 mt-1">
                 {fitConnected ? '✅ Connected — steps & sleep syncing' : 'Auto-complete fitness habits from your phone data'}
               </p>
             </div>
@@ -622,15 +602,15 @@ export function SettingsPage() {
           <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-white/5 rounded-2xl opacity-60">
             <div>
               <p className="text-sm font-bold text-white">Apple Health (iOS)</p>
-              <p className="text-[10px] text-slate-400 mt-1">Requires native app installation</p>
+              <p className="text-xs text-slate-300 mt-1">Requires native app installation</p>
             </div>
             <button disabled className="px-4 py-2 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl">Coming Soon</button>
           </div>
         </div>
-      </InView>
+      </section>
 
       {/* ── Google Integrations ── */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6">
+      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Zap size={18} className="text-yellow-400" /> Google Integrations
         </h2>
@@ -644,7 +624,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Google Drive Backup</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-300 mt-0.5">
                   {driveConnected ? '✅ Connected — auto-backup ready' : 'Save & restore backups to your Drive'}
                 </p>
               </div>
@@ -681,7 +661,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Profile Photo</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Upload to Firebase Cloud Storage</p>
+                <p className="text-xs text-slate-300 mt-0.5">Upload to Firebase Cloud Storage</p>
               </div>
             </div>
             <label className={`px-3 py-1.5 bg-purple-500/20 text-purple-400 text-xs font-bold rounded-lg cursor-pointer hover:bg-purple-500/30 transition-colors ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -698,7 +678,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Location Triggers</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Remind me when I arrive at a location</p>
+                <p className="text-xs text-slate-300 mt-0.5">Remind me when I arrive at a location</p>
               </div>
             </div>
             <div className="px-3 py-1.5 bg-green-500/10 text-green-400 text-xs font-bold rounded-lg">
@@ -714,7 +694,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">YouTube Recommendations</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Habit videos in your AI Coach tab</p>
+                <p className="text-xs text-slate-300 mt-0.5">Habit videos in your AI Coach tab</p>
               </div>
             </div>
             <div className="px-3 py-1.5 bg-red-500/10 text-red-400 text-xs font-bold rounded-lg">
@@ -726,12 +706,7 @@ export function SettingsPage() {
       </section>
 
       {/* ── Data ── */}
-      <InView
-        as="section"
-        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 space-y-6"
-      >
+      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6 space-y-6">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <Database size={18} className="text-brand-400" /> Data Management
         </h2>
@@ -748,7 +723,7 @@ export function SettingsPage() {
               <p className="text-sm font-bold text-white">
                 {exported ? 'Exported!' : 'Export JSON'}
               </p>
-              <p className="text-[10px] text-slate-500">Backup your data as a file.</p>
+              <p className="text-xs text-slate-400">Backup your data as a file.</p>
             </div>
           </button>
 
@@ -763,7 +738,7 @@ export function SettingsPage() {
               <p className="text-sm font-bold text-white">
                 {csvExported ? 'CSV Saved!' : 'Export CSV'}
               </p>
-              <p className="text-[10px] text-slate-500">View logs in Excel/Sheets.</p>
+              <p className="text-xs text-slate-400">View logs in Excel/Sheets.</p>
             </div>
           </button>
 
@@ -773,7 +748,7 @@ export function SettingsPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-white">Import Backup</p>
-              <p className="text-[10px] text-slate-500">Restore from a JSON file.</p>
+              <p className="text-xs text-slate-400">Restore from a JSON file.</p>
             </div>
             <input type="file" accept=".json" className="sr-only" onChange={handleImport} />
           </label>
@@ -787,19 +762,14 @@ export function SettingsPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-red-400">Reset Data</p>
-              <p className="text-[10px] text-red-500/60">Permanently wipe all data.</p>
+              <p className="text-xs text-red-400/80">Permanently wipe all data.</p>
             </div>
           </button>
         </div>
-      </InView>
+      </section>
 
       {/* ─── Privacy ─── */}
-      <InView
-        as="section"
-        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6"
-      >
+      <section className="bg-neutral-900/60 border border-white/10 rounded-2xl p-6">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 flex-shrink-0">
             <Shield size={20} />
@@ -813,15 +783,10 @@ export function SettingsPage() {
             </p>
           </div>
         </div>
-      </InView>
+      </section>
 
       {/* ─── About ─── */}
-      <InView
-        as="section"
-        variants={{ hidden: { opacity: 0, y: 30, filter: 'blur(8px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="text-center py-8"
-      >
+      <section className="text-center py-8">
         <img
           src="/logo.png"
           alt="HabitFlow Logo"
@@ -832,24 +797,24 @@ export function SettingsPage() {
         <div className="flex items-center justify-center gap-4 mt-4">
           <Link
             to="/privacy"
-            className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"
+            className="text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-brand-300 transition-colors"
           >
             Privacy Policy
           </Link>
           <Link
             to="/terms"
-            className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"
+            className="text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-brand-300 transition-colors"
           >
             Terms of Use
           </Link>
           <button
             onClick={() => toast.info('HabitFlow is an open-source project.')}
-            className="text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-brand-400 transition-colors"
+            className="text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-brand-300 transition-colors"
           >
             Source Code
           </button>
         </div>
-      </InView>
+      </section>
     </div>
   );
 }

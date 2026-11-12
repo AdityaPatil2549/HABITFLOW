@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Brain, Sparkles, TrendingUp, TrendingDown, ArrowRight, Activity, Calendar } from 'lucide-react';
 import { correlationService } from '../../../services/correlationService';
 import type { CorrelationResult } from '../../../types';
-import { SpotlightCard } from '../../ui/motion/SpotlightCard';
 import { cn } from '../../../lib/utils';
 
 export function HabitMoodCorrelationMatrix() {
@@ -122,13 +121,13 @@ export function HabitMoodCorrelationMatrix() {
           <span className="text-xs font-mono text-slate-500">Computing correlation vectors...</span>
         </div>
       ) : filtered.length === 0 ? (
-        <SpotlightCard className="p-8 rounded-xl bg-[#0e1017]/60 border border-white/[0.06] text-center space-y-2">
-          <Activity size={24} className="mx-auto text-slate-600 mb-2" />
-          <h4 className="text-sm font-medium text-slate-300">Insufficient Local Variance Data</h4>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
+        <div className="p-8 rounded-xl bg-neutral-900/60 border border-white/10 text-center space-y-2">
+          <Activity size={24} className="mx-auto text-neutral-600 mb-2" />
+          <h4 className="text-sm font-medium text-neutral-300">Insufficient Local Variance Data</h4>
+          <p className="text-xs text-neutral-500 max-w-md mx-auto">
             Log at least 5 days of habits and mood ratings to activate the Pearson mathematical correlation engine.
           </p>
-        </SpotlightCard>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filtered.map((item, idx) => {
@@ -138,9 +137,9 @@ export function HabitMoodCorrelationMatrix() {
             const isMood = item.factorBType === 'mood';
 
             return (
-              <SpotlightCard
+              <div
                 key={`${item.habitA}-${item.factorB}-${idx}`}
-                className="p-4 rounded-xl bg-[#0e1017]/80 border border-white/[0.06] hover:border-purple-500/30 transition-all flex flex-col justify-between"
+                className="p-4 rounded-xl bg-neutral-900/60 border border-white/10 hover:border-white/20 transition-colors flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5">
@@ -178,7 +177,7 @@ export function HabitMoodCorrelationMatrix() {
                   </span>
                   <span>n = {item.sampleSize} days sampled</span>
                 </div>
-              </SpotlightCard>
+              </div>
             );
           })}
         </div>

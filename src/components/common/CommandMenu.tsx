@@ -23,7 +23,7 @@ import {
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useModalStore } from '../../store/modalStore';
-import { GlassEmojiCapsule } from './GlassEmojiCapsule';
+import { getHabitEmoji } from '../../lib/emoji';
 import { soundService } from '../../services/soundService';
 import { cn } from '../../lib/utils';
 import type { HabitWithStreak } from '../../types';
@@ -141,14 +141,9 @@ export function CommandMenu() {
                         className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-2xl cursor-pointer hover:bg-white/[0.06] aria-selected:bg-emerald-500/15 aria-selected:border aria-selected:border-emerald-500/30 transition-all mb-1 group"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <GlassEmojiCapsule
-                            icon={habit.icon}
-                            category={habit.category}
-                            size="sm"
-                            isDone={isDone}
-                            interactive={false}
-                            showHalo={false}
-                          />
+                          <span className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center text-base shrink-0">
+                            {getHabitEmoji(habit.icon)}
+                          </span>
                           <div className="min-w-0">
                             <span
                               className={cn(

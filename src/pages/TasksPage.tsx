@@ -5,7 +5,7 @@ import type { Task, Priority, Project } from '../types';
 import { TaskRow } from '../components/tasks/workstation/TaskRow';
 import { TaskFilterBar, type TaskViewTab } from '../components/tasks/workstation/TaskFilterBar';
 import { TaskEditorModal } from '../components/tasks/workstation/TaskEditorModal';
-import { isToday, isPast, parseISO, isFuture } from 'date-fns';
+import { isToday, isPast, parseISO, isFuture, endOfDay } from 'date-fns';
 import { soundService } from '../services/soundService';
 
 export function TasksPage() {
@@ -54,8 +54,10 @@ export function TasksPage() {
         if (t.dueDate) {
           try {
             const parsed = parseISO(t.dueDate);
-            if (isToday(parsed) || isPast(parsed)) today++;
-            if (isFuture(parsed) && !isToday(parsed)) upcoming++;
+            const isDateOnly = !t.dueDate.includes('T');
+            const targetDate = isDateOnly ? endOfDay(parsed) : parsed;
+            if (isToday(parsed) || isPast(targetDate)) today++;
+            if (isFuture(targetDate) && !isToday(parsed)) upcoming++;
           } catch {
             // ignore parse error
           }
@@ -79,7 +81,9 @@ export function TasksPage() {
           if (!t.dueDate) return true; // Undated tasks show in Today by default
           try {
             const parsed = parseISO(t.dueDate);
-            if (!isToday(parsed) && !isPast(parsed)) return false;
+            const isDateOnly = !t.dueDate.includes('T');
+            const targetDate = isDateOnly ? endOfDay(parsed) : parsed;
+            if (!isToday(parsed) && !isPast(targetDate)) return false;
           } catch {
             return false;
           }
@@ -87,7 +91,9 @@ export function TasksPage() {
           if (!t.dueDate) return false;
           try {
             const parsed = parseISO(t.dueDate);
-            if (!isFuture(parsed) || isToday(parsed)) return false;
+            const isDateOnly = !t.dueDate.includes('T');
+            const targetDate = isDateOnly ? endOfDay(parsed) : parsed;
+            if (!isFuture(targetDate) || isToday(parsed)) return false;
           } catch {
             return false;
           }

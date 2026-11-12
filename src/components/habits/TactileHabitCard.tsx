@@ -1,20 +1,20 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Flame, ChevronRight, Zap, Clock, Sparkles } from 'lucide-react';
+import { Check, Flame, ChevronRight, Zap, Clock, Sparkles, Lock, ArrowDown } from 'lucide-react';
 import type { HabitWithStreak } from '../../types';
-import { SlidingNumber } from '../ui/motion/SlidingNumber';
 import { soundService } from '../../services/soundService';
-import { useChronoStore } from '../../store/chronoStore';
 import { cn } from '../../lib/utils';
 import { getHabitEmoji } from '../../lib/emoji';
-import { GlassEmojiCapsule } from '../common/GlassEmojiCapsule';
-import { triggerGoldFoilBurst } from '../common/GoldFoilBurst';
 
 interface TactileHabitCardProps {
   habit: HabitWithStreak;
   onToggle: (habit: HabitWithStreak) => Promise<void>;
   onOpenDetails?: (habit: HabitWithStreak) => void;
   index?: number;
+  isPrimed?: boolean;
+  isLocked?: boolean;
+  parentHabitName?: string;
+  chainPosition?: { current: number; total: number };
 }
 
 export function TactileHabitCard({
@@ -22,46 +22,24 @@ export function TactileHabitCard({
   onToggle,
   onOpenDetails,
   index = 0,
+  isPrimed = false,
+  isLocked = false,
+  parentHabitName,
+  chainPosition,
 }: TactileHabitCardProps) {
   const [isToggling, setIsToggling] = useState(false);
-  const [tilt, setTilt] = useState({ x: 0, y: 0, mouseX: 0, mouseY: 0, isHovered: false });
-  const [shockwave, setShockwave] = useState<{ x: number; y: number; active: boolean }>({ x: 0, y: 0, active: false });
-  
-  const { currentEpoch } = useChronoStore();
+
   const isDone = (habit.todayLog?.value ?? 0) >= (habit.targetValue || 1);
   const currentStreak = habit.streak?.current ?? 0;
   const todayValue = habit.todayLog?.value ?? 0;
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -3.2;
-    const rotateY = ((x - centerX) / centerX) * 3.2;
-    setTilt({ x: rotateX, y: rotateY, mouseX: x, mouseY: y, isHovered: true });
-  };
-
-  const handleMouseLeave = () => {
-    setTilt({ x: 0, y: 0, mouseX: 0, mouseY: 0, isHovered: false });
-  };
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isToggling) return;
     setIsToggling(true);
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    setShockwave({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true });
-    setTimeout(() => setShockwave(prev => ({ ...prev, active: false })), 600);
-
     if (!isDone) {
-      const isMilestone = [3, 7, 14, 30, 100].includes(currentStreak + 1);
-      soundService.playChronoForging(currentEpoch, isMilestone);
-      if (isMilestone) {
-        triggerGoldFoilBurst();
-      }
+      soundService.playTick();
     } else {
       soundService.playUncheck();
     }
@@ -120,84 +98,69 @@ export function TactileHabitCard({
         damping: 24,
         delay: Math.min(index * 0.04, 0.25),
       }}
-      className="relative group cursor-pointer perspective-[1200px]"
+      className="relative group cursor-pointer"
       onClick={() => onOpenDetails?.(habit)}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
       <div
         className={cn(
-          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl transition-[border-color,background-color,box-shadow] duration-200 backdrop-blur-2xl overflow-hidden will-change-transform card-horlogerie',
+          'relative flex items-center justify-between gap-4 p-4 sm:p-5 rounded-xl border transition-colors duration-150 overflow-hidden',
           isDone
-            ? 'bg-emerald-950/25 border-emerald-500/40 border-t-emerald-400/60 shadow-[0_16px_36px_rgba(16,185,129,0.18)]'
-            : 'bg-slate-950/35 border-white/[0.12] border-t-white/[0.25] hover:border-white/[0.25] hover:bg-slate-900/45 shadow-[0_16px_40px_rgba(0,0,0,0.45)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.65)]'
+            ? 'bg-neutral-900/80 border-emerald-500/35'
+            : isPrimed
+            ? 'bg-neutral-900/80 border-white/25'
+            : isLocked
+            ? 'bg-neutral-900/40 border-white/5 opacity-75 hover:opacity-100'
+            : 'bg-neutral-900/60 border-white/10 hover:border-white/20 hover:bg-neutral-900/80'
         )}
-        style={{
-          transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) ${isToggling ? 'translateZ(-8px) scale(0.985)' : 'translateZ(0px)'}`,
-          transition: 'transform 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, border-color 200ms ease',
-        }}
       >
-        {/* Dynamic Cursor Spotlight Sheen */}
-        {tilt.isHovered && (
+
+        {/* Left Side: Icon + Title + Metadata */}
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1 z-10">
           <div
-            className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-            style={{
-              background: `radial-gradient(circle 180px at ${tilt.mouseX}px ${tilt.mouseY}px, rgba(255, 255, 255, 0.08), transparent 75%)`,
-            }}
-          />
-        )}
+            className={cn(
+              'w-10 h-10 rounded-lg border flex items-center justify-center text-xl shrink-0',
+              isDone
+                ? 'bg-emerald-500/10 border-emerald-500/30'
+                : 'bg-neutral-800/80 border-white/10'
+            )}
+          >
+            {getHabitEmoji(habit.icon)}
+          </div>
 
-        {/* Dynamic Forging Shockwave Ripple */}
-        <AnimatePresence>
-          {shockwave.active && (
-            <motion.span
-              initial={{ scale: 0, opacity: 0.8 }}
-              animate={{ scale: 3.5, opacity: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute w-24 h-24 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 bg-emerald-400/30 blur-md"
-              style={{ left: shockwave.x, top: shockwave.y }}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Ambient Backglow */}
-        <div
-          className="absolute -left-10 -top-10 w-36 h-36 rounded-full opacity-30 pointer-events-none transition-opacity duration-300 group-hover:opacity-50"
-          style={{ background: isDone ? 'radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%)' : `radial-gradient(circle, ${theme.glow} 0%, transparent 70%)` }}
-        />
-
-
-        {/* Left Side: Rich Icon Capsule + Title + Metadata */}
-        <div className="flex items-center gap-4 min-w-0 z-10">
-          {/* 3D Glass Emoji Capsule */}
-          <GlassEmojiCapsule
-            icon={habit.icon}
-            category={habit.category}
-            size="md"
-            isDone={isDone}
-            interactive={false}
-            showHalo={true}
-          />
-
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             {/* Title & Category Tag */}
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <div className="flex items-center gap-2 mb-1 min-w-0 flex-wrap">
               <h3
                 className={cn(
-                  'text-base sm:text-lg font-semibold tracking-tight truncate transition-colors duration-200',
+                  'text-base sm:text-lg font-semibold tracking-tight truncate max-w-full transition-colors duration-200',
                   isDone
                     ? 'text-slate-400 line-through decoration-emerald-400/50'
                     : 'text-white group-hover:text-white'
                 )}
+                title={habit.name}
               >
                 {habit.name}
               </h3>
 
+              {/* Atomic Stack Primed / Locked Indicator */}
+              {isPrimed && !isDone && (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold tracking-wider bg-teal-500/20 text-teal-300 border border-teal-400/40 flex items-center gap-1 shadow-[0_0_10px_rgba(45,212,191,0.3)] animate-pulse shrink-0">
+                  <Zap size={11} className="fill-teal-300 text-teal-300" />
+                  <span>PRIMED</span>
+                </span>
+              )}
+
+              {isLocked && !isDone && parentHabitName && (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono text-slate-300 bg-white/[0.06] border border-white/[0.12] flex items-center gap-1 shrink-0">
+                  <Lock size={11} className="text-slate-400" />
+                  <span>Queued after {parentHabitName}</span>
+                </span>
+              )}
+
               {habit.category && (
                 <span
                   className={cn(
-                    'px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider border',
+                    'px-2.5 py-0.5 rounded-full text-xs font-mono uppercase tracking-wider border shrink-0',
                     theme.badge
                   )}
                 >
@@ -207,40 +170,40 @@ export function TactileHabitCard({
             </div>
 
             {/* Streak & Sub-metrics */}
-            <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
+            <div className="flex items-center gap-3 text-xs text-slate-300 flex-wrap">
               {/* Streak Flame Pill */}
               <div
                 className={cn(
-                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[11px] font-semibold transition-colors',
+                  'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-xs font-semibold transition-colors',
                   currentStreak > 0
                     ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                    : 'bg-white/[0.03] text-slate-500 border border-white/[0.05]'
+                    : 'bg-white/[0.04] text-slate-400 border border-white/[0.08]'
                 )}
               >
                 <Flame
-                  size={12}
+                  size={13}
                   className={cn(
                     currentStreak > 0
                       ? 'fill-amber-400 text-amber-400 animate-pulse'
-                      : 'text-slate-600'
+                      : 'text-slate-500'
                   )}
                 />
-                <SlidingNumber value={currentStreak} />
-                <span className="text-[10px] font-normal opacity-75">d streak</span>
+                <span className="tabular-nums">{currentStreak}</span>
+                <span className="text-xs font-normal opacity-85">d streak</span>
               </div>
 
               {/* Progress counter for count / duration targets */}
               {habit.type !== 'boolean' && habit.targetValue > 1 && (
-                <div className="inline-flex items-center gap-1.5 font-mono text-xs text-slate-300 bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/[0.06]">
+                <div className="inline-flex items-center gap-1.5 font-mono text-xs text-slate-200 bg-white/[0.05] px-2.5 py-0.5 rounded-full border border-white/[0.08]">
                   <span className="text-emerald-400 font-bold">{todayValue}</span>
-                  <span className="text-slate-600">/</span>
+                  <span className="text-slate-400">/</span>
                   <span>{habit.targetValue}</span>
-                  {habit.unit && <span className="text-[10px] text-slate-400">{habit.unit}</span>}
+                  {habit.unit && <span className="text-xs text-slate-300">{habit.unit}</span>}
                 </div>
               )}
 
               {habit.frequency === 'daily' && (
-                <span className="text-[11px] font-mono text-slate-500 hidden sm:inline">
+                <span className="text-xs font-mono text-slate-400 hidden sm:inline">
                   • Daily ritual
                 </span>
               )}
@@ -260,6 +223,8 @@ export function TactileHabitCard({
               'w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 cursor-pointer shadow-lg',
               isDone
                 ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.5)] border border-emerald-300/60'
+                : isPrimed
+                ? 'bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-400/60 shadow-[0_0_18px_rgba(45,212,191,0.35)] animate-pulse'
                 : 'bg-white/[0.04] hover:bg-emerald-500/15 hover:border-emerald-500/40 text-slate-400 hover:text-emerald-300 border border-white/[0.1]'
             )}
           >

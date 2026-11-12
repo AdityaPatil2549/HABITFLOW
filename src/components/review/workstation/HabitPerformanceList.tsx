@@ -4,7 +4,6 @@ import { TrendingUp, Star, AlertTriangle, ChevronRight, Check, Flame } from 'luc
 import { format, subDays } from 'date-fns';
 import { db } from '../../../db';
 import { IconRenderer } from '../../common/IconRenderer';
-import { SpotlightCard } from '../../ui/motion/SpotlightCard';
 import { cn } from '../../../lib/utils';
 
 export interface HabitPerformanceItem {
@@ -62,7 +61,7 @@ function MiniDayGrid({ habitId }: { habitId: string }) {
             >
               {done ? <Check size={10} strokeWidth={3} /> : ''}
             </div>
-            <span className="text-[8px] font-mono text-slate-500 uppercase">
+            <span className="text-[10px] font-mono font-medium text-slate-400 uppercase">
               {format(d, 'eeeee')}
             </span>
           </div>
@@ -121,13 +120,13 @@ export function HabitPerformanceList({ habits }: HabitPerformanceListProps) {
       ) : (
         <div className="space-y-2">
           {filtered.map(h => (
-            <SpotlightCard
+            <div
               key={h.id}
               className={cn(
-                'p-3.5 sm:p-4 rounded-xl bg-[#0e1017]/80 border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3',
-                h.isBest && 'border-amber-500/30 bg-amber-500/[0.02]',
-                h.isStruggling && 'border-rose-500/20 bg-rose-500/[0.02]',
-                !h.isBest && !h.isStruggling && 'border-white/[0.06]'
+                'p-3.5 sm:p-4 rounded-xl bg-neutral-900/60 border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3',
+                h.isBest && 'border-white/25',
+                h.isStruggling && 'border-white/15',
+                !h.isBest && !h.isStruggling && 'border-white/10'
               )}
             >
               {/* Left: Icon, Name, Category */}
@@ -141,18 +140,18 @@ export function HabitPerformanceList({ habits }: HabitPerformanceListProps) {
                       {h.name}
                     </span>
                     {h.isBest && (
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
-                        <Star size={9} /> Top
+                      <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                        <Star size={11} /> Top
                       </span>
                     )}
                     {h.isStruggling && (
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
-                        <AlertTriangle size={9} /> Needs Care
+                      <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                        <AlertTriangle size={11} /> Needs Care
                       </span>
                     )}
                   </div>
                   {h.category && (
-                    <span className="text-[10px] font-mono text-slate-400">
+                    <span className="text-xs font-mono text-slate-300">
                       {h.category}
                     </span>
                   )}
@@ -183,12 +182,12 @@ export function HabitPerformanceList({ habits }: HabitPerformanceListProps) {
                 </div>
 
                 {/* Streak Badge */}
-                <div className="flex items-center gap-1 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono">
+                <div className="flex items-center gap-1 px-2 py-1 rounded bg-white/[0.04] border border-white/10 text-neutral-300 text-xs font-mono">
                   <Flame size={12} />
                   <span>{h.streak}d</span>
                 </div>
               </div>
-            </SpotlightCard>
+            </div>
           ))}
         </div>
       )}

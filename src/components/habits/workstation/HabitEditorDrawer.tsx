@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Sparkles, Layers, Clock, Hash, CheckSquare } from 'lucide-react';
+import { X, Check, Sparkles, Layers, Clock, Hash, CheckSquare, Zap } from 'lucide-react';
 import type { Habit, HabitType, HabitFrequency, HabitWithStreak } from '../../../types';
 import { soundService } from '../../../services/soundService';
+import { useHabitStore } from '../../../store/habitStore';
 import { cn } from '../../../lib/utils';
 import { getHabitEmoji } from '../../../lib/emoji';
-import { GlassEmojiCapsule } from '../../common/GlassEmojiCapsule';
 
 export interface HabitEditorDrawerProps {
   isOpen: boolean;
@@ -33,6 +33,7 @@ export function HabitEditorDrawer({
   onSave,
   initialHabit,
 }: HabitEditorDrawerProps) {
+  const { habits } = useHabitStore();
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('🎯');
   const [category, setCategory] = useState('Health');
@@ -40,6 +41,8 @@ export function HabitEditorDrawer({
   const [frequency, setFrequency] = useState<HabitFrequency>('daily');
   const [targetValue, setTargetValue] = useState(1);
   const [unit, setUnit] = useState('');
+  const [timeOfDay, setTimeOfDay] = useState<'morning' | 'afternoon' | 'evening' | 'anytime'>('morning');
+  const [stackAfterHabitId, setStackAfterHabitId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +56,8 @@ export function HabitEditorDrawer({
       setFrequency(initialHabit.frequency || 'daily');
       setTargetValue(initialHabit.targetValue || 1);
       setUnit(initialHabit.unit || '');
+      setTimeOfDay(initialHabit.timeOfDay || 'morning');
+      setStackAfterHabitId(initialHabit.stackAfterHabitId || '');
     } else {
       setName('');
       setIcon('🎯');
@@ -61,6 +66,8 @@ export function HabitEditorDrawer({
       setFrequency('daily');
       setTargetValue(1);
       setUnit('');
+      setTimeOfDay('morning');
+      setStackAfterHabitId('');
     }
   }, [initialHabit, isOpen]);
 
@@ -84,6 +91,8 @@ export function HabitEditorDrawer({
           category,
           type,
           frequency,
+          timeOfDay,
+          stackAfterHabitId: stackAfterHabitId || undefined,
           targetValue: type === 'boolean' ? 1 : Math.max(1, targetValue),
           unit: type === 'boolean' ? undefined : unit.trim(),
           startDate: initialHabit?.startDate || new Date().toISOString().split('T')[0],
@@ -159,15 +168,21 @@ export function HabitEditorDrawer({
               </label>
               <div className="flex flex-wrap gap-2">
                 {PRESET_ICONS.map(i => (
-                  <GlassEmojiCapsule
+                  <button
                     key={i}
-                    icon={i}
-                    category={category}
-                    size="sm"
-                    isDone={icon === i}
-                    interactive={true}
+                    type="button"
                     onClick={() => setIcon(i)}
-                  />
+                    aria-label={`Select icon ${i}`}
+                    aria-pressed={icon === i}
+                    className={cn(
+                      'w-9 h-9 rounded-lg border flex items-center justify-center text-base transition-colors cursor-pointer',
+                      icon === i
+                        ? 'bg-emerald-500/20 border-emerald-500/50 text-white'
+                        : 'bg-white/[0.03] border-white/[0.08] text-slate-300 hover:bg-white/[0.08]'
+                    )}
+                  >
+                    {getHabitEmoji(i)}
+                  </button>
                 ))}
               </div>
             </div>
@@ -257,6 +272,71 @@ export function HabitEditorDrawer({
                 </div>
               </div>
             )}
+
+            {/* Ritual Window */}
+            <div>
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-400 mb-1.5">
+                Ritual Window
+              </label>
+              <div className="grid grid-cols-4 gap-1.5">
+                {[
+                  { id: 'morning', label: 'Morning', icon: '🌅' },
+                  { id: 'afternoon', label: 'Afternoon', icon: '☀️' },
+                  { id: 'evening', label: 'Evening', icon: '🌙' },
+                  { id: 'anytime', label: 'Anytime', icon: '✨' },
+                ].map(slot => (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    onClick={() => setTimeOfDay(slot.id as any)}
+                    className={cn(
+                      'py-2 px-1.5 rounded-xl border flex flex-col items-center gap-1 text-center transition-all cursor-pointer',
+                      timeOfDay === slot.id
+                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                        : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                    )}
+                  >
+                    <span className="text-sm">{slot.icon}</span>
+                    <span className="text-[10px] font-medium">{slot.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Atomic Habit Stacking (James Clear Protocol) */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-teal-500/[0.08] to-emerald-500/[0.03] border border-teal-500/20 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap size={14} className="text-teal-400 fill-teal-400/30" />
+                  <span className="text-xs font-bold text-white tracking-wide">Atomic Habit Stacking</span>
+                </div>
+                <span className="text-[10px] font-mono text-teal-300 bg-teal-500/15 px-2 py-0.5 rounded-full border border-teal-400/30">
+                  James Clear
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Stack this ritual immediately after an anchor habit to ignite a kinetic synaptic laser spark when the anchor finishes.
+              </p>
+              <div>
+                <label className="block text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-1">
+                  Anchor Habit (Trigger):
+                </label>
+                <select
+                  value={stackAfterHabitId}
+                  onChange={e => setStackAfterHabitId(e.target.value)}
+                  className="w-full bg-[#0b0e14] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-teal-400/50 focus:outline-none cursor-pointer"
+                >
+                  <option value="">None (Independent Ritual)</option>
+                  {habits
+                    .filter(h => !h.archived && h.id !== initialHabit?.id)
+                    .map(h => (
+                      <option key={h.id} value={h.id}>
+                        {getHabitEmoji(h.icon)} {h.name} ({h.category || 'Ritual'})
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
           </form>
         </div>
 

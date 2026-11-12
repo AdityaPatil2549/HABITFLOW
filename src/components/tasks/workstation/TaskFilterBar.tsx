@@ -51,7 +51,7 @@ export function TaskFilterBar({
             <span>{t.label}</span>
             <span
               className={cn(
-                'px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold',
+                'px-1.5 py-0.5 rounded-full text-xs font-mono font-bold',
                 currentTab === t.id ? 'bg-emerald-500/25 text-emerald-200' : 'bg-white/[0.06] text-slate-400'
               )}
             >

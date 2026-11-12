@@ -11,6 +11,7 @@ class SoundService {
 
   private ambientSource: AudioBufferSourceNode | null = null;
   private ambientGain: GainNode | null = null;
+  private lastHoverTime = 0;
 
   setEnabled(sound: boolean, haptic: boolean) {
     this.enabled = sound;
@@ -141,9 +142,12 @@ class SoundService {
     }
   }
 
-  /** Soft, low-pitched pop for hovering over interactive elements */
+  /** Soft, low-pitched pop for hovering over interactive elements (throttled) */
   playHover() {
     if (!this.enabled) return;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now - this.lastHoverTime < 120) return;
+    this.lastHoverTime = now;
     try {
       this.playTone(300, 0.03, 'sine', 0.03);
     } catch {
@@ -356,6 +360,42 @@ class SoundService {
       gain.connect(ctx.destination);
       osc.start(t);
       osc.stop(t + 0.15);
+    } catch {
+      /**/
+    }
+  }
+
+  /** Soft mechanical unlatch click when downstream habit primes */
+  playUnlatchClick() {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.getCtx();
+      const t = ctx.currentTime;
+
+      // Click transient
+      const click = ctx.createOscillator();
+      const clickGain = ctx.createGain();
+      click.type = 'sine';
+      click.frequency.setValueAtTime(840, t);
+      click.frequency.exponentialRampToValueAtTime(420, t + 0.04);
+      clickGain.gain.setValueAtTime(0.08, t);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+      click.connect(clickGain);
+      clickGain.connect(ctx.destination);
+      click.start(t);
+      click.stop(t + 0.04);
+
+      // Resonant harmonic chime
+      const chime = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+      chime.type = 'triangle';
+      chime.frequency.setValueAtTime(528, t + 0.02);
+      chimeGain.gain.setValueAtTime(0.05, t + 0.02);
+      chimeGain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+      chime.connect(chimeGain);
+      chimeGain.connect(ctx.destination);
+      chime.start(t + 0.02);
+      chime.stop(t + 0.14);
     } catch {
       /**/
     }

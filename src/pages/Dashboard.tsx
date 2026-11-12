@@ -20,24 +20,51 @@ import { useGamificationStore } from '../store/gamificationStore';
 import { useModalStore } from '../store/modalStore';
 import { momentumEngine, DailyRitualGroup } from '../services/momentumEngine';
 import { TactileHabitCard } from '../components/habits/TactileHabitCard';
-import { SlidingNumber } from '../components/ui/motion/SlidingNumber';
 import type { HabitWithStreak } from '../types';
 import { format } from 'date-fns';
 import { cn } from '../lib/utils';
 import { getHabitEmoji } from '../lib/emoji';
-import { GlassEmojiCapsule } from '../components/common/GlassEmojiCapsule';
-import { MomentumWaveVisualizer } from '../components/dashboard/MomentumWaveVisualizer';
-import { KineticDysonCore } from '../components/dashboard/KineticDysonCore';
+import { soundService } from '../services/soundService';
+
+const STARTER_HABITS = [
+  { name: 'Drink 500ml Water', icon: '💧', category: 'health', timeOfDay: 'morning', color: '#10B981', desc: 'Hydrate immediately upon waking' },
+  { name: '10m Mindfulness Meditation', icon: '🧘', category: 'mindfulness', timeOfDay: 'morning', color: '#06B6D4', desc: 'Clear mental noise and sharpen focus', stackAfterName: 'Drink 500ml Water' },
+  { name: 'Read 10 Pages', icon: '📖', category: 'learning', timeOfDay: 'evening', color: '#6366F1', desc: 'Daily compounding knowledge' },
+  { name: '20m Brisk Walk', icon: '🚶', category: 'fitness', timeOfDay: 'afternoon', color: '#10B981', desc: 'Physical vitality & active rest' },
+];
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { habits, loading, loadHabits, logHabit, unlogHabit } = useHabitStore();
+  const { habits, loading, loadHabits, logHabit, unlogHabit, addHabit } = useHabitStore();
   const { loadTasks } = useTaskStore();
   const { userXP, loadXP } = useGamificationStore();
   const { setQuickAddOpen } = useModalStore();
 
   const [globalMomentum, setGlobalMomentum] = useState<number>(0);
   const [zenMode, setZenMode] = useState<boolean>(false);
+
+  const handleAddStarter = async (starter: typeof STARTER_HABITS[0]) => {
+    soundService.playBadge();
+    let stackAfterHabitId: string | undefined = undefined;
+    if ((starter as any).stackAfterName) {
+      const parent = habits.find(h => h.name.includes((starter as any).stackAfterName));
+      if (parent) stackAfterHabitId = parent.id;
+    }
+    await addHabit({
+      name: starter.name,
+      icon: starter.icon,
+      category: starter.category,
+      timeOfDay: starter.timeOfDay as any,
+      stackAfterHabitId,
+      frequency: 'daily',
+      type: 'boolean',
+      targetValue: 1,
+      startDate: format(new Date(), 'yyyy-MM-dd'),
+      graceDayEnabled: false,
+      archived: false,
+      color: starter.color,
+    });
+  };
 
   useEffect(() => {
     document.title = 'Today — HabitFlow';
@@ -81,9 +108,15 @@ export function Dashboard() {
         await unlogHabit(habit.id);
       } else {
         await logHabit(habit.id, 1);
+        // Play synaptic laser spark if this habit primes any downstream child
+        const hasChildren = habits.some(h => h.stackAfterHabitId === habit.id);
+        if (hasChildren) {
+          soundService.playSynapseSpark();
+          setTimeout(() => soundService.playUnlatchClick(), 260);
+        }
       }
     },
-    [logHabit, unlogHabit]
+    [habits, logHabit, unlogHabit]
   );
 
   // Keyboard shortcut listener
@@ -113,22 +146,22 @@ export function Dashboard() {
   }, [habits]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 pb-32 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 pb-40 lg:pb-16 space-y-8">
       {/* ── TOP HEADER / MOMENTUM PULSE ──────────────────────────── */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/[0.08] relative">
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Today's Ritual</span>
+            <span>Today's Habits</span>
             <span className="text-slate-600">•</span>
             <span className="text-slate-300 font-sans">{format(new Date(), 'EEEE, MMMM d')}</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-3 font-display">
             Daily Momentum
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 max-w-lg">
-            High-velocity habit tracking powered by client-side half-life exponential decay.
+            Build unbroken daily consistency and watch your compounding momentum grow.
           </p>
         </div>
 
@@ -158,100 +191,6 @@ export function Dashboard() {
         </div>
       </header>
 
-      {/* ── KINETIC MOMENTUM DYSON CORE ─────────────────────────── */}
-      {!zenMode && habits.length > 0 && (
-        <section aria-label="Kinetic Dyson Core Sculpture">
-          <KineticDysonCore
-            score={globalMomentum}
-            completionRate={completionPercentage / 100}
-            completedCount={completedCount}
-            totalHabits={totalHabits}
-            maxStreak={maxStreak}
-          />
-        </section>
-      )}
-
-      {/* ── High-End Glass KPI Quad ─────────────────────────────── */}
-      {!zenMode && (
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4" aria-label="Momentum statistics">
-          {/* 1. Momentum Score */}
-          <div className="relative p-5 rounded-2xl bg-slate-950/35 border border-white/[0.12] border-t-white/[0.25] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden group hover:border-emerald-500/40 hover:bg-slate-900/45 transition-all">
-            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-colors" />
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-semibold">Momentum</span>
-              <TrendingUp size={15} className="text-emerald-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
-              <SlidingNumber value={globalMomentum} />
-              <span className="text-xs text-slate-500 font-normal">/ 100</span>
-            </div>
-            <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden mt-3">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                style={{ width: `${Math.min(100, Math.max(5, globalMomentum))}%` }}
-              />
-            </div>
-          </div>
-
-          {/* 2. Completion Rate */}
-          <div className="relative p-5 rounded-2xl bg-slate-950/35 border border-white/[0.12] border-t-white/[0.25] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden group hover:border-blue-500/40 hover:bg-slate-900/45 transition-all">
-            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-blue-500/10 blur-2xl pointer-events-none group-hover:bg-blue-500/20 transition-colors" />
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-blue-400 font-semibold">Today's Rate</span>
-              <CheckCircle2 size={15} className="text-blue-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-white font-mono flex items-baseline gap-1">
-              <SlidingNumber value={completionPercentage} />
-              <span className="text-xs text-blue-400 font-normal">%</span>
-            </div>
-            <p className="mt-2 text-[11px] font-mono text-slate-400">
-              <span className="text-white font-bold">{completedCount}</span> of <span className="text-white font-bold">{totalHabits}</span> rituals checked
-            </p>
-          </div>
-
-          {/* 3. Top Streak */}
-          <div className="relative p-5 rounded-2xl bg-slate-950/35 border border-white/[0.12] border-t-white/[0.25] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden group hover:border-amber-500/40 hover:bg-slate-900/45 transition-all">
-            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-amber-500/10 blur-2xl pointer-events-none group-hover:bg-amber-500/20 transition-colors" />
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold">Peak Streak</span>
-              <Flame size={15} className="text-amber-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-amber-300 font-mono flex items-baseline gap-1">
-              <SlidingNumber value={maxStreak} />
-              <span className="text-xs text-amber-400/70 font-normal">days</span>
-            </div>
-            <p className="mt-2 text-[11px] font-mono text-slate-400">
-              Unbroken discipline
-            </p>
-          </div>
-
-          {/* 4. Energy XP */}
-          <div className="relative p-5 rounded-2xl bg-slate-950/35 border border-white/[0.12] border-t-white/[0.25] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.45)] overflow-hidden group hover:border-purple-500/40 hover:bg-slate-900/45 transition-all">
-            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-purple-500/10 blur-2xl pointer-events-none group-hover:bg-purple-500/20 transition-colors" />
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-purple-400 font-semibold">Total XP</span>
-              <Zap size={15} className="text-purple-400" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black text-purple-300 font-mono">
-              <SlidingNumber value={userXP?.total || 0} />
-            </div>
-            <p className="mt-2 text-[11px] font-mono text-slate-400 truncate">
-              Rank: <span className="text-purple-300 font-semibold">{userXP?.level || 'Initiate'}</span>
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* ── KINETIC MOMENTUM WAVE VISUALIZER ─────────────────────── */}
-      {!zenMode && habits.length > 0 && (
-        <section className="mb-8" aria-label="Momentum Fluid Dynamics">
-          <MomentumWaveVisualizer
-            score={globalMomentum}
-            completionRate={completionPercentage / 100}
-          />
-        </section>
-      )}
-
       {/* ── ZEN FOCUS MODE (Distraction-Free) ─────────────────────── */}
       <AnimatePresence>
         {zenMode && (
@@ -270,13 +209,9 @@ export function Dashboard() {
 
             {nextUpHabit ? (
               <div className="max-w-md mx-auto relative z-10">
-                <GlassEmojiCapsule
-                  icon={nextUpHabit.icon}
-                  category={nextUpHabit.category}
-                  size="xl"
-                  interactive={true}
-                  className="mx-auto mb-6 shadow-2xl"
-                />
+                <div className="w-16 h-16 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-3xl mx-auto mb-6">
+                  {getHabitEmoji(nextUpHabit.icon)}
+                </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-white mb-3 tracking-tight">
                   {nextUpHabit.name}
                 </h2>
@@ -305,116 +240,209 @@ export function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* ── DAILY RITUAL SEGMENTS (Morning, Afternoon, Evening, Anytime) ── */}
-      {!zenMode && (
-        <div className="space-y-10">
-          {loading && habits.length === 0 ? (
-            <div className="space-y-4 py-8">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-24 rounded-2xl bg-white/[0.03] border border-white/[0.05] animate-pulse" />
-              ))}
-            </div>
-          ) : ritualGroups.length === 0 ? (
-            /* Luxury Empty State */
-            <div className="text-center py-16 px-6 rounded-3xl border border-white/[0.08] bg-[#0e101a]/60 backdrop-blur-2xl my-6 shadow-2xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
+      {/* ── ONBOARDING EMPTY STATE (When user has 0 habits) ─────────── */}
+      {!zenMode && !loading && habits.length === 0 && (
+        <div className="text-center py-12 px-6 sm:px-10 rounded-3xl border border-white/[0.1] bg-[#0c0f18]/80 backdrop-blur-2xl my-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
 
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5 text-4xl shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                ✨
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
-                Design Your Daily Ritual
-              </h2>
-              <p className="text-sm text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
-                Start building atomic momentum today. Add your first morning or evening habit to activate the tracker.
-              </p>
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 text-3xl shadow-[0_0_24px_rgba(16,185,129,0.25)]">
+            ✨
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">
+            Welcome to HabitFlow
+          </h2>
+          <p className="text-sm text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
+            Consistency begins with a single atomic step. Pick a starter habit below to activate your daily momentum tracking.
+          </p>
+
+          {/* Quick Starter Templates */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto mb-8 text-left">
+            {STARTER_HABITS.map(starter => (
               <button
-                onClick={() => setQuickAddOpen(true)}
-                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-sm shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                key={starter.name}
+                onClick={() => handleAddStarter(starter)}
+                className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.03] hover:bg-emerald-500/10 border border-white/[0.08] hover:border-emerald-500/30 transition-all group cursor-pointer"
               >
-                <Plus className="w-4 h-4 stroke-[3]" />
-                <span>Create Your First Habit</span>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <span className="text-2xl shrink-0">{starter.icon}</span>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors truncate">
+                      {starter.name}
+                    </div>
+                    <div className="text-[11px] text-slate-400 truncate">
+                      {starter.desc}
+                    </div>
+                  </div>
+                </div>
+                <span className="ml-2 text-xs font-mono font-semibold px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-colors">
+                  + Add
+                </span>
               </button>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => setQuickAddOpen(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] font-semibold text-xs transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Custom Habit</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── 2-COLUMN SPLIT DESKTOP LAYOUT (HABITS FRONT & CENTER) ──── */}
+      {!zenMode && (habits.length > 0 || loading) && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* ── LEFT PANE: HABITS & RITUAL TIMELINE (7 COLS ON DESKTOP) ── */}
+          <div className="lg:col-span-7 space-y-8 order-1">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+              <div className="flex items-center gap-2.5">
+                <Target className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-lg font-bold text-white tracking-tight">Today's Flow</h2>
+              </div>
+              <span className="text-xs font-mono text-slate-400 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+                <span className="text-emerald-400 font-bold">{completedCount}</span> of {totalHabits} completed
+              </span>
             </div>
-          ) : (
-            ritualGroups.map(group => (
-              <section key={group.timeSlot} className="space-y-4" aria-labelledby={`ritual-${group.timeSlot}`}>
-                {/* Ritual Header Capsule */}
-                <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">
-                      {group.timeSlot === 'morning' ? '🌅' : group.timeSlot === 'afternoon' ? '☀️' : group.timeSlot === 'evening' ? '🌙' : '✨'}
+
+            {loading && habits.length === 0 ? (
+              <div className="space-y-4 py-2">
+                {[1, 2, 3, 4].map(i => (
+                  <div
+                    key={i}
+                    className="h-[88px] rounded-2xl bg-white/[0.02] border border-white/[0.06] p-4 flex items-center justify-between animate-pulse relative overflow-hidden"
+                  >
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex-shrink-0" />
+                      <div className="space-y-2 flex-1">
+                        <div className="h-4 w-40 bg-white/[0.08] rounded-md" />
+                        <div className="h-3 w-24 bg-white/[0.04] rounded-md" />
+                      </div>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex-shrink-0 ml-4" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              ritualGroups.map(group => (
+                <section key={group.timeSlot} className="space-y-4" aria-labelledby={`ritual-${group.timeSlot}`}>
+                  {/* Ritual Header Capsule */}
+                  <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06]">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">
+                        {group.timeSlot === 'morning' ? '🌅' : group.timeSlot === 'afternoon' ? '☀️' : group.timeSlot === 'evening' ? '🌙' : '✨'}
+                      </span>
+                      <h3 id={`ritual-${group.timeSlot}`} className="text-base font-bold text-white tracking-tight">
+                        {group.label}
+                      </h3>
+                    </div>
+
+                    <span className="text-xs font-mono text-slate-400 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.06]">
+                      <span className="text-emerald-400 font-bold">{group.completedCount}</span> of {group.totalCount} completed
                     </span>
-                    <h2 id={`ritual-${group.timeSlot}`} className="text-lg font-bold text-white tracking-tight">
-                      {group.label}
-                    </h2>
                   </div>
 
-                  <span className="text-xs font-mono text-slate-400 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
-                    <span className="text-emerald-400 font-bold">{group.completedCount}</span> of {group.totalCount} completed
-                  </span>
-                </div>
+                  {/* Atomic Habit Stacking Pipeline */}
+                  <div className="relative space-y-1">
+                    {(() => {
+                      const nodes = momentumEngine.resolveHabitStack(group.habits, completedHabitIds);
+                      return nodes.map((node, idx) => {
+                        const habitWithStreak = node.habit as HabitWithStreak;
+                        const isDone = node.isCompletedToday;
+                        const hasNext = idx < nodes.length - 1;
+                        const nextNode = hasNext ? nodes[idx + 1] : null;
 
-                {/* Atomic Habit Stacking Pipeline */}
-                <div className="relative space-y-1">
-                  {group.habits.map((habit, idx) => {
-                    const habitWithStreak = habit as HabitWithStreak;
-                    const isDone = (habitWithStreak.todayLog?.value ?? 0) >= (habitWithStreak.targetValue || 1);
-                    const hasNext = idx < group.habits.length - 1;
-
-                    return (
-                      <div key={habit.id} className="relative">
-                        <TactileHabitCard
-                          habit={habitWithStreak}
-                          onToggle={handleToggleHabit}
-                          index={idx}
-                        />
-
-                        {/* Atomic Habit Stacking Laser Connector */}
-                        {hasNext && (
-                          <div className="relative my-2 sm:my-2.5 flex items-center justify-center">
-                            {/* Vertical connector line */}
-                            <div className="absolute left-8 sm:left-10 -top-3 -bottom-3 w-0.5 z-0 pointer-events-none overflow-hidden">
-                              <div
-                                className={cn(
-                                  'w-full h-full transition-all duration-500 relative',
-                                  isDone
-                                    ? 'bg-gradient-to-b from-emerald-400 via-teal-400 to-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.8)]'
-                                    : 'border-l-2 border-dashed border-white/10'
-                                )}
-                              >
-                                {isDone && (
-                                  <div className="absolute inset-x-0 top-0 h-5 bg-white/90 rounded-full blur-[1px] animate-laser-spark" />
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Micro Stack Badge */}
-                            <div
-                              className={cn(
-                                'relative z-10 px-3 py-1 rounded-full text-[10px] font-mono tracking-wider transition-all duration-300 flex items-center gap-1.5 shadow-md',
-                                isDone
-                                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
-                                  : 'bg-[#0d1017] text-slate-500 border border-white/[0.08]'
-                              )}
-                            >
-                              <span className="text-[11px] leading-none">{isDone ? '⚡' : '↳'}</span>
-                              <span className="font-semibold">
-                                {isDone ? 'Stack Active' : 'Stack Trigger'}
-                              </span>
-                              <span className="opacity-60 hidden sm:inline">
-                                {isDone ? '— Momentum flow unlocked' : `— After ${habit.name}`}
-                              </span>
-                            </div>
+                        return (
+                          <div key={node.habit.id} className="relative">
+                            <TactileHabitCard
+                              habit={habitWithStreak}
+                              onToggle={handleToggleHabit}
+                              index={idx}
+                              isPrimed={node.isPrimed}
+                              isLocked={node.isLocked}
+                              parentHabitName={node.parentHabit?.name}
+                              chainPosition={{ current: node.chainDepth + 1, total: node.chainTotal }}
+                            />
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      });
+                    })()}
+                  </div>
+                </section>
+              ))
+            )}
+          </div>
+
+          {/* ── RIGHT PANE: SUMMARY METRICS (5 COLS) ─ */}
+          <div className="lg:col-span-5 space-y-6 order-2 lg:sticky lg:top-6">
+            {/* 2x2 Summary KPI Quad */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-3.5" aria-label="Momentum statistics">
+              {/* 1. Momentum Score */}
+              <div className="p-4 sm:p-4.5 rounded-xl bg-neutral-900/60 border border-white/10 transition-colors hover:border-white/20">
+                <div className="flex items-center justify-between text-neutral-400 mb-1.5">
+                  <span className="text-xs font-mono uppercase tracking-wider font-semibold">Momentum</span>
+                  <TrendingUp size={14} />
                 </div>
-              </section>
-            ))
-          )}
+                <div className="text-2xl sm:text-3xl font-bold text-white font-mono flex items-baseline gap-1 tabular-nums">
+                  <span>{globalMomentum}</span>
+                  <span className="text-xs text-neutral-400 font-normal">/ 100</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-white/[0.08] overflow-hidden mt-2.5">
+                  <div
+                    className="h-full rounded-full bg-white transition-all duration-500"
+                    style={{ width: `${Math.min(100, Math.max(5, globalMomentum))}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* 2. Completion Rate */}
+              <div className="p-4 sm:p-4.5 rounded-xl bg-neutral-900/60 border border-white/10 transition-colors hover:border-white/20">
+                <div className="flex items-center justify-between text-neutral-400 mb-1.5">
+                  <span className="text-xs font-mono uppercase tracking-wider font-semibold">Today's Rate</span>
+                  <CheckCircle2 size={14} />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-white font-mono flex items-baseline gap-1 tabular-nums">
+                  <span>{completionPercentage}</span>
+                  <span className="text-xs text-neutral-400 font-normal">%</span>
+                </div>
+                <p className="mt-2 text-xs font-mono text-neutral-400 truncate tabular-nums">
+                  <span className="text-white font-semibold">{completedCount}</span> / <span className="text-white font-semibold">{totalHabits}</span> habits
+                </p>
+              </div>
+
+              {/* 3. Top Streak */}
+              <div className="p-4 sm:p-4.5 rounded-xl bg-neutral-900/60 border border-white/10 transition-colors hover:border-white/20">
+                <div className="flex items-center justify-between text-neutral-400 mb-1.5">
+                  <span className="text-xs font-mono uppercase tracking-wider font-semibold">Peak Streak</span>
+                  <Flame size={14} />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-white font-mono flex items-baseline gap-1 tabular-nums">
+                  <span>{maxStreak}</span>
+                  <span className="text-xs text-neutral-400 font-normal">days</span>
+                </div>
+                <p className="mt-2 text-xs font-mono text-neutral-400">
+                  Longest active streak
+                </p>
+              </div>
+
+              {/* 4. Energy XP */}
+              <div className="p-4 sm:p-4.5 rounded-xl bg-neutral-900/60 border border-white/10 transition-colors hover:border-white/20">
+                <div className="flex items-center justify-between text-neutral-400 mb-1.5">
+                  <span className="text-xs font-mono uppercase tracking-wider font-semibold">Total XP</span>
+                  <Zap size={14} />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-white font-mono tabular-nums">
+                  <span>{userXP?.total || 0}</span>
+                </div>
+                <p className="mt-2 text-xs font-mono text-neutral-400 truncate">
+                  Rank: <span className="text-neutral-200 font-semibold">{userXP?.level || 'Initiate'}</span>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

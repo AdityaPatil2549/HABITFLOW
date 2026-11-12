@@ -18,11 +18,6 @@ import { useAuthStore } from '@/store/authStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useToast } from '@/components/common/Toast';
 import { soundService } from '@/services/soundService';
-import { TiltCard } from '@/components/ui/TiltCard';
-import { TextEffect } from '@/components/ui/text-effect';
-import { lazy, Suspense } from 'react';
-
-const GamificationBackground = lazy(() => import('@/components/gamification/GamificationBackground'));
 
 /** Get or create a stable anonymous guest ID stored in localStorage */
 function getGuestId(): string {
@@ -163,7 +158,7 @@ export function SquadPage() {
   if (loadingSquad) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
-        <Suspense fallback={null}><GamificationBackground /></Suspense>
+        {/* loading */}
         <div className="w-8 h-8 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
       </div>
     );
@@ -172,7 +167,7 @@ export function SquadPage() {
   if (squads.length === 0) {
     return (
       <div className="space-y-6 relative pb-10">
-        <Suspense fallback={null}><GamificationBackground /></Suspense>
+        {/* loading */}
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 mb-2 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
@@ -189,7 +184,7 @@ export function SquadPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <TiltCard tiltIntensity={4}>
+          <div>
             <div className="relative overflow-hidden rounded-3xl bg-[#0e111a]/75 backdrop-blur-2xl border border-white/[0.08] p-8 sm:p-12 text-center shadow-[0_16px_36px_rgba(0,0,0,0.45)] group">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-emerald-500/5 pointer-events-none" />
               <div className="relative z-10">
@@ -219,7 +214,7 @@ export function SquadPage() {
                 </div>
               </div>
             </div>
-          </TiltCard>
+          </div>
         </motion.div>
 
         {/* How it works */}
@@ -235,13 +230,13 @@ export function SquadPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.1 }}
             >
-              <TiltCard tiltIntensity={6} className="h-full">
+              <div className="h-full">
                 <div className="rounded-2xl bg-[#0e111a]/60 backdrop-blur-xl border border-white/[0.08] p-6 text-center h-full relative z-10 shadow-lg">
                   <div className="text-3xl mb-3 drop-shadow-md">{item.icon}</div>
                   <h3 className="text-base font-bold text-white mb-1.5">{item.title}</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
                 </div>
-              </TiltCard>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -358,8 +353,6 @@ export function SquadPage() {
   // ─── In a Squad ────────────────────────────────────────────
   return (
     <div className="space-y-6 relative pb-10">
-      <Suspense fallback={null}><GamificationBackground /></Suspense>
-
       {/* Tabs for multiple squads */}
       {squads.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
@@ -401,8 +394,8 @@ export function SquadPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight break-all">
-                  <TextEffect as="span" per="char" preset="fade">{activeSquad.name}</TextEffect>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight break-all">
+                  {activeSquad.name}
                 </h1>
               </div>
               <p className="text-sm dark:text-slate-400 text-slate-600 mt-1">
@@ -448,7 +441,7 @@ export function SquadPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.1 }}
             >
-              <TiltCard tiltIntensity={8}>
+              <div>
                 <div className={`relative overflow-hidden rounded-2xl border ${
                   idx < 3 ? `bg-gradient-to-r ${medalColor}` : 'dark:bg-black/20 bg-white/50 backdrop-blur-md dark:border-white/10 border-slate-900/10'
                 } p-4`}
@@ -526,7 +519,7 @@ export function SquadPage() {
                 </div>
               </div>
                 </div>
-              </TiltCard>
+              </div>
             </motion.div>
           );
         })}

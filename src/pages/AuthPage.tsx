@@ -3,8 +3,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Sparkles, RefreshCw, Calendar, CloudUpload } from 'lucide-react';
-import { FloatingOrbs } from '../components/ui/FloatingOrbs';
-import { TextEffect } from '@/components/ui/text-effect';
 
 const features = [
   { icon: RefreshCw, label: 'Cross-device sync' },
@@ -42,14 +40,6 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 // Floating orb positions & colors for the animated background
-const orbs = [
-  { x: '10%', y: '20%', size: 320, color: 'rgba(99, 102, 241, 0.15)', delay: 0 },
-  { x: '75%', y: '15%', size: 260, color: 'rgba(139, 92, 246, 0.12)', delay: 2 },
-  { x: '60%', y: '70%', size: 380, color: 'rgba(79, 70, 229, 0.10)', delay: 4 },
-  { x: '20%', y: '75%', size: 200, color: 'rgba(167, 139, 250, 0.12)', delay: 1 },
-  { x: '85%', y: '50%', size: 160, color: 'rgba(99, 102, 241, 0.08)', delay: 3 },
-];
-
 export function AuthPage() {
   const navigate = useNavigate();
   const signInWithGoogle = useAuthStore(s => s.signInWithGoogle);
@@ -98,49 +88,17 @@ export function AuthPage() {
   }
 
   return (
-    <div className="relative md:h-screen md:overflow-hidden w-full bg-slate-950 text-slate-50">
-      <FloatingOrbs />
-      
-      <div className="pointer-events-none absolute inset-0 overflow-hidden isolate -z-10 contain-strict">
-        <div className="bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,rgba(139,92,246,0.06)_0,rgba(99,102,241,0.02)_50%,transparent_80%)] absolute top-0 left-0 h-[320px] w-[140px] -translate-y-[87.5px] -rotate-45 rounded-full blur-3xl" />
-        <div className="bg-[radial-gradient(50%_50%_at_50%_50%,rgba(99,102,241,0.04)_0,rgba(139,92,246,0.01)_80%,transparent_100%)] absolute top-0 left-0 h-[320px] w-[60px] translate-x-[5%] -translate-y-1/2 -rotate-45 rounded-full blur-3xl" />
-        {orbs.map((orb, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            style={{
-              left: orb.x,
-              top: orb.y,
-              width: orb.size,
-              height: orb.size,
-              background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
-              filter: 'blur(40px)',
-            }}
-            animate={{
-              x: [0, 30, -20, 10, 0],
-              y: [0, -25, 15, -10, 0],
-              scale: [1, 1.1, 0.95, 1.05, 1],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              delay: orb.delay,
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
-      </div>
-
+    <div className="relative md:h-screen md:overflow-hidden w-full bg-neutral-950 text-neutral-100">
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-4">
         <motion.div 
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mx-auto space-y-6 sm:w-[400px] bg-slate-900/50 p-8 rounded-3xl border border-white/5 backdrop-blur-xl shadow-2xl"
+          transition={{ duration: 0.35 }}
+          className="mx-auto space-y-6 sm:w-[400px] bg-neutral-900/70 p-8 rounded-2xl border border-white/10"
         >
           <div className="flex items-center gap-3">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/20">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 border border-white/10">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <p className="text-2xl font-bold tracking-tight text-white">
               Habit<span className="text-brand-400">Flow</span>
@@ -149,9 +107,9 @@ export function AuthPage() {
           
           <div className="flex flex-col space-y-2">
             <h1 className="font-heading text-3xl font-bold tracking-tight text-white">
-              <TextEffect as="span" per="word" preset="blur">Sign In or Join Now</TextEffect>
+              Sign In or Join Now
             </h1>
-            <p className="text-slate-400 text-base leading-relaxed">
+            <p className="text-neutral-400 text-base leading-relaxed">
               Login to sync your habits across devices, or continue as a guest to store data locally.
             </p>
           </div>
@@ -160,11 +118,7 @@ export function AuthPage() {
             <button 
               type="button" 
               onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl text-white font-semibold text-[15px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
-                boxShadow: '0 8px 24px -4px rgba(var(--brand-500-rgb), 0.35)',
-              }}
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl btn-primary font-semibold text-[15px]"
             >
               <GoogleIcon className="size-5" />
               Continue with Google

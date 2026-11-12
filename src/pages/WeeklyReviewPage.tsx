@@ -168,7 +168,7 @@ export function WeeklyReviewPage() {
           className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-white text-xs font-mono flex items-center gap-2 transition-all self-start sm:self-auto active:scale-95"
         >
           <Share2 size={14} className="text-purple-400" />
-          Export Artifact <span className="text-[10px] text-slate-500 font-mono">[E]</span>
+          Export Artifact <span className="text-xs text-slate-300 font-mono">[E]</span>
         </button>
       </div>
 
@@ -196,9 +196,9 @@ export function WeeklyReviewPage() {
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]'
               )}
             >
-              <IconComponent size={14} className={isActive ? 'text-black' : 'text-slate-500'} />
+              <IconComponent size={14} className={isActive ? 'text-black' : 'text-slate-400'} />
               <span>{tab.label}</span>
-              <span className={cn('text-[10px] opacity-60 font-mono', isActive ? 'text-black/60' : 'text-slate-600')}>
+              <span className={cn('text-xs opacity-80 font-mono', isActive ? 'text-black/70' : 'text-slate-400')}>
                 [{tab.hotkey}]
               </span>
             </button>

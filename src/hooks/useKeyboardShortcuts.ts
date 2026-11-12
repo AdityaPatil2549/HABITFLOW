@@ -7,7 +7,7 @@ export const SHORTCUT_DEFINITIONS = [
   { key: '2', description: 'Go to Habits' },
   { key: '3', description: 'Go to Tasks' },
   { key: '4', description: 'Go to Analytics' },
-  { key: '5', description: 'Go to Focus' },
+  { key: '5', description: 'Go to Weekly Review' },
   { key: '6', description: 'Go to Profile' },
   { key: 'n', description: 'New habit' },
   { key: 't', description: 'New task' },
@@ -112,7 +112,7 @@ export function useKeyboardShortcuts(options: {
           navigate('/analytics');
           break;
         case '5':
-          navigate('/focus');
+          navigate('/review');
           break;
         case '6':
           navigate('/profile');

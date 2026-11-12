@@ -147,7 +147,9 @@ function App() {
               <Route path="squad" element={<SquadPage />} />
               <Route path="privacy" element={<PrivacyPage />} />
               <Route path="terms" element={<TermsPage />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Suspense>
         <ModalContainer />

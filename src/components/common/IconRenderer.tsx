@@ -1,6 +1,5 @@
 import React from 'react';
 import { getHabitEmoji } from '../../lib/emoji';
-import { GlassEmojiCapsule } from './GlassEmojiCapsule';
 
 export interface HabitIconItem {
   name: string;
@@ -62,36 +61,19 @@ export interface IconRendererProps {
 
 export function IconRenderer({
   name,
-  category,
   className,
   size = 18,
   color,
   interactive = false,
-  capsule = false,
-  isDone = false,
   onClick,
 }: IconRendererProps) {
-  if (capsule) {
-    return (
-      <GlassEmojiCapsule
-        icon={name}
-        category={category}
-        size={typeof size === 'number' ? (size <= 16 ? 'xs' : size <= 20 ? 'sm' : size <= 28 ? 'md' : 'lg') : size}
-        isDone={isDone}
-        interactive={interactive}
-        className={className}
-        onClick={onClick}
-      />
-    );
-  }
-
   const emoji = getHabitEmoji(name);
 
   return (
     <span
       onClick={onClick}
-      className={`inline-flex items-center justify-center select-none leading-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)] ${
-        interactive ? 'cursor-pointer hover:scale-110 active:scale-95 transition-transform' : ''
+      className={`inline-flex items-center justify-center select-none leading-none ${
+        interactive ? 'cursor-pointer hover:scale-105 active:scale-95 transition-transform' : ''
       } ${className || ''}`}
       style={{ fontSize: typeof size === 'number' ? size : undefined, color }}
       role="img"

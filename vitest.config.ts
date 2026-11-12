@@ -5,13 +5,14 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    preserveSymlinks: true,
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
   test: {
     environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
     globals: true,
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
   },
 });

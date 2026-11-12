@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Star, Flame, X, Sparkles } from 'lucide-react';
-import { useCompletionEffects } from './CompletionEffects';
+import { triggerConfetti } from '../../lib/confetti';
 
 function CelebrationBadge() {
   return (
@@ -33,13 +33,13 @@ export function AchievementToast({
   type,
   onClose,
 }: AchievementToastProps) {
-  const { fireConfetti } = useCompletionEffects();
+  // confetti on mount
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
     // Fire confetti on mount
-    fireConfetti();
-    setTimeout(() => fireConfetti(), 300);
+    triggerConfetti();
+    // celebration fired
 
     // Auto-dismiss timer
     const timer = setTimeout(onClose, 4500);
@@ -51,7 +51,7 @@ export function AchievementToast({
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, [fireConfetti, onClose]);
+  }, [onClose]);
 
   const bgGradient =
     type === 'level_up'

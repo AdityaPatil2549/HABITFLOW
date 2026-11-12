@@ -1,14 +1,9 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { GalaxyCanvas } from '../ui/GalaxyCanvas';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHabitStore } from '../../store/habitStore';
 import { useProfileStore } from '../../store/profileStore';
 import { ArrowRight, Check, Sparkles, ChevronRight, Flame } from 'lucide-react';
 import { format } from 'date-fns';
-import { TiltCard } from '../ui/TiltCard';
-import { DynamicIcon } from '../ui/DynamicIcon';
-
-const GamificationBackground = lazy(() => import('../gamification/GamificationBackground'));
 
 const ONBOARDING_KEY = 'habitflow_onboarding_done';
 
@@ -81,6 +76,7 @@ type GoalKey = keyof typeof GOAL_TEMPLATES;
 export function useOnboarding() {
   const [show, setShow] = useState(() => {
     if (typeof window !== 'undefined') {
+      if (window.location.search.includes('skip_onboarding')) return false;
       return !localStorage.getItem(ONBOARDING_KEY);
     }
     return false;
@@ -177,34 +173,30 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
           flexDirection: 'column',
         }}
       >
-        {/* Galaxy Background */}
-        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-          {/* All-in-one galaxy: nebula clouds + twinkling stars */}
-          <GalaxyCanvas />
-        </div>
+        {/* Neutral backdrop */}
 
         {/* Centered content wrapper */}
         <div className="flex-1 w-full flex flex-col items-center justify-center p-4 md:p-6 relative z-10 my-auto">
           
-          {/* Progress indicator at top, separated from card */}
-          <div className="flex items-center justify-center gap-2 mb-10">
+          {/* Progress indicator */}
+          <div className="flex items-center justify-center gap-2 mb-8">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-2">
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300 ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
                     i < step
-                      ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)]'
+                      ? 'bg-white text-neutral-950'
                       : i === step
-                      ? 'bg-indigo-500/30 text-indigo-200 shadow-[0_0_20px_rgba(99,102,241,0.6)]'
-                      : 'bg-white/5 text-slate-500 border border-white/10'
+                      ? 'bg-neutral-800 text-white border border-white/30'
+                      : 'bg-neutral-900 text-neutral-500 border border-white/10'
                   }`}
                 >
                   {i < step ? <Check size={12} /> : i + 1}
                 </div>
                 {i < STEPS.length - 1 && (
                   <div
-                    className={`w-6 h-[1px] transition-all duration-500 ${
-                      i < step ? 'bg-indigo-500' : 'bg-white/10'
+                    className={`w-6 h-[1px] ${
+                      i < step ? 'bg-white/60' : 'bg-white/10'
                     }`}
                   />
                 )}
@@ -213,28 +205,9 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
           </div>
 
           <div className="w-full min-w-[320px] max-w-[460px] relative mx-auto">
-            {/* 3D Stacked Card Effect Backings matching screenshot precisely */}
-            {/* Third card (furthest back) */}
-            <motion.div 
-              animate={{ rotate: [-2, -2.5, -2], y: [0, 4, 0] }}
-              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-              className="absolute inset-0 top-[-12px] left-[-4px] right-[-4px] bottom-[12px] scale-[0.96] rounded-[24px] border border-purple-500/10 bg-[#0c081e]/40 backdrop-blur-md shadow-2xl pointer-events-none" 
-            />
-            {/* Second card */}
-            <motion.div 
-              animate={{ rotate: [1.5, 2, 1.5], y: [0, -3, 0] }}
-              transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }}
-              className="absolute inset-0 top-[-6px] left-[-2px] right-[-2px] bottom-[6px] scale-[0.98] rounded-[24px] border border-purple-500/20 bg-[#0c081e]/60 backdrop-blur-lg shadow-2xl pointer-events-none" 
-            />
 
             {/* Main Front Card Container */}
-            <div className="relative rounded-[24px] border border-purple-500/30 bg-[#070412]/95 backdrop-blur-3xl px-8 py-10 shadow-[0_0_80px_rgba(147,51,234,0.15)] overflow-hidden">
-              {/* Inner ambient top glow inside the card */}
-              <motion.div 
-                animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.1, 1] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                className="absolute -top-32 left-1/2 -translate-x-1/2 w-72 h-40 bg-purple-500/10 blur-[50px] pointer-events-none rounded-full" 
-              />
+            <div className="relative rounded-2xl border border-white/10 bg-neutral-900/90 px-8 py-10 overflow-hidden">
               
               <AnimatePresence mode="wait">
                 {/* ── Step 0: Welcome ── */}
@@ -282,31 +255,16 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                         onChange={e => setName(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && setStep(1)}
                         autoFocus
-                        className="w-full bg-transparent border border-purple-500/40 shadow-[0_0_15px_rgba(147,51,234,0.15)] focus:border-purple-400 focus:shadow-[0_0_20px_rgba(147,51,234,0.3)] rounded-[14px] px-5 py-3.5 text-slate-300 text-center text-sm outline-none transition-all placeholder:text-[#4b5563]"
+                        className="w-full bg-neutral-950 border border-white/15 focus:border-white/40 rounded-lg px-4 py-3 text-white text-center text-sm outline-none transition-colors placeholder:text-neutral-500"
                       />
                     </div>
 
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.98 }}
+                    <button
                       onClick={() => setStep(1)}
-                      className="relative w-full py-3.5 px-6 rounded-[14px] border border-purple-400/20 bg-gradient-to-r from-[#2e1065] via-[#4c1d95] to-[#3b0764] hover:from-[#3b0764] hover:to-[#4c1d95] text-white font-semibold text-[13px] flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(109,40,217,0.4)] transition-all overflow-hidden mb-4 group"
+                      className="w-full py-3 px-5 rounded-lg bg-white text-neutral-950 hover:bg-neutral-200 font-semibold text-sm flex items-center justify-center gap-2 transition-colors mb-4"
                     >
-                      {/* Intense glowing lens flare with continuous sweeping animation */}
-                      <motion.div 
-                        animate={{ x: ['-200%', '400%', '400%'] }}
-                        transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", times: [0, 0.4, 1] }}
-                        className="absolute top-[-50%] bottom-[-50%] w-[100px] left-0 flex items-center justify-center pointer-events-none mix-blend-overlay rotate-12"
-                      >
-                        <div className="w-[40px] h-full bg-white opacity-40 blur-[12px]" />
-                        <div className="w-[2px] h-full bg-white opacity-80 blur-[1px] absolute" />
-                        <div className="w-[8px] h-full bg-purple-200 opacity-60 blur-[4px] absolute" />
-                      </motion.div>
-                      
-                      <span className="relative z-10 flex items-center gap-2 tracking-wide">
-                        Let's get started <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                      </span>
-                    </motion.button>
+                      Let's get started <ArrowRight size={14} />
+                    </button>
 
                     <button
                       onClick={onComplete}
@@ -361,7 +319,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
                       >
-                        <TiltCard tiltIntensity={10} className="w-full block">
                           <button
                             onClick={() => {
                               setGoal(key);
@@ -389,7 +346,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                               <ChevronRight size={18} className={`transition-colors ${goal === key ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} style={{ flexShrink: 0 }} />
                             </div>
                           </button>
-                        </TiltCard>
                       </motion.div>
                     ))}
                   </div>
@@ -423,9 +379,9 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   exit={{ opacity: 0, y: -24 }}
                 >
                   <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <DynamicIcon size={56} tiltIntensity={20} glowColor={selectedGoal.color + '80'} interactive={true}>
-                      <span style={{ fontSize: 40 }}>{selectedGoal.icon}</span>
-                    </DynamicIcon>
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-neutral-800 border border-white/10 mb-3">
+                      <span className="text-3xl">{selectedGoal.icon}</span>
+                    </div>
                     <p
                       style={{
                         fontSize: 11,
@@ -456,7 +412,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.05 }}
                       >
-                        <TiltCard tiltIntensity={10} className="w-full block">
                           <motion.button
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setSelected(s => s.map((v, idx) => (idx === i ? !v : v)))}
@@ -548,7 +503,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                               </AnimatePresence>
                             </div>
                           </motion.button>
-                        </TiltCard>
                       </motion.div>
                     ))}
                   </div>
@@ -630,9 +584,8 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   exit={{ opacity: 0 }}
                   style={{ textAlign: 'center', padding: '32px 0' }}
                 >
-                  <TiltCard tiltIntensity={15}>
-                    <motion.div
-                      initial={{ scale: 0, rotate: -10 }}
+                  <motion.div
+                    initial={{ scale: 0, rotate: -10 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                       style={{
@@ -652,7 +605,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                     >
                       🎉
                     </motion.div>
-                  </TiltCard>
                   <h2 style={{ fontSize: 36, fontWeight: 900, color: 'white', marginBottom: 12 }}>
                     You're all set!
                   </h2>

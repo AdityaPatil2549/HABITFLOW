@@ -12,13 +12,9 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { HabitWithStreak } from '../../../types';
-import { SlidingNumber } from '../../ui/motion/SlidingNumber';
 import { soundService } from '../../../services/soundService';
-import { useChronoStore } from '../../../store/chronoStore';
-import { triggerGoldFoilBurst } from '../../common/GoldFoilBurst';
 import { cn } from '../../../lib/utils';
 import { getHabitEmoji } from '../../../lib/emoji';
-import { GlassEmojiCapsule } from '../../common/GlassEmojiCapsule';
 
 export interface HabitRowProps {
   habit: HabitWithStreak;
@@ -39,7 +35,6 @@ export function HabitRow({
 }: HabitRowProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
-  const { currentEpoch } = useChronoStore();
 
   const isDone = (habit.todayLog?.value ?? 0) >= (habit.targetValue || 1);
   const currentStreak = habit.streak?.current ?? 0;
@@ -51,11 +46,7 @@ export function HabitRow({
     if (isToggling) return;
     setIsToggling(true);
     if (!isDone) {
-      const isMilestone = [3, 7, 14, 30, 100].includes(currentStreak + 1);
-      soundService.playChronoForging(currentEpoch, isMilestone);
-      if (isMilestone) {
-        triggerGoldFoilBurst();
-      }
+      soundService.playTick();
     } else {
       soundService.playUncheck();
     }
@@ -70,10 +61,10 @@ export function HabitRow({
     <div
       onClick={() => onEdit(habit)}
       className={cn(
-        'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-2xl border transition-all duration-200 cursor-pointer select-none card-horlogerie',
+        'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-xl border transition-colors cursor-pointer select-none',
         isDone
-          ? 'bg-[#091512]/90 border-emerald-500/40 text-slate-200 shadow-[0_4px_20px_rgba(16,185,129,0.12)]'
-          : 'bg-[#0d101a]/85 border-white/[0.08] hover:border-white/[0.2] hover:bg-[#121624]/90 text-slate-100'
+          ? 'bg-neutral-900/80 border-white/20 text-neutral-300'
+          : 'bg-neutral-900/40 border-white/10 hover:border-white/20 hover:bg-neutral-900/60 text-neutral-100'
       )}
     >
       {/* ── Left Side: Checkbox + Icon + Name + Category ──────── */}
@@ -105,15 +96,10 @@ export function HabitRow({
           </AnimatePresence>
         </button>
 
-        {/* 3D Glass Category Emoji Capsule */}
-        <GlassEmojiCapsule
-          icon={habit.icon}
-          category={habit.category}
-          size="sm"
-          isDone={isDone}
-          interactive={false}
-          showHalo={false}
-        />
+        {/* Habit Emoji */}
+        <span className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center text-base shrink-0">
+          {getHabitEmoji(habit.icon)}
+        </span>
 
         {/* Habit Name & Metadata */}
         <div className="min-w-0 flex-1">
@@ -158,10 +144,10 @@ export function HabitRow({
         </div>
 
         {/* Streak Indicator */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 font-mono text-xs font-semibold shadow-[0_0_12px_rgba(245,158,11,0.15)] min-w-[56px] justify-center">
-          <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400 animate-pulse" />
-          <SlidingNumber value={currentStreak} />
-          <span className="text-[10px] font-normal text-amber-300/80">d</span>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/10 text-neutral-300 font-mono text-xs font-semibold min-w-[56px] justify-center tabular-nums">
+          <Flame className="w-3.5 h-3.5 text-neutral-400" />
+          <span>{currentStreak}</span>
+          <span className="text-[10px] font-normal text-neutral-500">d</span>
         </div>
 
         {/* Action Menu Trigger */}

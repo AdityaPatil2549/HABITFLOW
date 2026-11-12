@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Camera,
@@ -26,11 +26,6 @@ import { getOrCreateSettings } from '../db';
 import { useToast } from '../components/common/Toast';
 import { soundService } from '../services/soundService';
 import { calculateStats } from '../services/gamificationService';
-import { TiltCard } from '../components/ui/TiltCard';
-import { TextEffect } from '../components/ui/text-effect';
-import { InView } from '../components/ui/in-view';
-
-const GamificationBackground = lazy(() => import('../components/gamification/GamificationBackground'));
 
 // All achievable badges (catalogue) — icon + label must match what gamificationService awards
 const BADGE_CATALOGUE = [
@@ -139,16 +134,13 @@ export function ProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-24 relative">
-      <Suspense fallback={null}>
-        <GamificationBackground />
-      </Suspense>
 
       {/* Settings / Edit Header */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-brand-400 mb-1">Account</p>
           <h1 className="text-3xl font-bold text-white">
-            <TextEffect as="span" per="word" preset="blur">My Profile</TextEffect>
+            My Profile
           </h1>
         </div>
         {saved && (
@@ -159,7 +151,7 @@ export function ProfilePage() {
       </div>
 
       {/* Profile card */}
-      <TiltCard borderGlow tiltIntensity={3}>
+      <div>
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 relative z-10">
         <div className="flex flex-col sm:flex-row items-start gap-6">
           {/* Avatar */}
@@ -301,7 +293,7 @@ export function ProfilePage() {
           </div>
         </div>
         </div>
-      </TiltCard>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -330,17 +322,10 @@ export function ProfilePage() {
             value: `${earnedBadges}/${BADGE_CATALOGUE.length}`,
             color: '#f59e0b',
           },
-        ].map((s, idx) => (
-          <InView
-            key={s.label}
-            variants={{
-              hidden: { opacity: 0, y: 20, scale: 0.95 },
-              visible: { opacity: 1, y: 0, scale: 1 },
-            }}
-            transition={{ duration: 0.4, delay: idx * 0.1 }}
-          >
-            <TiltCard tiltIntensity={12} className="h-full">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-4 text-center h-full">
+        ].map((s) => (
+          <div key={s.label} className="h-full">
+            <div>
+              <div className="bg-neutral-900/60 border border-white/10 rounded-xl p-4 text-center h-full">
                 <div
                   className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center"
                   style={{ background: `${s.color}18`, color: s.color }}
@@ -350,13 +335,13 @@ export function ProfilePage() {
                 <p className="text-xl font-bold text-white">{s.value}</p>
                 <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
               </div>
-            </TiltCard>
-          </InView>
+            </div>
+          </div>
         ))}
       </div>
 
       {/* Streak Freezes */}
-      <TiltCard tiltIntensity={4}>
+      <div>
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           <Snowflake size={120} />
@@ -400,10 +385,10 @@ export function ProfilePage() {
           </button>
         </div>
         </div>
-      </TiltCard>
+      </div>
 
       {/* Theme Shop */}
-      <TiltCard tiltIntensity={2}>
+      <div>
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -467,9 +452,9 @@ export function ProfilePage() {
           })}
         </div>
         </div>
-      </TiltCard>
+      </div>
 
-      <TiltCard tiltIntensity={2}>
+      <div>
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-white">Badges & Achievements</h2>
@@ -478,23 +463,16 @@ export function ProfilePage() {
           </span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {BADGE_CATALOGUE.map((b, idx) => {
+          {BADGE_CATALOGUE.map((b) => {
             const earnedBadge = userXP?.badgesEarned?.find(
               e => e.id === b.id || e.name === b.label
             );
             const isEarned = !!earnedBadge;
             return (
-              <InView
+              <div
                 key={b.id}
-                variants={{
-                  hidden: { opacity: 0, scale: 0.9 },
-                  visible: { opacity: 1, scale: 1 },
-                }}
-                transition={{ duration: 0.3, delay: idx * 0.05 }}
+                className={`rounded-xl p-4 border h-full ${isEarned ? 'border-white/20 bg-neutral-900' : 'border-white/5 bg-neutral-900/30 opacity-50'}`}
               >
-                <div
-                  className={`rounded-xl p-4 border transition-all h-full ${isEarned ? 'border-brand-500/20 bg-brand-500/5' : 'border-white/5 bg-white/[0.02] opacity-50'}`}
-                >
                   <span className={`text-2xl block mb-2 ${!isEarned && 'grayscale opacity-50'}`}>
                     {b.icon}
                   </span>
@@ -509,12 +487,11 @@ export function ProfilePage() {
                     </span>
                   )}
                 </div>
-              </InView>
             );
           })}
         </div>
         </div>
-      </TiltCard>
+      </div>
 
       {/* Quick links */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl p-5 flex flex-col sm:flex-row gap-3">

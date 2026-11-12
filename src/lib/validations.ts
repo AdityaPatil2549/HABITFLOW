@@ -23,6 +23,10 @@ export const habitSchema = z
       .regex(/^\d{2}:\d{2}$/, 'Invalid time format')
       .optional(),
     reminderDays: z.array(z.number().min(0).max(6)).optional(),
+    timeOfDay: z.enum(['morning', 'afternoon', 'evening', 'anytime']).optional(),
+    stackAfterHabitId: z.string().optional(),
+    healthSyncEnabled: z.boolean().optional(),
+    healthMetric: z.enum(['steps', 'sleep', 'water', 'calories', 'meditation']).optional(),
   })
   .refine(
     data => {

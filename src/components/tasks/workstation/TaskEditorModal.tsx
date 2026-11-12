@@ -145,7 +145,7 @@ export function TaskEditorModal({
 
           {/* Priority */}
           <div>
-            <label className="block text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
               Priority
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -171,7 +171,7 @@ export function TaskEditorModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             {/* Due Date */}
             <div>
-              <label className="block text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
                 Due Date
               </label>
               <input
@@ -184,7 +184,7 @@ export function TaskEditorModal({
 
             {/* Project */}
             <div>
-              <label className="block text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
                 Project
               </label>
               <select
@@ -205,25 +205,25 @@ export function TaskEditorModal({
 
           {/* Quick Date Shortcuts */}
           <div className="flex items-center gap-1.5 pt-1">
-            <span className="text-[10px] text-slate-500 mr-1">Quick:</span>
+            <span className="text-xs font-medium text-slate-400 mr-1">Quick:</span>
             <button
               type="button"
               onClick={() => setDueDate(format(new Date(), 'yyyy-MM-dd'))}
-              className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/[0.06] cursor-pointer"
+              className="px-2.5 py-1 rounded text-xs font-mono bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.06] cursor-pointer"
             >
               Today
             </button>
             <button
               type="button"
               onClick={() => setDueDate(format(addDays(new Date(), 1), 'yyyy-MM-dd'))}
-              className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/[0.06] cursor-pointer"
+              className="px-2.5 py-1 rounded text-xs font-mono bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.06] cursor-pointer"
             >
               Tomorrow
             </button>
             <button
               type="button"
               onClick={() => setDueDate(format(addDays(new Date(), 7), 'yyyy-MM-dd'))}
-              className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/[0.06] cursor-pointer"
+              className="px-2.5 py-1 rounded text-xs font-mono bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.06] cursor-pointer"
             >
               +1 Week
             </button>

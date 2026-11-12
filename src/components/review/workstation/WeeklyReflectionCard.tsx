@@ -4,7 +4,6 @@ import { format, getISOWeek } from 'date-fns';
 import { Sparkles, Check, Flame, Smile, Zap, CloudRain, Shield } from 'lucide-react';
 import { soundService } from '../../../services/soundService';
 import { useToast } from '../../common/Toast';
-import { SpotlightCard } from '../../ui/motion/SpotlightCard';
 import { cn } from '../../../lib/utils';
 
 const MOOD_OPTIONS = [
@@ -110,9 +109,8 @@ export function WeeklyReflectionCard() {
       {/* Structured Tri-Field Reflection Prompts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Field 1: The Win */}
-        <SpotlightCard className="p-4 rounded-xl bg-[#0e1017]/80 border border-white/[0.06] flex flex-col">
-          <label className="text-xs font-mono uppercase tracking-wider text-emerald-400 mb-1.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col">
+          <label className="text-xs font-mono uppercase tracking-wider text-neutral-300 mb-1.5 flex items-center gap-1.5">
             2. Biggest Breakthrough / Win
           </label>
           <textarea
@@ -120,14 +118,13 @@ export function WeeklyReflectionCard() {
             value={reflection.win}
             onChange={e => setReflection(prev => ({ ...prev, win: e.target.value }))}
             placeholder="What habit felt effortless or gave you immense energy?"
-            className="w-full flex-1 bg-transparent text-xs text-white placeholder-slate-600 resize-none outline-none leading-relaxed border-t border-white/[0.04] pt-2"
+            className="w-full flex-1 bg-transparent text-xs text-white placeholder-neutral-600 resize-none outline-none leading-relaxed border-t border-white/[0.06] pt-2"
           />
-        </SpotlightCard>
+        </div>
 
         {/* Field 2: The Friction */}
-        <SpotlightCard className="p-4 rounded-xl bg-[#0e1017]/80 border border-white/[0.06] flex flex-col">
-          <label className="text-xs font-mono uppercase tracking-wider text-rose-400 mb-1.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+        <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col">
+          <label className="text-xs font-mono uppercase tracking-wider text-neutral-300 mb-1.5 flex items-center gap-1.5">
             3. Friction / Roadblock
           </label>
           <textarea
@@ -135,14 +132,13 @@ export function WeeklyReflectionCard() {
             value={reflection.friction}
             onChange={e => setReflection(prev => ({ ...prev, friction: e.target.value }))}
             placeholder="Where did discipline lapse or fatigue disrupt the ritual?"
-            className="w-full flex-1 bg-transparent text-xs text-white placeholder-slate-600 resize-none outline-none leading-relaxed border-t border-white/[0.04] pt-2"
+            className="w-full flex-1 bg-transparent text-xs text-white placeholder-neutral-600 resize-none outline-none leading-relaxed border-t border-white/[0.06] pt-2"
           />
-        </SpotlightCard>
+        </div>
 
         {/* Field 3: Next Week's Intention */}
-        <SpotlightCard className="p-4 rounded-xl bg-[#0e1017]/80 border border-white/[0.06] flex flex-col">
-          <label className="text-xs font-mono uppercase tracking-wider text-purple-400 mb-1.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+        <div className="p-4 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col">
+          <label className="text-xs font-mono uppercase tracking-wider text-neutral-300 mb-1.5 flex items-center gap-1.5">
             4. Core Intention For Next Week
           </label>
           <textarea
@@ -150,9 +146,9 @@ export function WeeklyReflectionCard() {
             value={reflection.intention}
             onChange={e => setReflection(prev => ({ ...prev, intention: e.target.value }))}
             placeholder="Single non-negotiable standard (e.g. 20m reading at 8 AM)"
-            className="w-full flex-1 bg-transparent text-xs text-white placeholder-slate-600 resize-none outline-none leading-relaxed border-t border-white/[0.04] pt-2"
+            className="w-full flex-1 bg-transparent text-xs text-white placeholder-neutral-600 resize-none outline-none leading-relaxed border-t border-white/[0.06] pt-2"
           />
-        </SpotlightCard>
+        </div>
       </div>
 
       {/* Save Button */}

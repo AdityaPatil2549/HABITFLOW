@@ -23,6 +23,13 @@ export interface HabitChainNode {
   isCompletedToday: boolean;
   order: number;
   unlocked: boolean;
+  isPrimed: boolean;
+  isLocked: boolean;
+  parentId?: string;
+  parentHabit?: Habit;
+  children: Habit[];
+  chainDepth: number;
+  chainTotal: number;
   nextInChain?: string; // habitId
 }
 
@@ -153,20 +160,17 @@ export const momentumEngine = {
     for (const h of habits) {
       if (h.archived) continue;
 
-      // Check habit metadata, frequency, or reminder times to slot into ritual
-      const timeOfDay = (h as any).timeOfDay || (h as any).routine || 'anytime';
-      if (timeOfDay in groups) {
-        groups[timeOfDay as DailyRitualGroup['timeSlot']].push(h);
+      // Check explicit habit metadata or fall back to reminder time heuristic
+      const explicitSlot = h.timeOfDay || (h as any).routine;
+      if (explicitSlot && explicitSlot in groups) {
+        groups[explicitSlot as DailyRitualGroup['timeSlot']].push(h);
+      } else if (h.reminderTime) {
+        const hour = parseInt(h.reminderTime.split(':')[0], 10);
+        if (hour < 12) groups.morning.push(h);
+        else if (hour < 17) groups.afternoon.push(h);
+        else groups.evening.push(h);
       } else {
-        // Heuristic: based on reminder time if set
-        if (h.reminderTime) {
-          const hour = parseInt(h.reminderTime.split(':')[0], 10);
-          if (hour < 12) groups.morning.push(h);
-          else if (hour < 17) groups.afternoon.push(h);
-          else groups.evening.push(h);
-        } else {
-          groups.anytime.push(h);
-        }
+        groups.anytime.push(h);
       }
     }
 
@@ -179,7 +183,8 @@ export const momentumEngine = {
 
     return configs
       .map(cfg => {
-        const list = groups[cfg.slot];
+        const rawList = groups[cfg.slot];
+        const list = this.sortChainedHabits(rawList);
         const completedCount = list.filter(h => completedHabitIds.has(h.id)).length;
         return {
           timeSlot: cfg.slot,
@@ -194,24 +199,99 @@ export const momentumEngine = {
   },
 
   /**
-   * Resolves a Habit Stacking chain DAG to determine unlocked order
+   * Topologically sorts habits so that chained habits immediately follow their parent
+   */
+  sortChainedHabits(habits: Habit[]): Habit[] {
+    const byId = new Map(habits.map(h => [h.id, h]));
+    const childrenMap = new Map<string, Habit[]>();
+
+    for (const h of habits) {
+      if (h.stackAfterHabitId && byId.has(h.stackAfterHabitId)) {
+        const list = childrenMap.get(h.stackAfterHabitId) || [];
+        list.push(h);
+        childrenMap.set(h.stackAfterHabitId, list);
+      }
+    }
+
+    const result: Habit[] = [];
+    const visited = new Set<string>();
+
+    function addNodeAndDescendants(habit: Habit) {
+      if (visited.has(habit.id)) return;
+      visited.add(habit.id);
+      result.push(habit);
+      const children = childrenMap.get(habit.id) || [];
+      for (const child of children) {
+        addNodeAndDescendants(child);
+      }
+    }
+
+    // 1. First add roots (habits with no parent or whose parent is outside this set)
+    for (const h of habits) {
+      if (!h.stackAfterHabitId || !byId.has(h.stackAfterHabitId)) {
+        addNodeAndDescendants(h);
+      }
+    }
+
+    // 2. Safety pass for any circular dependencies
+    for (const h of habits) {
+      if (!visited.has(h.id)) {
+        addNodeAndDescendants(h);
+      }
+    }
+
+    return result;
+  },
+
+  /**
+   * Resolves a Habit Stacking chain DAG to determine unlocked order and priming states
    */
   resolveHabitStack(habits: Habit[], completedHabitIds: Set<string>): HabitChainNode[] {
-    const nodes: HabitChainNode[] = [];
     const habitMap = new Map(habits.map(h => [h.id, h]));
+    const childrenMap = new Map<string, Habit[]>();
 
-    // Find roots (habits with no parent/stack dependency)
-    let orderIndex = 0;
-    for (const habit of habits) {
-      const parentId = (habit as any).stackAfterHabitId;
-      const isParentCompleted = !parentId || completedHabitIds.has(parentId);
+    for (const h of habits) {
+      if (h.stackAfterHabitId && habitMap.has(h.stackAfterHabitId)) {
+        const list = childrenMap.get(h.stackAfterHabitId) || [];
+        list.push(h);
+        childrenMap.set(h.stackAfterHabitId, list);
+      }
+    }
+
+    const sorted = this.sortChainedHabits(habits);
+    const nodes: HabitChainNode[] = [];
+
+    for (let i = 0; i < sorted.length; i++) {
+      const habit = sorted[i];
+      const parentId = habit.stackAfterHabitId;
+      const parentHabit = parentId ? habitMap.get(parentId) : undefined;
+      const isParentCompleted = !parentId || !parentHabit || completedHabitIds.has(parentId);
+      const isCompletedToday = completedHabitIds.has(habit.id);
+      const children = childrenMap.get(habit.id) || [];
+
+      // Calculate chain depth
+      let depth = 0;
+      let currParent = parentHabit;
+      const seen = new Set<string>([habit.id]);
+      while (currParent && !seen.has(currParent.id)) {
+        depth++;
+        seen.add(currParent.id);
+        currParent = currParent.stackAfterHabitId ? habitMap.get(currParent.stackAfterHabitId) : undefined;
+      }
 
       nodes.push({
         habit,
-        isCompletedToday: completedHabitIds.has(habit.id),
-        order: orderIndex++,
+        isCompletedToday,
+        order: i,
         unlocked: isParentCompleted,
-        nextInChain: (habit as any).nextHabitId,
+        isPrimed: isParentCompleted && !isCompletedToday && Boolean(parentId && parentHabit),
+        isLocked: !isParentCompleted && Boolean(parentId && parentHabit),
+        parentId,
+        parentHabit,
+        children,
+        chainDepth: depth,
+        chainTotal: children.length + depth + 1,
+        nextInChain: children[0]?.id,
       });
     }
 

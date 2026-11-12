@@ -1,15 +1,14 @@
-import { X, Plus, Flame, Check, Cloud } from 'lucide-react';
+import { X, Plus, Flame, Check, Cloud, Zap } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import type { HabitType, HabitFrequency, Priority } from '../../types';
 import { format, parseISO } from 'date-fns';
 import { IconRenderer, HABIT_ICONS } from '../common/IconRenderer';
-import { GlassEmojiCapsule } from '../common/GlassEmojiCapsule';
+import { getHabitEmoji } from '../../lib/emoji';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { habitSchema } from '../../lib/validations';
-import { DynamicIcon } from '../ui/DynamicIcon';
 import { DatePicker } from '../ui/date-picker';
 
 const CATEGORIES = [
@@ -41,6 +40,8 @@ export function QuickAddModalFixed({ onClose }: Props) {
   const [habitType, setHabitType] = useState<HabitType>('boolean');
   const [habitFreq, setHabitFreq] = useState<HabitFrequency>('daily');
   const [habitTarget, setHabitTarget] = useState(1);
+  const [habitTimeOfDay, setHabitTimeOfDay] = useState<'morning' | 'afternoon' | 'evening' | 'anytime'>('morning');
+  const [stackAfterHabitId, setStackAfterHabitId] = useState<string>('');
   const [healthSyncEnabled, setHealthSyncEnabled] = useState(false);
   const [healthMetric, setHealthMetric] = useState<
     'steps' | 'sleep' | 'water' | 'calories' | 'meditation'
@@ -51,6 +52,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
   const [taskDueDate, setTaskDueDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [taskPriority, setTaskPriority] = useState<Priority>(2);
 
+  const habits = useHabitStore(s => s.habits);
   const addHabit = useHabitStore(s => s.addHabit);
   const addTask = useTaskStore(s => s.addTask);
 
@@ -90,6 +92,8 @@ export function QuickAddModalFixed({ onClose }: Props) {
       category: habitCategory,
       type: habitType,
       frequency: habitFreq,
+      timeOfDay: habitTimeOfDay,
+      stackAfterHabitId: stackAfterHabitId || undefined,
       frequencyDays: habitFreq === 'weekly' ? [1, 2, 3, 4, 5] : undefined,
       targetValue: habitTarget,
       startDate: format(new Date(), 'yyyy-MM-dd'),
@@ -133,17 +137,13 @@ export function QuickAddModalFixed({ onClose }: Props) {
         exit={{ opacity: 0, scale: 0.95, y: 40 }}
         transition={{ type: 'spring', bounce: 0.3, duration: 0.6 }}
         onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-[512px] md:mx-4 bg-slate-900/90 backdrop-blur-2xl border-t md:border border-white/10 shadow-2xl shadow-black/80 rounded-t-[32px] md:rounded-[32px] overflow-hidden pb-[env(safe-area-inset-bottom)]"
+        className="relative w-full max-w-[512px] md:mx-4 bg-neutral-900 border-t md:border border-white/10 shadow-2xl rounded-t-3xl md:rounded-3xl overflow-hidden pb-[env(safe-area-inset-bottom)]"
       >
-        {/* Decorative Ambient Glows */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-500/20 rounded-full blur-[64px] pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[64px] pointer-events-none" />
-
         {/* Header */}
         <div className="relative px-8 pt-8 pb-6 flex items-center justify-between z-10">
           <div>
             <h2 className="text-2xl font-black text-white tracking-tight">Create New</h2>
-            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+            <p className="text-xs font-semibold text-slate-300 mt-1 uppercase tracking-wider">
               What's your next move?
             </p>
           </div>
@@ -205,14 +205,11 @@ export function QuickAddModalFixed({ onClose }: Props) {
                 {/* 3D Glass Icon Picker */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                      Choose Icon & Aura
+                    <label className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
+                      Icon
                     </label>
-                    <span className="text-[10px] font-mono text-emerald-400">
-                      3D Tactile Capsule
-                    </span>
                   </div>
-                  <div className="grid grid-cols-7 gap-2 bg-[#080a10]/80 rounded-2xl p-3 border border-white/5 max-h-48 overflow-y-auto">
+                  <div className="grid grid-cols-7 gap-2 bg-neutral-950/60 rounded-xl p-3 border border-white/10 max-h-48 overflow-y-auto">
                     {HABIT_ICONS.map(item => {
                       const isActive = habitIcon === item.name;
                       return (
@@ -222,19 +219,13 @@ export function QuickAddModalFixed({ onClose }: Props) {
                           title={item.label}
                           onClick={() => setHabitIcon(item.name)}
                           className={cn(
-                            'relative p-1 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer',
+                            'relative p-2 rounded-lg flex items-center justify-center text-lg transition-colors cursor-pointer',
                             isActive
-                              ? 'ring-2 ring-emerald-400 bg-emerald-500/20 scale-105 shadow-[0_0_12px_rgba(52,211,153,0.3)]'
-                              : 'hover:bg-white/5 hover:scale-105 opacity-80 hover:opacity-100'
+                              ? 'ring-2 ring-white/40 bg-white/15'
+                              : 'hover:bg-white/5 opacity-80 hover:opacity-100'
                           )}
                         >
-                          <GlassEmojiCapsule
-                            icon={item.name}
-                            category={item.category}
-                            size="sm"
-                            interactive={false}
-                            showHalo={false}
-                          />
+                          <span>{getHabitEmoji(item.name)}</span>
                         </button>
                       );
                     })}
@@ -243,7 +234,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                 {/* Category Picker */}
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 block">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-neutral-300 mb-3 block">
                     Category
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -254,15 +245,13 @@ export function QuickAddModalFixed({ onClose }: Props) {
                           key={c.name}
                           type="button"
                           onClick={() => setHabitCategory(c.name)}
-                          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 border ${
+                          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors border ${
                             isActive
-                              ? 'bg-brand-500/20 border-brand-400 text-white shadow-inner'
-                              : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/10'
+                              ? 'bg-white/15 border-white/30 text-white'
+                              : 'bg-neutral-950/40 border-white/10 text-neutral-400 hover:text-white hover:bg-white/5'
                           }`}
                         >
-                          <DynamicIcon tiltIntensity={25} size={20} interactive={true}>
-                            <span className="text-sm block">{c.icon}</span>
-                          </DynamicIcon>
+                          <span className="text-sm">{c.icon}</span>
                           {c.name}
                         </button>
                       );
@@ -272,18 +261,12 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                 <div className="space-y-5">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-neutral-300 mb-2 block">
                       Habit Name
                     </label>
-                    <div className="relative group">
-                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 transition-transform group-focus-within:scale-110 pointer-events-none">
-                        <GlassEmojiCapsule
-                          icon={habitIcon}
-                          category={habitCategory}
-                          size="xs"
-                          interactive={false}
-                          showHalo={false}
-                        />
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-lg">
+                        {getHabitEmoji(habitIcon)}
                       </div>
                       <input
                         className="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-14 pr-4 py-4 text-white placeholder-slate-600 text-base font-medium outline-none focus:border-emerald-500/50 focus:bg-slate-950/60 transition-all shadow-inner"
@@ -298,7 +281,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2 block">
                         Type
                       </label>
                       <select
@@ -321,7 +304,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2 block">
                         Frequency
                       </label>
                       <select
@@ -344,7 +327,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                     >
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block mt-1">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2 block mt-1">
                         Daily Target
                       </label>
                       <input
@@ -368,7 +351,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                           <Cloud size={16} className="text-brand-400" />
                           Health Sync (Auto-Complete)
                         </h4>
-                        <p className="text-[10px] text-slate-400 mt-1">
+                        <p className="text-xs text-slate-300 mt-1">
                           Automatically sync progress from Google Fit or Apple Health.
                         </p>
                       </div>
@@ -392,7 +375,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                           exit={{ opacity: 0, height: 0 }}
                           className="pt-2 border-t border-white/5 mt-1"
                         >
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2 block">
                             Sync Metric
                           </label>
                           <select
@@ -410,17 +393,79 @@ export function QuickAddModalFixed({ onClose }: Props) {
                       )}
                     </AnimatePresence>
                   </div>
+
+                  {/* Ritual Window */}
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2 block">
+                      Ritual Window
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { id: 'morning', label: 'Morning', icon: '🌅' },
+                        { id: 'afternoon', label: 'Afternoon', icon: '☀️' },
+                        { id: 'evening', label: 'Evening', icon: '🌙' },
+                        { id: 'anytime', label: 'Anytime', icon: '✨' },
+                      ].map(slot => (
+                        <button
+                          key={slot.id}
+                          type="button"
+                          onClick={() => setHabitTimeOfDay(slot.id as any)}
+                          className={cn(
+                            'py-2.5 px-1.5 rounded-xl border flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer',
+                            habitTimeOfDay === slot.id
+                              ? 'bg-emerald-500/20 border-emerald-400 text-white shadow-inner'
+                              : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5'
+                          )}
+                        >
+                          <span className="text-base">{slot.icon}</span>
+                          <span className="text-xs font-bold">{slot.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Atomic Habit Stacking (James Clear Protocol) */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-500/[0.08] to-emerald-500/[0.03] border border-teal-500/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Zap size={14} className="text-teal-400 fill-teal-400/30" />
+                        <span className="text-xs font-bold text-white tracking-wide">Atomic Habit Stacking</span>
+                      </div>
+                      <span className="text-xs font-mono text-teal-300 bg-teal-500/15 px-2.5 py-0.5 rounded-full border border-teal-400/30">
+                        James Clear
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Stack this ritual immediately after an anchor habit to ignite a kinetic synaptic laser spark when the anchor finishes.
+                    </p>
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5 block">
+                        Anchor Habit:
+                      </label>
+                      <select
+                        value={stackAfterHabitId}
+                        onChange={e => setStackAfterHabitId(e.target.value)}
+                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-teal-400/50 focus:outline-none cursor-pointer"
+                      >
+                        <option value="">None (Independent Ritual)</option>
+                        {habits
+                          .filter(h => !h.archived)
+                          .map(h => (
+                            <option key={h.id} value={h.id}>
+                              {getHabitEmoji(h.icon)} {h.name} ({h.category})
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="group relative w-full py-4 mt-2 rounded-2xl bg-gradient-to-r from-brand-500 to-indigo-600 text-white font-bold text-base shadow-lg shadow-brand-500/25 active:scale-95 transition-all overflow-hidden border border-white/10"
+                  className="w-full py-3.5 mt-2 rounded-xl btn-primary text-sm font-semibold flex items-center justify-center gap-2"
                 >
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                  <span className="relative flex items-center justify-center gap-2">
-                    <Flame size={20} className="group-hover:text-amber-300 transition-colors" />
-                    Ignite Habit
-                  </span>
+                  <Flame size={16} />
+                  Create Habit
                 </button>
               </motion.form>
             ) : (
@@ -434,7 +479,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                 className="space-y-6"
               >
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2 block">
                     Task Title
                   </label>
                   <input
@@ -449,7 +494,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2 block">
                       Due Date
                     </label>
                     <DatePicker
@@ -459,7 +504,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2 block">
                       Priority
                     </label>
                     <select

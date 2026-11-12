@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import type { Task, Priority } from '../../../types';
 import { soundService } from '../../../services/soundService';
-import { format, isToday, isPast, parseISO } from 'date-fns';
+import { format, isToday, isPast, parseISO, endOfDay } from 'date-fns';
 import { cn } from '../../../lib/utils';
 
 export interface TaskRowProps {
@@ -46,8 +46,10 @@ export function TaskRow({
     if (!task.dueDate) return null;
     try {
       const parsed = parseISO(task.dueDate);
+      const isDateOnly = !task.dueDate.includes('T');
+      const targetDate = isDateOnly ? endOfDay(parsed) : parsed;
       const isDueToday = isToday(parsed);
-      const isOverdue = !task.completed && isPast(parsed) && !isDueToday;
+      const isOverdue = !task.completed && isPast(targetDate) && !isDueToday;
       const formatted = isDueToday ? 'Today' : format(parsed, 'MMM d');
       return { formatted, isOverdue, isDueToday };
     } catch {
@@ -151,7 +153,7 @@ export function TaskRow({
         {/* Priority Badge */}
         <span
           className={cn(
-            'hidden xs:inline-flex px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider border',
+            'hidden xs:inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border',
             priority.badge
           )}
         >
