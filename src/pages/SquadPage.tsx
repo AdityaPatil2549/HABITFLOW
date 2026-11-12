@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { squadService } from '@/services/squadService';
 import { isFirebaseConfigured } from '@/lib/firebase';
 import type { Squad } from '@/types';
@@ -51,12 +52,19 @@ export function SquadPage() {
   const [loading, setLoading] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
 
-  const userId = user?.uid || getGuestId();
+  const cloudRequiresAuth = isFirebaseConfigured() && !user?.uid;
+  const userId = user?.uid || (isFirebaseConfigured() ? '' : getGuestId());
   const displayName = user?.displayName || profile.name || 'Anonymous';
   const avatarUrl = user?.photoURL || profile.avatar || undefined;
 
   useEffect(() => {
     document.title = 'Squad — HabitFlow';
+    if (cloudRequiresAuth) {
+      setSquads([]);
+      setActiveSquadId(null);
+      setLoadingSquad(false);
+      return;
+    }
     async function loadSquads() {
       const s = await squadService.getMySquads();
       setSquads(s);
@@ -64,11 +72,11 @@ export function SquadPage() {
       setLoadingSquad(false);
     }
     loadSquads();
-  }, []);
+  }, [cloudRequiresAuth]);
 
-  // Subscribe to real-time Supabase updates for the active squad
+  // Subscribe to real-time Firestore updates for the active squad
   useEffect(() => {
-    if (!activeSquadId) return;
+    if (!activeSquadId || cloudRequiresAuth) return;
 
     const { unsubscribe } = squadService.subscribeToSquad(activeSquadId, async () => {
       // When another member updates their progress, re-fetch the squad data
@@ -77,11 +85,15 @@ export function SquadPage() {
     });
 
     return () => unsubscribe();
-  }, [activeSquadId]);
+  }, [activeSquadId, cloudRequiresAuth]);
 
   async function handleCreate() {
     if (!isFirebaseConfigured()) {
       toast.error('Firebase is not configured. Multiplayer features are disabled.');
+      return;
+    }
+    if (!user?.uid) {
+      toast.error('Please sign in to create a squad.');
       return;
     }
     if (!squadName.trim()) return;
@@ -109,6 +121,10 @@ export function SquadPage() {
   async function handleJoin() {
     if (!isFirebaseConfigured()) {
       toast.error('Firebase is not configured. Multiplayer features are disabled.');
+      return;
+    }
+    if (!user?.uid) {
+      toast.error('Please sign in to join a squad.');
       return;
     }
     if (!inviteCode.trim()) return;
@@ -160,6 +176,28 @@ export function SquadPage() {
       <div className="flex items-center justify-center h-[50vh]">
         {/* loading */}
         <div className="w-8 h-8 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (cloudRequiresAuth) {
+    return (
+      <div className="space-y-6 pb-10 max-w-xl mx-auto pt-8">
+        <div className="card-raised p-8 text-center space-y-4">
+          <div className="w-14 h-14 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center mx-auto text-2xl">
+            👥
+          </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Accountability Squads</h1>
+          <p className="text-sm text-neutral-400 leading-relaxed">
+            Sign in to your HabitFlow account to create or join a private accountability squad synced in real time.
+          </p>
+          <div className="pt-2">
+            <Link to="/auth" className="btn-primary inline-flex items-center gap-2">
+              <LogIn size={16} />
+              Sign in to join Squads
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

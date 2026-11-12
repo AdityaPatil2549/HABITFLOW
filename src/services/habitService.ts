@@ -7,19 +7,40 @@ import { calendarService } from './calendarService';
 import { getHabitEmoji } from '../lib/emoji';
 
 // ─── Habit CRUD ──────────────────────────────────────────────
+function markSeedsHandled(): void {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('habitflow_seeds_created', '1');
+  }
+}
+
 export const habitService = {
+  dismissSeeds(): void {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('habitflow_seeds_dismissed', '1');
+    }
+  },
   async getAll(): Promise<Habit[]> {
     const existing = await db.habits
       .orderBy('order')
       .filter(h => !h.archived)
       .toArray();
 
-    if (existing.length === 0) {
-      await habitService.seedStarterHabits();
-      return db.habits
-        .orderBy('order')
-        .filter(h => !h.archived)
-        .toArray();
+    const hasSeededOrDismissed =
+      typeof localStorage !== 'undefined' &&
+      (localStorage.getItem('habitflow_seeds_created') === '1' ||
+        localStorage.getItem('habitflow_seeds_dismissed') === '1');
+
+    if (existing.length === 0 && !hasSeededOrDismissed) {
+      const totalCount = await db.habits.count();
+      if (totalCount === 0) {
+        await habitService.seedStarterHabits();
+        markSeedsHandled();
+        return db.habits
+          .orderBy('order')
+          .filter(h => !h.archived)
+          .toArray();
+      }
+      markSeedsHandled();
     }
     return existing;
   },
@@ -101,6 +122,7 @@ export const habitService = {
   },
 
   async create(data: Omit<Habit, 'id' | 'createdAt' | 'order'>): Promise<Habit> {
+    markSeedsHandled();
     const count = await db.habits.count();
     const habit: Habit = {
       ...data,
@@ -129,6 +151,7 @@ export const habitService = {
   },
 
   async archive(id: string): Promise<void> {
+    markSeedsHandled();
     const todayStr = format(new Date(), 'yyyy-MM-dd');
     await db.habits.update(id, { archived: true, endDate: todayStr, updated_at: new Date().toISOString() });
     const updated = await db.habits.get(id);
@@ -138,12 +161,17 @@ export const habitService = {
   },
 
   async delete(id: string): Promise<void> {
+    markSeedsHandled();
     const habit = await db.habits.get(id);
+    const logs = await db.habitLogs.where('habitId').equals(id).toArray();
     await db.habits.delete(id);
     await db.habitLogs.where('habitId').equals(id).delete();
-    // Sync deletion to cloud
+    // Sync deletion to cloud (habit + all associated logs)
     if (habit) {
       syncService.queuePush('habits', { id }, 'delete').catch(console.error);
+      for (const log of logs) {
+        syncService.queuePush('habitLogs', { id: log.id, habitId: id, date: log.date }, 'delete').catch(console.error);
+      }
       calendarService.removeCalendarEvent(id).catch(console.error);
     }
   },
@@ -196,34 +224,72 @@ export const habitService = {
       throw new Error(`Habit not scheduled for ${date}`);
     }
 
-    // Upsert: delete existing log for this day first
-    await db.habitLogs
+    // Upsert: preserve existing primary log ID so Firestore doc stays in place without orphan IDs
+    const existingLogs = await db.habitLogs
       .where('[habitId+date]')
       .equals([habitId, date])
-      .delete();
+      .toArray();
 
+    const primaryLog = existingLogs[0];
+    if (existingLogs.length > 1) {
+      const extraIds = existingLogs.slice(1).map(l => l.id);
+      await db.habitLogs.bulkDelete(extraIds);
+      for (const extra of existingLogs.slice(1)) {
+        syncService.queuePush('habitLogs', { id: extra.id, habitId, date }, 'delete').catch(console.error);
+      }
+    }
+
+    const nowIso = new Date().toISOString();
     const log: HabitLog = {
-      id: nanoid(),
+      id: primaryLog?.id ?? nanoid(),
       habitId,
       date,
       value,
       note,
       isFrozen,
-      timeStamp: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      timeStamp: nowIso,
+      createdAt: primaryLog?.createdAt ?? nowIso,
+      updated_at: nowIso,
     };
-    await db.habitLogs.add(log);
+    await db.habitLogs.put(log);
     // Sync to cloud
     syncService.queuePush('habitLogs', log, 'upsert').catch(console.error);
     return log;
   },
 
+  async incrementLog(habitId: string, date: string, delta: number = 1): Promise<HabitLog | null> {
+    const habit = await db.habits.get(habitId);
+    if (!habit) throw new Error('Habit not found');
+    if (!habitService.isScheduledForDate(habit, date)) {
+      throw new Error(`Habit not scheduled for ${date}`);
+    }
+
+    const existing = await habitService.getLogForDate(habitId, date);
+    const currentValue = existing?.value ?? 0;
+    const nextValue = Math.max(0, currentValue + delta);
+
+    if (nextValue === 0) {
+      await habitService.removeLog(habitId, date);
+      return null;
+    }
+
+    return habitService.logCompletion(habitId, date, nextValue, existing?.note, existing?.isFrozen);
+  },
+
   async removeLog(habitId: string, date: string): Promise<void> {
+    const logs = await db.habitLogs
+      .where('[habitId+date]')
+      .equals([habitId, date])
+      .toArray();
+
     await db.habitLogs
       .where('[habitId+date]')
       .equals([habitId, date])
       .delete();
+
+    for (const log of logs) {
+      syncService.queuePush('habitLogs', { id: log.id, habitId, date }, 'delete').catch(console.error);
+    }
   },
 
   // ─── Streak Calculation ───────────────────────────────────────

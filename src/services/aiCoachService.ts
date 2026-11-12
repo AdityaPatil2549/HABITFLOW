@@ -5,8 +5,7 @@
 import { db } from '@/db';
 import type { AIInsight } from '@/types';
 import { format, subDays, subWeeks } from 'date-fns';
-import { vertexAI } from '@/lib/firebase';
-import { getGenerativeModel } from 'firebase/ai';
+import { getVertexAIInstance, isFirebaseConfigured } from '@/lib/firebase';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -52,8 +51,11 @@ async function generateWeeklySummary(): Promise<AIInsight | null> {
   let icon = '📊';
 
   // --- Real AI Integration ---
-  if (vertexAI) {
+  if (isFirebaseConfigured() && (typeof navigator === 'undefined' || navigator.onLine)) {
     try {
+      const vertexAI = await getVertexAIInstance();
+      if (!vertexAI) throw new Error('Vertex AI unavailable');
+      const { getGenerativeModel } = await import('firebase/ai');
       const model = getGenerativeModel(vertexAI, { model: 'gemini-2.5-flash' });
       const prompt = `You are HabitFlow, an elite behavioral science AI coach. 
       Analyze the user's weekly metrics:
@@ -102,7 +104,11 @@ async function generateWeeklySummary(): Promise<AIInsight | null> {
   return insight;
 }
 
-function fallbackSummaryBody(pct: number, best: any, worst: any) {
+function fallbackSummaryBody(
+  pct: number,
+  best?: { name: string; completed: number; total: number; icon: string },
+  worst?: { name: string; completed: number; total: number; icon: string }
+) {
   let body: string;
   if (pct >= 80) {
     body = `🔥 Incredible week! You completed ${pct}% of your habits. `;

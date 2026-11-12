@@ -2,8 +2,7 @@
  * Squad Service — Social Accountability Groups
  * Uses Firestore for real-time multiplayer squads.
  */
-import { db, isFirebaseConfigured } from '@/lib/firebase';
-import { collection, doc, setDoc, getDoc, getDocs, query, where, deleteDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { getFirestoreInstance, getAuthInstance, isFirebaseConfigured } from '@/lib/firebase';
 import type { Squad, SquadMember } from '@/types';
 
 const MY_SQUADS_KEY = 'habitflow_my_squad_ids';
@@ -60,6 +59,17 @@ async function createSquad(
   if (!isFirebaseConfigured()) {
     return mockCreateSquad(name, userId, displayName, avatarUrl);
   }
+  const [auth, db, { doc, setDoc }] = await Promise.all([
+    getAuthInstance(),
+    getFirestoreInstance(),
+    import('firebase/firestore'),
+  ]);
+  const authedUid = auth?.currentUser?.uid;
+  if (!authedUid || !db) {
+    console.warn('[SquadService] Sign-in required to create cloud squad');
+    return null;
+  }
+  const effectiveUserId = authedUid;
 
   const inviteCode = generateInviteCode();
   const squadId = crypto.randomUUID();
@@ -71,15 +81,15 @@ async function createSquad(
     id: squadId,
     name,
     invite_code: inviteCode,
-    owner_id: userId,
+    owner_id: effectiveUserId,
     created_at: now
   });
 
   // 2. Create Squad Member doc
-  const memberDocRef = doc(db, 'squad_members', `${squadId}_${userId}`);
+  const memberDocRef = doc(db, 'squad_members', `${squadId}_${effectiveUserId}`);
   await setDoc(memberDocRef, {
     squad_id: squadId,
-    user_id: userId,
+    user_id: effectiveUserId,
     display_name: displayName,
     avatar_url: avatarUrl || null,
     streak: 0,
@@ -93,11 +103,11 @@ async function createSquad(
     id: squadId,
     name,
     invite_code: inviteCode,
-    owner_id: userId,
+    owner_id: effectiveUserId,
     created_at: now,
     members: [
       {
-        user_id: userId,
+        user_id: effectiveUserId,
         display_name: displayName,
         avatar_url: avatarUrl,
         streak: 0,
@@ -117,6 +127,17 @@ async function joinSquad(
   if (!isFirebaseConfigured()) {
     return mockJoinSquad(inviteCode, userId, displayName, avatarUrl);
   }
+  const [auth, db, { collection, query, where, getDocs, doc, setDoc }] = await Promise.all([
+    getAuthInstance(),
+    getFirestoreInstance(),
+    import('firebase/firestore'),
+  ]);
+  const authedUid = auth?.currentUser?.uid;
+  if (!authedUid || !db) {
+    console.warn('[SquadService] Sign-in required to join cloud squad');
+    return null;
+  }
+  const effectiveUserId = authedUid;
 
   // 1. Find Squad by invite code
   const squadsRef = collection(db, 'squads');
@@ -142,10 +163,10 @@ async function joinSquad(
   }
 
   // 3. Insert Member
-  const memberDocRef = doc(db, 'squad_members', `${squadId}_${userId}`);
+  const memberDocRef = doc(db, 'squad_members', `${squadId}_${effectiveUserId}`);
   await setDoc(memberDocRef, {
     squad_id: squadId,
-    user_id: userId,
+    user_id: effectiveUserId,
     display_name: displayName,
     avatar_url: avatarUrl || null,
     streak: 0,
@@ -163,8 +184,15 @@ async function leaveSquad(squadId: string, userId: string): Promise<void> {
   if (!isFirebaseConfigured()) {
     return mockLeaveSquad(squadId, userId);
   }
+  const [auth, db, { doc, deleteDoc }] = await Promise.all([
+    getAuthInstance(),
+    getFirestoreInstance(),
+    import('firebase/firestore'),
+  ]);
+  const authedUid = auth?.currentUser?.uid;
+  if (!authedUid || !db) return;
 
-  const memberDocRef = doc(db, 'squad_members', `${squadId}_${userId}`);
+  const memberDocRef = doc(db, 'squad_members', `${squadId}_${authedUid}`);
   await deleteDoc(memberDocRef);
 
   removeSquadId(squadId);
@@ -173,6 +201,14 @@ async function leaveSquad(squadId: string, userId: string): Promise<void> {
 async function getMySquads(): Promise<Squad[]> {
   if (!isFirebaseConfigured()) {
     return mockGetMySquads();
+  }
+  const [auth, db, { collection, query, where, getDocs, doc, getDoc }] = await Promise.all([
+    getAuthInstance(),
+    getFirestoreInstance(),
+    import('firebase/firestore'),
+  ]);
+  if (!auth?.currentUser?.uid || !db) {
+    return [];
   }
   const ids = getMySquadIds();
   if (ids.length === 0) return [];
@@ -229,12 +265,19 @@ async function updateMyProgress(
   if (!isFirebaseConfigured()) {
     return mockUpdateProgress(userId, streak, completionToday);
   }
+  const [auth, db, { doc, updateDoc }] = await Promise.all([
+    getAuthInstance(),
+    getFirestoreInstance(),
+    import('firebase/firestore'),
+  ]);
+  const authedUid = auth?.currentUser?.uid;
+  if (!authedUid || !db) return;
 
   const squadIds = getMySquadIds();
   if (squadIds.length === 0) return;
 
   for (const squadId of squadIds) {
-    const memberDocRef = doc(db, 'squad_members', `${squadId}_${userId}`);
+    const memberDocRef = doc(db, 'squad_members', `${squadId}_${authedUid}`);
     try {
       await updateDoc(memberDocRef, {
         streak,
@@ -252,13 +295,27 @@ function subscribeToSquad(squadId: string, onUpdate: () => void) {
     return { unsubscribe: () => {} };
   }
 
-  const q = query(collection(db, 'squad_members'), where('squad_id', '==', squadId));
-  const unsubscribe = onSnapshot(q, () => {
-    onUpdate();
-  });
+  let unsub: (() => void) | null = null;
+  let cancelled = false;
+
+  void (async () => {
+    const [auth, db, { collection, query, where, onSnapshot }] = await Promise.all([
+      getAuthInstance(),
+      getFirestoreInstance(),
+      import('firebase/firestore'),
+    ]);
+    if (cancelled || !auth?.currentUser?.uid || !db) return;
+    const q = query(collection(db, 'squad_members'), where('squad_id', '==', squadId));
+    unsub = onSnapshot(q, () => {
+      onUpdate();
+    });
+  })();
 
   return {
-    unsubscribe
+    unsubscribe: () => {
+      cancelled = true;
+      unsub?.();
+    },
   };
 }
 

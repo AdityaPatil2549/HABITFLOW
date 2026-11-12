@@ -20,8 +20,12 @@ export const driveService = {
    * Saves the access token to localStorage.
    */
   async connectDrive(): Promise<void> {
-    const { auth } = await import('@/lib/firebase');
-    const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+    const { getAuthInstance } = await import('@/lib/firebase');
+    const [auth, { GoogleAuthProvider, signInWithPopup }] = await Promise.all([
+      getAuthInstance(),
+      import('firebase/auth'),
+    ]);
+    if (!auth) throw new Error('Firebase auth unavailable');
 
     const provider = new GoogleAuthProvider();
     provider.addScope(DRIVE_SCOPE);

@@ -7,9 +7,8 @@ import {
   Edit2,
   Archive,
   Trash2,
-  Calendar,
-  Layers,
-  Sparkles,
+  Minus,
+  Plus,
 } from 'lucide-react';
 import type { HabitWithStreak } from '../../../types';
 import { soundService } from '../../../services/soundService';
@@ -19,6 +18,7 @@ import { getHabitEmoji } from '../../../lib/emoji';
 export interface HabitRowProps {
   habit: HabitWithStreak;
   onToggle: (habit: HabitWithStreak) => Promise<void>;
+  onIncrement?: (habit: HabitWithStreak, delta: number) => Promise<void>;
   onEdit: (habit: HabitWithStreak) => void;
   onArchive: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
@@ -28,6 +28,7 @@ export interface HabitRowProps {
 export function HabitRow({
   habit,
   onToggle,
+  onIncrement,
   onEdit,
   onArchive,
   onDelete,
@@ -36,10 +37,12 @@ export function HabitRow({
   const [showMenu, setShowMenu] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
 
-  const isDone = (habit.todayLog?.value ?? 0) >= (habit.targetValue || 1);
+  const target = habit.targetValue || 1;
+  const todayValue = habit.todayLog?.value ?? 0;
+  const isDone = todayValue >= target;
+  const isStepperHabit = (habit.type === 'count' || habit.type === 'duration') && target > 1;
   const currentStreak = habit.streak?.current ?? 0;
-  const bestStreak = habit.streak?.best ?? 0;
-  const completionRate = habit.completionRate30Days ?? 0;
+  const completionRate = Math.round((habit.completionRate30Days ?? 0) * 100);
 
   const handleCheck = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,6 +55,21 @@ export function HabitRow({
     }
     try {
       await onToggle(habit);
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  const handleStep = async (e: React.MouseEvent, delta: number) => {
+    e.stopPropagation();
+    if (isToggling) return;
+    setIsToggling(true);
+    try {
+      if (onIncrement) {
+        await onIncrement(habit, delta);
+      } else {
+        await onToggle(habit);
+      }
     } finally {
       setIsToggling(false);
     }
@@ -113,11 +131,34 @@ export function HabitRow({
               {habit.name}
             </span>
 
-            {/* Target Value if greater than 1 */}
-            {habit.type !== 'boolean' && habit.targetValue > 1 && (
-              <span className="hidden sm:inline-flex items-center font-mono text-[11px] text-slate-400 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06]">
-                {habit.todayLog?.value ?? 0}/{habit.targetValue} {habit.unit || ''}
-              </span>
+            {/* Target Value stepper or badge */}
+            {isStepperHabit && (
+              <div
+                className="inline-flex items-center gap-1 font-mono text-[11px] bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.08]"
+                onClick={e => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={e => handleStep(e, -1)}
+                  disabled={isToggling || todayValue <= 0}
+                  aria-label={`Decrease ${habit.name}`}
+                  className="p-0.5 rounded hover:bg-white/10 disabled:opacity-35 cursor-pointer"
+                >
+                  <Minus className="w-3 h-3" />
+                </button>
+                <span className="tabular-nums text-slate-200 px-1">
+                  {todayValue}/{target} {habit.unit || ''}
+                </span>
+                <button
+                  type="button"
+                  onClick={e => handleStep(e, 1)}
+                  disabled={isToggling}
+                  aria-label={`Increase ${habit.name}`}
+                  className="p-0.5 rounded hover:bg-white/10 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </div>
             )}
           </div>
         </div>

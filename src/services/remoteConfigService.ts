@@ -3,13 +3,8 @@
  * Enables changing app behaviour (feature flags, AI prompts, messages)
  * from the Firebase Console without redeploying the app.
  */
-import {
-  fetchAndActivate,
-  getValue,
-  getBoolean,
-  getString,
-} from 'firebase/remote-config';
-import { remoteConfig, isFirebaseConfigured } from '@/lib/firebase';
+import { getRemoteConfigInstance, isFirebaseConfigured } from '@/lib/firebase';
+import type { RemoteConfig } from 'firebase/remote-config';
 
 // Default values — these are used until the first successful fetch
 const DEFAULTS: Record<string, string | boolean | number> = {
@@ -24,15 +19,23 @@ const DEFAULTS: Record<string, string | boolean | number> = {
   app_version_message: '',
 };
 
-// Cache fetch — Remote Config has a minimum fetch interval
 let initialized = false;
+let cachedConfig: RemoteConfig | null = null;
+let rcModule: typeof import('firebase/remote-config') | null = null;
 
 async function init(): Promise<void> {
   if (!isFirebaseConfigured() || initialized) return;
   try {
+    const [remoteConfig, mod] = await Promise.all([
+      getRemoteConfigInstance(),
+      import('firebase/remote-config'),
+    ]);
+    if (!remoteConfig) return;
     remoteConfig.defaultConfig = DEFAULTS;
-    remoteConfig.settings.minimumFetchIntervalMillis = 3600000; // 1 hour
-    await fetchAndActivate(remoteConfig);
+    remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
+    await mod.fetchAndActivate(remoteConfig);
+    cachedConfig = remoteConfig;
+    rcModule = mod;
     initialized = true;
   } catch (e) {
     console.warn('[RemoteConfig] Failed to fetch remote config, using defaults:', e);
@@ -43,27 +46,27 @@ export const remoteConfigService = {
   init,
 
   isFeatureEnabled(flag: string): boolean {
-    if (!isFirebaseConfigured()) return Boolean(DEFAULTS[flag] ?? true);
+    if (!cachedConfig || !rcModule) return Boolean(DEFAULTS[flag] ?? true);
     try {
-      return getBoolean(remoteConfig, flag);
+      return rcModule.getBoolean(cachedConfig, flag);
     } catch {
       return Boolean(DEFAULTS[flag] ?? true);
     }
   },
 
   getString(key: string): string {
-    if (!isFirebaseConfigured()) return String(DEFAULTS[key] ?? '');
+    if (!cachedConfig || !rcModule) return String(DEFAULTS[key] ?? '');
     try {
-      return getString(remoteConfig, key);
+      return rcModule.getString(cachedConfig, key);
     } catch {
       return String(DEFAULTS[key] ?? '');
     }
   },
 
   getNumber(key: string): number {
-    if (!isFirebaseConfigured()) return Number(DEFAULTS[key] ?? 0);
+    if (!cachedConfig || !rcModule) return Number(DEFAULTS[key] ?? 0);
     try {
-      return getValue(remoteConfig, key).asNumber();
+      return rcModule.getValue(cachedConfig, key).asNumber();
     } catch {
       return Number(DEFAULTS[key] ?? 0);
     }

@@ -1,20 +1,8 @@
 // ============================================================
 // HabitFlow — Offline-First Sync Engine (Firestore Version)
 // ============================================================
-import { db as firestore, auth, isFirebaseConfigured } from '@/lib/firebase';
+import { getFirestoreInstance, getAuthInstance, isFirebaseConfigured } from '@/lib/firebase';
 import { db, type SyncQueueItem } from '@/db';
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  deleteDoc, 
-  query, 
-  where, 
-  orderBy, 
-  limit, 
-  getDocs,
-  writeBatch
-} from 'firebase/firestore';
 
 // ─── Table Name Mapping (Dexie camelCase → Firestore collection) ─────
 const DEXIE_TO_FIRESTORE: Record<string, string> = {
@@ -47,7 +35,7 @@ for (const [table, mapping] of Object.entries(COLUMN_MAP)) {
   );
 }
 
-function toFirestoreRow(firestoreTable: string, record: Record<string, any>): Record<string, any> {
+function toFirestoreRow(firestoreTable: string, record: Record<string, unknown>): Record<string, unknown> {
   const mapping = COLUMN_MAP[firestoreTable] ?? {};
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
@@ -57,7 +45,7 @@ function toFirestoreRow(firestoreTable: string, record: Record<string, any>): Re
   return result;
 }
 
-function toDexieRow(firestoreTable: string, record: Record<string, any>): Record<string, any> {
+function toDexieRow(firestoreTable: string, record: Record<string, unknown>): Record<string, unknown> {
   const mapping = REVERSE_COLUMN_MAP[firestoreTable] ?? {};
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
@@ -71,10 +59,13 @@ const CURSOR_PREFIX = 'habitflow_sync_cursor_';
 function getSyncCursor(tableName: string): string | null { return localStorage.getItem(`${CURSOR_PREFIX}${tableName}`); }
 function setSyncCursor(tableName: string, cursor: string): void { localStorage.setItem(`${CURSOR_PREFIX}${tableName}`, cursor); }
 
-function getDexieTable(dexieTableName: string) { return (db as any)[dexieTableName] as import('dexie').Table; }
+function getDexieTable(dexieTableName: string): import('dexie').Table<Record<string, unknown>, string> {
+  return db.table(dexieTableName) as import('dexie').Table<Record<string, unknown>, string>;
+}
 
-function getAuthUserId(): string | null {
-  return auth.currentUser?.uid ?? null;
+async function getAuthUserId(): Promise<string | null> {
+  const auth = await getAuthInstance();
+  return auth?.currentUser?.uid ?? null;
 }
 
 class SyncService {
@@ -84,7 +75,7 @@ class SyncService {
   private focusHandler: (() => void) | null = null;
   private pushTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  async queuePush(tableName: string, record: Record<string, any>, operation: 'upsert' | 'delete'): Promise<void> {
+  async queuePush<T extends { id: string }>(tableName: string, record: T, operation: 'upsert' | 'delete'): Promise<void> {
     if (!isFirebaseConfigured()) return;
     const item: SyncQueueItem = {
       table_name: tableName,
@@ -102,8 +93,11 @@ class SyncService {
 
   async processPushQueue(): Promise<void> {
     if (!isFirebaseConfigured()) return;
-    const userId = getAuthUserId();
+    const userId = await getAuthUserId();
     if (!userId) return;
+    const firestore = await getFirestoreInstance();
+    if (!firestore) return;
+    const { doc, writeBatch } = await import('firebase/firestore');
 
     const items = await db.sync_queue.orderBy('created_at').toArray();
     if (items.length === 0) return;
@@ -126,7 +120,16 @@ class SyncService {
         const docRef = doc(firestore, firestoreTable, item.record_id);
 
         if (item.operation === 'delete') {
-          batch.update(docRef, { deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+          batch.set(
+            docRef,
+            {
+              id: item.record_id,
+              user_id: userId,
+              deleted_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            { merge: true }
+          );
         } else {
           const row = toFirestoreRow(firestoreTable, { ...item.payload, user_id: userId, updated_at: new Date().toISOString() });
           batch.set(docRef, row, { merge: true });
@@ -163,8 +166,11 @@ class SyncService {
 
   async pullChanges(tableName: string): Promise<number> {
     if (!isFirebaseConfigured()) return 0;
-    const userId = getAuthUserId();
+    const userId = await getAuthUserId();
     if (!userId) return 0;
+    const firestore = await getFirestoreInstance();
+    if (!firestore) return 0;
+    const { collection, query, where, orderBy, limit, getDocs } = await import('firebase/firestore');
 
     const firestoreTable = DEXIE_TO_FIRESTORE[tableName] ?? tableName;
     const cursor = getSyncCursor(tableName);
@@ -190,18 +196,18 @@ class SyncService {
         if (remoteUpdatedAt > latestCursor) latestCursor = remoteUpdatedAt;
 
         if (remoteRow.deleted_at) {
-          try { await table.delete(dexieRow.id); } catch {}
+          try { await table.delete(String(dexieRow.id)); } catch {}
           merged++;
           continue;
         }
 
-        const localRow = await table.get(dexieRow.id).catch(() => null);
+        const localRow = await table.get(String(dexieRow.id)).catch(() => null);
         if (!localRow) {
           const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
           await table.add(cleanRow).catch(() => table.put(cleanRow));
           merged++;
         } else {
-          const localUpdatedAt = (localRow as any).updatedAt ?? (localRow as any).createdAt ?? '';
+          const localUpdatedAt = String(localRow.updatedAt ?? localRow.createdAt ?? '');
           if (remoteUpdatedAt > localUpdatedAt) {
             const { userId: _uid, deletedAt: _del, ...cleanRow } = dexieRow;
             await table.put(cleanRow);

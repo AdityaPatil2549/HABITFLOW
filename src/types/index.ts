@@ -20,7 +20,7 @@ export type Level = 'Beginner' | 'Builder' | 'Achiever' | 'Champion' | 'Grandmas
 // ─── Habit ───────────────────────────────────────────────────
 export interface Habit {
   id: string;
-  user_id?: string; // Supabase user ID (null for guest)
+  user_id?: string; // Firebase user ID (null for guest)
   name: string;
   icon: string; // emoji
   color: string; // hex or tailwind color

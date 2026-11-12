@@ -6,9 +6,8 @@
 // and batch-upserts everything to Firestore.
 // ============================================================
 
-import { db as firestore, isFirebaseConfigured } from '@/lib/firebase';
+import { getFirestoreInstance, isFirebaseConfigured } from '@/lib/firebase';
 import { db } from '@/db';
-import { doc, setDoc, writeBatch } from 'firebase/firestore';
 
 // ─── Table / Column Mapping (mirrors syncService) ───────────────────
 const DEXIE_TO_FIRESTORE: Record<string, string> = {
@@ -33,9 +32,9 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
-function toFirestoreRow(firestoreTable: string, record: Record<string, any>): Record<string, any> {
+function toFirestoreRow(firestoreTable: string, record: Record<string, unknown>): Record<string, unknown> {
   const mapping = COLUMN_MAP[firestoreTable] ?? {};
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     const mappedKey = mapping[key] ?? key;
     result[mappedKey] = value;
@@ -43,8 +42,8 @@ function toFirestoreRow(firestoreTable: string, record: Record<string, any>): Re
   return result;
 }
 
-function getDexieTable(dexieTableName: string) {
-  return (db as any)[dexieTableName] as import('dexie').Table;
+function getDexieTable(dexieTableName: string): import('dexie').Table<Record<string, unknown>, string> {
+  return db.table(dexieTableName) as import('dexie').Table<Record<string, unknown>, string>;
 }
 
 const MIGRATION_FLAG = 'habitflow_migration_done';
@@ -61,6 +60,10 @@ export async function migrateLocalDataToCloud(userId: string): Promise<Migration
     console.warn('[MigrationService] Firebase not configured — skipping migration.');
     return progress;
   }
+
+  const firestore = await getFirestoreInstance();
+  if (!firestore) return progress;
+  const { doc, writeBatch } = await import('firebase/firestore');
 
   const flag = localStorage.getItem(MIGRATION_FLAG);
   if (flag === userId) {
@@ -90,7 +93,7 @@ export async function migrateLocalDataToCloud(userId: string): Promise<Migration
 
     const firestoreTable = DEXIE_TO_FIRESTORE[dexieTableName];
 
-    const rows = records.map((record: Record<string, any>) =>
+    const rows = records.map(record =>
       toFirestoreRow(firestoreTable, {
         ...record,
         user_id: userId,

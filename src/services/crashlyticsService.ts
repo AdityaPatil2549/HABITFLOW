@@ -1,7 +1,8 @@
-import { getApp } from 'firebase/app';
-import { getPerformance, trace } from 'firebase/performance';
-import { getAnalytics, logEvent } from 'firebase/analytics';
-import { app } from '../lib/firebase';
+import {
+  getAnalyticsInstance,
+  getPerformanceInstance,
+  isFirebaseConfigured,
+} from '../lib/firebase';
 
 /**
  * Firebase Crashlytics equivalent for Web.
@@ -13,7 +14,7 @@ class CrashlyticsService {
   private isInitialized = false;
 
   init() {
-    if (this.isInitialized) return;
+    if (this.isInitialized || !isFirebaseConfigured()) return;
     
     // Catch unhandled Promise rejections
     window.addEventListener('unhandledrejection', (event) => {
@@ -26,28 +27,39 @@ class CrashlyticsService {
     });
 
     this.isInitialized = true;
-    console.log('✅ Crashlytics (Compat) initialized');
   }
 
   recordError(type: string, message: string, file?: string, line?: number) {
     console.error(`[Crashlytics] Caught ${type}: ${message}`);
-    
-    try {
-      const analytics = getAnalytics(app);
-      logEvent(analytics, 'exception', {
-        description: `${type}: ${message} at ${file}:${line}`,
-        fatal: false
-      });
+    if (!isFirebaseConfigured()) return;
 
-      // We can also trace errors in Performance
-      const perf = getPerformance(app);
-      const errorTrace = trace(perf, `error_${type}`);
-      errorTrace.start();
-      errorTrace.putAttribute('error_message', message.substring(0, 100)); // limit string length
-      errorTrace.stop();
-    } catch (e) {
-      console.warn('Failed to log error to Firebase', e);
-    }
+    void (async () => {
+      try {
+        const [analytics, { logEvent }] = await Promise.all([
+          getAnalyticsInstance(),
+          import('firebase/analytics'),
+        ]);
+        if (analytics) {
+          logEvent(analytics, 'exception', {
+            description: `${type}: ${message} at ${file}:${line}`,
+            fatal: false,
+          });
+        }
+
+        const [perf, { trace }] = await Promise.all([
+          getPerformanceInstance(),
+          import('firebase/performance'),
+        ]);
+        if (perf) {
+          const errorTrace = trace(perf, `error_${type}`);
+          errorTrace.start();
+          errorTrace.putAttribute('error_message', message.substring(0, 100));
+          errorTrace.stop();
+        }
+      } catch (e) {
+        console.warn('Failed to log error to Firebase', e);
+      }
+    })();
   }
 
   /**

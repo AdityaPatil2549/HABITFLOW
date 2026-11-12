@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { auth } from '@/lib/firebase';
-import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut } from 'firebase/auth';
+import { getAuthInstance, isFirebaseConfigured } from '@/lib/firebase';
+import type { User } from 'firebase/auth';
 
 interface AuthState {
   user: User | null;
@@ -27,6 +27,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (authSubscription) {
         authSubscription();
         authSubscription = null;
+      }
+
+      if (!isFirebaseConfigured()) {
+        set({ user: null, session: null, isGuest: true, loading: false });
+        return;
+      }
+
+      const [auth, { onAuthStateChanged }] = await Promise.all([
+        getAuthInstance(),
+        import('firebase/auth'),
+      ]);
+
+      if (!auth) {
+        set({ user: null, session: null, isGuest: true, loading: false });
+        return;
       }
 
       // Listen for future auth changes (sign-in, sign-out, token refresh)
@@ -56,6 +71,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signInWithGoogle: async () => {
     try {
+      const [auth, { GoogleAuthProvider, signInWithPopup }] = await Promise.all([
+        getAuthInstance(),
+        import('firebase/auth'),
+      ]);
+      if (!auth) throw new Error('Firebase authentication is not configured.');
+
       const provider = new GoogleAuthProvider();
       provider.addScope('https://www.googleapis.com/auth/calendar.events');
       provider.setCustomParameters({ prompt: 'consent' });
@@ -69,22 +90,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (result.user) {
          // Token logic is handled by onAuthStateChanged
       }
-    } catch (error: any) {
-      console.error('Google sign-in failed:', error.message);
+    } catch (error: unknown) {
+      console.error('Google sign-in failed:', error instanceof Error ? error.message : error);
       throw error;
     }
   },
 
   signOut: async () => {
     try {
-      await firebaseSignOut(auth);
+      const auth = await getAuthInstance();
+      if (auth) {
+        const { signOut: firebaseSignOut } = await import('firebase/auth');
+        await firebaseSignOut(auth);
+      }
       set({
         user: null,
         session: null,
         isGuest: true,
       });
-    } catch (error: any) {
-      console.error('Sign-out failed:', error.message);
+    } catch (error: unknown) {
+      console.error('Sign-out failed:', error instanceof Error ? error.message : error);
       throw error;
     }
   },

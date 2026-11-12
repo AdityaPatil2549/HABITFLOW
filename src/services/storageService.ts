@@ -2,8 +2,7 @@
  * Firebase Storage Service
  * Handles profile photo uploads and cloud data backups.
  */
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage, auth } from '@/lib/firebase';
+import { getStorageInstance, getAuthInstance, isFirebaseConfigured } from '@/lib/firebase';
 
 export const storageService = {
   /**
@@ -11,8 +10,14 @@ export const storageService = {
    * Returns the public download URL.
    */
   async uploadProfilePhoto(file: File): Promise<string> {
-    const user = auth.currentUser;
-    if (!user) throw new Error('Must be signed in to upload a photo.');
+    if (!isFirebaseConfigured()) throw new Error('Firebase storage is not configured.');
+    const [auth, storage, { ref, uploadBytes, getDownloadURL }] = await Promise.all([
+      getAuthInstance(),
+      getStorageInstance(),
+      import('firebase/storage'),
+    ]);
+    const user = auth?.currentUser;
+    if (!user || !storage) throw new Error('Must be signed in to upload a photo.');
 
     // Validate file type
     if (!file.type.startsWith('image/')) throw new Error('File must be an image.');
@@ -40,8 +45,14 @@ export const storageService = {
    * Returns the download URL.
    */
   async uploadBackup(data: object): Promise<string> {
-    const user = auth.currentUser;
-    if (!user) throw new Error('Must be signed in to backup to cloud.');
+    if (!isFirebaseConfigured()) throw new Error('Firebase storage is not configured.');
+    const [auth, storage, { ref, uploadBytes, getDownloadURL }] = await Promise.all([
+      getAuthInstance(),
+      getStorageInstance(),
+      import('firebase/storage'),
+    ]);
+    const user = auth?.currentUser;
+    if (!user || !storage) throw new Error('Must be signed in to backup to cloud.');
 
     const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
@@ -55,8 +66,17 @@ export const storageService = {
    * Delete the user's profile photo from Storage.
    */
   async deleteProfilePhoto(): Promise<void> {
-    const user = auth.currentUser;
-    if (!user) return;
+    if (!isFirebaseConfigured()) {
+      localStorage.removeItem('habitflow_profile_photo');
+      return;
+    }
+    const [auth, storage, { ref, deleteObject }] = await Promise.all([
+      getAuthInstance(),
+      getStorageInstance(),
+      import('firebase/storage'),
+    ]);
+    const user = auth?.currentUser;
+    if (!user || !storage) return;
     try {
       const storageRef = ref(storage, `profile-photos/${user.uid}/avatar.jpg`);
       await deleteObject(storageRef);

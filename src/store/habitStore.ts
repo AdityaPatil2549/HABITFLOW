@@ -20,6 +20,7 @@ interface HabitStore {
   archiveHabit: (id: string) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
   logHabit: (habitId: string, value: number, note?: string) => Promise<void>;
+  incrementHabit: (habitId: string, delta?: number) => Promise<void>;
   applyFreeze: (habitId: string) => Promise<void>;
   unlogHabit: (habitId: string) => Promise<void>;
   reorderHabits: (orderedIds: string[]) => Promise<void>;
@@ -71,16 +72,20 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
 
   logHabit: async (habitId, value, note) => {
     try {
+      const prev = get().habits.find(x => x.id === habitId);
+      const target = prev?.targetValue || 1;
+      const wasDone = (prev?.todayLog?.value ?? 0) >= target;
+
       await habitService.logCompletion(habitId, get().selectedDate, value, note);
       soundService.playTick();
       soundService.haptic([30]);
       await get().loadHabits();
 
-      // Mark completion in Google Calendar (if enabled)
+      // Mark completion in Google Calendar & Gamification only when newly completed
       const h = get().habits.find(x => x.id === habitId);
+      const isNowDone = value >= (h?.targetValue || 1);
 
-      if (h) {
-        // Record completion for Gamification (XP, level up, milestones)
+      if (h && !wasDone && isNowDone) {
         await useGamificationStore.getState().recordHabitCompletion(habitId, h.streak.current);
 
         getOrCreateSettings().then(settings => {
@@ -94,6 +99,42 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     } catch (err) {
       console.error('Failed to log habit:', err);
       await get().loadHabits(); // Reload to reset UI state
+    }
+  },
+
+  incrementHabit: async (habitId, delta = 1) => {
+    try {
+      const prev = get().habits.find(x => x.id === habitId);
+      const target = prev?.targetValue || 1;
+      const wasDone = (prev?.todayLog?.value ?? 0) >= target;
+
+      const updatedLog = await habitService.incrementLog(habitId, get().selectedDate, delta);
+      if (delta >= 0) {
+        soundService.playTick();
+        soundService.haptic([30]);
+      } else {
+        soundService.playUncheck();
+      }
+      await get().loadHabits();
+
+      const h = get().habits.find(x => x.id === habitId);
+      const newVal = updatedLog?.value ?? 0;
+      const isNowDone = newVal >= (h?.targetValue || 1);
+
+      if (h && !wasDone && isNowDone) {
+        await useGamificationStore.getState().recordHabitCompletion(habitId, h.streak.current);
+
+        getOrCreateSettings().then(settings => {
+          if (settings.googleCalendarCompletions) {
+            calendarService
+              .markHabitDoneInCalendar(h.name, h.icon, get().selectedDate)
+              .catch(console.error);
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Failed to increment habit:', err);
+      await get().loadHabits();
     }
   },
 

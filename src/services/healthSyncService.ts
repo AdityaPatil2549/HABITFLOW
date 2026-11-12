@@ -23,8 +23,12 @@ export const healthSyncService = {
    * Connect Google Fit by signing in with fitness OAuth scopes.
    */
   async connectGoogleFit(): Promise<void> {
-    const { auth } = await import('@/lib/firebase');
-    const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+    const { getAuthInstance } = await import('@/lib/firebase');
+    const [auth, { GoogleAuthProvider, signInWithPopup }] = await Promise.all([
+      getAuthInstance(),
+      import('firebase/auth'),
+    ]);
+    if (!auth) throw new Error('Firebase auth unavailable');
 
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/fitness.activity.read');

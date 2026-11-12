@@ -30,20 +30,20 @@ export function PrivacyPage() {
         <section>
           <h2 className="text-lg font-bold text-white mt-8 mb-3">1. Data We Collect</h2>
           <p>HabitFlow is designed as a <strong>local-first application</strong>. Your habit data, tasks, mood entries, and settings are stored locally on your device using IndexedDB. We do not collect, transmit, or sell your personal data unless you explicitly opt into cloud sync.</p>
-          <p>If you create an account, we store your email address and authentication token via Supabase to enable cloud backup and cross-device sync.</p>
+          <p>If you create an account, we store your email address and authentication token via Firebase Authentication to enable cloud backup and cross-device sync.</p>
         </section>
 
         <section>
           <h2 className="text-lg font-bold text-white mt-8 mb-3">2. Where Data Is Stored</h2>
           <ul className="list-disc pl-5 space-y-1">
             <li><strong>Local data:</strong> Stored in your browser's IndexedDB. Never leaves your device.</li>
-            <li><strong>Cloud sync (optional):</strong> Stored in Supabase (hosted on AWS infrastructure). Data is encrypted in transit via TLS.</li>
+            <li><strong>Cloud sync (optional):</strong> Stored in Firebase Cloud Firestore (Google Cloud infrastructure). Data is encrypted in transit via TLS.</li>
           </ul>
         </section>
 
         <section>
           <h2 className="text-lg font-bold text-white mt-8 mb-3">3. Third-Party Services</h2>
-          <p>When cloud sync is enabled, we use Supabase for authentication and data storage. No data is shared with advertisers or third-party analytics providers.</p>
+          <p>When cloud sync is enabled, we use Firebase (Google Cloud) for authentication and data storage. No data is shared with advertisers or third-party analytics providers.</p>
         </section>
 
         <section>

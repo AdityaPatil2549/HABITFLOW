@@ -1,6 +1,5 @@
 import type { Habit } from '../types';
-import { auth, isFirebaseConfigured } from '../lib/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuthInstance, isFirebaseConfigured } from '../lib/firebase';
 
 const CALENDAR_API_BASE = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 const TOKEN_KEY = 'google_calendar_token';
@@ -13,6 +12,12 @@ export const calendarService = {
 
   async connectCalendar(): Promise<void> {
     if (!isFirebaseConfigured()) throw new Error('Firebase not configured');
+
+    const [auth, { GoogleAuthProvider, signInWithPopup }] = await Promise.all([
+      getAuthInstance(),
+      import('firebase/auth'),
+    ]);
+    if (!auth) throw new Error('Firebase auth unavailable');
 
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/calendar.events');

@@ -3,16 +3,23 @@
  * Tracks user behaviour events with typed helpers.
  * All calls are no-ops when Analytics is unavailable (e.g. guest mode).
  */
-import { logEvent } from 'firebase/analytics';
-import { analytics } from '@/lib/firebase';
+import { getAnalyticsInstance, isFirebaseConfigured } from '@/lib/firebase';
 
 function track(event: string, params?: Record<string, string | number | boolean>) {
-  if (!analytics) return;
-  try {
-    logEvent(analytics, event, params);
-  } catch (e) {
-    // Silently fail — analytics should never break the app
-  }
+  if (!isFirebaseConfigured()) return;
+  void (async () => {
+    try {
+      const [analytics, { logEvent }] = await Promise.all([
+        getAnalyticsInstance(),
+        import('firebase/analytics'),
+      ]);
+      if (analytics) {
+        logEvent(analytics, event, params);
+      }
+    } catch {
+      // Silently fail — analytics should never break the app
+    }
+  })();
 }
 
 export const analyticsService = {

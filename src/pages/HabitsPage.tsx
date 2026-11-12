@@ -16,6 +16,7 @@ export function HabitsPage() {
   const archiveHabit = useHabitStore(s => s.archiveHabit);
   const deleteHabit = useHabitStore(s => s.deleteHabit);
   const logHabit = useHabitStore(s => s.logHabit);
+  const incrementHabit = useHabitStore(s => s.incrementHabit);
   const unlogHabit = useHabitStore(s => s.unlogHabit);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -67,17 +68,27 @@ export function HabitsPage() {
     });
   }, [habits, showArchived, selectedCategory, searchQuery]);
 
-  // Toggle habit completion handler
+  // Toggle / increment habit completion handler
   const handleToggle = useCallback(
     async (habit: HabitWithStreak) => {
-      const isDone = (habit.todayLog?.value ?? 0) >= (habit.targetValue || 1);
+      const target = habit.targetValue || 1;
+      const isDone = (habit.todayLog?.value ?? 0) >= target;
       if (isDone) {
         await unlogHabit(habit.id);
-      } else {
+      } else if (habit.type === 'boolean' || target <= 1) {
         await logHabit(habit.id, 1);
+      } else {
+        await incrementHabit(habit.id, 1);
       }
     },
-    [logHabit, unlogHabit]
+    [incrementHabit, logHabit, unlogHabit]
+  );
+
+  const handleIncrement = useCallback(
+    async (habit: HabitWithStreak, delta: number) => {
+      await incrementHabit(habit.id, delta);
+    },
+    [incrementHabit]
   );
 
   // Edit habit handler
@@ -240,6 +251,7 @@ export function HabitsPage() {
               key={habit.id}
               habit={habit}
               onToggle={handleToggle}
+              onIncrement={handleIncrement}
               onEdit={handleEdit}
               onArchive={handleArchive}
               onDelete={handleDelete}

@@ -3,8 +3,7 @@
  * Tracks page load times and custom traces like AI coach latency.
  * Acts as the web equivalent of Firebase Crashlytics.
  */
-import { trace } from 'firebase/performance';
-import { performance as firebasePerformance, isFirebaseConfigured } from '@/lib/firebase';
+import { getPerformanceInstance, isFirebaseConfigured } from '@/lib/firebase';
 
 export const performanceService = {
   /**
@@ -14,16 +13,31 @@ export const performanceService = {
    *        stop();
    */
   startTrace(traceName: string): () => void {
-    if (!firebasePerformance || !isFirebaseConfigured()) return () => {};
-    try {
-      const t = trace(firebasePerformance, traceName);
-      t.start();
-      return () => {
-        try { t.stop(); } catch { /* ignore */ }
-      };
-    } catch {
-      return () => {};
-    }
+    if (!isFirebaseConfigured()) return () => {};
+    let stopped = false;
+    let traceHandle: { stop: () => void } | null = null;
+    void (async () => {
+      try {
+        const [perf, { trace }] = await Promise.all([
+          getPerformanceInstance(),
+          import('firebase/performance'),
+        ]);
+        if (!perf || stopped) return;
+        const t = trace(perf, traceName);
+        t.start();
+        traceHandle = t;
+      } catch {
+        // ignore telemetry errors
+      }
+    })();
+    return () => {
+      stopped = true;
+      try {
+        traceHandle?.stop();
+      } catch {
+        /* ignore */
+      }
+    };
   },
 
   /**

@@ -9,20 +9,23 @@ vi.mock('../syncService', () => ({
 }));
 
 vi.mock('../../lib/firebase', () => ({
-  auth: null,
-  db: null,
-  analytics: null,
-  perf: null,
+  getAuthInstance: vi.fn().mockResolvedValue(null),
+  getFirestoreInstance: vi.fn().mockResolvedValue(null),
+  getAnalyticsInstance: vi.fn().mockResolvedValue(null),
+  getPerformanceInstance: vi.fn().mockResolvedValue(null),
   isFirebaseConfigured: () => false,
 }));
 
 import { habitService } from '../habitService';
+import { syncService } from '../syncService';
 import { db } from '../../db';
 
 describe('Habit Service - getStreakInfo', () => {
   beforeEach(async () => {
     await db.habits.clear();
     await db.habitLogs.clear();
+    localStorage.clear();
+    vi.clearAllMocks();
   });
 
   it('should return 0 streak for empty logs', async () => {
@@ -148,5 +151,62 @@ describe('Habit Service - getStreakInfo', () => {
 
     // 2026-11-05 is Thursday (day 4)
     expect(habitService.isScheduledForDate(habit, '2026-11-05')).toBe(false);
+  });
+
+  it('removeLog should queue a delete tombstone in syncService with real log ID', async () => {
+    const habit = await habitService.create({
+      name: 'Tombstone Test',
+      frequency: 'daily',
+      type: 'boolean',
+      targetValue: 1,
+    } as any);
+
+    const dateStr = '2026-11-04';
+    const createdLog = await habitService.logCompletion(habit.id, dateStr, 1);
+    vi.mocked(syncService.queuePush).mockClear();
+
+    await habitService.removeLog(habit.id, dateStr);
+
+    expect(syncService.queuePush).toHaveBeenCalledWith(
+      'habitLogs',
+      { id: createdLog.id, habitId: habit.id, date: dateStr },
+      'delete'
+    );
+  });
+
+  it('should not resurrect starter habits after user deletes all habits', async () => {
+    const firstLoad = await habitService.getAll();
+    expect(firstLoad.length).toBe(3);
+
+    for (const h of firstLoad) {
+      await habitService.delete(h.id);
+    }
+
+    const afterDelete = await habitService.getAll();
+    expect(afterDelete.length).toBe(0);
+  });
+
+  it('incrementLog should add delta without resetting count habits and preserve primary log ID', async () => {
+    const habit = await habitService.create({
+      name: 'Drink 8 glasses',
+      frequency: 'daily',
+      type: 'count',
+      targetValue: 8,
+    } as any);
+
+    const dateStr = '2026-11-04';
+    const log1 = await habitService.incrementLog(habit.id, dateStr, 1);
+    expect(log1?.value).toBe(1);
+
+    const log2 = await habitService.incrementLog(habit.id, dateStr, 1);
+    expect(log2?.value).toBe(2);
+    expect(log2?.id).toBe(log1?.id);
+
+    const log3 = await habitService.incrementLog(habit.id, dateStr, -1);
+    expect(log3?.value).toBe(1);
+
+    const log4 = await habitService.incrementLog(habit.id, dateStr, -1);
+    expect(log4).toBeNull();
+    expect(await habitService.getLogForDate(habit.id, dateStr)).toBeUndefined();
   });
 });

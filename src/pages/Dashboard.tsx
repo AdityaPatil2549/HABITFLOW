@@ -20,13 +20,24 @@ import { useGamificationStore } from '../store/gamificationStore';
 import { useModalStore } from '../store/modalStore';
 import { momentumEngine, DailyRitualGroup } from '../services/momentumEngine';
 import { TactileHabitCard } from '../components/habits/TactileHabitCard';
-import type { HabitWithStreak } from '../types';
+import { HabitEditorDrawer } from '../components/habits/workstation/HabitEditorDrawer';
+import type { Habit, HabitWithStreak } from '../types';
 import { format } from 'date-fns';
 import { cn } from '../lib/utils';
 import { getHabitEmoji } from '../lib/emoji';
 import { soundService } from '../services/soundService';
 
-const STARTER_HABITS = [
+interface StarterHabitTemplate {
+  name: string;
+  icon: string;
+  category: string;
+  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'anytime';
+  color: string;
+  desc: string;
+  stackAfterName?: string;
+}
+
+const STARTER_HABITS: StarterHabitTemplate[] = [
   { name: 'Drink 500ml Water', icon: '💧', category: 'health', timeOfDay: 'morning', color: '#10B981', desc: 'Hydrate immediately upon waking' },
   { name: '10m Mindfulness Meditation', icon: '🧘', category: 'mindfulness', timeOfDay: 'morning', color: '#06B6D4', desc: 'Clear mental noise and sharpen focus', stackAfterName: 'Drink 500ml Water' },
   { name: 'Read 10 Pages', icon: '📖', category: 'learning', timeOfDay: 'evening', color: '#6366F1', desc: 'Daily compounding knowledge' },
@@ -35,26 +46,27 @@ const STARTER_HABITS = [
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { habits, loading, loadHabits, logHabit, unlogHabit, addHabit } = useHabitStore();
+  const { habits, loading, loadHabits, logHabit, incrementHabit, unlogHabit, addHabit, updateHabit } = useHabitStore();
   const { loadTasks } = useTaskStore();
   const { userXP, loadXP } = useGamificationStore();
   const { setQuickAddOpen } = useModalStore();
 
   const [globalMomentum, setGlobalMomentum] = useState<number>(0);
   const [zenMode, setZenMode] = useState<boolean>(false);
+  const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(null);
 
-  const handleAddStarter = async (starter: typeof STARTER_HABITS[0]) => {
+  const handleAddStarter = async (starter: StarterHabitTemplate) => {
     soundService.playBadge();
     let stackAfterHabitId: string | undefined = undefined;
-    if ((starter as any).stackAfterName) {
-      const parent = habits.find(h => h.name.includes((starter as any).stackAfterName));
+    if (starter.stackAfterName) {
+      const parent = habits.find(h => h.name.includes(starter.stackAfterName!));
       if (parent) stackAfterHabitId = parent.id;
     }
     await addHabit({
       name: starter.name,
       icon: starter.icon,
       category: starter.category,
-      timeOfDay: starter.timeOfDay as any,
+      timeOfDay: starter.timeOfDay,
       stackAfterHabitId,
       frequency: 'daily',
       type: 'boolean',
@@ -100,23 +112,54 @@ export function Dashboard() {
     return habits.reduce((max, h) => Math.max(max, h.streak?.current || 0), 0);
   }, [habits]);
 
-  // Toggle habit completion handler
+  // Toggle / increment habit handler
   const handleToggleHabit = useCallback(
     async (habit: HabitWithStreak) => {
-      const isDone = (habit.todayLog?.value ?? 0) >= (habit.targetValue || 1);
+      const target = habit.targetValue || 1;
+      const isDone = (habit.todayLog?.value ?? 0) >= target;
       if (isDone) {
         await unlogHabit(habit.id);
-      } else {
+      } else if (habit.type === 'boolean' || target <= 1) {
         await logHabit(habit.id, 1);
-        // Play synaptic laser spark if this habit primes any downstream child
         const hasChildren = habits.some(h => h.stackAfterHabitId === habit.id);
         if (hasChildren) {
           soundService.playSynapseSpark();
           setTimeout(() => soundService.playUnlatchClick(), 260);
         }
+      } else {
+        await incrementHabit(habit.id, 1);
       }
     },
-    [habits, logHabit, unlogHabit]
+    [habits, incrementHabit, logHabit, unlogHabit]
+  );
+
+  const handleIncrementHabit = useCallback(
+    async (habit: HabitWithStreak, delta: number) => {
+      await incrementHabit(habit.id, delta);
+    },
+    [incrementHabit]
+  );
+
+  const handleSetHabitValue = useCallback(
+    async (habit: HabitWithStreak, value: number) => {
+      if (value <= 0) {
+        await unlogHabit(habit.id);
+      } else {
+        await logHabit(habit.id, value);
+      }
+    },
+    [logHabit, unlogHabit]
+  );
+
+  const handleSaveHabitDetails = useCallback(
+    async (data: Omit<Habit, 'id' | 'createdAt' | 'order'>, habitId?: string) => {
+      if (habitId) {
+        await updateHabit(habitId, data);
+      } else {
+        await addHabit(data);
+      }
+    },
+    [addHabit, updateHabit]
   );
 
   // Keyboard shortcut listener
@@ -360,6 +403,9 @@ export function Dashboard() {
                             <TactileHabitCard
                               habit={habitWithStreak}
                               onToggle={handleToggleHabit}
+                              onIncrement={handleIncrementHabit}
+                              onSetValue={handleSetHabitValue}
+                              onOpenDetails={setEditingHabit}
                               index={idx}
                               isPrimed={node.isPrimed}
                               isLocked={node.isLocked}
@@ -445,6 +491,13 @@ export function Dashboard() {
           </div>
         </div>
       )}
+
+      <HabitEditorDrawer
+        isOpen={Boolean(editingHabit)}
+        onClose={() => setEditingHabit(null)}
+        onSave={handleSaveHabitDetails}
+        initialHabit={editingHabit}
+      />
     </div>
   );
 }

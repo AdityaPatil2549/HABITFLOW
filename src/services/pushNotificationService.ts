@@ -3,9 +3,12 @@
  * Replaces the previous VAPID-based push service with FCM for better
  * cross-platform support and Firebase integration.
  */
-import { getToken, onMessage } from 'firebase/messaging';
-import { messaging, db as firestoreDb, auth } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import {
+  getMessagingInstance,
+  getFirestoreInstance,
+  getAuthInstance,
+  isFirebaseConfigured,
+} from '@/lib/firebase';
 
 const FCM_VAPID_KEY = import.meta.env.VITE_FCM_VAPID_KEY || '';
 
@@ -40,8 +43,14 @@ class PushNotificationService {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return false;
 
-    if (messaging && FCM_VAPID_KEY) {
+    if (isFirebaseConfigured() && FCM_VAPID_KEY) {
       try {
+        const [messaging, { getToken, onMessage }] = await Promise.all([
+          getMessagingInstance(),
+          import('firebase/messaging'),
+        ]);
+        if (!messaging) return true;
+
         const token = await getToken(messaging, {
           vapidKey: FCM_VAPID_KEY,
           serviceWorkerRegistration: this.swRegistration ?? undefined,
@@ -52,8 +61,13 @@ class PushNotificationService {
           this.isSubscribed = true;
 
           // Save token to Firestore (for authenticated users)
-          const user = auth.currentUser;
-          if (user) {
+          const [auth, firestoreDb, { doc, setDoc }] = await Promise.all([
+            getAuthInstance(),
+            getFirestoreInstance(),
+            import('firebase/firestore'),
+          ]);
+          const user = auth?.currentUser;
+          if (user && firestoreDb) {
             await setDoc(
               doc(firestoreDb, 'fcm_tokens', user.uid),
               { token, updatedAt: new Date().toISOString(), uid: user.uid },

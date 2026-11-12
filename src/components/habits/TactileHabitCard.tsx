@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Flame, ChevronRight, Zap, Clock, Sparkles, Lock, ArrowDown } from 'lucide-react';
+import { Check, Flame, Zap, Lock, Minus, Plus } from 'lucide-react';
 import type { HabitWithStreak } from '../../types';
 import { soundService } from '../../services/soundService';
 import { cn } from '../../lib/utils';
@@ -9,6 +9,8 @@ import { getHabitEmoji } from '../../lib/emoji';
 interface TactileHabitCardProps {
   habit: HabitWithStreak;
   onToggle: (habit: HabitWithStreak) => Promise<void>;
+  onIncrement?: (habit: HabitWithStreak, delta: number) => Promise<void>;
+  onSetValue?: (habit: HabitWithStreak, value: number) => Promise<void>;
   onOpenDetails?: (habit: HabitWithStreak) => void;
   index?: number;
   isPrimed?: boolean;
@@ -20,6 +22,8 @@ interface TactileHabitCardProps {
 export function TactileHabitCard({
   habit,
   onToggle,
+  onIncrement,
+  onSetValue,
   onOpenDetails,
   index = 0,
   isPrimed = false,
@@ -29,9 +33,12 @@ export function TactileHabitCard({
 }: TactileHabitCardProps) {
   const [isToggling, setIsToggling] = useState(false);
 
-  const isDone = (habit.todayLog?.value ?? 0) >= (habit.targetValue || 1);
-  const currentStreak = habit.streak?.current ?? 0;
+  const target = habit.targetValue || 1;
   const todayValue = habit.todayLog?.value ?? 0;
+  const isDone = todayValue >= target;
+  const isStepperHabit = (habit.type === 'count' || habit.type === 'duration') && target > 1;
+  const isRatingHabit = habit.type === 'rating';
+  const currentStreak = habit.streak?.current ?? 0;
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -46,6 +53,36 @@ export function TactileHabitCard({
 
     try {
       await onToggle(habit);
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  const handleStep = async (e: React.MouseEvent, delta: number) => {
+    e.stopPropagation();
+    if (isToggling) return;
+    setIsToggling(true);
+    try {
+      if (onIncrement) {
+        await onIncrement(habit, delta);
+      } else {
+        await onToggle(habit);
+      }
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  const handleRate = async (e: React.MouseEvent, score: number) => {
+    e.stopPropagation();
+    if (isToggling) return;
+    setIsToggling(true);
+    try {
+      if (onSetValue) {
+        await onSetValue(habit, todayValue === score ? 0 : score);
+      } else {
+        await onToggle(habit);
+      }
     } finally {
       setIsToggling(false);
     }
@@ -211,39 +248,104 @@ export function TactileHabitCard({
           </div>
         </div>
 
-        {/* Right Side: High-Craft Physical Check Button */}
+        {/* Right Side: Inline Control (Stepper / Rating / Check) */}
         <div className="flex items-center gap-2 shrink-0 z-10">
-          <motion.button
-            onClick={handleToggle}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
-            disabled={isToggling}
-            aria-label={isDone ? `Mark ${habit.name} incomplete` : `Mark ${habit.name} complete`}
-            className={cn(
-              'w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 cursor-pointer shadow-lg',
-              isDone
-                ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.5)] border border-emerald-300/60'
-                : isPrimed
-                ? 'bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-400/60 shadow-[0_0_18px_rgba(45,212,191,0.35)] animate-pulse'
-                : 'bg-white/[0.04] hover:bg-emerald-500/15 hover:border-emerald-500/40 text-slate-400 hover:text-emerald-300 border border-white/[0.1]'
-            )}
-          >
-            <AnimatePresence mode="wait">
-              {isDone ? (
-                <motion.div
-                  key="done"
-                  initial={{ scale: 0, rotate: -45 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  exit={{ scale: 0 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                >
-                  <Check className="w-5 h-5 stroke-[3]" />
-                </motion.div>
-              ) : (
-                <div className="w-4 h-4 rounded-md border-2 border-slate-500/60 group-hover:border-emerald-400/80 transition-colors" />
+          {isStepperHabit ? (
+            <div
+              className={cn(
+                'inline-flex items-center gap-1 rounded-xl border px-1.5 py-1 transition-colors',
+                isDone
+                  ? 'bg-emerald-500/15 border-emerald-500/40'
+                  : 'bg-white/[0.04] border-white/[0.12]'
               )}
-            </AnimatePresence>
-          </motion.button>
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={e => handleStep(e, -1)}
+                disabled={isToggling || todayValue <= 0}
+                aria-label={`Decrease ${habit.name}`}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:bg-white/[0.08] disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="min-w-[44px] text-center font-mono text-xs font-semibold tabular-nums text-white px-1">
+                {todayValue}/{target}
+              </span>
+              <button
+                type="button"
+                onClick={e => handleStep(e, 1)}
+                disabled={isToggling}
+                aria-label={`Increase ${habit.name}`}
+                className={cn(
+                  'w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer',
+                  isDone
+                    ? 'bg-emerald-500 text-slate-950 hover:brightness-110'
+                    : 'bg-white/[0.08] text-white hover:bg-emerald-500/25 hover:text-emerald-300'
+                )}
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : isRatingHabit ? (
+            <div
+              className="inline-flex items-center gap-1 rounded-xl border border-white/[0.12] bg-white/[0.04] p-1"
+              role="group"
+              aria-label={`Rate ${habit.name}`}
+              onClick={e => e.stopPropagation()}
+            >
+              {[1, 2, 3, 4, 5].map(score => (
+                <button
+                  key={score}
+                  type="button"
+                  onClick={e => handleRate(e, score)}
+                  disabled={isToggling}
+                  aria-label={`Rate ${habit.name} ${score} out of 5`}
+                  aria-pressed={todayValue === score}
+                  className={cn(
+                    'w-7 h-7 rounded-lg font-mono text-xs font-semibold transition-colors cursor-pointer tabular-nums',
+                    todayValue >= score
+                      ? 'bg-emerald-500 text-slate-950'
+                      : 'text-slate-400 hover:bg-white/[0.08] hover:text-white'
+                  )}
+                >
+                  {score}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <motion.button
+              onClick={handleToggle}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              disabled={isToggling}
+              aria-label={isDone ? `Mark ${habit.name} incomplete` : `Mark ${habit.name} complete`}
+              className={cn(
+                'w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-300 cursor-pointer shadow-lg',
+                isDone
+                  ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.5)] border border-emerald-300/60'
+                  : isPrimed
+                  ? 'bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-400/60 shadow-[0_0_18px_rgba(45,212,191,0.35)] animate-pulse'
+                  : 'bg-white/[0.04] hover:bg-emerald-500/15 hover:border-emerald-500/40 text-slate-400 hover:text-emerald-300 border border-white/[0.1]'
+              )}
+            >
+              <AnimatePresence mode="wait">
+                {isDone ? (
+                  <motion.div
+                    key="done"
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    exit={{ scale: 0 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                  >
+                    <Check className="w-5 h-5 stroke-[3]" />
+                  </motion.div>
+                ) : (
+                  <div className="w-4 h-4 rounded-md border-2 border-slate-500/60 group-hover:border-emerald-400/80 transition-colors" />
+                )}
+              </AnimatePresence>
+            </motion.button>
+          )}
         </div>
       </div>
     </motion.div>

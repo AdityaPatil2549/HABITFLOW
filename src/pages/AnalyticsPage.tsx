@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { format, subDays } from 'date-fns';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
@@ -8,12 +8,24 @@ import { cn } from '../lib/utils';
 import { soundService } from '../services/soundService';
 import { ExportReportButton } from '../components/ui/ExportReportButton';
 
-import { AnalyticsOverviewTab } from '../components/analytics/AnalyticsOverviewTab';
-import { CorrelationInsightsTab } from '../components/analytics/CorrelationInsightsTab';
-import { PerHabitAnalyticsTab } from '../components/analytics/PerHabitAnalyticsTab';
-import { TaskAnalyticsTab } from '../components/analytics/TaskAnalyticsTab';
-import { HabitHeatmapMatrix } from '../components/analytics/HabitHeatmapMatrix';
-import { AICoachInsightsTab } from '../components/analytics/AICoachInsightsTab';
+const AnalyticsOverviewTab = lazy(() =>
+  import('../components/analytics/AnalyticsOverviewTab').then(m => ({ default: m.AnalyticsOverviewTab }))
+);
+const CorrelationInsightsTab = lazy(() =>
+  import('../components/analytics/CorrelationInsightsTab').then(m => ({ default: m.CorrelationInsightsTab }))
+);
+const PerHabitAnalyticsTab = lazy(() =>
+  import('../components/analytics/PerHabitAnalyticsTab').then(m => ({ default: m.PerHabitAnalyticsTab }))
+);
+const TaskAnalyticsTab = lazy(() =>
+  import('../components/analytics/TaskAnalyticsTab').then(m => ({ default: m.TaskAnalyticsTab }))
+);
+const HabitHeatmapMatrix = lazy(() =>
+  import('../components/analytics/HabitHeatmapMatrix').then(m => ({ default: m.HabitHeatmapMatrix }))
+);
+const AICoachInsightsTab = lazy(() =>
+  import('../components/analytics/AICoachInsightsTab').then(m => ({ default: m.AICoachInsightsTab }))
+);
 
 const TABS = ['Overview', 'Insights', 'Per Habit', 'Tasks', 'Heatmap', 'AI Coach'] as const;
 type TabType = (typeof TABS)[number];
@@ -111,32 +123,34 @@ export function AnalyticsPage() {
       </div>
 
       {/* Tab Content Panes */}
-      {tab === 'Overview' && (
-        <AnalyticsOverviewTab
-          habits={habits}
-          moods={moods}
-          logs30Days={logs30Days}
-          bestStreak={bestStreak}
-          avgCompletion={avgCompletion}
-          avgMood={avgMood}
-        />
-      )}
+      <Suspense fallback={<div className="h-64 rounded-xl border border-white/10 bg-neutral-900/40 animate-pulse" />}>
+        {tab === 'Overview' && (
+          <AnalyticsOverviewTab
+            habits={habits}
+            moods={moods}
+            logs30Days={logs30Days}
+            bestStreak={bestStreak}
+            avgCompletion={avgCompletion}
+            avgMood={avgMood}
+          />
+        )}
 
-      {tab === 'Insights' && (
-        <CorrelationInsightsTab
-          habits={habits}
-          moods={moods}
-          logsByDate={logs30Days}
-        />
-      )}
+        {tab === 'Insights' && (
+          <CorrelationInsightsTab
+            habits={habits}
+            moods={moods}
+            logsByDate={logs30Days}
+          />
+        )}
 
-      {tab === 'Per Habit' && <PerHabitAnalyticsTab habits={habits} />}
+        {tab === 'Per Habit' && <PerHabitAnalyticsTab habits={habits} />}
 
-      {tab === 'Tasks' && <TaskAnalyticsTab tasks={tasks} />}
+        {tab === 'Tasks' && <TaskAnalyticsTab tasks={tasks} />}
 
-      {tab === 'Heatmap' && <HabitHeatmapMatrix habits={habits} moods={moods} />}
+        {tab === 'Heatmap' && <HabitHeatmapMatrix habits={habits} moods={moods} />}
 
-      {tab === 'AI Coach' && <AICoachInsightsTab />}
+        {tab === 'AI Coach' && <AICoachInsightsTab />}
+      </Suspense>
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react';
-import * as htmlToImage from 'html-to-image';
 import { Download } from 'lucide-react';
 import { WeeklyReportTemplate } from './WeeklyReportTemplate';
 import { useToast } from '../common/Toast';
@@ -18,6 +17,7 @@ export function ExportReportButton() {
       const el = templateRef.current;
       el.style.display = 'block';
 
+      const htmlToImage = await import('html-to-image');
       const dataUrl = await htmlToImage.toPng(el, { quality: 1.0, pixelRatio: 2 });
 
       el.style.display = 'none';

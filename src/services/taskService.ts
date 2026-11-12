@@ -56,7 +56,7 @@ export const taskService = {
       updated_at: now,
     });
 
-    // Queue sync to Supabase
+    // Queue sync to Firebase Firestore
     const updated = await db.tasks.get(id);
     if (updated) syncService.queuePush('tasks', updated, 'upsert').catch(console.error);
 
