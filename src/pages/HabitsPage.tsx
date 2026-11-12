@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { Plus, Target, Flame, CheckCircle2, Layers } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import type { HabitWithStreak, Habit } from '../types';
 import { HabitRow } from '../components/habits/workstation/HabitRow';

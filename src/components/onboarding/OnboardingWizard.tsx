@@ -5,8 +5,6 @@ import { useProfileStore } from '../../store/profileStore';
 import { ArrowRight, Check, Sparkles, ChevronRight, Flame } from 'lucide-react';
 import { format } from 'date-fns';
 
-const ONBOARDING_KEY = 'habitflow_onboarding_done';
-
 // ── Habit Templates per goal ───────────────────────────────────
 const GOAL_TEMPLATES = {
   health: {
@@ -73,23 +71,6 @@ const GOAL_TEMPLATES = {
 
 type GoalKey = keyof typeof GOAL_TEMPLATES;
 
-export function useOnboarding() {
-  const [show, setShow] = useState(() => {
-    if (typeof window !== 'undefined') {
-      if (window.location.search.includes('skip_onboarding')) return false;
-      return !localStorage.getItem(ONBOARDING_KEY);
-    }
-    return false;
-  });
-
-  const complete = () => {
-    localStorage.setItem(ONBOARDING_KEY, 'true');
-    setShow(false);
-  };
-
-  return { show, complete };
-}
-
 export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [step, setStep] = useState(0); // 0=welcome, 1=goal, 2=habits, 3=done
@@ -144,13 +125,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   }
 
   const STEPS = ['Welcome', 'Your Goal', 'Your Habits', 'Ready!'];
-
-  const STEP_COLORS = [
-    'rgba(99,102,241,0.15)',
-    'rgba(139,92,246,0.15)',
-    'rgba(16,185,129,0.12)',
-    'rgba(245,158,11,0.12)',
-  ];
 
   return (
     <AnimatePresence>

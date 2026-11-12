@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Flag, Folder, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X } from 'lucide-react';
 import type { Task, Priority, Project } from '../../../types';
 import { format, addDays } from 'date-fns';
 import { soundService } from '../../../services/soundService';
@@ -21,37 +21,28 @@ const PRIORITIES: { id: Priority; label: string; colorClass: string }[] = [
   { id: 3, label: 'Low', colorClass: 'text-[var(--tx-muted)] border-[var(--border-strong)] bg-[var(--sf-overlay)]' },
 ];
 
-export function TaskEditorModal({
+export function TaskEditorModal(props: TaskEditorModalProps) {
+  if (!props.isOpen) return null;
+  return <TaskEditorModalInner key={props.initialTask?.id ?? 'new'} {...props} />;
+}
+
+function TaskEditorModalInner({
   isOpen,
   onClose,
   onSave,
   initialTask,
   projects,
 }: TaskEditorModalProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<Priority>(2);
-  const [dueDate, setDueDate] = useState<string>('');
-  const [projectId, setProjectId] = useState<string>('');
+  const [title, setTitle] = useState(() => initialTask?.title ?? '');
+  const [description, setDescription] = useState(() => initialTask?.description || '');
+  const [priority, setPriority] = useState<Priority>(() => initialTask?.priority ?? 2);
+  const [dueDate, setDueDate] = useState<string>(() =>
+    initialTask ? initialTask.dueDate || '' : format(new Date(), 'yyyy-MM-dd')
+  );
+  const [projectId, setProjectId] = useState<string>(() => initialTask?.projectId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (initialTask) {
-      setTitle(initialTask.title);
-      setDescription(initialTask.description || '');
-      setPriority(initialTask.priority ?? 2);
-      setDueDate(initialTask.dueDate || '');
-      setProjectId(initialTask.projectId || '');
-    } else {
-      setTitle('');
-      setDescription('');
-      setPriority(2);
-      setDueDate(format(new Date(), 'yyyy-MM-dd'));
-      setProjectId('');
-    }
-  }, [initialTask, isOpen]);
 
   useEffect(() => {
     if (isOpen) {

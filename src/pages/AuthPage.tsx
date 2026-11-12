@@ -2,13 +2,7 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { Sparkles, RefreshCw, Calendar, CloudUpload } from 'lucide-react';
-
-const features = [
-  { icon: RefreshCw, label: 'Cross-device sync' },
-  { icon: Calendar, label: 'Google Calendar integration' },
-  { icon: CloudUpload, label: 'Cloud backup & restore' },
-];
+import { Sparkles } from 'lucide-react';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (

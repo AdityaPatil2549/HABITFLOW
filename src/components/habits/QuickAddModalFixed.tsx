@@ -4,7 +4,7 @@ import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import type { Habit, HabitType, HabitFrequency, Priority } from '../../types';
 import { format, parseISO } from 'date-fns';
-import { HABIT_ICONS } from '../common/IconRenderer';
+import { HABIT_ICONS } from '../common/habitIcons';
 import { getHabitEmoji } from '../../lib/emoji';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';

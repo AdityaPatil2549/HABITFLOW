@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Brain, Sparkles, TrendingUp, TrendingDown, ArrowRight, Activity, Calendar } from 'lucide-react';
+import { Brain, TrendingUp, TrendingDown, ArrowRight, Activity } from 'lucide-react';
 import { correlationService } from '../../../services/correlationService';
 import type { CorrelationResult } from '../../../types';
 import { cn } from '../../../lib/utils';

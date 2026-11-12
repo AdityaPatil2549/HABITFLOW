@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp, Star, AlertTriangle, ChevronRight, Check, Flame } from 'lucide-react';
+import { TrendingUp, Star, AlertTriangle, Check, Flame } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { db } from '../../../db';
 import { IconRenderer } from '../../common/IconRenderer';

@@ -85,9 +85,9 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 mb-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Telemetry & Insights</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-[var(--ok)] bg-[var(--ok-subtle)] border border-[var(--ok)]/25 mb-2">
+            <span className="w-2 h-2 rounded-full bg-[var(--ok)]" />
+            <span>Telemetry &amp; Insights</span>
           </div>
           <h1 className="text-3xl font-black text-[var(--tx-primary)] tracking-tight">
             Your Progress Report

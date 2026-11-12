@@ -32,7 +32,6 @@ export function HabitRow({
   onEdit,
   onArchive,
   onDelete,
-  index = 0,
 }: HabitRowProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isToggling, setIsToggling] = useState(false);

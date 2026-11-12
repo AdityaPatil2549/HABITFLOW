@@ -8,7 +8,7 @@
 
 import { db } from '../db';
 import type { Habit } from '../types';
-import { format, subDays, differenceInDays, parseISO } from 'date-fns';
+import { format, differenceInDays, parseISO } from 'date-fns';
 
 export interface MomentumMetrics {
   score: number; // 0 - 100

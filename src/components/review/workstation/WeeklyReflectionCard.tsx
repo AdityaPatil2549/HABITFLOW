@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { format, getISOWeek } from 'date-fns';
 import { Sparkles, Check, Flame, Smile, Zap, CloudRain, Shield } from 'lucide-react';
 import { soundService } from '../../../services/soundService';
-import { useToast } from '../../common/Toast';
+import { useToast } from '../../common/toastStore';
 import { cn } from '../../../lib/utils';
 
 const MOOD_OPTIONS = [
@@ -55,7 +54,7 @@ export function WeeklyReflectionCard() {
       soundService.playBadge();
       toast.success('Weekly retrospective preserved locally.');
       setTimeout(() => setIsSaved(false), 3000);
-    } catch (e) {
+    } catch {
       toast.error('Failed to save reflection.');
     }
   };

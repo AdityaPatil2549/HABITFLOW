@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X, CheckSquare, Calendar, Clock, CheckCircle } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import type { Priority } from '../../../types';
 

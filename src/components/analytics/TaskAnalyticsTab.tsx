@@ -15,10 +15,12 @@ import {
   StatCard,
   ChartCard,
   EmptyChart,
+} from './shared';
+import {
   TOOLTIP_STYLE,
   TOOLTIP_LABEL_STYLE,
   TOOLTIP_ITEM_STYLE,
-} from './shared';
+} from './constants';
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 
 interface TaskAnalyticsProps {

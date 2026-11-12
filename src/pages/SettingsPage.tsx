@@ -34,7 +34,7 @@ import { notificationService } from '../services/notificationService';
 import { motion } from 'framer-motion';
 import { useGamificationStore } from '../store/gamificationStore';
 import { calculateStats } from '../services/gamificationService';
-import { useToast } from '../components/common/Toast';
+import { useToast } from '../components/common/toastStore';
 import { calendarService } from '../services/calendarService';
 import { useAuthStore } from '../store/authStore';
 import { Link } from 'react-router-dom';
@@ -65,7 +65,7 @@ export function SettingsPage() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
-  const { isGuest, user } = useAuthStore();
+  const { isGuest } = useAuthStore();
   const isCalendarConnected = calendarService.isCalendarConnected();
 
   const { userXP, loadXP } = useGamificationStore();
@@ -145,7 +145,7 @@ export function SettingsPage() {
         setDriveConnected(true);
         toast.success('Google Drive connected! 🎉');
       }
-    } catch (e) {
+    } catch {
       toast.error('Failed to connect Google Drive. Please try again.');
     } finally {
       setDriveLoading(false);
@@ -181,7 +181,7 @@ export function SettingsPage() {
         setFitConnected(true);
         toast.success('Google Fit connected! Steps & sleep will now sync. 🏃');
       }
-    } catch (e) {
+    } catch {
       toast.error('Failed to connect Google Fit. Please try again.');
     } finally {
       setFitLoading(false);
@@ -316,7 +316,7 @@ export function SettingsPage() {
         },
         { confirmLabel: 'Import & Replace', cancelLabel: 'Cancel', danger: true }
       );
-    } catch (err) {
+    } catch {
       toast.error('Import failed: could not parse file as valid JSON.');
     }
     e.target.value = '';

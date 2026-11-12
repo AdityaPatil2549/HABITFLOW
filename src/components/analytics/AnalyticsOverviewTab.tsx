@@ -25,11 +25,13 @@ import {
   ChartCard,
   EmptyChart,
   DynamicInsights,
+} from './shared';
+import {
   TOOLTIP_STYLE,
   TOOLTIP_LABEL_STYLE,
   TOOLTIP_ITEM_STYLE,
   DAY_NAMES,
-} from './shared';
+} from './constants';
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 
 interface OverviewTabProps {

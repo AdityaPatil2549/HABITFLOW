@@ -1,10 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, Copy, Check, Share2, Flame, Target, CheckCircle2, Zap } from 'lucide-react';
+import { X, Download, Copy, Check, Flame, Target, CheckCircle2, Zap } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { soundService } from '../../../services/soundService';
-import { useToast } from '../../common/Toast';
-import { cn } from '../../../lib/utils';
+import { useToast } from '../../common/toastStore';
 
 interface MilestoneShareModalProps {
   isOpen: boolean;

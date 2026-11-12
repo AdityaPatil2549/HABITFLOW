@@ -5,7 +5,6 @@
  */
 
 const FIT_API_BASE = 'https://www.googleapis.com/fitness/v1/users/me';
-const FIT_SCOPE = 'https://www.googleapis.com/auth/fitness.activity.read https://www.googleapis.com/auth/fitness.sleep.read';
 const TOKEN_KEY = 'google_fit_token';
 
 export interface FitData {
@@ -172,11 +171,9 @@ export const healthSyncService = {
 // Keep legacy export for backward compatibility
 export async function syncHealthHabits() {
   if (!healthSyncService.isFitConnected()) {
-    console.log('[HealthSync] Not connected to Google Fit.');
     return 0;
   }
   const data = await healthSyncService.getTodayFitData();
-  console.log('[HealthSync] Fetched real health data:', data);
   return data.steps;
 }
 

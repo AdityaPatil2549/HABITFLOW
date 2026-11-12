@@ -13,15 +13,12 @@ import {
   RotateCcw,
   Settings,
   Plus,
-  Zap,
   Check,
   Flame,
-  HelpCircle,
   X,
   Volume2,
 } from 'lucide-react';
 import { useHabitStore } from '../../store/habitStore';
-import { useTaskStore } from '../../store/taskStore';
 import { useModalStore } from '../../store/modalStore';
 import { getHabitEmoji } from '../../lib/emoji';
 import { soundService } from '../../services/soundService';
@@ -32,7 +29,6 @@ export function CommandMenu() {
   const navigate = useNavigate();
   const { commandMenuOpen, setCommandMenuOpen, setQuickAddOpen } = useModalStore();
   const { habits, logHabit, unlogHabit } = useHabitStore();
-  const { tasks } = useTaskStore();
 
   // Listen to Cmd+K, Ctrl+K, or Slash key
   useEffect(() => {

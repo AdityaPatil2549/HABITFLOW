@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { calculateStats, gamificationService } from '@/services/gamificationService';
 import type { UserXP } from '@/types';
-import { queueAchievement, checkStreakMilestone } from '@/components/ui/AchievementToast';
+import { queueAchievement, checkStreakMilestone } from '@/components/ui/achievementQueue';
 import { soundService } from '@/services/soundService';
 import { triggerConfetti, triggerLevelUpConfetti } from '@/lib/confetti';
 import { getOrCreateSettings } from '@/db';

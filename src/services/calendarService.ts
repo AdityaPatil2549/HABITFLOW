@@ -97,12 +97,11 @@ export const calendarService = {
     }
   },
 
-  async removeCalendarEvent(habitId: string): Promise<void> {
+  async removeCalendarEvent(_habitId: string): Promise<void> {
     if (!this.isCalendarConnected()) return;
     // Without storing the Google Calendar Event ID, we can't easily delete it here.
     // A robust implementation would store the calendarEventId alongside the habit in Firestore.
     // For now, this remains a no-op until that DB schema is added.
-    console.log(`removeCalendarEvent called for ${habitId}, but event mapping is not yet implemented.`);
   },
 
   async markHabitDoneInCalendar(

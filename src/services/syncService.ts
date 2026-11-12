@@ -196,7 +196,7 @@ class SyncService {
         if (remoteUpdatedAt > latestCursor) latestCursor = remoteUpdatedAt;
 
         if (remoteRow.deleted_at) {
-          try { await table.delete(String(dexieRow.id)); } catch {}
+          try { await table.delete(String(dexieRow.id)); } catch { /* ignore if already removed */ }
           merged++;
           continue;
         }

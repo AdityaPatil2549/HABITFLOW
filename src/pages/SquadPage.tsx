@@ -17,7 +17,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import { useProfileStore } from '@/store/profileStore';
-import { useToast } from '@/components/common/Toast';
+import { useToast } from '@/components/common/toastStore';
 import { soundService } from '@/services/soundService';
 
 /** Get or create a stable anonymous guest ID stored in localStorage */
@@ -59,19 +59,19 @@ export function SquadPage() {
 
   useEffect(() => {
     document.title = 'Squad — HabitFlow';
-    if (cloudRequiresAuth) {
-      setSquads([]);
-      setActiveSquadId(null);
-      setLoadingSquad(false);
-      return;
-    }
+    if (cloudRequiresAuth) return;
+    let cancelled = false;
     async function loadSquads() {
       const s = await squadService.getMySquads();
+      if (cancelled) return;
       setSquads(s);
       if (s.length > 0) setActiveSquadId(s[0].id);
       setLoadingSquad(false);
     }
     loadSquads();
+    return () => {
+      cancelled = true;
+    };
   }, [cloudRequiresAuth]);
 
   // Subscribe to real-time Firestore updates for the active squad
@@ -171,15 +171,6 @@ export function SquadPage() {
   // Sort members by streak descending
   const sortedMembers = activeSquad ? [...activeSquad.members].sort((a, b) => b.streak - a.streak) : [];
 
-  if (loadingSquad) {
-    return (
-      <div className="flex items-center justify-center h-[50vh]">
-        {/* loading */}
-        <div className="w-8 h-8 border-4 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   if (cloudRequiresAuth) {
     return (
       <div className="space-y-6 pb-10 max-w-xl mx-auto pt-8">
@@ -198,6 +189,15 @@ export function SquadPage() {
             </Link>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (loadingSquad) {
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        {/* loading */}
+        <div className="w-8 h-8 border-4 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
       </div>
     );
   }
@@ -441,7 +441,9 @@ export function SquadPage() {
               </p>
             </div>
             <button
+              type="button"
               onClick={copyCode}
+              aria-label={`Copy squad invite code ${activeSquad.invite_code}`}
               className="btn-secondary flex items-center justify-center gap-2 px-4 py-2 w-full sm:w-auto"
             >
               <Copy size={14} />

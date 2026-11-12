@@ -15,7 +15,7 @@ interface AuthState {
 // Hold the subscription reference outside the store so we can unsubscribe on re-init
 let authSubscription: (() => void) | null = null;
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>(set => ({
   user: null,
   session: null,
   loading: true,

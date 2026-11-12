@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToastStore } from '../components/common/Toast';
+import { useToastStore } from '../components/common/toastStore';
 
 export const SHORTCUT_DEFINITIONS = [
   { key: '1', description: 'Go to Dashboard' },

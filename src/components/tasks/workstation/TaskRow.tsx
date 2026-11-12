@@ -7,7 +7,6 @@ import {
   Edit2,
   Trash2,
   Folder,
-  AlertCircle,
 } from 'lucide-react';
 import type { Task, Priority } from '../../../types';
 import { soundService } from '../../../services/soundService';

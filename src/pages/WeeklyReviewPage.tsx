@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
-import { Share2, Sparkles, BarChart3, Brain, FileText, ArrowRight } from 'lucide-react';
+import { Share2, Sparkles, BarChart3, Brain, FileText } from 'lucide-react';
 import { useHabitStore } from '../store/habitStore';
 import { useTaskStore } from '../store/taskStore';
 import { useProfileStore } from '../store/profileStore';

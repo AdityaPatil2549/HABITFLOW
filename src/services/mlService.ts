@@ -15,7 +15,6 @@ export const mlService = {
    * Initializes the on-device machine learning models for habit predictions.
    */
   async init(): Promise<void> {
-    console.log('✅ Firebase ML (Mock) initialized');
     // Load local TensorFlow.js models here in the future
     return Promise.resolve();
   },
@@ -25,8 +24,6 @@ export const mlService = {
    * to schedule a new habit.
    */
   async predictOptimalHabitTime(habitName: string): Promise<string> {
-    console.log(`[Firebase ML] Running local prediction for habit: ${habitName}`);
-    
     // Simulate inference delay
     await new Promise(resolve => setTimeout(resolve, 800));
     
@@ -46,8 +43,6 @@ export const mlService = {
    * without sending data to the cloud.
    */
   async categorizeHabit(habitName: string): Promise<string> {
-    console.log(`[Firebase ML] Categorizing habit locally: ${habitName}`);
-    
     await new Promise(resolve => setTimeout(resolve, 500));
     
     const nameLower = habitName.toLowerCase();

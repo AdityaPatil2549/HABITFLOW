@@ -146,4 +146,22 @@ describe('momentumEngine', () => {
     expect(chain2[1].isLocked).toBe(false);
     expect(chain2[2].isLocked).toBe(true); // Habit C still locked until Habit B finishes
   });
+
+  it('decays momentum by ~50% after one 4-day half-life without logs', () => {
+    const scoreDay0 = momentumEngine.calculateHabitMomentum(['2026-03-01'], '2026-03-01').score;
+    const scoreDay4 = momentumEngine.calculateHabitMomentum(['2026-03-01'], '2026-03-05').score;
+
+    expect(scoreDay0).toBe(28);
+    expect(scoreDay4).toBe(14);
+  });
+
+  it('handles cyclic stackAfterHabitId references safely in sortChainedHabits', () => {
+    const cycleA: Habit = { ...baseHabit, id: 'cycle-a', stackAfterHabitId: 'cycle-b' };
+    const cycleB: Habit = { ...baseHabit, id: 'cycle-b', stackAfterHabitId: 'cycle-a' };
+    const standalone: Habit = { ...baseHabit, id: 'standalone' };
+
+    const sorted = momentumEngine.sortChainedHabits([cycleA, cycleB, standalone]);
+    expect(sorted).toHaveLength(3);
+    expect(new Set(sorted.map(h => h.id))).toEqual(new Set(['cycle-a', 'cycle-b', 'standalone']));
+  });
 });

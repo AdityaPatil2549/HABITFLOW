@@ -11,7 +11,7 @@ import {
   Zap,
   Play,
 } from 'lucide-react';
-import { useToast } from '@/components/common/Toast';
+import { useToast } from '@/components/common/toastStore';
 import { soundService, type AcousticPackId } from '@/services/soundService';
 import {
   ACCENT_CARTRIDGES,

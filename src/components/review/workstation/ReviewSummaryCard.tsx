@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Flame, Target, Zap, TrendingUp, Trophy } from 'lucide-react';
-import { cn } from '../../../lib/utils';
+import { CheckCircle2, Flame, Target, Zap } from 'lucide-react';
 
 interface ReviewSummaryProps {
   score: number;

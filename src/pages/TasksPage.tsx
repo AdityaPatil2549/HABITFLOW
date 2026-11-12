@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { Plus, CheckSquare, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTaskStore } from '../store/taskStore';
-import type { Task, Priority, Project } from '../types';
+import type { Task, Priority } from '../types';
 import { TaskRow } from '../components/tasks/workstation/TaskRow';
 import { TaskFilterBar, type TaskViewTab } from '../components/tasks/workstation/TaskFilterBar';
 import { TaskEditorModal } from '../components/tasks/workstation/TaskEditorModal';

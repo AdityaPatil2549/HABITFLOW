@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Sparkles, Layers, Clock, Hash, CheckSquare, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, Clock, Hash, CheckSquare, Zap } from 'lucide-react';
 import type { Habit, HabitType, HabitFrequency, HabitWithStreak } from '../../../types';
 import { soundService } from '../../../services/soundService';
 import { useHabitStore } from '../../../store/habitStore';
@@ -27,49 +27,34 @@ const CATEGORIES = [
 
 const PRESET_ICONS = ['💧', '🏃', '📚', '🧘', '💻', '🍎', '✍️', '⚡', '🎯', '🌿', '💤', '🧠'];
 
-export function HabitEditorDrawer({
+export function HabitEditorDrawer(props: HabitEditorDrawerProps) {
+  if (!props.isOpen) return null;
+  return <HabitEditorDrawerInner key={props.initialHabit?.id ?? 'new'} {...props} />;
+}
+
+function HabitEditorDrawerInner({
   isOpen,
   onClose,
   onSave,
   initialHabit,
 }: HabitEditorDrawerProps) {
   const { habits } = useHabitStore();
-  const [name, setName] = useState('');
-  const [icon, setIcon] = useState('🎯');
-  const [category, setCategory] = useState('Health');
-  const [type, setType] = useState<HabitType>('boolean');
-  const [frequency, setFrequency] = useState<HabitFrequency>('daily');
-  const [targetValue, setTargetValue] = useState(1);
-  const [unit, setUnit] = useState('');
-  const [timeOfDay, setTimeOfDay] = useState<'morning' | 'afternoon' | 'evening' | 'anytime'>('morning');
-  const [stackAfterHabitId, setStackAfterHabitId] = useState<string>('');
+  const [name, setName] = useState(() => initialHabit?.name ?? '');
+  const [icon, setIcon] = useState(() => (initialHabit ? getHabitEmoji(initialHabit.icon) : '🎯'));
+  const [category, setCategory] = useState(() => initialHabit?.category || 'Health');
+  const [type, setType] = useState<HabitType>(() => initialHabit?.type || 'boolean');
+  const [frequency] = useState<HabitFrequency>(() => initialHabit?.frequency || 'daily');
+  const [targetValue, setTargetValue] = useState(() => initialHabit?.targetValue || 1);
+  const [unit, setUnit] = useState(() => initialHabit?.unit || '');
+  const [timeOfDay, setTimeOfDay] = useState<'morning' | 'afternoon' | 'evening' | 'anytime'>(
+    () => initialHabit?.timeOfDay || 'morning'
+  );
+  const [stackAfterHabitId, setStackAfterHabitId] = useState<string>(
+    () => initialHabit?.stackAfterHabitId || ''
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (initialHabit) {
-      setName(initialHabit.name);
-      setIcon(getHabitEmoji(initialHabit.icon));
-      setCategory(initialHabit.category || 'Health');
-      setType(initialHabit.type || 'boolean');
-      setFrequency(initialHabit.frequency || 'daily');
-      setTargetValue(initialHabit.targetValue || 1);
-      setUnit(initialHabit.unit || '');
-      setTimeOfDay(initialHabit.timeOfDay || 'morning');
-      setStackAfterHabitId(initialHabit.stackAfterHabitId || '');
-    } else {
-      setName('');
-      setIcon('🎯');
-      setCategory('Health');
-      setType('boolean');
-      setFrequency('daily');
-      setTargetValue(1);
-      setUnit('');
-      setTimeOfDay('morning');
-      setStackAfterHabitId('');
-    }
-  }, [initialHabit, isOpen]);
 
   useEffect(() => {
     if (isOpen) {

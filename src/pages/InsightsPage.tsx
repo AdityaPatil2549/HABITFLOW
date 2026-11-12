@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BarChart2, CalendarCheck } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -32,15 +32,7 @@ function InsightsSkeleton() {
 
 export function InsightsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab: InsightsView = searchParams.get('tab') === 'review' ? 'review' : 'analytics';
-  const [view, setView] = useState<InsightsView>(initialTab);
-
-  useEffect(() => {
-    const param = searchParams.get('tab');
-    if (param === 'review' || param === 'analytics') {
-      setView(param);
-    }
-  }, [searchParams]);
+  const view: InsightsView = searchParams.get('tab') === 'review' ? 'review' : 'analytics';
 
   useEffect(() => {
     document.title = view === 'review' ? 'Weekly Review — HabitFlow' : 'Insights — HabitFlow';
@@ -48,7 +40,6 @@ export function InsightsPage() {
 
   const handleSelectView = (next: InsightsView) => {
     soundService.playTick();
-    setView(next);
     setSearchParams(next === 'review' ? { tab: 'review' } : {}, { replace: true });
   };
 

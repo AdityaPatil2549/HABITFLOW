@@ -23,7 +23,7 @@ import { toPng } from 'html-to-image';
 import { format } from 'date-fns';
 import { ShareCard } from '../components/gamification/ShareCard';
 import { getOrCreateSettings } from '../db';
-import { useToast } from '../components/common/Toast';
+import { useToast } from '../components/common/toastStore';
 import { soundService } from '../services/soundService';
 import { calculateStats } from '../services/gamificationService';
 
@@ -254,7 +254,7 @@ export function ProfilePage() {
                     Member since{' '}
                     {habits.length > 0
                       ? format(
-                          new Date(Math.min(...habits.map(h => new Date(h.createdAt).getTime()), Date.now())),
+                          new Date(Math.min(...habits.map(h => new Date(h.createdAt).getTime()))),
                           'MMM yyyy'
                         )
                       : format(new Date(), 'MMM yyyy')}

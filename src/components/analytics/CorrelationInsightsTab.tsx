@@ -18,10 +18,12 @@ import {
   ChartCard,
   EmptyChart,
   DynamicInsights,
+} from './shared';
+import {
   TOOLTIP_STYLE,
   TOOLTIP_LABEL_STYLE,
   TOOLTIP_ITEM_STYLE,
-} from './shared';
+} from './constants';
 import { Skeleton } from '../ui/Skeleton';
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 

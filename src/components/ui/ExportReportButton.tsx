@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Download } from 'lucide-react';
 import { WeeklyReportTemplate } from './WeeklyReportTemplate';
-import { useToast } from '../common/Toast';
+import { useToast } from '../common/toastStore';
 
 export function ExportReportButton() {
   const templateRef = useRef<HTMLDivElement>(null);

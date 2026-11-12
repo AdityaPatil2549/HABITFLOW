@@ -4,7 +4,7 @@
  */
 import { db } from '@/db';
 import type { AIInsight } from '@/types';
-import { format, subDays, subWeeks } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { getVertexAIInstance, isFirebaseConfigured } from '@/lib/firebase';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
