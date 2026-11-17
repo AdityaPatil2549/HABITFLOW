@@ -15,6 +15,8 @@ import { useModalStore } from '../../store/modalStore';
 import { ShortcutsModal } from '../ui/ShortcutsModal';
 import { AchievementToast } from '../ui/AchievementToast';
 import { useAchievementToast } from '../ui/achievementQueue';
+import { PWAInstallBanner } from './PWAInstallBanner';
+import { ReloadPrompt } from './ReloadPrompt';
 import { soundService } from '../../services/soundService';
 import { getOrCreateSettings } from '../../db';
 import { resolveTelemetryMode } from '../../lib/theme';
@@ -267,8 +269,8 @@ export function Layout() {
         Skip to content
       </a>
 
-      {/* ── Mobile Top Header (< 768px) ── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 px-4 bg-[var(--sf-raised)] border-b border-[var(--border-default)] flex items-center justify-between">
+      {/* ── Mobile Top Header (< 768px, Safe Area Aware) ── */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-[calc(3.5rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] px-4 bg-[var(--sf-raised)] border-b border-[var(--border-default)] flex items-center justify-between">
         <NavLink
           to="/"
           end
@@ -278,7 +280,16 @@ export function Layout() {
           <HabitFlowLogo size="sm" showBadge={false} />
         </NavLink>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => setQuickAddOpen(true)}
+            aria-label="Create new habit or task"
+            className="p-2 rounded-lg text-[var(--accent-ink)] bg-[var(--accent-subtle)] hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center"
+          >
+            <Plus size={18} strokeWidth={2.5} />
+          </button>
+
           <button
             type="button"
             onClick={() => {
@@ -293,7 +304,7 @@ export function Layout() {
                 : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
             )}
           >
-            <Timer size={19} />
+            <Timer size={18} />
           </button>
 
           <button
@@ -302,10 +313,10 @@ export function Layout() {
             aria-label="Open Command HUD"
             className="p-2 rounded-lg text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
           >
-            <Search size={19} />
+            <Search size={18} />
           </button>
 
-          <div className="relative ml-1" ref={mobileAccountRef}>
+          <div className="relative ml-0.5" ref={mobileAccountRef}>
             <button
               type="button"
               onClick={() => setShowAccount(v => !v)}
@@ -514,7 +525,7 @@ export function Layout() {
 
       {/* ── Main Content ── */}
       <main id="main-content" className="flex-1 md:ml-[220px] w-full max-w-[100vw] overflow-x-hidden">
-        <div className="pt-16 md:pt-8 pb-20 md:pb-10 px-4 sm:px-6 md:px-8 max-w-6xl mx-auto min-h-[100dvh]">
+        <div className="pt-[calc(4.25rem+env(safe-area-inset-top))] md:pt-8 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-10 px-3.5 sm:px-6 md:px-8 max-w-6xl mx-auto min-h-[100dvh]">
           <Suspense
             fallback={
               <div className="space-y-4 py-8">
@@ -539,10 +550,10 @@ export function Layout() {
         </div>
       </main>
 
-      {/* ── Mobile Bottom Dock (< 768px, 56px tall, 4 icon-only destinations) ── */}
+      {/* ── Mobile Bottom Dock (< 768px, Safe Area Aware, 4 labeled destinations) ── */}
       <nav
         aria-label="Mobile workspaces"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-14 bg-[var(--sf-raised)] border-t border-[var(--border-default)] px-2 grid grid-cols-4 items-center"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-[calc(3.5rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] bg-[var(--sf-raised)] border-t border-[var(--border-default)] px-1 sm:px-2 grid grid-cols-4 items-center"
       >
         {WORKSPACES.map(item => {
           const Icon = item.icon;
@@ -553,20 +564,28 @@ export function Layout() {
               end={item.end}
               aria-label={item.label}
               onClick={() => soundService.playTransition()}
-              className="relative flex flex-col items-center justify-center h-full transition-colors cursor-pointer"
+              className="relative flex flex-col items-center justify-center h-full transition-colors cursor-pointer py-1"
             >
               {({ isActive }) => (
                 <>
                   <Icon
-                    size={21}
-                    strokeWidth={isActive ? 2.4 : 1.75}
+                    size={19}
+                    strokeWidth={isActive ? 2.5 : 1.75}
                     className={cn(
                       'transition-colors',
                       isActive ? 'text-[var(--accent-ink)]' : 'text-[var(--tx-muted)]'
                     )}
                   />
+                  <span
+                    className={cn(
+                      'text-[9px] font-mono tracking-wider uppercase transition-colors leading-none mt-0.5',
+                      isActive ? 'text-[var(--accent-ink)] font-bold' : 'text-[var(--tx-muted)]'
+                    )}
+                  >
+                    {item.label}
+                  </span>
                   {isActive && (
-                    <span className="absolute bottom-1 w-6 h-[2px] rounded-full bg-[var(--accent)]" />
+                    <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-[var(--accent)]" />
                   )}
                 </>
               )}
@@ -578,6 +597,8 @@ export function Layout() {
       {/* ── Overlays ── */}
       <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
       <CommandMenu />
+      <PWAInstallBanner />
+      <ReloadPrompt />
       {achievement && telemetryMode === 'scaffold' && (
         <AchievementToast
           title={achievement.title}

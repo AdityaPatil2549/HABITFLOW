@@ -7,7 +7,6 @@ import {
   Shield,
   Palette,
   Database,
-  CheckCircle2,
   Calendar,
   CloudOff,
   Activity,
@@ -582,26 +581,74 @@ export function SettingsPage() {
       {/* ─── Notifications ─── */}
       <section className="card-raised p-6 space-y-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Bell size={18} className="text-[var(--accent)]" /> Notifications
+          <Bell size={18} className="text-[var(--accent)]" /> Notifications & Reminders
         </h2>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-white">Browser Notifications</p>
-            <p className="text-xs text-[var(--tx-muted)]">Get reminders for your daily habits and tasks.</p>
+            <p className="text-sm font-semibold text-white">Daily Habit Reminders</p>
+            <p className="text-xs text-[var(--tx-muted)]">
+              Receive smart morning briefings, streak savers, and individual ritual reminders.
+            </p>
           </div>
           {!settings.notificationsEnabled ? (
             <button
-              className="px-4 py-2 rounded-xl bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 text-xs font-bold hover:opacity-90 transition-all"
+              className="px-4 py-2 rounded-xl bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 text-xs font-bold hover:opacity-90 transition-all cursor-pointer self-start sm:self-auto"
               onClick={requestNotificationPermission}
             >
-              Enable
+              Enable Notifications
             </button>
           ) : (
-            <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-bold border border-emerald-500/20 flex items-center gap-1">
-              <CheckCircle2 size={12} /> Enabled
-            </span>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={async () => {
+                  const sent = await notificationService.sendTestNotification();
+                  if (sent) toast.success('Test notification dispatched!');
+                  else toast.warning('Could not trigger notification. Check browser permissions.');
+                }}
+                className="px-3 py-1.5 rounded-lg bg-[var(--sf-overlay)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] border border-[var(--border-default)] text-xs font-medium cursor-pointer"
+              >
+                Send Test
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await saveSetting({ notificationsEnabled: false });
+                  toast.info('Notifications paused.');
+                }}
+                className="px-3 py-1.5 rounded-lg text-rose-400 bg-rose-500/10 border border-rose-500/20 text-xs font-semibold hover:bg-rose-500/20 cursor-pointer"
+              >
+                Disable
+              </button>
+            </div>
           )}
         </div>
+
+        {settings.notificationsEnabled && (
+          <div className="pt-3 border-t border-[var(--border-default)] grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="morning-briefing-time" className="text-xs font-medium text-[var(--tx-secondary)] block mb-1">
+                Morning Briefing Time
+              </label>
+              <input
+                id="morning-briefing-time"
+                type="time"
+                value={settings.morningBriefingTime || '08:00'}
+                onChange={e => saveSetting({ morningBriefingTime: e.target.value })}
+                className="input py-1.5 px-3 text-xs w-full font-mono"
+              />
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)]">
+              <div>
+                <p className="text-xs font-medium text-white">Evening Streak Saver</p>
+                <p className="text-[11px] text-[var(--tx-muted)]">Alert before day ends if streaks are at risk</p>
+              </div>
+              <span className="text-xs font-mono font-bold text-[var(--accent-ink)] px-2 py-0.5 rounded bg-[var(--accent-subtle)]">
+                Active
+              </span>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ─── Integrations ─── */}

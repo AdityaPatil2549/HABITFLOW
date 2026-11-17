@@ -113,7 +113,7 @@ function HabitEditorDrawerInner({
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ duration: 0.16, ease: 'easeOut' }}
-        className="relative w-full max-w-md h-full bg-[var(--sf-raised)] border-l border-[var(--border-strong)] shadow-2xl p-6 flex flex-col justify-between overflow-y-auto z-10"
+        className="relative w-full max-w-md h-full bg-[var(--sf-raised)] border-l border-[var(--border-strong)] shadow-2xl p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] flex flex-col justify-between overflow-y-auto z-10"
       >
         <div>
           {/* Header */}

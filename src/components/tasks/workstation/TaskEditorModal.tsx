@@ -96,7 +96,7 @@ function TaskEditorModalInner({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: 6 }}
         transition={{ duration: 0.14, ease: 'easeOut' }}
-        className="relative w-full max-w-lg bg-[var(--sf-raised)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-6 z-10"
+        className="relative w-full max-w-lg bg-[var(--sf-raised)] border border-[var(--border-strong)] rounded-2xl shadow-2xl p-4 sm:p-6 mx-3 sm:mx-0 max-h-[88vh] overflow-y-auto z-10"
       >
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)]">
           <h2 className="text-sm font-semibold text-[var(--tx-primary)]">

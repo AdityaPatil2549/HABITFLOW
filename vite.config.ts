@@ -15,16 +15,41 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: [
+        'favicon.svg',
+        'apple-touch-icon.png',
+        'pwa-192x192.png',
+        'pwa-512x512.png',
+        'pwa-maskable-512x512.png',
+      ],
       manifest: {
         name: 'HabitFlow',
         short_name: 'HabitFlow',
         description: 'Local-first habit tracker & to-do list',
-        theme_color: '#08090C',
-        background_color: '#08090C',
+        theme_color: '#0A0A0C',
+        background_color: '#0A0A0C',
         display: 'standalone',
+        orientation: 'portrait-primary',
+        start_url: '/',
+        scope: '/',
+        categories: ['productivity', 'lifestyle'],
         icons: [
-          { src: 'logo.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: '/pwa-maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {

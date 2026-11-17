@@ -167,36 +167,59 @@ class NotificationService {
     });
   }
 
-  private sendNotification(title: string, _icon: string) {
+  private sendNotification(title: string, _icon: string, body?: string, tag?: string) {
+    const options: NotificationOptions = {
+      body: body || 'HabitFlow reminder',
+      icon: '/pwa-192x192.png',
+      badge: '/pwa-192x192.png',
+      tag: tag || 'habitflow-reminder',
+      silent: false,
+    };
+
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then(reg => {
-        if (reg && reg.showNotification) {
-          reg.showNotification(title, {
-            icon: '/pwa-192x192.png',
-            badge: '/pwa-192x192.png',
-            silent: false,
-          });
-        }
-      });
-    } else {
-      new Notification(title, {
-        icon: '/pwa-192x192.png',
-        badge: '/pwa-192x192.png',
-        silent: false,
-      });
+      navigator.serviceWorker.ready
+        .then(reg => {
+          if (reg && reg.showNotification) {
+            reg.showNotification(title, options).catch(() => {
+              if ('Notification' in window) new Notification(title, options);
+            });
+          } else if ('Notification' in window) {
+            new Notification(title, options);
+          }
+        })
+        .catch(() => {
+          if ('Notification' in window) new Notification(title, options);
+        });
+    } else if ('Notification' in window) {
+      new Notification(title, options);
     }
   }
 
   // Used to test the functionality from the settings page
-  async sendTestNotification() {
-    if (!('Notification' in window)) return;
+  async sendTestNotification(): Promise<boolean> {
+    if (!('Notification' in window)) return false;
 
     if (Notification.permission === 'granted') {
-      new Notification('HabitFlow Notifications Enabled!', {
-        body: 'You will now receive reminders for your habits.',
-        icon: '/pwa-192x192.png',
-      });
+      this.sendNotification(
+        'HabitFlow Notifications Enabled!',
+        '🔔',
+        'You will now receive timely reminders for your daily rituals.',
+        'habitflow-test'
+      );
+      return true;
+    } else if (Notification.permission !== 'denied') {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        this.sendNotification(
+          'HabitFlow Notifications Enabled!',
+          '🔔',
+          'You will now receive timely reminders for your daily rituals.',
+          'habitflow-test'
+        );
+        return true;
+      }
     }
+    return false;
   }
 }
 

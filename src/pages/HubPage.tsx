@@ -11,12 +11,16 @@ import {
   FileText,
   Palette,
   Gauge,
+  Smartphone,
+  Download,
 } from 'lucide-react';
 import { useProfileStore } from '../store/profileStore';
 import { useGamificationStore } from '../store/gamificationStore';
 import { useAuthStore } from '../store/authStore';
 import { getOrCreateSettings } from '../db';
 import { calculateStats } from '../services/gamificationService';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import { soundService } from '../services/soundService';
 import {
   ACCENT_CARTRIDGES,
   normalizeAccentTheme,
@@ -63,6 +67,8 @@ export function HubPage() {
   const { userXP, loadXP } = useGamificationStore();
   const { isGuest } = useAuthStore();
   const [settings, setSettings] = useState<SettingsType | null>(null);
+  const { canInstall, isInstalled, isIOS, isNativePromptReady, promptInstall, resetDismissal } =
+    usePWAInstall();
 
   useEffect(() => {
     document.title = 'Hub — HabitFlow';
@@ -129,6 +135,43 @@ export function HubPage() {
           </div>
         </div>
       </div>
+
+      {/* PWA Native Installation Callout (if uninstalled) */}
+      {canInstall && !isInstalled && (
+        <div className="card-raised p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[var(--accent)]/40 bg-[var(--accent-subtle)]/15 rounded-2xl">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[var(--accent-subtle)] border border-[var(--accent)]/40 flex items-center justify-center text-[var(--accent-ink)] shrink-0">
+              <Smartphone size={20} />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-[var(--tx-primary)]">
+                Install HabitFlow App
+              </h3>
+              <p className="text-xs text-[var(--tx-secondary)] mt-0.5">
+                Install to your home screen for full offline vaults, gesture navigation, and distraction-free tracking.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              soundService.playTick();
+              if (isNativePromptReady) {
+                await promptInstall();
+              } else if (isIOS) {
+                resetDismissal();
+                alert(
+                  'On iOS Safari: Tap the Share button at the bottom of the screen, then choose "Add to Home Screen".'
+                );
+              }
+            }}
+            className="btn-primary py-2 px-4 text-xs font-semibold shrink-0 inline-flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Download size={14} />
+            <span>Install Now</span>
+          </button>
+        </div>
+      )}
 
       {/* Hub Destinations Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

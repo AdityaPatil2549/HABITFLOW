@@ -359,3 +359,22 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--tx-muted);
 }
+
+/* ─── Mobile PWA & Viewport Ergonomics (375px Lock) ─── */
+html,
+body {
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+[role="tab"],
+[role="radio"] {
+  touch-action: manipulation;
+}

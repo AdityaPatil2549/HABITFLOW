@@ -133,7 +133,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
         className="relative w-full max-w-[512px] md:mx-4 bg-[var(--sf-raised)] border-t md:border border-[var(--border-strong)] rounded-t-2xl md:rounded-2xl overflow-hidden pb-[env(safe-area-inset-bottom)]"
       >
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-[var(--border-default)]">
+        <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 flex items-center justify-between border-b border-[var(--border-default)]">
           <div>
             <p className="font-label-caps">Quick Entry</p>
             <h2 className="font-h2 text-[var(--tx-primary)] mt-0.5">Create New</h2>
@@ -149,7 +149,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
         </div>
 
         {/* Mode Tabs */}
-        <div className="px-6 pt-4">
+        <div className="px-4 sm:px-6 pt-4">
           <div className="grid grid-cols-2 p-1 bg-[var(--sf-overlay)] rounded-xl border border-[var(--border-default)]">
             {(['habit', 'task'] as const).map(t => {
               const isActive = tab === t;
@@ -174,13 +174,13 @@ export function QuickAddModalFixed({ onClose }: Props) {
         </div>
 
         {/* Forms Container */}
-        <div className="px-6 py-5 max-h-[65vh] overflow-y-auto">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 max-h-[70vh] sm:max-h-[65vh] overflow-y-auto">
           {tab === 'habit' ? (
-            <form onSubmit={handleHabitSubmit} className="space-y-5">
+            <form onSubmit={handleHabitSubmit} className="space-y-4 sm:space-y-5">
               {/* Icon Picker */}
               <div>
                 <label className="font-label-caps mb-2 block">Icon</label>
-                <div className="grid grid-cols-7 gap-1.5 bg-[var(--sf-base)] rounded-xl p-2.5 border border-[var(--border-default)] max-h-40 overflow-y-auto">
+                <div className="grid grid-cols-6 sm:grid-cols-7 gap-1.5 bg-[var(--sf-base)] rounded-xl p-2.5 border border-[var(--border-default)] max-h-36 sm:max-h-40 overflow-y-auto">
                   {HABIT_ICONS.map(item => {
                     const isActive = habitIcon === item.name;
                     return (
