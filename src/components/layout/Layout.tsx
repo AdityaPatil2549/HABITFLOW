@@ -261,6 +261,12 @@ export function Layout() {
 
   return (
     <div className="min-h-[100dvh] flex bg-[var(--sf-base)] text-[var(--tx-primary)] relative z-0">
+      {/* Ambient Lighting Spotlight */}
+      <div
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[340px] bg-gradient-to-b from-[var(--accent)]/10 via-[var(--accent)]/2 to-transparent blur-3xl -z-10"
+        aria-hidden="true"
+      />
+
       {/* Skip to Content for Accessibility */}
       <a
         href="#main-content"
@@ -270,7 +276,7 @@ export function Layout() {
       </a>
 
       {/* ── Mobile Top Header (< 768px, Safe Area Aware) ── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-[calc(3.5rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] px-4 bg-[var(--sf-raised)] border-b border-[var(--border-default)] flex items-center justify-between">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-[calc(3.5rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] px-4 bg-[var(--sf-raised)]/85 backdrop-blur-xl border-b border-[var(--border-default)] flex items-center justify-between shadow-sm">
         <NavLink
           to="/"
           end
@@ -285,7 +291,7 @@ export function Layout() {
             type="button"
             onClick={() => setQuickAddOpen(true)}
             aria-label="Create new habit or task"
-            className="p-2 rounded-lg text-[var(--accent-ink)] bg-[var(--accent-subtle)] hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center"
+            className="p-2 rounded-xl text-[var(--accent-ink)] bg-[var(--accent-subtle)] hover:opacity-90 active:scale-95 transition-all cursor-pointer flex items-center justify-center border border-[var(--accent)]/30 shadow-sm"
           >
             <Plus size={18} strokeWidth={2.5} />
           </button>
@@ -298,10 +304,10 @@ export function Layout() {
             }}
             aria-label={focusActive ? 'Stop focus timer' : 'Start focus timer'}
             className={cn(
-              'p-2 rounded-lg transition-colors cursor-pointer',
+              'p-2 rounded-xl transition-colors cursor-pointer border',
               focusActive
-                ? 'text-[var(--accent-ink)] bg-[var(--accent-subtle)]'
-                : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
+                ? 'text-[var(--accent-ink)] bg-[var(--accent-subtle)] border-[var(--accent)]/40'
+                : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] border-transparent'
             )}
           >
             <Timer size={18} />
@@ -311,7 +317,7 @@ export function Layout() {
             type="button"
             onClick={() => setCommandMenuOpen(true)}
             aria-label="Open Command HUD"
-            className="p-2 rounded-lg text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
           >
             <Search size={18} />
           </button>
@@ -348,7 +354,7 @@ export function Layout() {
       {/* ── Desktop Left Rail (>= 768px, 220px wide) ── */}
       <aside
         data-tour="sidebar-nav"
-        className="hidden md:flex fixed left-0 top-0 h-[100dvh] w-[220px] border-r border-[var(--border-default)] bg-[var(--sf-raised)] flex-col py-5 z-40"
+        className="hidden md:flex fixed left-0 top-0 h-[100dvh] w-[220px] border-r border-[var(--border-default)] bg-[var(--sf-raised)]/80 backdrop-blur-xl flex-col py-5 z-40 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.3)]"
       >
         {/* Brand Header */}
         <div className="px-4 mb-5 flex items-center justify-between">
@@ -363,7 +369,7 @@ export function Layout() {
             type="button"
             onClick={() => setCommandMenuOpen(true)}
             title="Command HUD (⌘K / Ctrl K)"
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[var(--sf-base)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors text-xs cursor-pointer"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[var(--sf-base)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-all text-xs cursor-pointer shadow-inner"
           >
             <span className="flex items-center gap-2">
               <Search size={14} className="shrink-0" />
@@ -391,9 +397,9 @@ export function Layout() {
                 onClick={() => soundService.playTransition()}
                 className={({ isActive }) =>
                   cn(
-                    'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer border',
+                    'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer border',
                     isActive
-                      ? 'bg-[var(--sf-overlay)] text-[var(--tx-primary)] border-[var(--border-strong)] font-semibold'
+                      ? 'bg-[var(--sf-overlay)] text-[var(--tx-primary)] border-[var(--border-strong)] font-semibold shadow-sm'
                       : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] border-transparent'
                   )
                 }
@@ -401,12 +407,12 @@ export function Layout() {
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[var(--accent)]" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[var(--accent)] shadow-[0_0_8px_rgba(var(--brand-500-rgb),0.6)]" />
                     )}
                     <Icon
                       size={17}
                       className={cn(
-                        'shrink-0',
+                        'shrink-0 transition-colors',
                         isActive ? 'text-[var(--accent-ink)]' : 'text-[var(--tx-muted)]'
                       )}
                     />
@@ -553,7 +559,7 @@ export function Layout() {
       {/* ── Mobile Bottom Dock (< 768px, Safe Area Aware, 4 labeled destinations) ── */}
       <nav
         aria-label="Mobile workspaces"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-[calc(3.5rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] bg-[var(--sf-raised)] border-t border-[var(--border-default)] px-1 sm:px-2 grid grid-cols-4 items-center"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-[calc(3.5rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] bg-[var(--sf-raised)]/85 backdrop-blur-xl border-t border-[var(--border-default)] px-1 sm:px-2 grid grid-cols-4 items-center shadow-[0_-4px_24px_rgba(0,0,0,0.3)]"
       >
         {WORKSPACES.map(item => {
           const Icon = item.icon;
@@ -585,7 +591,7 @@ export function Layout() {
                     {item.label}
                   </span>
                   {isActive && (
-                    <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-[var(--accent)]" />
+                    <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2.5px] rounded-full bg-[var(--accent)] shadow-[0_0_8px_rgba(var(--brand-500-rgb),0.7)]" />
                   )}
                 </>
               )}

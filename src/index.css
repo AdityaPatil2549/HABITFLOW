@@ -173,12 +173,34 @@
   --accent-ink: #0e7490;
 }
 
+[data-theme='indigo'] {
+  --accent: #6366f1;
+  --accent-fg: #ffffff;
+  --accent-ink: #818cf8;
+  --accent-subtle: rgba(99, 102, 241, 0.12);
+  --brand-500-rgb: 99, 102, 241;
+}
+[data-polarity='light'][data-theme='indigo'] {
+  --accent-ink: #4f46e5;
+}
+
 /* ─── Base & Typography ─── */
 html,
 body {
   background-color: var(--sf-base);
+  background-image:
+    radial-gradient(ellipse 90% 50% at 50% -12%, rgba(var(--brand-500-rgb, 99, 102, 241), 0.09), transparent 70%),
+    radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px;
+  background-attachment: fixed;
   color: var(--tx-primary);
   font-family: var(--font-sans);
+}
+
+[data-polarity='light'] body {
+  background-image:
+    radial-gradient(ellipse 90% 50% at 50% -12%, rgba(var(--brand-500-rgb, 99, 102, 241), 0.06), transparent 70%),
+    radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
 }
 
 ::selection {
@@ -245,36 +267,61 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* ─── Surfaces & Controls (Zero Blur, 1px Hairlines) ─── */
+/* ─── Surfaces & Controls (Specular Depth, Tactile Polish) ─── */
 .card-raised {
   background-color: var(--sf-raised);
   border: 1px solid var(--border-default);
   border-radius: 1rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-polarity='light'] .card-raised {
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+.card-raised:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
 }
 
 .card-flat {
   background-color: var(--sf-overlay);
   border: 1px solid var(--border-default);
   border-radius: 0.75rem;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+}
+
+.glass-panel {
+  background-color: color-mix(in srgb, var(--sf-raised) 82%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .btn-primary {
-  background-color: var(--accent);
+  background: linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 88%, black) 100%);
   color: var(--accent-fg);
   font-weight: 600;
   border-radius: 0.75rem;
-  transition: opacity 120ms ease-out, transform 120ms ease-out;
+  box-shadow: 0 2px 12px -2px rgba(var(--brand-500-rgb, 99, 102, 241), 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
+  transition: opacity 140ms ease-out, transform 140ms ease-out, box-shadow 140ms ease-out;
   cursor: pointer;
 }
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
+  opacity: 0.96;
+  box-shadow: 0 4px 20px -2px rgba(var(--brand-500-rgb, 99, 102, 241), 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 .btn-primary:active:not(:disabled) {
   transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(var(--brand-500-rgb, 99, 102, 241), 0.2);
 }
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn-secondary {
@@ -283,11 +330,15 @@ body {
   border: 1px solid var(--border-default);
   font-weight: 500;
   border-radius: 0.75rem;
-  transition: border-color 120ms ease-out, background-color 120ms ease-out, transform 120ms ease-out;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 140ms ease-out, background-color 140ms ease-out, transform 140ms ease-out, box-shadow 140ms ease-out;
   cursor: pointer;
 }
 .btn-secondary:hover:not(:disabled) {
   border-color: var(--border-strong);
+  background-color: color-mix(in srgb, var(--sf-overlay) 88%, white 12%);
+  box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
 }
 .btn-secondary:active:not(:disabled) {
   transform: scale(0.98);
@@ -304,11 +355,13 @@ body {
   border-radius: 0.75rem;
   padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
-  transition: border-color 120ms ease-out;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: border-color 140ms ease-out, box-shadow 140ms ease-out;
 }
 .input:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle), inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 :focus-visible {

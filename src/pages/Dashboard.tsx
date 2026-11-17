@@ -284,14 +284,14 @@ export function Dashboard() {
       ) : (
         ritualGroups.map(group => {
           const nodes = momentumEngine.resolveHabitStack(group.habits, completedHabitIds);
-          const groupIcon =
+          const chronotype =
             group.timeSlot === 'morning'
-              ? '🌅'
+              ? { icon: '🌅', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/25' }
               : group.timeSlot === 'afternoon'
-                ? '☀️'
+                ? { icon: '☀️', color: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/25' }
                 : group.timeSlot === 'evening'
-                  ? '🌙'
-                  : '📌';
+                  ? { icon: '🌙', color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/25' }
+                  : { icon: '📌', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/25' };
 
           return (
             <section
@@ -300,9 +300,16 @@ export function Dashboard() {
               aria-labelledby={`ritual-${group.timeSlot}`}
             >
               <div className="flex items-center justify-between pb-2 border-b border-[var(--border-default)]">
-                <div className="flex items-center gap-2">
-                  <span aria-hidden="true" className="text-base">
-                    {groupIcon}
+                <div className="flex items-center gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'w-7 h-7 rounded-lg border flex items-center justify-center text-sm shadow-sm',
+                      chronotype.bg,
+                      chronotype.border
+                    )}
+                  >
+                    {chronotype.icon}
                   </span>
                   <h2
                     id={`ritual-${group.timeSlot}`}
@@ -312,7 +319,14 @@ export function Dashboard() {
                   </h2>
                 </div>
                 {!isMonastic && (
-                  <span className="font-data text-xs text-[var(--tx-secondary)] px-2 py-0.5 rounded-md bg-[var(--sf-overlay)] border border-[var(--border-default)]">
+                  <span
+                    className={cn(
+                      'font-data text-xs px-2.5 py-0.5 rounded-full border transition-colors',
+                      group.completedCount === group.totalCount && group.totalCount > 0
+                        ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-bold'
+                        : 'bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border-[var(--border-default)]'
+                    )}
+                  >
                     {group.completedCount}/{group.totalCount}
                   </span>
                 )}
@@ -418,8 +432,20 @@ export function Dashboard() {
       {/* ── Top Workspace Header ── */}
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[var(--border-default)]">
         <div>
-          <p className="font-label-caps">{format(new Date(), 'EEEE, MMMM d')}</p>
-          <h1 className="font-h1 text-[var(--tx-primary)] mt-1">Today</h1>
+          <div className="flex items-center gap-2">
+            <p className="font-label-caps">{format(new Date(), 'EEEE, MMMM d')}</p>
+            {totalHabits > 0 && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/30">
+                {completedCount}/{totalHabits} Completed
+              </span>
+            )}
+          </div>
+          <h1 className="font-h1 text-[var(--tx-primary)] mt-1 flex items-center gap-2.5">
+            <span>Today</span>
+            <span className="text-sm font-sans font-normal text-[var(--tx-secondary)] hidden sm:inline">
+              · Daily Execution Flow
+            </span>
+          </h1>
         </div>
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
@@ -427,18 +453,18 @@ export function Dashboard() {
             type="button"
             onClick={() => setZenMode(true)}
             aria-label="Enter Zen Focus Mode"
-            className="btn-secondary px-3.5 py-2 text-xs inline-flex items-center gap-2"
+            className="btn-secondary px-3.5 py-2 text-xs inline-flex items-center gap-2 hover:border-[var(--accent)]/50"
           >
-            <Maximize2 size={14} />
+            <Maximize2 size={14} className="text-[var(--accent-ink)]" />
             <span>Zen (Z)</span>
           </button>
 
           <button
             type="button"
             onClick={() => setQuickAddOpen(true)}
-            className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5"
+            className="btn-primary px-4 py-2 text-xs inline-flex items-center gap-1.5 shadow-md shadow-[rgba(var(--brand-500-rgb),0.3)] hover:scale-105 active:scale-95 transition-all"
           >
-            <Plus size={15} />
+            <Plus size={15} strokeWidth={2.5} />
             <span>New Habit</span>
           </button>
         </div>
@@ -534,15 +560,17 @@ export function Dashboard() {
               <MoodPulse />
 
               {/* Quick Insights (1-Sentence Summary) */}
-              <section aria-label="Quick Insights" className="card-raised p-4 sm:p-5 space-y-2.5">
+              <section aria-label="Quick Insights" className="card-raised p-4 sm:p-5 space-y-2.5 bg-gradient-to-br from-[var(--sf-raised)] to-[var(--sf-overlay)] border-[var(--border-default)] hover:border-[var(--border-strong)] transition-all">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Sparkles size={14} className="text-[var(--accent-ink)]" />
+                    <div className="w-6 h-6 rounded-md bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                      <Sparkles size={13} />
+                    </div>
                     <span className="font-label-caps">Quick Insight</span>
                   </div>
                   <Link
                     to="/insights"
-                    className="text-xs font-medium text-[var(--accent-ink)] hover:underline inline-flex items-center gap-1"
+                    className="text-xs font-semibold text-[var(--accent-ink)] hover:underline inline-flex items-center gap-1"
                   >
                     <span>Insights</span>
                     <ArrowRight size={12} />

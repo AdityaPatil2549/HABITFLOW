@@ -78,11 +78,15 @@ export function HabitRow({
     <div
       onClick={() => onEdit(habit)}
       className={cn(
-        'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-xl border transition-colors duration-150 cursor-pointer select-none',
+        'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-xl border transition-all duration-200 cursor-pointer select-none',
         isDone
-          ? 'bg-[var(--sf-raised)] border-[var(--border-strong)] text-[var(--tx-secondary)]'
-          : 'bg-[var(--sf-raised)] border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--tx-primary)]'
+          ? 'bg-[var(--sf-raised)] text-[var(--tx-secondary)] border-l-[3.5px]'
+          : 'bg-[var(--sf-raised)] border-[var(--border-default)] hover:border-[var(--border-strong)] hover:shadow-lg hover:shadow-black/20 hover:-translate-y-[1px] text-[var(--tx-primary)]'
       )}
+      style={{
+        borderLeftColor: isDone ? (habit.color || 'var(--accent)') : undefined,
+        boxShadow: isDone && habit.color ? `0 2px 14px -4px ${habit.color}25, inset 0 1px 0 0 rgba(255, 255, 255, 0.06)` : undefined,
+      }}
     >
       {/* ── Left Side: Checkbox + Icon + Name + Category ──────── */}
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -94,9 +98,18 @@ export function HabitRow({
           className={cn(
             'w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-150 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-90',
             isDone
-              ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
-              : 'border border-[var(--border-strong)] hover:border-[var(--accent)] bg-[var(--sf-overlay)]'
+              ? 'text-white'
+              : 'border border-[var(--border-strong)] hover:border-[var(--accent)] bg-[var(--sf-overlay)] hover:scale-105'
           )}
+          style={
+            isDone
+              ? {
+                  backgroundColor: habit.color || 'var(--accent)',
+                  borderColor: habit.color || 'var(--accent)',
+                  boxShadow: habit.color ? `0 2px 10px -2px ${habit.color}65` : '0 2px 8px -2px rgba(var(--brand-500-rgb), 0.4)',
+                }
+              : undefined
+          }
         >
           <AnimatePresence mode="wait">
             {isDone ? (
@@ -114,7 +127,14 @@ export function HabitRow({
         </button>
 
         {/* Habit Emoji */}
-        <span className="w-8 h-8 rounded-lg bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-base shrink-0">
+        <span
+          className="w-8 h-8 rounded-lg border flex items-center justify-center text-base shrink-0 transition-transform duration-200 group-hover:scale-105"
+          style={{
+            backgroundColor: habit.color ? `${habit.color}18` : 'var(--sf-overlay)',
+            borderColor: habit.color ? `${habit.color}40` : 'var(--border-default)',
+            boxShadow: isDone && habit.color ? `0 0 10px -2px ${habit.color}40` : undefined,
+          }}
+        >
           {getHabitEmoji(habit.icon)}
         </span>
 
@@ -184,10 +204,22 @@ export function HabitRow({
         </div>
 
         {/* Streak Indicator */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] text-[var(--tx-secondary)] font-mono text-xs font-semibold min-w-[56px] justify-center tabular-nums">
-          <Flame className="w-3.5 h-3.5 text-[var(--tx-muted)]" />
+        <div
+          className={cn(
+            'flex items-center gap-1.5 px-2.5 py-1 rounded-full border font-mono text-xs font-semibold min-w-[56px] justify-center tabular-nums transition-colors',
+            currentStreak > 0
+              ? 'bg-orange-500/10 border-orange-500/25 text-orange-400'
+              : 'bg-[var(--sf-overlay)] border-[var(--border-default)] text-[var(--tx-muted)]'
+          )}
+        >
+          <Flame
+            className={cn(
+              'w-3.5 h-3.5',
+              currentStreak > 0 ? 'text-orange-500 fill-orange-500/30' : 'text-[var(--tx-muted)]'
+            )}
+          />
           <span>{currentStreak}</span>
-          <span className="text-[10px] font-normal text-[var(--tx-muted)]">d</span>
+          <span className="text-[10px] font-normal opacity-70">d</span>
         </div>
 
         {/* Action Menu Trigger */}

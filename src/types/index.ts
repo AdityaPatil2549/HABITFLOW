@@ -14,7 +14,8 @@ export type AccentTheme =
   | 'violet'
   | 'gold'
   | 'rose'
-  | 'cyan';
+  | 'cyan'
+  | 'indigo';
 
 export type LegacyTheme =
   | 'indigo'

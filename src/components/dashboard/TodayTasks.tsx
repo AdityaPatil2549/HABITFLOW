@@ -43,12 +43,14 @@ export function TodayTasks() {
     <section aria-label="Today's Tasks" className="card-raised p-4 sm:p-5 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <CheckSquare size={15} className="text-[var(--accent-ink)]" />
+          <div className="w-6 h-6 rounded-md bg-[var(--accent-subtle)] border border-[var(--accent)] flex items-center justify-center text-[var(--accent-ink)]">
+            <CheckSquare size={13} />
+          </div>
           <span className="font-label-caps">Today's Tasks</span>
         </div>
         <Link
           to="/hub/tasks"
-          className="text-xs font-medium text-[var(--accent-ink)] hover:underline inline-flex items-center gap-1"
+          className="text-xs font-semibold text-[var(--accent-ink)] hover:underline inline-flex items-center gap-1"
         >
           <span>All</span>
           <ArrowRight size={12} />
@@ -69,7 +71,7 @@ export function TodayTasks() {
           type="submit"
           disabled={!title.trim() || submitting}
           aria-label="Add task"
-          className="w-8 h-8 rounded-lg btn-primary flex items-center justify-center shrink-0"
+          className="w-8 h-8 rounded-lg btn-primary flex items-center justify-center shrink-0 cursor-pointer active:scale-95 transition-transform"
         >
           <Plus size={14} />
         </button>
@@ -95,18 +97,22 @@ export function TodayTasks() {
                     completeTask(task.id);
                   }
                 }}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-left transition-colors cursor-pointer"
+                className={cn(
+                  'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-left transition-all duration-150 cursor-pointer hover:shadow-sm hover:translate-x-0.5',
+                  task.completed && 'opacity-65'
+                )}
               >
                 <span
                   className={cn(
-                    'w-4 h-4 rounded border flex items-center justify-center shrink-0',
+                    'w-4 h-4 rounded-[5px] border flex items-center justify-center shrink-0 transition-colors duration-150',
                     task.completed
-                      ? 'bg-[var(--accent)] border-[var(--accent)] text-[var(--accent-fg)]'
-                      : 'border-[var(--border-strong)]'
+                      ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.35)]'
+                      : 'border-[var(--border-strong)] hover:border-[var(--accent)]'
                   )}
                 >
                   {task.completed && <Check size={11} strokeWidth={3} />}
                 </span>
+
                 <span
                   className={cn(
                     'text-xs font-medium truncate flex-1',
@@ -117,6 +123,19 @@ export function TodayTasks() {
                 >
                   {task.title}
                 </span>
+
+                {task.priority && task.priority > 0 && !task.completed && (
+                  <span
+                    className={cn(
+                      'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wider',
+                      task.priority === 1 && 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
+                      task.priority === 2 && 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+                      task.priority === 3 && 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
+                    )}
+                  >
+                    P{task.priority}
+                  </span>
+                )}
               </button>
             </li>
           ))}

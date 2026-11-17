@@ -121,25 +121,36 @@ export function TactileHabitCard({
     >
       <div
         className={cn(
-          'relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border transition-colors duration-150',
+          'relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border transition-all duration-200',
           isDone
-            ? 'bg-[var(--sf-raised)] border-[var(--accent)] border-l-[3px]'
+            ? 'bg-[var(--sf-raised)] border-l-[3.5px]'
             : isPrimed
-              ? 'bg-[var(--sf-raised)] border-[var(--accent)] animate-chain-prime'
+              ? 'bg-[var(--sf-raised)] border-amber-500/70 shadow-[0_0_18px_rgba(245,158,11,0.2)] animate-chain-prime'
               : effectiveLocked
                 ? 'bg-[var(--sf-base)] border-[var(--border-default)] opacity-50'
-                : 'bg-[var(--sf-raised)] border-[var(--border-default)] hover:border-[var(--border-strong)]'
+                : 'bg-[var(--sf-raised)] border-[var(--border-default)] hover:border-[var(--border-strong)] hover:shadow-lg hover:shadow-black/25 hover:-translate-y-[1px]'
         )}
+        style={{
+          borderLeftColor: isDone ? (habit.color || 'var(--accent)') : undefined,
+          boxShadow: isDone && habit.color ? `0 4px 20px -4px ${habit.color}25, inset 0 1px 0 0 rgba(255, 255, 255, 0.08)` : undefined,
+        }}
       >
         {/* Left: Icon + Name + Subline */}
         <div className="flex items-start gap-3 min-w-0 flex-1">
           <div
             className={cn(
-              'w-9 h-9 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center text-lg shrink-0',
-              isDone
-                ? 'bg-[var(--accent-subtle)] border-[var(--accent)]'
-                : 'bg-[var(--sf-overlay)] border-[var(--border-default)]'
+              'w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center text-lg shrink-0 transition-transform duration-200 group-hover:scale-105',
+              !habit.color && (isDone ? 'bg-[var(--accent-subtle)] border-[var(--accent)]' : 'bg-[var(--sf-overlay)] border-[var(--border-default)]')
             )}
+            style={
+              habit.color
+                ? {
+                    backgroundColor: `${habit.color}18`,
+                    borderColor: `${habit.color}45`,
+                    boxShadow: isDone ? `0 0 14px -2px ${habit.color}50` : undefined,
+                  }
+                : undefined
+            }
           >
             <span aria-hidden="true">{getHabitEmoji(habit.icon)}</span>
           </div>
@@ -158,7 +169,7 @@ export function TactileHabitCard({
               </h3>
 
               {isPrimed && !isDone && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)] shrink-0">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/40 shadow-[0_0_8px_rgba(245,158,11,0.25)] shrink-0">
                   <Zap size={10} />
                   <span>Primed</span>
                 </span>
@@ -200,15 +211,15 @@ export function TactileHabitCard({
                 <ContinuityTape habit={habit} logs={recentLogs} />
 
                 {typeof momentumScore === 'number' && (
-                  <span className="font-data text-xs text-[var(--tx-primary)]">
+                  <span className="font-data text-xs text-[var(--tx-primary)] font-medium">
                     {momentumScore}% <span className="text-[var(--tx-muted)] font-sans">mom.</span>
                   </span>
                 )}
 
                 {currentStreak > 0 && (
-                  <span className="inline-flex items-center gap-1 font-data text-xs text-[var(--accent-ink)]">
-                    <Flame size={12} aria-hidden="true" />
-                    <span>{currentStreak}</span>
+                  <span className="inline-flex items-center gap-1 font-data text-xs text-orange-400 font-semibold bg-orange-500/10 border border-orange-500/25 px-1.5 py-0.5 rounded-md">
+                    <Flame size={12} className="text-orange-500 fill-orange-500/30" aria-hidden="true" />
+                    <span>{currentStreak}d</span>
                     <span className="sr-only">day streak</span>
                   </span>
                 )}
@@ -248,18 +259,27 @@ export function TactileHabitCard({
               disabled={isToggling || effectiveLocked}
               aria-label={isDone ? `Mark ${habit.name} incomplete` : `Mark ${habit.name} complete`}
               className={cn(
-                'w-10 h-10 rounded-xl flex items-center justify-center border transition-transform duration-100 ease-out cursor-pointer active:scale-[0.94] disabled:opacity-45 disabled:cursor-not-allowed',
+                'w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-150 ease-out cursor-pointer active:scale-[0.92] disabled:opacity-45 disabled:cursor-not-allowed',
                 isDone
-                  ? 'bg-[var(--accent)] text-[var(--accent-fg)] border-[var(--accent)]'
+                  ? 'text-white'
                   : isPrimed
-                    ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border-[var(--accent)] hover:opacity-90'
-                    : 'bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border-[var(--border-strong)] hover:border-[var(--accent)] hover:text-[var(--tx-primary)]'
+                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/60 shadow-[0_0_12px_rgba(245,158,11,0.25)] hover:bg-amber-500/25'
+                    : 'bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border-[var(--border-strong)] hover:border-[var(--accent)] hover:text-[var(--tx-primary)] hover:scale-105'
               )}
+              style={
+                isDone
+                  ? {
+                      backgroundColor: habit.color || 'var(--accent)',
+                      borderColor: habit.color || 'var(--accent)',
+                      boxShadow: habit.color ? `0 2px 14px -2px ${habit.color}65` : '0 2px 12px -2px rgba(var(--brand-500-rgb), 0.4)',
+                    }
+                  : undefined
+              }
             >
               {isDone ? (
-                <Check className="w-5 h-5" strokeWidth={2.75} />
+                <Check className="w-5 h-5 drop-shadow-sm" strokeWidth={2.75} />
               ) : (
-                <span className="w-3.5 h-3.5 rounded-[4px] border border-current opacity-70" />
+                <span className="w-3.5 h-3.5 rounded-[4px] border border-current opacity-70 group-hover:border-[var(--accent)]" />
               )}
             </button>
           )}

@@ -83,14 +83,23 @@ export const ACCENT_CARTRIDGES: AccentCartridgeMeta[] = [
     price: 250,
     rarity: 'legendary',
   },
+  {
+    id: 'indigo',
+    label: 'Electric Indigo',
+    description: 'Vibrant digital indigo for high-acuity focus and deep execution.',
+    swatchDark: '#6366F1',
+    swatchLight: '#4F46E5',
+    price: 0,
+    rarity: 'common',
+  },
 ];
 
-export const FREE_STARTER_THEMES: AccentTheme[] = ['obsidian', 'ember'];
+export const FREE_STARTER_THEMES: AccentTheme[] = ['indigo', 'ember', 'obsidian'];
 
 const LEGACY_THEME_MAP: Record<string, AccentTheme> = {
   obsidian: 'obsidian',
-  indigo: 'obsidian',
-  midnight: 'obsidian',
+  indigo: 'indigo',
+  midnight: 'indigo',
   monochrome: 'obsidian',
   ember: 'ember',
   sunset: 'ember',
