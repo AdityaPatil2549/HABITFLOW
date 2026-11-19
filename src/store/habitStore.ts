@@ -6,7 +6,6 @@ import { useGamificationStore } from './gamificationStore';
 import { soundService } from '../services/soundService';
 import { calendarService } from '../services/calendarService';
 import { getOrCreateSettings } from '../db';
-import { getHabitEmoji } from '../lib/emoji';
 
 interface HabitStore {
   habits: HabitWithStreak[];
@@ -42,7 +41,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
       const rawHabits = await habitService.getHabitsWithStreaks(get().selectedDate);
       const habits = rawHabits.map(h => ({
         ...h,
-        icon: getHabitEmoji(h.icon),
+        icon: h.icon || 'Target',
       }));
       set({ habits, loading: false });
     } catch {

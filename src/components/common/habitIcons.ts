@@ -1,46 +1,408 @@
-export interface HabitIconItem {
-  name: string;
-  category: string;
+export type HabitIconCategory =
+  | 'fitness'
+  | 'health'
+  | 'mindfulness'
+  | 'learning'
+  | 'work'
+  | 'finance'
+  | 'lifestyle'
+  | 'home';
+
+export interface HabitIconCategoryMeta {
+  id: HabitIconCategory;
   label: string;
+  icon: string;
+  lucideIcon: string;
 }
 
-export const HABIT_ICONS: HabitIconItem[] = [
-  // Health & Movement
-  { name: '🏋️', category: 'fitness', label: 'Workout / Gym' },
-  { name: '🏃', category: 'fitness', label: 'Running / Cardio' },
-  { name: '🚴', category: 'fitness', label: 'Cycling' },
-  { name: '🧘', category: 'health', label: 'Yoga / Stretch' },
-  { name: '💧', category: 'health', label: 'Hydration' },
-  { name: '🥗', category: 'health', label: 'Healthy Meal' },
-  { name: '😴', category: 'health', label: 'Deep Sleep' },
-  { name: '❤️', category: 'health', label: 'Cardio / Vitals' },
+export interface HabitIconItem {
+  name: string;
+  category: HabitIconCategory;
+  label: string;
+  keywords: string[];
+}
 
-  // Intellect & Learning
-  { name: '📚', category: 'learning', label: 'Reading' },
-  { name: '📖', category: 'learning', label: 'Study / Research' },
-  { name: '💻', category: 'learning', label: 'Coding / Software' },
-  { name: '✍️', category: 'learning', label: 'Journaling' },
-  { name: '🧠', category: 'learning', label: 'Cognitive Flow' },
+export interface LucideIconItem {
+  name: string;
+  category: HabitIconCategory;
+  label: string;
+  keywords: string[];
+}
 
-  // Focus & Productivity
-  { name: '🎯', category: 'work', label: 'Deep Focus' },
-  { name: '⚡', category: 'work', label: 'High Velocity' },
-  { name: '🔥', category: 'work', label: 'Streak Fuel' },
-  { name: '⏰', category: 'work', label: 'Time Blocking' },
-  { name: '📈', category: 'work', label: 'Growth / KPIs' },
-
-  // Mindfulness & Peace
-  { name: '🌿', category: 'mindfulness', label: 'Nature Walk' },
-  { name: '☀️', category: 'mindfulness', label: 'Morning Light' },
-  { name: '🌙', category: 'mindfulness', label: 'Evening Ritual' },
-  { name: '☕', category: 'mindfulness', label: 'Mindful Brew' },
-  { name: '🎵', category: 'mindfulness', label: 'Auditory Calm' },
-  { name: '✨', category: 'mindfulness', label: 'Gratitude' },
-
-  // Wealth & Mastery
-  { name: '💰', category: 'finance', label: 'Budget / Wealth' },
-  { name: '🛡️', category: 'finance', label: 'Discipline' },
-  { name: '🏆', category: 'finance', label: 'Milestone' },
-  { name: '👑', category: 'finance', label: 'Mastery' },
+export const HABIT_ICON_CATEGORIES: HabitIconCategoryMeta[] = [
+  { id: 'fitness', label: 'Movement & Fitness', icon: '🏃', lucideIcon: 'Dumbbell' },
+  { id: 'health', label: 'Health & Vitality', icon: '💧', lucideIcon: 'Droplets' },
+  { id: 'mindfulness', label: 'Mind & Calm', icon: '🧘', lucideIcon: 'Sparkles' },
+  { id: 'learning', label: 'Intellect & Craft', icon: '📚', lucideIcon: 'BookOpen' },
+  { id: 'work', label: 'Focus & Velocity', icon: '⚡', lucideIcon: 'Rocket' },
+  { id: 'finance', label: 'Wealth & Mastery', icon: '💰', lucideIcon: 'Coins' },
+  { id: 'home', label: 'Home & Wellbeing', icon: '🌱', lucideIcon: 'House' },
+  { id: 'lifestyle', label: 'Hobbies & Play', icon: '🎨', lucideIcon: 'Palette' },
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. Curated Vector Icons (Lucide) — Crisp, Minimalist, Kinetic (130+ icons)
+// ─────────────────────────────────────────────────────────────────────────────
+export const LUCIDE_HABIT_ICONS: LucideIconItem[] = [
+  // ── Movement & Fitness (18) ──────────────────────────────────
+  { name: 'Dumbbell', category: 'fitness', label: 'Gym & Weights', keywords: ['workout', 'lifting', 'iron', 'strength', 'barbell'] },
+  { name: 'Activity', category: 'fitness', label: 'Cardio Pulse', keywords: ['cardio', 'heartrate', 'vitals', 'running', 'fitness'] },
+  { name: 'Footprints', category: 'fitness', label: 'Steps & Walking', keywords: ['walk', 'steps', 'stroll', '10k', 'track'] },
+  { name: 'Bike', category: 'fitness', label: 'Cycling', keywords: ['bicycle', 'spin', 'ride', 'peloton', 'wheels'] },
+  { name: 'Flame', category: 'fitness', label: 'Calorie Burn', keywords: ['fire', 'burn', 'calories', 'sweat', 'intensity'] },
+  { name: 'Trophy', category: 'fitness', label: 'Victory / PR', keywords: ['winner', 'goal', 'achievement', 'first', 'record'] },
+  { name: 'Timer', category: 'fitness', label: 'Intervals / HIIT', keywords: ['tabata', 'stopwatch', 'seconds', 'pace'] },
+  { name: 'HeartPulse', category: 'fitness', label: 'Heart Rate', keywords: ['bpm', 'cardio', 'zone2', 'aerobic', 'pulse'] },
+  { name: 'Swords', category: 'fitness', label: 'Combat / Sparring', keywords: ['boxing', 'martialarts', 'bjj', 'fight'] },
+  { name: 'Target', category: 'fitness', label: 'Daily Target', keywords: ['bullseye', 'goal', 'focus', 'objective'] },
+  { name: 'Zap', category: 'fitness', label: 'Energy Sprint', keywords: ['lightning', 'velocity', 'power', 'fast', 'sprint'] },
+  { name: 'Medal', category: 'fitness', label: 'Competition', keywords: ['gold', 'award', 'placement', 'race'] },
+  { name: 'Scale', category: 'fitness', label: 'Body Composition', keywords: ['weighin', 'weight', 'balance', 'fat'] },
+  { name: 'Gauge', category: 'fitness', label: 'Speed & Metrics', keywords: ['dashboard', 'cadence', 'speedometer'] },
+  { name: 'Crosshair', category: 'fitness', label: 'Precision Training', keywords: ['aim', 'focus', 'accuracy'] },
+  { name: 'Award', category: 'fitness', label: 'Milestone Badge', keywords: ['reward', 'accomplishment', 'streak'] },
+  { name: 'ShieldAlert', category: 'fitness', label: 'Injury Prevention', keywords: ['safety', 'form', 'warmup'] },
+  { name: 'Flag', category: 'fitness', label: 'Finish Line', keywords: ['checkpoint', 'marathon', 'destination'] },
+
+  // ── Health & Vitality (18) ───────────────────────────────────
+  { name: 'Droplets', category: 'health', label: 'Hydration Target', keywords: ['water', 'drink', 'fluid', 'bottle', 'refill'] },
+  { name: 'Apple', category: 'health', label: 'Nutrition & Diet', keywords: ['fruit', 'clean', 'wholefood', 'fiber'] },
+  { name: 'Heart', category: 'health', label: 'Cardiovascular Health', keywords: ['love', 'vitals', 'life', 'health', 'wellness'] },
+  { name: 'Moon', category: 'health', label: 'Deep Sleep & Recovery', keywords: ['sleep', 'night', 'circadian', 'rest', 'bedtime'] },
+  { name: 'Sun', category: 'health', label: 'Morning Sunlight', keywords: ['sunshine', 'dawn', 'vitamin-d', 'awake'] },
+  { name: 'Pill', category: 'health', label: 'Supplements & Meds', keywords: ['vitamins', 'medication', 'capsule', 'omega'] },
+  { name: 'Salad', category: 'health', label: 'Greens & Raw Food', keywords: ['vegetables', 'diet', 'mealprep', 'vegan'] },
+  { name: 'Bed', category: 'health', label: 'Bedtime Routine', keywords: ['sleep', 'mattress', '8hours', 'rest'] },
+  { name: 'BedDouble', category: 'health', label: 'Sleep Hygiene', keywords: ['darkness', 'coolroom', 'deeprecovery'] },
+  { name: 'Stethoscope', category: 'health', label: 'Health Vitals', keywords: ['doctor', 'checkup', 'bloodpressure', 'clinic'] },
+  { name: 'Smile', category: 'health', label: 'Mood & Wellbeing', keywords: ['happy', 'mentalhealth', 'joy', 'positive'] },
+  { name: 'Sparkles', category: 'health', label: 'Cleanse & Glow', keywords: ['skin', 'glow', 'fresh', 'detox'] },
+  { name: 'Shield', category: 'health', label: 'Immunity & Defense', keywords: ['immune', 'wellness', 'protection'] },
+  { name: 'Eye', category: 'health', label: 'Eye Care & Screen Break', keywords: ['vision', '20-20-20', 'screenrest'] },
+  { name: 'GlassWater', category: 'health', label: 'Morning Water', keywords: ['firstdrink', 'hydration', 'lemonwater'] },
+  { name: 'Bath', category: 'health', label: 'Recovery Soak', keywords: ['bath', 'epsom', 'relax', 'sauna'] },
+  { name: 'Thermometer', category: 'health', label: 'Temperature / Cryo', keywords: ['coldplunge', 'sauna', 'icebath'] },
+  { name: 'Waves', category: 'health', label: 'Breath Wave', keywords: ['breathwork', 'pranayama', 'respiration'] },
+
+  // ── Mind & Calm (16) ─────────────────────────────────────────
+  { name: 'Brain', category: 'mindfulness', label: 'Neuroplasticity', keywords: ['mind', 'cognition', 'clarity', 'mental'] },
+  { name: 'Compass', category: 'mindfulness', label: 'Intentional Living', keywords: ['direction', 'values', 'alignment', 'purpose'] },
+  { name: 'Lightbulb', category: 'mindfulness', label: 'Insight / Epiphany', keywords: ['idea', 'creative', 'clarity', 'thought'] },
+  { name: 'Feather', category: 'mindfulness', label: 'Journaling & Reflection', keywords: ['write', 'diary', 'thoughts', 'poetry'] },
+  { name: 'Hourglass', category: 'mindfulness', label: 'Stillness / Silence', keywords: ['patience', 'time', 'unplugged', 'waiting'] },
+  { name: 'Infinity', category: 'mindfulness', label: 'Unbounded Focus', keywords: ['flow', 'transcendence', 'limitless'] },
+  { name: 'Wind', category: 'mindfulness', label: 'Breathwork Flow', keywords: ['breathe', 'air', 'lungs', 'calm', 'release'] },
+  { name: 'Mountain', category: 'mindfulness', label: 'Stoic Resilience', keywords: ['grounded', 'unshakeable', 'nature', 'hike'] },
+  { name: 'Sprout', category: 'mindfulness', label: 'Personal Growth', keywords: ['plant', 'cultivate', 'seed', 'progress'] },
+  { name: 'Trees', category: 'mindfulness', label: 'Forest Bathing', keywords: ['nature', 'outdoors', 'grounding', 'woods'] },
+  { name: 'Flower2', category: 'mindfulness', label: 'Gratitude Bloom', keywords: ['flower', 'beauty', 'blessing', 'appreciation'] },
+  { name: 'Sunset', category: 'mindfulness', label: 'Evening Shutdown', keywords: ['dusk', 'unwind', 'closeout', 'calm'] },
+  { name: 'Sunrise', category: 'mindfulness', label: 'Dawn Ritual', keywords: ['early', '5am', 'morningflow', 'awakening'] },
+  { name: 'CloudSun', category: 'mindfulness', label: 'Weather the Storm', keywords: ['acceptance', 'equanimity', 'perspective'] },
+  { name: 'Sparkle', category: 'mindfulness', label: 'Daily Appreciation', keywords: ['awe', 'wonder', 'presence'] },
+  { name: 'SunMedium', category: 'mindfulness', label: 'Warm Presence', keywords: ['radiance', 'serenity', 'warmth'] },
+
+  // ── Intellect & Craft (17) ───────────────────────────────────
+  { name: 'BookOpen', category: 'learning', label: 'Reading Habit', keywords: ['read', 'book', 'pages', 'chapter', 'literature'] },
+  { name: 'Book', category: 'learning', label: 'Textbook Study', keywords: ['library', 'reading', 'deepwork', 'course'] },
+  { name: 'Code', category: 'learning', label: 'Programming & Dev', keywords: ['software', 'developer', 'coding', 'react', 'git'] },
+  { name: 'Terminal', category: 'learning', label: 'Command Line & Shell', keywords: ['cli', 'sysadmin', 'devops', 'backend'] },
+  { name: 'GraduationCap', category: 'learning', label: 'Degree & Certification', keywords: ['study', 'course', 'curriculum', 'exam'] },
+  { name: 'Laptop', category: 'learning', label: 'Digital Craft', keywords: ['computer', 'workstation', 'creation', 'online'] },
+  { name: 'PenTool', category: 'learning', label: 'Design & Illustration', keywords: ['vector', 'ui', 'art', 'figma', 'craft'] },
+  { name: 'FileCode', category: 'learning', label: 'Code Review & PRs', keywords: ['github', 'commits', 'syntax', 'refactor'] },
+  { name: 'Binary', category: 'learning', label: 'Algorithms & CS', keywords: ['data', 'logic', 'math', 'structures'] },
+  { name: 'Cpu', category: 'learning', label: 'Systems Thinking', keywords: ['hardware', 'architecture', 'speed', 'chip'] },
+  { name: 'Layers', category: 'learning', label: 'Deep Stacking', keywords: ['modules', 'composition', 'framework', 'blocks'] },
+  { name: 'Library', category: 'learning', label: 'Archive & Research', keywords: ['knowledge', 'notes', 'zettelkasten', 'obsidian'] },
+  { name: 'Bookmark', category: 'learning', label: 'Curated Articles', keywords: ['readlater', 'save', 'highlight', 'pocket'] },
+  { name: 'FileText', category: 'learning', label: 'Article / Essay Writing', keywords: ['draft', 'publish', 'substack', 'blog'] },
+  { name: 'Pencil', category: 'learning', label: 'Sketch & Notes', keywords: ['drawing', 'notetaking', 'pen', 'paper'] },
+  { name: 'ScrollText', category: 'learning', label: 'History & Philosophy', keywords: ['classics', 'stoicism', 'epics', 'wisdom'] },
+  { name: 'Glasses', category: 'learning', label: 'Deep Focus Reading', keywords: ['study', 'inspection', 'scrutiny', 'focus'] },
+
+  // ── Focus & Velocity (16) ────────────────────────────────────
+  { name: 'Rocket', category: 'work', label: 'High-Impact Launch', keywords: ['ship', 'velocity', 'deploy', 'speed', 'scale'] },
+  { name: 'Briefcase', category: 'work', label: 'Professional Hustle', keywords: ['career', 'business', 'job', 'work', 'office'] },
+  { name: 'CircleCheck', category: 'work', label: 'Task Execution', keywords: ['done', 'checklist', 'todo', 'completed'] },
+  { name: 'ListTodo', category: 'work', label: 'Daily Prioritization', keywords: ['tasks', 'roadmap', 'schedule', 'agenda'] },
+  { name: 'Workflow', category: 'work', label: 'Process & Pipeline', keywords: ['pipeline', 'automation', 'diagram', 'flow'] },
+  { name: 'Kanban', category: 'work', label: 'Sprint Board', keywords: ['agile', 'cards', 'scrum', 'delivery'] },
+  { name: 'Calendar', category: 'work', label: 'Calendar Blocking', keywords: ['timeblocking', 'schedule', 'planning', 'events'] },
+  { name: 'TrendingUp', category: 'work', label: 'Growth Trajectory', keywords: ['chart', 'kpi', 'metrics', 'climb', 'progress'] },
+  { name: 'Send', category: 'work', label: 'Client Outreach', keywords: ['email', 'pitch', 'sales', 'messages', 'dispatch'] },
+  { name: 'Clock', category: 'work', label: 'Pomodoro Blocks', keywords: ['timer', '25min', 'timebox', 'focusblock'] },
+  { name: 'AlarmClock', category: 'work', label: 'Prompt Start', keywords: ['standup', 'deadline', 'ontime', 'punctual'] },
+  { name: 'CheckCheck', category: 'work', label: 'Zero Inbox', keywords: ['cleared', 'verified', 'reviewed', 'inbox0'] },
+  { name: 'FastForward', category: 'work', label: 'High Velocity', keywords: ['speedrun', 'momentum', 'accelerate'] },
+  { name: 'ShieldCheck', category: 'work', label: 'Quality Assurance', keywords: ['audit', 'tests', 'compliance', 'security'] },
+  { name: 'Flag', category: 'work', label: 'Sprint Objective', keywords: ['milestone', 'target', 'q1', 'okr'] },
+  { name: 'Sparkles', category: 'work', label: 'Polish & Impeccable', keywords: ['refinement', 'quality', 'craftsmanship'] },
+
+  // ── Wealth & Mastery (15) ────────────────────────────────────
+  { name: 'Coins', category: 'finance', label: 'Savings & Coins', keywords: ['money', 'stash', 'savings', 'interest', 'capital'] },
+  { name: 'Wallet', category: 'finance', label: 'Budget Tracking', keywords: ['expenses', 'cash', 'spending', 'cards'] },
+  { name: 'PiggyBank', category: 'finance', label: 'Emergency Fund', keywords: ['save', 'deposit', 'frugal', 'stash'] },
+  { name: 'CreditCard', category: 'finance', label: 'Debt Paydown', keywords: ['payments', 'balance', 'credit', 'zero-debt'] },
+  { name: 'Banknote', category: 'finance', label: 'Cash Flow', keywords: ['income', 'salary', 'cash', 'revenue'] },
+  { name: 'Receipt', category: 'finance', label: 'Expense Audit', keywords: ['taxes', 'invoice', 'records', 'accounting'] },
+  { name: 'Gem', category: 'finance', label: 'Assets & Value', keywords: ['diamond', 'portfolio', 'equity', 'networth'] },
+  { name: 'Vault', category: 'finance', label: 'Long-Term Compound', keywords: ['safe', 'security', 'etf', 'retirement', '401k'] },
+  { name: 'DollarSign', category: 'finance', label: 'Revenue Milestone', keywords: ['mrr', 'arr', 'profit', 'sales'] },
+  { name: 'ChartLine', category: 'finance', label: 'Market Investment', keywords: ['stocks', 'invest', 'portfolio', 'indexfund'] },
+  { name: 'Percent', category: 'finance', label: 'Savings Rate %', keywords: ['yield', 'dividend', 'discount', 'ratio'] },
+  { name: 'Landmark', category: 'finance', label: 'Banking & Treasury', keywords: ['bank', 'institution', 'wire', 'reserves'] },
+  { name: 'Scale', category: 'finance', label: 'Risk Balance', keywords: ['hedging', 'diversification', 'allocation'] },
+  { name: 'Award', category: 'finance', label: 'Financial Freedom', keywords: ['fire', 'milestone', 'debtfree'] },
+  { name: 'Key', category: 'finance', label: 'Asset Ownership', keywords: ['realestate', 'equity', 'title', 'unlock'] },
+
+  // ── Home & Wellbeing (15) ────────────────────────────────────
+  { name: 'House', category: 'home', label: 'Home Sanctuary', keywords: ['residence', 'family', 'homelife', 'living'] },
+  { name: 'Coffee', category: 'home', label: 'Morning Brew Ritual', keywords: ['espresso', 'beans', 'pourover', 'morning'] },
+  { name: 'Utensils', category: 'home', label: 'Home Cooking', keywords: ['chef', 'kitchen', 'meal', 'dinner', 'prep'] },
+  { name: 'CupSoda', category: 'home', label: 'Mocktail / Tea', keywords: ['refreshment', 'drink', 'beverage'] },
+  { name: 'Brush', category: 'home', label: 'Declutter & Clean', keywords: ['tidy', 'chores', 'vacuum', 'minimal'] },
+  { name: 'Hammer', category: 'home', label: 'Repairs & DIY', keywords: ['maintenance', 'tools', 'fix', 'project'] },
+  { name: 'Wrench', category: 'home', label: 'Organization & Tuning', keywords: ['setup', 'garage', 'tuning'] },
+  { name: 'ShoppingBag', category: 'home', label: 'Groceries & Supplies', keywords: ['market', 'errands', 'produce', 'pantry'] },
+  { name: 'PackageCheck', category: 'home', label: 'Inventory & Care', keywords: ['delivery', 'unboxing', 'supplies'] },
+  { name: 'Refrigerator', category: 'home', label: 'Pantry Stash', keywords: ['fridge', 'mealprep', 'leftovers'] },
+  { name: 'Sprout', category: 'home', label: 'Houseplants & Garden', keywords: ['plants', 'waterplants', 'leaves', 'indoor'] },
+  { name: 'Trees', category: 'home', label: 'Yard & Outdoors', keywords: ['garden', 'lawn', 'sunshine', 'freshair'] },
+  { name: 'Sun', category: 'home', label: 'Air Out Living Space', keywords: ['windows', 'fresh', 'ventilation'] },
+  { name: 'Sparkle', category: 'home', label: 'Spotless Room', keywords: ['organized', 'bedmade', 'cleanroom'] },
+  { name: 'Bath', category: 'home', label: 'Evening Cleanse', keywords: ['shower', 'hygiene', 'evening'] },
+
+  // ── Hobbies & Play (16) ──────────────────────────────────────
+  { name: 'Music', category: 'lifestyle', label: 'Music & Instrument', keywords: ['guitar', 'piano', 'listening', 'practice', 'jam'] },
+  { name: 'Headphones', category: 'lifestyle', label: 'Audiobook / Podcasts', keywords: ['audio', 'listen', 'focus', 'tunes'] },
+  { name: 'Camera', category: 'lifestyle', label: 'Photography', keywords: ['photo', 'lens', 'shoot', 'visual', 'film'] },
+  { name: 'Palette', category: 'lifestyle', label: 'Painting & Art', keywords: ['draw', 'canvas', 'creative', 'colors'] },
+  { name: 'Gamepad2', category: 'lifestyle', label: 'Mindful Gaming', keywords: ['play', 'video-games', 'console', 'relax'] },
+  { name: 'Film', category: 'lifestyle', label: 'Cinema & Documentaries', keywords: ['movies', 'cinema', 'storytelling'] },
+  { name: 'Mic', category: 'lifestyle', label: 'Singing / Podcast', keywords: ['vocal', 'speech', 'recording', 'voice'] },
+  { name: 'Plane', category: 'lifestyle', label: 'Travel & Exploration', keywords: ['flight', 'journey', 'trip', 'wanderlust'] },
+  { name: 'Car', category: 'lifestyle', label: 'Road Trip / Drive', keywords: ['drive', 'scenic', 'cruising'] },
+  { name: 'Gift', category: 'lifestyle', label: 'Acts of Kindness', keywords: ['present', 'surprise', 'friends', 'generosity'] },
+  { name: 'Radio', category: 'lifestyle', label: 'Radio & Broadcast', keywords: ['fm', 'shows', 'audio'] },
+  { name: 'Tv', category: 'lifestyle', label: 'Curated Screening', keywords: ['series', 'documentary', 'watch'] },
+  { name: 'Ticket', category: 'lifestyle', label: 'Events & Culture', keywords: ['concert', 'theatre', 'museum', 'exhibit'] },
+  { name: 'Guitar', category: 'lifestyle', label: 'Acoustic Sessions', keywords: ['strings', 'chords', 'strum', 'music'] },
+  { name: 'Compass', category: 'lifestyle', label: 'Micro-Adventures', keywords: ['explore', 'newplaces', 'weekend'] },
+  { name: 'Sparkles', category: 'lifestyle', label: 'Creative Spark', keywords: ['magic', 'fun', 'play', 'curiosity'] },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. Curated Unicode Emojis — Vibrant, Expressive 3D (140+ emojis)
+// ─────────────────────────────────────────────────────────────────────────────
+export const HABIT_ICONS: HabitIconItem[] = [
+  // ── Movement & Fitness (20) ───────────────────────────────────
+  { name: '🏋️', category: 'fitness', label: 'Gym / Lifting', keywords: ['workout', 'weights', 'strength', 'barbell', 'iron', 'exercise'] },
+  { name: '🏃', category: 'fitness', label: 'Running / Jog', keywords: ['run', 'cardio', 'jogging', 'sprint', 'track', 'miles', 'pace'] },
+  { name: '🚴', category: 'fitness', label: 'Cycling / Bike', keywords: ['cycling', 'bicycle', 'pedal', 'spin', 'cardio', 'ride'] },
+  { name: '🏊', category: 'fitness', label: 'Swimming', keywords: ['swim', 'pool', 'laps', 'water', 'cardio'] },
+  { name: '🚶', category: 'fitness', label: 'Walking / Steps', keywords: ['walk', 'steps', 'stroll', 'movement', '10k', 'brisk'] },
+  { name: '🧘', category: 'fitness', label: 'Yoga / Mobility', keywords: ['yoga', 'stretch', 'flexibility', 'flow', 'mat'] },
+  { name: '🤸', category: 'fitness', label: 'Calisthenics', keywords: ['bodyweight', 'pushups', 'pullups', 'gymnastics', 'core'] },
+  { name: '🥊', category: 'fitness', label: 'Boxing / Martial Arts', keywords: ['boxing', 'fight', 'sparring', 'mma', 'gloves', 'punch'] },
+  { name: '🧗', category: 'fitness', label: 'Climbing / Bouldering', keywords: ['climb', 'rock', 'boulder', 'grip', 'wall'] },
+  { name: '⚽', category: 'fitness', label: 'Football / Soccer', keywords: ['soccer', 'football', 'ball', 'match', 'sport'] },
+  { name: '🏀', category: 'fitness', label: 'Basketball', keywords: ['hoops', 'court', 'ball', 'dunk'] },
+  { name: '🎾', category: 'fitness', label: 'Tennis', keywords: ['racket', 'court', 'serve', 'match'] },
+  { name: '🏸', category: 'fitness', label: 'Badminton', keywords: ['shuttlecock', 'court', 'play'] },
+  { name: '🥋', category: 'fitness', label: 'Martial Arts', keywords: ['karate', 'judo', 'bjj', 'taekwondo', 'belt'] },
+  { name: '🛹', category: 'fitness', label: 'Skateboarding', keywords: ['skate', 'board', 'street', 'park'] },
+  { name: '⛷️', category: 'fitness', label: 'Skiing / Winter Sports', keywords: ['ski', 'snow', 'winter', 'mountain'] },
+  { name: '🏄', category: 'fitness', label: 'Surfing', keywords: ['surf', 'waves', 'ocean', 'beach'] },
+  { name: '💪', category: 'fitness', label: 'Core & Flex', keywords: ['muscle', 'gains', 'flex', 'physique'] },
+  { name: '🤾', category: 'fitness', label: 'Handball / Team', keywords: ['team', 'sport', 'throw'] },
+  { name: '🚣', category: 'fitness', label: 'Rowing / Erg', keywords: ['row', 'ergometer', 'water', 'laps'] },
+
+  // ── Health & Vitality (20) ───────────────────────────────────
+  { name: '💧', category: 'health', label: 'Hydration', keywords: ['water', 'hydrate', 'drink', 'fluid', 'bottle', 'refill'] },
+  { name: '🥗', category: 'health', label: 'Clean Diet / Salad', keywords: ['salad', 'healthy', 'greens', 'vegetables', 'raw', 'nutrition'] },
+  { name: '🍎', category: 'health', label: 'Fruit / Whole Food', keywords: ['apple', 'fruit', 'snack', 'fiber', 'clean'] },
+  { name: '🥑', category: 'health', label: 'Healthy Fats', keywords: ['avocado', 'keto', 'fats', 'clean'] },
+  { name: '🥩', category: 'health', label: 'Protein Target', keywords: ['meat', 'protein', 'steak', 'macros', 'fuel'] },
+  { name: '😴', category: 'health', label: 'Deep Sleep', keywords: ['sleep', 'rest', 'bedtime', 'recovery', 'circadian', '8hours'] },
+  { name: '💤', category: 'health', label: 'Power Nap', keywords: ['nap', 'rest', 'siesta', 'refresh'] },
+  { name: '❤️', category: 'health', label: 'Heart & Vitals', keywords: ['heart', 'cardio', 'bpm', 'hrv', 'vitals', 'health'] },
+  { name: '🫁', category: 'health', label: 'Breathwork / Lungs', keywords: ['breath', 'lungs', 'pranayama', 'wimhof', 'boxbreathing'] },
+  { name: '🧊', category: 'health', label: 'Cold Exposure', keywords: ['cold', 'ice', 'shower', 'plunge', 'wimhof', 'freeze'] },
+  { name: '☀️', category: 'health', label: 'Morning Sunlight', keywords: ['sun', 'sunlight', 'morning', 'vitamin-d', 'circadian'] },
+  { name: '💊', category: 'health', label: 'Supplements / Vitamins', keywords: ['vitamins', 'meds', 'pills', 'supplements', 'omega', 'magnesium'] },
+  { name: '🩺', category: 'health', label: 'Medical & Checkup', keywords: ['doctor', 'checkup', 'health', 'clinic', 'vitals'] },
+  { name: '🧴', category: 'health', label: 'Skincare', keywords: ['skin', 'sunscreen', 'lotion', 'face', 'hygiene'] },
+  { name: '🦷', category: 'health', label: 'Dental & Floss', keywords: ['teeth', 'floss', 'brush', 'smile', 'hygiene'] },
+  { name: '🍵', category: 'health', label: 'Green Tea / Detox', keywords: ['tea', 'matcha', 'antioxidants', 'detox'] },
+  { name: '🚫', category: 'health', label: 'Sobriety / Fasting', keywords: ['fasting', 'sober', 'noalcohol', 'cleanse', 'abstain'] },
+  { name: '⚖️', category: 'health', label: 'Bodyweight Check', keywords: ['scale', 'weight', 'weighin', 'tracking'] },
+  { name: '🧖', category: 'health', label: 'Sauna / Heat', keywords: ['sauna', 'steam', 'sweat', 'recovery', 'heat'] },
+  { name: '👀', category: 'health', label: 'Eye Rest (20-20-20)', keywords: ['eyes', 'screenbreak', 'vision', 'rest'] },
+
+  // ── Mindfulness & Mental Calm (18) ───────────────────────────
+  { name: '🌿', category: 'mindfulness', label: 'Nature Walk / Grounding', keywords: ['nature', 'forest', 'grounding', 'trees', 'outdoors'] },
+  { name: '🕊️', category: 'mindfulness', label: 'Inner Peace', keywords: ['peace', 'serenity', 'dove', 'calm', 'silence'] },
+  { name: '🕯️', category: 'mindfulness', label: 'Candle / Meditation', keywords: ['candle', 'ritual', 'evening', 'calm', 'focus'] },
+  { name: '☕', category: 'mindfulness', label: 'Mindful Coffee', keywords: ['coffee', 'brew', 'espresso', 'morning', 'cafe'] },
+  { name: '✨', category: 'mindfulness', label: 'Gratitude Reflection', keywords: ['gratitude', 'blessings', 'thankful', 'sparkle', 'journal'] },
+  { name: '🌅', category: 'mindfulness', label: 'Dawn Activation', keywords: ['sunrise', 'dawn', 'early', '5am', 'morning'] },
+  { name: '🌙', category: 'mindfulness', label: 'Evening Wind-Down', keywords: ['night', 'moon', 'sleep', 'evening', 'shutdown'] },
+  { name: '🌌', category: 'mindfulness', label: 'Stargazing / Wonder', keywords: ['stars', 'cosmos', 'perspective', 'galaxy'] },
+  { name: '💆', category: 'mindfulness', label: 'Self-Care / De-stress', keywords: ['relax', 'massage', 'unwind', 'care'] },
+  { name: '🛁', category: 'mindfulness', label: 'Hot Bath / Soak', keywords: ['bath', 'soak', 'epsom', 'relax', 'tub'] },
+  { name: '☯️', category: 'mindfulness', label: 'Balance / Zen', keywords: ['zen', 'balance', 'yin', 'yang', 'equilibrium'] },
+  { name: '🌸', category: 'mindfulness', label: 'Spring Floral / Beauty', keywords: ['flower', 'bloom', 'cherry', 'nature'] },
+  { name: '🎋', category: 'mindfulness', label: 'Minimalism / Declutter', keywords: ['bamboo', 'minimal', 'declutter', 'clean'] },
+  { name: '📿', category: 'mindfulness', label: 'Mantra / Beads', keywords: ['prayer', 'mantra', 'chant', 'mala'] },
+  { name: '📵', category: 'mindfulness', label: 'Digital Detox', keywords: ['nophone', 'offline', 'disconnect', 'detox', 'screenfree'] },
+  { name: '🪔', category: 'mindfulness', label: 'Spiritual Light', keywords: ['diya', 'lamp', 'sacred', 'tradition'] },
+  { name: '🎐', category: 'mindfulness', label: 'Windchime Calm', keywords: ['breeze', 'calm', 'chime', 'gentle'] },
+  { name: '🌊', category: 'mindfulness', label: 'Ocean Waves', keywords: ['ocean', 'sea', 'sound', 'relax', 'tide'] },
+
+  // ── Intellect & Learning (20) ─────────────────────────────────
+  { name: '📚', category: 'learning', label: 'Book Reading', keywords: ['read', 'books', 'chapter', 'literature', 'pages', 'reading'] },
+  { name: '📖', category: 'learning', label: 'Open Study / Deep Reading', keywords: ['study', 'learn', 'textbook', 'reader', 'curriculum'] },
+  { name: '💻', category: 'learning', label: 'Coding / Software Dev', keywords: ['code', 'programming', 'developer', 'react', 'python', 'terminal'] },
+  { name: '📝', category: 'learning', label: 'Journaling & Essays', keywords: ['write', 'notes', 'diary', 'notetaking', 'reflection', 'draft'] },
+  { name: '✍️', category: 'learning', label: 'Handwriting & Calligraphy', keywords: ['pen', 'script', 'calligraphy', 'letter'] },
+  { name: '🧠', category: 'learning', label: 'Memory & Brain Training', keywords: ['brain', 'memory', 'neuro', 'puzzle', 'flashcards', 'anki'] },
+  { name: '🗣️', category: 'learning', label: 'Language Practice', keywords: ['language', 'vocab', 'duolingo', 'speaking', 'fluency'] },
+  { name: '🎧', category: 'learning', label: 'Audiobooks & Podcasts', keywords: ['podcast', 'listen', 'audiobook', 'audio', 'lectures'] },
+  { name: '🔬', category: 'learning', label: 'Science & Research', keywords: ['research', 'lab', 'biology', 'experiment', 'science'] },
+  { name: '📐', category: 'learning', label: 'Math & Quantitative', keywords: ['math', 'numbers', 'geometry', 'statistics', 'logic'] },
+  { name: '♟️', category: 'learning', label: 'Chess & Tactics', keywords: ['chess', 'tactics', 'strategy', 'mindgame', 'puzzles'] },
+  { name: '🎓', category: 'learning', label: 'Coursework / Degree', keywords: ['course', 'degree', 'university', 'curriculum', 'exam'] },
+  { name: '🗺️', category: 'learning', label: 'Geography / Culture', keywords: ['map', 'world', 'culture', 'history'] },
+  { name: '📰', category: 'learning', label: 'Daily News Digest', keywords: ['news', 'newspaper', 'currentaffairs', 'morningpaper'] },
+  { name: '🪶', category: 'learning', label: 'Creative Writing', keywords: ['novel', 'poetry', 'fiction', 'quill'] },
+  { name: '🗂️', category: 'learning', label: 'Second Brain / Zettelkasten', keywords: ['notes', 'cards', 'obsidian', 'knowledge'] },
+  { name: '📊', category: 'learning', label: 'Data Analysis', keywords: ['analytics', 'charts', 'sql', 'insights'] },
+  { name: '🎙️', category: 'learning', label: 'Public Speaking', keywords: ['toastmasters', 'speech', 'presentation', 'pitch'] },
+  { name: '🏛️', category: 'learning', label: 'Philosophy & Classics', keywords: ['stoic', 'history', 'classics', 'wisdom'] },
+  { name: '💡', category: 'learning', label: 'Ideation & Invention', keywords: ['idea', 'innovation', 'brainstorm', 'eureka'] },
+
+  // ── Focus & Velocity (18) ────────────────────────────────────
+  { name: '⚡', category: 'work', label: 'Power Sprint / Velocity', keywords: ['zap', 'energy', 'fast', 'sprint', 'momentum', 'velocity'] },
+  { name: '🎯', category: 'work', label: 'Target / Big 3 Tasks', keywords: ['focus', 'target', 'priority', 'objective', 'bullseye'] },
+  { name: '🔥', category: 'work', label: 'Streak & Heat', keywords: ['streak', 'unbroken', 'fire', 'daily', 'discipline'] },
+  { name: '🚀', category: 'work', label: 'Ship / Product Launch', keywords: ['launch', 'ship', 'deploy', 'release', 'founder'] },
+  { name: '⏱️', category: 'work', label: 'Pomodoro Interval', keywords: ['timer', '25min', 'timebox', 'interval', 'focusblock'] },
+  { name: '💼', category: 'work', label: 'Deep Work Session', keywords: ['work', 'office', 'career', 'corporate', 'deliverables'] },
+  { name: '📋', category: 'work', label: 'Task Execution', keywords: ['tasks', 'checklist', 'todo', 'plan', 'execution'] },
+  { name: '📬', category: 'work', label: 'Inbox Zero', keywords: ['email', 'inbox', 'messages', 'clear', 'comms'] },
+  { name: '📈', category: 'work', label: 'KPI & Growth', keywords: ['growth', 'metric', 'chart', 'quarterly', 'scale'] },
+  { name: '🛠️', category: 'work', label: 'Craft & Engineering', keywords: ['build', 'tools', 'mechanics', 'engineering', 'fix'] },
+  { name: '🤝', category: 'work', label: 'Client / Networking', keywords: ['meeting', 'network', 'deal', 'outreach', 'handshake'] },
+  { name: '⏰', category: 'work', label: 'Punctuality & Standup', keywords: ['ontime', 'alarm', 'schedule', 'standup'] },
+  { name: '🗓️', category: 'work', label: 'Weekly Planning', keywords: ['calendar', 'review', 'sprint', 'schedule'] },
+  { name: '🛡️', category: 'work', label: 'Quality & Code Review', keywords: ['qa', 'security', 'shield', 'audit', 'tests'] },
+  { name: '🔍', category: 'work', label: 'Deep Inspection / Debug', keywords: ['debug', 'audit', 'search', 'investigate'] },
+  { name: '📌', category: 'work', label: 'Essential Pin', keywords: ['priority', 'pinned', 'important', 'anchor'] },
+  { name: '🏗️', category: 'work', label: 'Architecture & System', keywords: ['system', 'foundation', 'scaffold', 'infra'] },
+  { name: '🏆', category: 'work', label: 'Milestone Won', keywords: ['trophy', 'win', 'achievement', 'promotion'] },
+
+  // ── Wealth & Mastery (18) ────────────────────────────────────
+  { name: '💰', category: 'finance', label: 'Savings & Capital', keywords: ['money', 'stash', 'wealth', 'dollars', 'capital', 'savings'] },
+  { name: '💵', category: 'finance', label: 'Cash Flow & Income', keywords: ['cash', 'currency', 'income', 'salary', 'cashflow'] },
+  { name: '🪙', category: 'finance', label: 'Crypto & Assets', keywords: ['coin', 'tokens', 'bitcoin', 'portfolio'] },
+  { name: '💳', category: 'finance', label: 'Zero Debt / Credit Care', keywords: ['credit', 'debtfree', 'card', 'payments'] },
+  { name: '🏦', category: 'finance', label: 'Banking & Reserves', keywords: ['bank', 'vault', 'emergencyfund', 'treasury'] },
+  { name: '🧾', category: 'finance', label: 'Daily Expense Logging', keywords: ['receipt', 'budget', 'tracking', 'spendwise', 'expenses'] },
+  { name: '💎', category: 'finance', label: 'Equity & Net Worth', keywords: ['diamond', 'gem', 'luxury', 'networth', 'assets'] },
+  { name: '📊', category: 'finance', label: 'Index Fund / Stocks', keywords: ['portfolio', 'etf', 'index', 'investing', 'compound'] },
+  { name: '🛒', category: 'finance', label: 'Mindful Spending', keywords: ['groceries', 'budget', 'shopping', 'essentials'] },
+  { name: '🏷️', category: 'finance', label: 'Bargain & Frugal', keywords: ['sale', 'discount', 'frugal', 'deal'] },
+  { name: '📦', category: 'finance', label: 'Asset Management', keywords: ['inventory', 'physical', 'holdings'] },
+  { name: '🔐', category: 'finance', label: 'Asset Security', keywords: ['safe', 'password', 'vault', 'security'] },
+  { name: '🔑', category: 'finance', label: 'Real Estate / Property', keywords: ['property', 'house', 'mortgage', 'key'] },
+  { name: '🎁', category: 'finance', label: 'Charity & Giving', keywords: ['tithing', 'giving', 'donation', 'generosity'] },
+  { name: '📜', category: 'finance', label: 'Tax & Compliance', keywords: ['taxes', 'legal', 'audit', 'compliance'] },
+  { name: '💹', category: 'finance', label: 'Compound Yield', keywords: ['compound', 'interest', 'growth', 'yield'] },
+  { name: '🥇', category: 'finance', label: 'Financial Freedom', keywords: ['fire', 'milestone', 'debtfree', 'independence'] },
+  { name: '👑', category: 'finance', label: 'Mastery Level', keywords: ['sovereign', 'mastery', 'top', 'royalty'] },
+
+  // ── Home & Wellbeing (18) ────────────────────────────────────
+  { name: '🌱', category: 'home', label: 'Plant Care & Watering', keywords: ['plants', 'garden', 'sprout', 'indoorplants', 'green'] },
+  { name: '🪴', category: 'home', label: 'Potted Sanctuary', keywords: ['botanical', 'flora', 'decor', 'foliage'] },
+  { name: '🧹', category: 'home', label: 'Daily Sweep / Cleaning', keywords: ['clean', 'sweep', 'chores', 'tidy', 'dust'] },
+  { name: '🧺', category: 'home', label: 'Laundry & Wardrobe', keywords: ['laundry', 'clothes', 'washing', 'folding'] },
+  { name: '🍳', category: 'home', label: 'Home Cooked Meal', keywords: ['cook', 'cooking', 'chef', 'kitchen', 'breakfast', 'dinner'] },
+  { name: '🛏️', category: 'home', label: 'Make the Bed', keywords: ['bed', 'morningritual', 'order', 'bedroom'] },
+  { name: '🏠', category: 'home', label: 'Home Sanctuary', keywords: ['home', 'house', 'living', 'family', 'cozy'] },
+  { name: '🚿', category: 'home', label: 'Hot Shower & Scrub', keywords: ['shower', 'hygiene', 'bath', 'soap', 'clean'] },
+  { name: '🐕', category: 'home', label: 'Dog Walk & Pet Care', keywords: ['pet', 'dog', 'puppy', 'walk', 'animals'] },
+  { name: '🐈', category: 'home', label: 'Cat Playtime', keywords: ['cat', 'kitten', 'pets', 'feed'] },
+  { name: '🧽', category: 'home', label: 'Dishwashing', keywords: ['dishes', 'sink', 'sponge', 'kitchen'] },
+  { name: '🪟', category: 'home', label: 'Airing the Rooms', keywords: ['window', 'freshair', 'breeze', 'sunlight'] },
+  { name: '🔧', category: 'home', label: 'Home Maintenance', keywords: ['repair', 'fix', 'tools', 'upkeep'] },
+  { name: '🗑️', category: 'home', label: 'Take Out Trash & Recycle', keywords: ['garbage', 'recycling', 'waste', 'chores'] },
+  { name: '📦', category: 'home', label: 'Declutter Box', keywords: ['minimalism', 'donate', 'storage', 'tidy'] },
+  { name: '🛋️', category: 'home', label: 'Cozy Living', keywords: ['livingroom', 'sofa', 'relax', 'evening'] },
+  { name: '🕯️', category: 'home', label: 'Scented Candle / Aromatherapy', keywords: ['aroma', 'candle', 'fragrance', 'relax'] },
+  { name: '🪥', category: 'home', label: 'Hygiene & Teeth', keywords: ['brush', 'teeth', 'morninghygiene', 'nightcare'] },
+
+  // ── Hobbies & Play (18) ──────────────────────────────────────
+  { name: '🎨', category: 'lifestyle', label: 'Painting & Drawing', keywords: ['art', 'paint', 'sketch', 'draw', 'illustration', 'craft'] },
+  { name: '🎸', category: 'lifestyle', label: 'Guitar / Instrument', keywords: ['music', 'guitar', 'instrument', 'chords', 'practice', 'jam'] },
+  { name: '🎹', category: 'lifestyle', label: 'Piano & Keys', keywords: ['piano', 'keyboard', 'music', 'chords', 'melodies'] },
+  { name: '📸', category: 'lifestyle', label: 'Photography & Film', keywords: ['camera', 'photo', 'picture', 'editing', 'visual'] },
+  { name: '🎮', category: 'lifestyle', label: 'Gaming Session', keywords: ['gaming', 'game', 'play', 'console', 'relax', 'steam'] },
+  { name: '🪴', category: 'lifestyle', label: 'Gardening Hands', keywords: ['soil', 'harvest', 'garden', 'vegetables'] },
+  { name: '✈️', category: 'lifestyle', label: 'Travel & Exploration', keywords: ['travel', 'flight', 'trip', 'adventure', 'explore'] },
+  { name: '🏕️', category: 'lifestyle', label: 'Camping / Outdoors', keywords: ['camp', 'tent', 'hike', 'wild', 'campfire'] },
+  { name: '🎭', category: 'lifestyle', label: 'Theatre & Arts', keywords: ['theater', 'acting', 'performance', 'culture'] },
+  { name: '🎬', category: 'lifestyle', label: 'Cinema / Film Study', keywords: ['movie', 'film', 'directing', 'cinema'] },
+  { name: '🧶', category: 'lifestyle', label: 'Knitting / Craft', keywords: ['knit', 'craft', 'sew', 'crochet', 'wool'] },
+  { name: '🧩', category: 'lifestyle', label: 'Puzzle & Crossword', keywords: ['puzzle', 'crossword', 'sudoku', 'riddle'] },
+  { name: '🎲', category: 'lifestyle', label: 'Board Games', keywords: ['boardgames', 'tabletop', 'friends', 'dice'] },
+  { name: '🎤', category: 'lifestyle', label: 'Singing & Vocals', keywords: ['karaoke', 'sing', 'voice', 'audio'] },
+  { name: '📻', category: 'lifestyle', label: 'Radio & Vinyl', keywords: ['vinyl', 'record', 'analog', 'tunes'] },
+  { name: '🚗', category: 'lifestyle', label: 'Scenic Drive', keywords: ['drive', 'roadtrip', 'car', 'cruising'] },
+  { name: '⛵', category: 'lifestyle', label: 'Sailing & Boating', keywords: ['boat', 'sail', 'lake', 'water'] },
+  { name: '🎣', category: 'lifestyle', label: 'Fishing', keywords: ['fish', 'rod', 'patience', 'lake'] },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. Filter Utilities
+// ─────────────────────────────────────────────────────────────────────────────
+export function filterLucideIcons(
+  query = '',
+  category: HabitIconCategory | 'all' = 'all'
+): LucideIconItem[] {
+  const q = query.trim().toLowerCase();
+  return LUCIDE_HABIT_ICONS.filter(icon => {
+    const matchesCategory = category === 'all' || icon.category === category;
+    if (!matchesCategory) return false;
+    if (!q) return true;
+    return (
+      icon.name.toLowerCase().includes(q) ||
+      icon.label.toLowerCase().includes(q) ||
+      icon.keywords.some(k => k.toLowerCase().includes(q))
+    );
+  });
+}
+
+export function filterEmojiIcons(
+  query = '',
+  category: HabitIconCategory | 'all' = 'all'
+): HabitIconItem[] {
+  const q = query.trim().toLowerCase();
+  return HABIT_ICONS.filter(icon => {
+    const matchesCategory = category === 'all' || icon.category === category;
+    if (!matchesCategory) return false;
+    if (!q) return true;
+    return (
+      icon.label.toLowerCase().includes(q) ||
+      icon.name.includes(q) ||
+      icon.keywords.some(k => k.toLowerCase().includes(q))
+    );
+  });
+}
+
+export function filterHabitIcons(
+  query = '',
+  category: HabitIconCategory | 'all' = 'all'
+): HabitIconItem[] {
+  return filterEmojiIcons(query, category);
+}

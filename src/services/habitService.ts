@@ -4,7 +4,6 @@ import type { Habit, HabitLog, HabitWithStreak, StreakInfo } from '../types';
 import { format, subDays, parseISO } from 'date-fns';
 import { syncService } from './syncService';
 import { calendarService } from './calendarService';
-import { getHabitEmoji } from '../lib/emoji';
 
 // ─── Habit CRUD ──────────────────────────────────────────────
 function markSeedsHandled(): void {
@@ -126,7 +125,7 @@ export const habitService = {
     const count = await db.habits.count();
     const habit: Habit = {
       ...data,
-      icon: getHabitEmoji(data.icon),
+      icon: data.icon ? data.icon.trim() : 'Target',
       id: nanoid(),
       order: count,
       createdAt: new Date().toISOString(),
@@ -142,7 +141,7 @@ export const habitService = {
 
   async update(id: string, data: Partial<Habit>): Promise<void> {
     const patch = { ...data, updated_at: new Date().toISOString() };
-    if (patch.icon) patch.icon = getHabitEmoji(patch.icon);
+    if (patch.icon) patch.icon = patch.icon.trim();
     await db.habits.update(id, patch);
     const updated = await db.habits.get(id);
     if (updated) {
@@ -397,7 +396,7 @@ export const habitService = {
               scheduledDays
             : 0;
 
-        return { ...h, icon: getHabitEmoji(h.icon), streak, todayLog, completionRate30Days };
+        return { ...h, icon: h.icon || 'Target', streak, todayLog, completionRate30Days };
       })
     );
   },

@@ -4,7 +4,7 @@ import { Check, Flame, Zap, Lock, Link2Off } from 'lucide-react';
 import type { HabitLog, HabitWithStreak, TelemetryMode } from '../../types';
 import { soundService } from '../../services/soundService';
 import { cn } from '../../lib/utils';
-import { getHabitEmoji } from '../../lib/emoji';
+import { IconRenderer } from '../common/IconRenderer';
 import { ContinuityTape } from './ContinuityTape';
 import { HabitStepper } from './HabitStepper';
 
@@ -152,7 +152,11 @@ export function TactileHabitCard({
                 : undefined
             }
           >
-            <span aria-hidden="true">{getHabitEmoji(habit.icon)}</span>
+            <IconRenderer
+              name={habit.icon}
+              color={habit.color || 'var(--accent)'}
+              size={zenExpanded ? 24 : 20}
+            />
           </div>
 
           <div className="min-w-0 flex-1 space-y-1">

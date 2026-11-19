@@ -4,7 +4,8 @@ import { useHabitStore } from '../../store/habitStore';
 import { useTaskStore } from '../../store/taskStore';
 import type { Habit, HabitType, HabitFrequency, Priority } from '../../types';
 import { format, parseISO } from 'date-fns';
-import { HABIT_ICONS } from '../common/habitIcons';
+import { IconPicker } from './IconPicker';
+import { IconRenderer } from '../common/IconRenderer';
 import { getHabitEmoji } from '../../lib/emoji';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
@@ -34,6 +35,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
 
   const [habitName, setHabitName] = useState('');
   const [habitIcon, setHabitIcon] = useState('Target');
+  const [habitColor, setHabitColor] = useState('#22C55E');
   const [habitCategory, setHabitCategory] = useState('Health');
   const [habitType, setHabitType] = useState<HabitType>('boolean');
   const [habitFreq, setHabitFreq] = useState<HabitFrequency>('daily');
@@ -82,7 +84,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
     const habitData = {
       name: habitName.trim(),
       icon: habitIcon,
-      color: '#EF6443',
+      color: habitColor,
       category: habitCategory,
       type: habitType,
       frequency: habitFreq,
@@ -177,30 +179,33 @@ export function QuickAddModalFixed({ onClose }: Props) {
         <div className="px-4 sm:px-6 py-4 sm:py-5 max-h-[70vh] sm:max-h-[65vh] overflow-y-auto">
           {tab === 'habit' ? (
             <form onSubmit={handleHabitSubmit} className="space-y-4 sm:space-y-5">
-              {/* Icon Picker */}
+              {/* Icon Gallery Picker */}
+              <IconPicker
+                value={habitIcon}
+                onChange={setHabitIcon}
+                color={habitColor}
+                label="Habit Icon"
+              />
+
+              {/* Accent Color */}
               <div>
-                <label className="font-label-caps mb-2 block">Icon</label>
-                <div className="grid grid-cols-6 sm:grid-cols-7 gap-1.5 bg-[var(--sf-base)] rounded-xl p-2.5 border border-[var(--border-default)] max-h-36 sm:max-h-40 overflow-y-auto">
-                  {HABIT_ICONS.map(item => {
-                    const isActive = habitIcon === item.name;
-                    return (
-                      <button
-                        key={item.name}
-                        type="button"
-                        title={item.label}
-                        aria-label={`Select icon ${item.label}`}
-                        onClick={() => setHabitIcon(item.name)}
-                        className={cn(
-                          'p-2 rounded-lg flex items-center justify-center text-base transition-colors cursor-pointer border',
-                          isActive
-                            ? 'bg-[var(--accent-subtle)] border-[var(--accent)]'
-                            : 'border-transparent hover:bg-[var(--sf-overlay)]'
-                        )}
-                      >
-                        <span>{getHabitEmoji(item.name)}</span>
-                      </button>
-                    );
-                  })}
+                <label className="font-label-caps mb-2 block">Accent Color</label>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {['#22C55E', '#06B6D4', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF6443', '#F43F5E', '#EC4899'].map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setHabitColor(c)}
+                      aria-label={`Select color ${c}`}
+                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border transition-all duration-150 cursor-pointer flex items-center justify-center hover:scale-110 active:scale-95"
+                      style={{
+                        backgroundColor: c,
+                        borderColor: habitColor === c ? '#ffffff' : 'rgba(255, 255, 255, 0.2)',
+                        boxShadow: habitColor === c ? `0 0 10px 1px ${c}80` : undefined,
+                        transform: habitColor === c ? 'scale(1.15)' : undefined,
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
 
@@ -234,8 +239,8 @@ export function QuickAddModalFixed({ onClose }: Props) {
               <div>
                 <label className="font-label-caps mb-2 block">Habit Name</label>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-lg">
-                    {getHabitEmoji(habitIcon)}
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
+                    <IconRenderer name={habitIcon} color={habitColor} size={18} />
                   </div>
                   <input
                     className="input w-full pl-12 pr-4 py-3 text-sm font-medium"

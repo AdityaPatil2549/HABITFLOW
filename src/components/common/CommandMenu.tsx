@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useHabitStore } from '../../store/habitStore';
 import { useModalStore } from '../../store/modalStore';
-import { getHabitEmoji } from '../../lib/emoji';
+import { IconRenderer } from './IconRenderer';
 import { soundService } from '../../services/soundService';
 import { cn } from '../../lib/utils';
 import type { HabitWithStreak } from '../../types';
@@ -134,8 +134,12 @@ export function CommandMenu() {
                         className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl cursor-pointer hover:bg-[var(--sf-overlay)] aria-selected:bg-[var(--accent-subtle)] aria-selected:border aria-selected:border-[var(--accent)]/30 transition-all mb-1 group"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-8 h-8 rounded-lg bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-base shrink-0">
-                            {getHabitEmoji(habit.icon)}
+                          <span className="w-8 h-8 rounded-lg bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center shrink-0">
+                            <IconRenderer
+                              name={habit.icon}
+                              color={habit.color || 'var(--accent)'}
+                              size={16}
+                            />
                           </span>
                           <div className="min-w-0">
                             <span

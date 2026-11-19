@@ -13,7 +13,7 @@ import {
 import type { HabitWithStreak } from '../../../types';
 import { soundService } from '../../../services/soundService';
 import { cn } from '../../../lib/utils';
-import { getHabitEmoji } from '../../../lib/emoji';
+import { IconRenderer } from '../../common/IconRenderer';
 
 export interface HabitRowProps {
   habit: HabitWithStreak;
@@ -126,7 +126,7 @@ export function HabitRow({
           </AnimatePresence>
         </button>
 
-        {/* Habit Emoji */}
+        {/* Habit Icon / Emoji */}
         <span
           className="w-8 h-8 rounded-lg border flex items-center justify-center text-base shrink-0 transition-transform duration-200 group-hover:scale-105"
           style={{
@@ -135,7 +135,7 @@ export function HabitRow({
             boxShadow: isDone && habit.color ? `0 0 10px -2px ${habit.color}40` : undefined,
           }}
         >
-          {getHabitEmoji(habit.icon)}
+          <IconRenderer name={habit.icon} color={habit.color || 'var(--accent)'} size={18} />
         </span>
 
         {/* Habit Name & Metadata */}

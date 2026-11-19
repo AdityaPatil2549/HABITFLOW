@@ -6,6 +6,7 @@ import { soundService } from '../../../services/soundService';
 import { useHabitStore } from '../../../store/habitStore';
 import { cn } from '../../../lib/utils';
 import { getHabitEmoji } from '../../../lib/emoji';
+import { IconPicker } from '../IconPicker';
 
 export interface HabitEditorDrawerProps {
   isOpen: boolean;
@@ -25,7 +26,16 @@ const CATEGORIES = [
   'Other',
 ];
 
-const PRESET_ICONS = ['💧', '🏃', '📚', '🧘', '💻', '🍎', '✍️', '⚡', '🎯', '🌿', '💤', '🧠'];
+const COLOR_PRESETS = [
+  '#22C55E', // Emerald
+  '#06B6D4', // Cyan
+  '#3B82F6', // Cobalt
+  '#8B5CF6', // Violet
+  '#F59E0B', // Amber
+  '#EF6443', // Ember
+  '#F43F5E', // Rose
+  '#EC4899', // Pink
+];
 
 export function HabitEditorDrawer(props: HabitEditorDrawerProps) {
   if (!props.isOpen) return null;
@@ -40,7 +50,8 @@ function HabitEditorDrawerInner({
 }: HabitEditorDrawerProps) {
   const { habits } = useHabitStore();
   const [name, setName] = useState(() => initialHabit?.name ?? '');
-  const [icon, setIcon] = useState(() => (initialHabit ? getHabitEmoji(initialHabit.icon) : '🎯'));
+  const [icon, setIcon] = useState(() => initialHabit?.icon || 'Target');
+  const [color, setColor] = useState(() => initialHabit?.color || '#22C55E');
   const [category, setCategory] = useState(() => initialHabit?.category || 'Health');
   const [type, setType] = useState<HabitType>(() => initialHabit?.type || 'boolean');
   const [frequency] = useState<HabitFrequency>(() => initialHabit?.frequency || 'daily');
@@ -72,7 +83,7 @@ function HabitEditorDrawerInner({
         {
           name: name.trim(),
           icon,
-          color: '#10b981',
+          color: color || '#22C55E',
           category,
           type,
           frequency,
@@ -149,29 +160,38 @@ function HabitEditorDrawerInner({
               />
             </div>
 
-            {/* Icon Picker */}
+            {/* Icon Gallery Picker */}
+            <IconPicker
+              value={icon}
+              onChange={setIcon}
+              color={color}
+              label="Habit Icon"
+            />
+
+            {/* Accent Color Swatch Selector */}
             <div>
               <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--tx-secondary)] mb-1.5">
-                Icon
+                Accent Color
               </label>
-              <div className="flex flex-wrap gap-2">
-                {PRESET_ICONS.map(i => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setIcon(i)}
-                    aria-label={`Select icon ${i}`}
-                    aria-pressed={icon === i}
-                    className={cn(
-                      'w-9 h-9 rounded-lg border flex items-center justify-center text-base transition-colors cursor-pointer',
-                      icon === i
-                        ? 'bg-[var(--accent-subtle)] border-[var(--accent)]/50 text-[var(--tx-primary)]'
-                        : 'bg-[var(--sf-overlay)] border-[var(--border-default)] text-[var(--tx-secondary)] hover:border-[var(--border-strong)]'
-                    )}
-                  >
-                    {getHabitEmoji(i)}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2 flex-wrap">
+                {COLOR_PRESETS.map(c => {
+                  const isSelected = color === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setColor(c)}
+                      aria-label={`Select color ${c}`}
+                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border transition-all duration-150 cursor-pointer flex items-center justify-center hover:scale-110 active:scale-95"
+                      style={{
+                        backgroundColor: c,
+                        borderColor: isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.2)',
+                        boxShadow: isSelected ? `0 0 10px 1px ${c}80` : undefined,
+                        transform: isSelected ? 'scale(1.15)' : undefined,
+                      }}
+                    />
+                  );
+                })}
               </div>
             </div>
 
