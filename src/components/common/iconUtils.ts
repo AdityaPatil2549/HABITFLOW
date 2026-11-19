@@ -1,4 +1,4 @@
-import { icons } from 'lucide-react';
+import { CURATED_LUCIDE_NAMES } from './habitIcons';
 
 export const EMOJI_REGEX =
   /^(\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}|\p{Emoji_Component}|\s)+$/u;
@@ -48,19 +48,21 @@ export function resolveLucideIconName(raw?: string | null): string | null {
 
   const lower = clean.toLowerCase();
   if (LUCIDE_ALIASES[lower]) {
-    const alias = LUCIDE_ALIASES[lower];
-    if (icons[alias as keyof typeof icons]) return alias;
+    return LUCIDE_ALIASES[lower];
   }
 
-  // Check direct PascalCase
+  // Check direct PascalCase against curated icons
   const pascal = clean.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase());
-  if (icons[pascal as keyof typeof icons]) {
+  if (CURATED_LUCIDE_NAMES.has(pascal)) {
     return pascal;
   }
 
-  // Check lowercase lookup
-  const found = Object.keys(icons).find(k => k.toLowerCase() === lower);
-  return found || null;
+  // Case-insensitive lookup against curated icons
+  for (const name of CURATED_LUCIDE_NAMES) {
+    if (name.toLowerCase() === lower) return name;
+  }
+
+  return pascal.length > 0 ? pascal : null;
 }
 
 export function isEmojiIcon(raw?: string | null): boolean {

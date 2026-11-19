@@ -1,8 +1,9 @@
 import React from 'react';
-import { icons, Target } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { Icon as IconifyIcon } from '@iconify/react';
 import { getHabitEmoji } from '../../lib/emoji';
 import { resolveLucideIconName, isEmojiIcon, isIconifyId } from './iconUtils';
+import { CURATED_LUCIDE_ICONS } from './habitIcons';
 
 export interface IconRendererProps {
   name?: string | null;
@@ -71,26 +72,24 @@ export function IconRenderer({
     );
   }
 
-  // 3. Lucide Vector Icon
+  // 3. Lucide Vector Icon (100% Tree-Shaken from Curated Registry)
   const lucideName = resolveLucideIconName(name);
   if (lucideName) {
-    const LucideComponent = icons[lucideName as keyof typeof icons];
-    if (LucideComponent) {
-      return (
-        <span
-          onClick={onClick}
-          className={`inline-flex items-center justify-center shrink-0 ${interactiveClasses} ${className || ''}`}
-          aria-label={lucideName}
-        >
-          <LucideComponent
-            size={pixelSize}
-            strokeWidth={strokeWidth}
-            color={color || 'currentColor'}
-            className="shrink-0"
-          />
-        </span>
-      );
-    }
+    const LucideComponent = CURATED_LUCIDE_ICONS[lucideName] || Target;
+    return (
+      <span
+        onClick={onClick}
+        className={`inline-flex items-center justify-center shrink-0 ${interactiveClasses} ${className || ''}`}
+        aria-label={lucideName}
+      >
+        <LucideComponent
+          size={pixelSize}
+          strokeWidth={strokeWidth}
+          color={color || 'currentColor'}
+          className="shrink-0"
+        />
+      </span>
+    );
   }
 
   // 4. Fallback: Check if it's a legacy keyword resolving to emoji or fallback Lucide

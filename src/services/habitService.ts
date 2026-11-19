@@ -163,8 +163,25 @@ export const habitService = {
     markSeedsHandled();
     const habit = await db.habits.get(id);
     const logs = await db.habitLogs.where('habitId').equals(id).toArray();
-    await db.habits.delete(id);
-    await db.habitLogs.where('habitId').equals(id).delete();
+
+    // Transactional cascade: clear dependent child habit pointers so they are not orphaned
+    await db.transaction('rw', [db.habits, db.habitLogs], async () => {
+      const dependentHabits = await db.habits.where('stackAfterHabitId').equals(id).toArray();
+      for (const child of dependentHabits) {
+        await db.habits.update(child.id, {
+          stackAfterHabitId: undefined,
+          updated_at: new Date().toISOString(),
+        });
+        const updatedChild = await db.habits.get(child.id);
+        if (updatedChild) {
+          syncService.queuePush('habits', updatedChild, 'upsert').catch(console.error);
+        }
+      }
+
+      await db.habits.delete(id);
+      await db.habitLogs.where('habitId').equals(id).delete();
+    });
+
     // Sync deletion to cloud (habit + all associated logs)
     if (habit) {
       syncService.queuePush('habits', { id }, 'delete').catch(console.error);

@@ -429,10 +429,15 @@ export function Layout() {
           <button
             type="button"
             onClick={() => setQuickAddOpen(true)}
-            className="w-full py-2.5 px-3 btn-primary text-xs flex items-center justify-center gap-2"
+            className="w-full py-2 px-3 btn-secondary text-xs flex items-center justify-between gap-2 hover:border-[var(--accent)] transition-colors group cursor-pointer"
           >
-            <Plus size={15} />
-            <span>New Entry</span>
+            <div className="flex items-center gap-2">
+              <Plus size={14} className="text-[var(--accent-ink)] group-hover:scale-110 transition-transform" />
+              <span>New Entry</span>
+            </div>
+            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--sf-overlay)] text-[var(--tx-muted)] border border-[var(--border-default)]">
+              N
+            </kbd>
           </button>
 
           <button
@@ -519,11 +524,12 @@ export function Layout() {
         </div>
 
         {/* Legal Links */}
-        <div className="px-4 pt-2 flex justify-center gap-3 text-[11px] text-[var(--tx-muted)]">
-          <Link to="/privacy" className="hover:text-[var(--tx-primary)] transition-colors">
+        <div className="px-4 pt-1.5 pb-1 flex justify-center gap-1 text-[11px] text-[var(--tx-muted)]">
+          <Link to="/privacy" className="px-2 py-1.5 hover:text-[var(--tx-primary)] transition-colors rounded-md">
             Privacy
           </Link>
-          <Link to="/terms" className="hover:text-[var(--tx-primary)] transition-colors">
+          <span className="py-1.5 text-[var(--border-strong)]">·</span>
+          <Link to="/terms" className="px-2 py-1.5 hover:text-[var(--tx-primary)] transition-colors rounded-md">
             Terms
           </Link>
         </div>
@@ -531,7 +537,7 @@ export function Layout() {
 
       {/* ── Main Content ── */}
       <main id="main-content" className="flex-1 md:ml-[220px] w-full max-w-[100vw] overflow-x-hidden">
-        <div className="pt-[calc(4.25rem+env(safe-area-inset-top))] md:pt-8 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-10 px-3.5 sm:px-6 md:px-8 max-w-6xl mx-auto min-h-[100dvh]">
+        <div className="pt-[calc(4.25rem+env(safe-area-inset-top))] md:pt-8 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-10 px-3.5 sm:px-6 md:px-8 max-w-7xl 2xl:max-w-[1400px] mx-auto min-h-[100dvh]">
           <Suspense
             fallback={
               <div className="space-y-4 py-8">

@@ -1,6 +1,7 @@
 import './index.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
+import { format } from 'date-fns';
 import { Layout } from './components/layout/Layout';
 import { notificationService } from './services/notificationService';
 import { soundService } from './services/soundService';
@@ -136,6 +137,34 @@ function App() {
     };
     window.addEventListener('habitflow-sync-pulled', handleSync);
     return () => window.removeEventListener('habitflow-sync-pulled', handleSync);
+  }, []);
+
+  // Midnight rollover & window focus listener to keep selectedDate accurate
+  useEffect(() => {
+    const checkDateRollover = () => {
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
+      const currentSelected = useHabitStore.getState().selectedDate;
+      if (currentSelected !== todayStr) {
+        useHabitStore.getState().setSelectedDate(todayStr);
+        useHabitStore.getState().loadHabits();
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkDateRollover();
+      }
+    };
+
+    const interval = setInterval(checkDateRollover, 60000);
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', checkDateRollover);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', checkDateRollover);
+    };
   }, []);
 
   async function handleOnboardingComplete() {

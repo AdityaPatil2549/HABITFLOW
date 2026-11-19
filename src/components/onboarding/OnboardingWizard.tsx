@@ -192,12 +192,21 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                     transition={{ duration: 0.14, ease: 'easeOut' }}
                     className="text-center relative z-10 flex flex-col items-center w-full"
                   >
-                    <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[var(--sf-overlay)] border border-[var(--border-strong)] p-2.5 flex items-center justify-center">
-                      <img
-                        src="/logo.png"
-                        alt="HabitFlow"
-                        className="w-full h-full object-contain rounded-xl opacity-95"
-                      />
+                    <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[var(--accent)] text-[var(--accent-fg)] p-3.5 flex items-center justify-center shadow-lg shadow-[var(--accent)]/15">
+                      <svg
+                        className="w-full h-full"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M4 12C6.5 6 10 6 12 12C14 18 17.5 18 20 12"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </div>
 
                     <h1 className="text-3xl font-bold text-[var(--tx-primary)] mb-4 tracking-tight leading-tight">

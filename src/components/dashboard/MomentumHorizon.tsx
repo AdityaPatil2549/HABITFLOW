@@ -112,8 +112,12 @@ export function MomentumHorizon({
         />
       </div>
 
-      {/* 7-Day Trend Sparkline with Area Fill */}
-      <div className="pt-1 relative">
+      {/* 7-Day Trend Velocity Sparkline */}
+      <div className="pt-2 relative space-y-1">
+        <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[var(--tx-muted)]">
+          <span>7-Day Velocity</span>
+          <span>Rolling Sparkline</span>
+        </div>
         <svg
           viewBox="0 0 100 30"
           preserveAspectRatio="none"

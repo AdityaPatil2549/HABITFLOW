@@ -30,21 +30,21 @@
 :root,
 [data-polarity='dark'] {
   color-scheme: dark;
-  --sf-base: #0b0b0e;
-  --sf-raised: #141416;
-  --sf-overlay: #1c1c1f;
-  --sf-dim: #0a0a0a;
-  --tx-primary: #f5f5f5;
-  --tx-secondary: #a3a3a3;
-  --tx-muted: #737373;
+  --sf-base: #090a0e;
+  --sf-raised: #121318;
+  --sf-overlay: #1a1b22;
+  --sf-dim: #070709;
+  --tx-primary: #f5f5f7;
+  --tx-secondary: #a1a1a6;
+  --tx-muted: #8e8e93;
   --border-default: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.16);
 
   /* Default Obsidian Ink (Dark) */
-  --accent: #f5f5f5;
-  --accent-fg: #0b0b0e;
-  --accent-ink: #f5f5f5;
-  --accent-subtle: rgba(245, 245, 245, 0.08);
+  --accent: #f5f5f7;
+  --accent-fg: #090a0e;
+  --accent-ink: #f5f5f7;
+  --accent-subtle: rgba(245, 245, 247, 0.08);
 
   /* Legacy variable aliases during component sweep */
   --bg-base: var(--sf-base);

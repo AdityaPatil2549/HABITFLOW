@@ -440,12 +440,14 @@ export function Dashboard() {
               </span>
             )}
           </div>
-          <h1 className="font-h1 text-[var(--tx-primary)] mt-1 flex items-center gap-2.5">
-            <span>Today</span>
-            <span className="text-sm font-sans font-normal text-[var(--tx-secondary)] hidden sm:inline">
-              · Daily Execution Flow
-            </span>
-          </h1>
+          <div className="mt-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--tx-primary)]">
+              Today
+            </h1>
+            <p className="text-xs text-[var(--tx-secondary)] font-medium mt-0.5">
+              Daily Execution Flow & Habit Kinetics
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
@@ -520,8 +522,22 @@ export function Dashboard() {
         </div>
       )}
 
+      {/* ── Initial Zero-Habit Skeleton (Smooth matching empty state height) ── */}
+      {loading && habits.length === 0 && (
+        <div className="card-raised p-6 sm:p-10 text-center space-y-6 animate-pulse max-w-2xl mx-auto my-4">
+          <div className="w-12 h-12 rounded-xl bg-[var(--sf-overlay)] mx-auto" />
+          <div className="h-6 w-48 bg-[var(--sf-overlay)] rounded mx-auto" />
+          <div className="h-4 w-72 bg-[var(--sf-overlay)] rounded mx-auto" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto pt-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-16 rounded-xl bg-[var(--sf-overlay)]" />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── 8/4 Execution Split (Centered Single Column in Monastic Mode) ── */}
-      {(habits.length > 0 || loading) && (
+      {habits.length > 0 && (
         <div
           className={cn(
             'grid grid-cols-1 gap-6 items-start',

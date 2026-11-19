@@ -121,18 +121,25 @@ export function TactileHabitCard({
     >
       <div
         className={cn(
-          'relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border transition-all duration-200',
+          'relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 overflow-hidden',
           isDone
-            ? 'bg-[var(--sf-raised)] border-l-[3.5px]'
+            ? 'bg-[var(--sf-raised)] border-[var(--border-strong)]'
             : isPrimed
-              ? 'bg-[var(--sf-raised)] border-amber-500/70 shadow-[0_0_18px_rgba(245,158,11,0.2)] animate-chain-prime'
+              ? 'bg-[var(--sf-raised)] border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.18)] animate-chain-prime'
               : effectiveLocked
                 ? 'bg-[var(--sf-base)] border-[var(--border-default)] opacity-50'
-                : 'bg-[var(--sf-raised)] border-[var(--border-default)] hover:border-[var(--border-strong)] hover:shadow-lg hover:shadow-black/25 hover:-translate-y-[1px]'
+                : 'bg-[var(--sf-raised)] border-[var(--border-default)] hover:border-[var(--border-strong)] hover:shadow-lg hover:shadow-black/30 hover:-translate-y-[1px]'
         )}
         style={{
-          borderLeftColor: isDone ? (habit.color || 'var(--accent)') : undefined,
-          boxShadow: isDone && habit.color ? `0 4px 20px -4px ${habit.color}25, inset 0 1px 0 0 rgba(255, 255, 255, 0.08)` : undefined,
+          borderColor: isDone && habit.color ? `${habit.color}40` : undefined,
+          boxShadow: isDone
+            ? habit.color
+              ? `0 4px 20px -4px ${habit.color}20, inset 0 1px 0 0 rgba(255, 255, 255, 0.08)`
+              : 'inset 0 1px 0 0 rgba(255, 255, 255, 0.08)'
+            : 'inset 0 1px 0 0 rgba(255, 255, 255, 0.04)',
+          background: isDone && habit.color
+            ? `radial-gradient(ellipse at top left, ${habit.color}10 0%, var(--sf-raised) 70%)`
+            : undefined,
         }}
       >
         {/* Left: Icon + Name + Subline */}
@@ -165,7 +172,7 @@ export function TactileHabitCard({
                 className={cn(
                   'font-semibold tracking-tight truncate transition-colors',
                   zenExpanded ? 'text-base sm:text-xl' : 'text-sm sm:text-base',
-                  isDone ? 'line-through text-[var(--tx-muted)]' : 'text-[var(--tx-primary)]'
+                  isDone ? 'text-[var(--tx-secondary)] font-medium' : 'text-[var(--tx-primary)]'
                 )}
                 title={habit.name}
               >
