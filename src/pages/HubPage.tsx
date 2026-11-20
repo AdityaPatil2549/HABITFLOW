@@ -61,7 +61,7 @@ const HUB_DESTINATIONS = [
     icon: Settings,
   },
   {
-    to: '/hub/settings',
+    to: '/hub/settings#data',
     title: 'Data Vault & Backups',
     description: 'Export JSON/CSV archives, inspect local IndexedDB storage, and manage cloud sync.',
     icon: Shield,
@@ -185,7 +185,7 @@ export function HubPage() {
           const Icon = dest.icon;
           return (
             <Link
-              key={dest.to}
+              key={dest.title}
               to={dest.to}
               className="card-raised p-4 flex items-center justify-between gap-4 hover:border-[var(--border-strong)] transition-colors group"
             >

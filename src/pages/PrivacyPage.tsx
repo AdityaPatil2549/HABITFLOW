@@ -47,7 +47,7 @@ export function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">4. Your Rights (GDPR / CCPA)</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">4. Your Rights (GDPR / CCPA)</h2>
           <p>You have the right to:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Access all data stored about you</li>
@@ -58,12 +58,12 @@ export function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">5. Cookies</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">5. Cookies</h2>
           <p>HabitFlow does not use tracking cookies. Authentication tokens are stored in your browser's local storage for session management only.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">6. Contact</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">6. Contact</h2>
           <p>If you have questions about this privacy policy, please reach out via the Settings page or email us at privacy@habitflow.app.</p>
         </section>
       </div>

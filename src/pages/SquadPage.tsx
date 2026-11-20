@@ -315,7 +315,7 @@ export function SquadPage() {
             <span className="w-2 h-2 rounded-full bg-[var(--accent)]" />
             <span>Multiplayer Momentum</span>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
+          <h1 className="text-3xl font-black text-[var(--tx-primary)] tracking-tight">
             Accountability Squads
           </h1>
           <p className="text-sm text-[var(--tx-secondary)] mt-1">Consistency compounds faster when shared with peers.</p>
@@ -333,7 +333,7 @@ export function SquadPage() {
                 <div className="w-20 h-20 rounded-2xl bg-[var(--accent-subtle)] border border-[var(--accent)]/25 flex items-center justify-center mx-auto mb-5 text-4xl">
                   👥
                 </div>
-                <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Better Together</h2>
+                <h2 className="text-2xl font-black text-[var(--tx-primary)] mb-2 tracking-tight">Better Together</h2>
                 <p className="text-sm text-[var(--tx-secondary)] w-full max-w-md mx-auto mb-8 leading-relaxed">
                   You're <span className="text-emerald-400 font-bold">65% more likely</span> to maintain atomic habits with an accountability squad. Form or join a private circle of up to 5 performers.
                 </p>
@@ -348,7 +348,7 @@ export function SquadPage() {
                   </button>
                   <button
                     onClick={() => setShowJoin(true)}
-                    className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white hover:bg-white/[0.1] active:scale-95 transition-all font-semibold text-sm cursor-pointer"
+                    className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] text-[var(--tx-primary)] hover:border-[var(--border-strong)] active:scale-95 transition-all font-semibold text-sm cursor-pointer"
                   >
                     <LogIn size={18} />
                     Join a Squad
@@ -375,7 +375,7 @@ export function SquadPage() {
               <div className="h-full">
                 <div className="card-raised rounded-2xl p-6 text-center h-full relative z-10">
                   <div className="text-3xl mb-3 drop-shadow-md">{item.icon}</div>
-                  <h3 className="text-base font-bold text-white mb-1.5">{item.title}</h3>
+                  <h3 className="text-base font-bold text-[var(--tx-primary)] mb-1.5">{item.title}</h3>
                   <p className="text-xs text-[var(--tx-secondary)] leading-relaxed">{item.desc}</p>
                 </div>
               </div>
@@ -402,7 +402,7 @@ export function SquadPage() {
                   className="w-[400px] max-w-[90vw] rounded-2xl bg-[var(--sf-raised)] border border-[var(--border-strong)] p-7 flex flex-col shadow-2xl relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-xl font-black text-white">Create Squad</h3>
+                    <h3 className="text-xl font-black text-[var(--tx-primary)]">Create Squad</h3>
                     <button
                       onClick={() => setShowCreate(false)}
                       className="w-8 h-8 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
@@ -455,7 +455,7 @@ export function SquadPage() {
                   className="w-[400px] max-w-[90vw] rounded-2xl bg-[var(--sf-raised)] border border-[var(--border-strong)] p-7 flex flex-col shadow-2xl relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-xl font-black text-white">Join Squad</h3>
+                    <h3 className="text-xl font-black text-[var(--tx-primary)]">Join Squad</h3>
                     <button
                       onClick={() => setShowJoin(false)}
                       className="w-8 h-8 rounded-full bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] transition-colors cursor-pointer"
@@ -536,7 +536,7 @@ export function SquadPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight break-all">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[var(--tx-primary)] tracking-tight break-all">
                   {activeSquad.name}
                 </h1>
               </div>

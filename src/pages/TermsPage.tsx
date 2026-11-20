@@ -48,7 +48,7 @@ export function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">5. Acceptable Use</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">5. Acceptable Use</h2>
           <p>You agree not to misuse the service, including but not limited to:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Attempting to gain unauthorized access to the service or its systems</li>
@@ -58,17 +58,17 @@ export function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">6. Limitation of Liability</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">6. Limitation of Liability</h2>
           <p>HabitFlow and its creators shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">7. Changes to Terms</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">7. Changes to Terms</h2>
           <p>We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-white mt-8 mb-3">8. Contact</h2>
+          <h2 className="text-lg font-bold text-[var(--tx-primary)] mt-8 mb-3">8. Contact</h2>
           <p>For questions regarding these terms, please contact us via the Settings page or email us at legal@habitflow.app.</p>
         </section>
       </div>

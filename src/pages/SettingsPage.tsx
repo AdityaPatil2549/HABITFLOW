@@ -364,7 +364,7 @@ export function SettingsPage() {
         <p className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] mb-1">
           Preferences
         </p>
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-3xl font-bold text-[var(--tx-primary)]">
           Settings
         </h1>
         <p className="text-[var(--tx-secondary)] text-sm mt-1">
@@ -503,7 +503,7 @@ export function SettingsPage() {
 
         <div className="flex items-center justify-between pt-2">
           <div>
-            <p className="text-sm font-semibold text-white">Week starts on Monday</p>
+            <p className="text-sm font-semibold text-[var(--tx-primary)]">Week starts on Monday</p>
             <p className="text-xs text-[var(--tx-muted)]">Affects all charts and weekly views.</p>
           </div>
           <button
@@ -523,7 +523,7 @@ export function SettingsPage() {
 
         <div className="flex items-center justify-between pt-2">
           <div>
-            <p className="text-sm font-semibold text-white">Sound Effects</p>
+            <p className="text-sm font-semibold text-[var(--tx-primary)]">Sound Effects</p>
             <p className="text-xs text-[var(--tx-secondary)]">
               Audible feedback when completing habits and leveling up.
             </p>
@@ -552,7 +552,7 @@ export function SettingsPage() {
 
         <div className="flex items-center justify-between pt-2">
           <div>
-            <p className="text-sm font-semibold text-white">Haptic Feedback</p>
+            <p className="text-sm font-semibold text-[var(--tx-primary)]">Haptic Feedback</p>
             <p className="text-xs text-[var(--tx-secondary)]">Vibration on habit completion (mobile only).</p>
           </div>
           <button
@@ -580,12 +580,12 @@ export function SettingsPage() {
 
       {/* ─── Notifications ─── */}
       <section className="card-raised p-6 space-y-4">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
+        <h2 className="text-base font-bold text-[var(--tx-primary)] flex items-center gap-2">
           <Bell size={18} className="text-[var(--accent)]" /> Notifications & Reminders
         </h2>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-white">Daily Habit Reminders</p>
+            <p className="text-sm font-semibold text-[var(--tx-primary)]">Daily Habit Reminders</p>
             <p className="text-xs text-[var(--tx-muted)]">
               Receive smart morning briefings, streak savers, and individual ritual reminders.
             </p>
@@ -640,7 +640,7 @@ export function SettingsPage() {
             </div>
             <div className="flex items-center justify-between p-2 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)]">
               <div>
-                <p className="text-xs font-medium text-white">Evening Streak Saver</p>
+                <p className="text-xs font-medium text-[var(--tx-primary)]">Evening Streak Saver</p>
                 <p className="text-[11px] text-[var(--tx-muted)]">Alert before day ends if streaks are at risk</p>
               </div>
               <span className="text-xs font-mono font-bold text-[var(--accent-ink)] px-2 py-0.5 rounded bg-[var(--accent-subtle)]">
@@ -653,16 +653,16 @@ export function SettingsPage() {
 
       {/* ─── Integrations ─── */}
       <section className="card-raised p-6 space-y-4">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
+        <h2 className="text-base font-bold text-[var(--tx-primary)] flex items-center gap-2">
           <Calendar size={18} className="text-[var(--accent)]" /> Calendar Sync
         </h2>
 
         {isGuest ? (
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-between">
             <div className="flex items-center gap-3 text-[var(--tx-secondary)]">
               <CloudOff size={20} />
               <div className="text-sm">
-                <p className="font-bold text-white">Google Calendar</p>
+                <p className="font-bold text-[var(--tx-primary)]">Google Calendar</p>
                 <p className="text-xs">Sign in to sync your habits to your calendar.</p>
               </div>
             </div>
@@ -692,7 +692,7 @@ export function SettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between pt-2">
               <div>
-                <p className="text-sm font-semibold text-white">Sync Habits to Calendar</p>
+                <p className="text-sm font-semibold text-[var(--tx-primary)]">Sync Habits to Calendar</p>
                 <p className="text-xs text-[var(--tx-muted)]">Create recurring events for your habits.</p>
               </div>
               <button
@@ -711,7 +711,7 @@ export function SettingsPage() {
 
             <div className="flex items-center justify-between pt-2">
               <div>
-                <p className="text-sm font-semibold text-white">Log Completions to Calendar</p>
+                <p className="text-sm font-semibold text-[var(--tx-primary)]">Log Completions to Calendar</p>
                 <p className="text-xs text-[var(--tx-muted)]">
                   Create daily events when you complete habits.
                 </p>
@@ -737,13 +737,13 @@ export function SettingsPage() {
 
       {/* ── Health & Fitness ── */}
       <section className="card-raised p-6 space-y-6">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
+        <h2 className="text-base font-bold text-[var(--tx-primary)] flex items-center gap-2">
           <Activity size={18} className="text-[var(--accent)]" /> Health & Fitness
         </h2>
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-xl">
             <div>
-              <p className="text-sm font-bold text-white">Google Fit / Health Connect</p>
+              <p className="text-sm font-bold text-[var(--tx-primary)]">Google Fit / Health Connect</p>
               <p className="text-xs text-[var(--tx-secondary)] mt-1">
                 {fitConnected ? '✅ Connected — steps & sleep syncing' : 'Auto-complete fitness habits from your phone data'}
               </p>
@@ -762,7 +762,7 @@ export function SettingsPage() {
           </div>
           <div className="flex items-center justify-between p-4 bg-[var(--sf-overlay)] border border-[var(--border-default)] rounded-xl opacity-60">
             <div>
-              <p className="text-sm font-bold text-white">Apple Health (iOS)</p>
+              <p className="text-sm font-bold text-[var(--tx-primary)]">Apple Health (iOS)</p>
               <p className="text-xs text-[var(--tx-secondary)] mt-1">Requires native app installation</p>
             </div>
             <button disabled className="px-4 py-2 bg-[var(--sf-overlay)] text-[var(--tx-muted)] border border-[var(--border-default)] text-xs font-bold rounded-xl">Coming Soon</button>
@@ -772,7 +772,7 @@ export function SettingsPage() {
 
       {/* ── Google Integrations ── */}
       <section className="card-raised p-6 space-y-6">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
+        <h2 className="text-base font-bold text-[var(--tx-primary)] flex items-center gap-2">
           <Zap size={18} className="text-yellow-400" /> Google Integrations
         </h2>
         <div className="space-y-3">
@@ -784,7 +784,7 @@ export function SettingsPage() {
                 <HardDrive size={16} className="text-blue-400" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">Google Drive Backup</p>
+                <p className="text-sm font-bold text-[var(--tx-primary)]">Google Drive Backup</p>
                 <p className="text-xs text-[var(--tx-secondary)] mt-0.5">
                   {driveConnected ? '✅ Connected — auto-backup ready' : 'Save & restore backups to your Drive'}
                 </p>
@@ -821,7 +821,7 @@ export function SettingsPage() {
                 <Camera size={16} className="text-purple-400" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">Profile Photo</p>
+                <p className="text-sm font-bold text-[var(--tx-primary)]">Profile Photo</p>
                 <p className="text-xs text-[var(--tx-secondary)] mt-0.5">Upload to Firebase Cloud Storage</p>
               </div>
             </div>
@@ -838,7 +838,7 @@ export function SettingsPage() {
                 <MapPin size={16} className="text-green-400" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">Location Triggers</p>
+                <p className="text-sm font-bold text-[var(--tx-primary)]">Location Triggers</p>
                 <p className="text-xs text-[var(--tx-secondary)] mt-0.5">Remind me when I arrive at a location</p>
               </div>
             </div>
@@ -854,7 +854,7 @@ export function SettingsPage() {
                 <Youtube size={16} className="text-red-400" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">YouTube Recommendations</p>
+                <p className="text-sm font-bold text-[var(--tx-primary)]">YouTube Recommendations</p>
                 <p className="text-xs text-[var(--tx-secondary)] mt-0.5">Habit videos in your AI Coach tab</p>
               </div>
             </div>
@@ -867,21 +867,21 @@ export function SettingsPage() {
       </section>
 
       {/* ── Data ── */}
-      <section className="card-raised p-6 space-y-6">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
+      <section id="data" className="card-raised p-6 space-y-6">
+        <h2 className="text-base font-bold text-[var(--tx-primary)] flex items-center gap-2">
           <Database size={18} className="text-[var(--accent)]" /> Data Management
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             onClick={handleExport}
-            className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all text-left"
+            className="flex items-center gap-3 p-4 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-all text-left cursor-pointer"
           >
             <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
               <Download size={18} />
             </div>
             <div>
-              <p className="text-sm font-bold text-white">
+              <p className="text-sm font-bold text-[var(--tx-primary)]">
                 {exported ? 'Exported!' : 'Export JSON'}
               </p>
               <p className="text-xs text-[var(--tx-secondary)]">Backup your data as a file.</p>
@@ -890,25 +890,25 @@ export function SettingsPage() {
 
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all text-left"
+            className="flex items-center gap-3 p-4 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-all text-left cursor-pointer"
           >
             <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
               <Download size={18} />
             </div>
             <div>
-              <p className="text-sm font-bold text-white">
+              <p className="text-sm font-bold text-[var(--tx-primary)]">
                 {csvExported ? 'CSV Saved!' : 'Export CSV'}
               </p>
               <p className="text-xs text-[var(--tx-secondary)]">View logs in Excel/Sheets.</p>
             </div>
           </button>
 
-          <label className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/8 hover:bg-white/8 transition-all text-left cursor-pointer">
+          <label className="flex items-center gap-3 p-4 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-all text-left cursor-pointer">
             <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
               <Upload size={18} />
             </div>
             <div>
-              <p className="text-sm font-bold text-white">Import Backup</p>
+              <p className="text-sm font-bold text-[var(--tx-primary)]">Import Backup</p>
               <p className="text-xs text-[var(--tx-secondary)]">Restore from a JSON file.</p>
             </div>
             <input type="file" accept=".json" className="sr-only" onChange={handleImport} />
@@ -916,7 +916,7 @@ export function SettingsPage() {
 
           <button
             onClick={handleReset}
-            className="flex items-center gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-all text-left"
+            className="flex items-center gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-all text-left cursor-pointer"
           >
             <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
               <Trash2 size={18} />
@@ -936,7 +936,7 @@ export function SettingsPage() {
             <Shield size={20} />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-white">Privacy & Security</h2>
+            <h2 className="text-sm font-bold text-[var(--tx-primary)]">Privacy & Security</h2>
             <p className="text-xs text-[var(--tx-secondary)] mt-1 leading-relaxed">
               HabitFlow uses secure cloud sync so your data is backed up and available across your devices.
               All syncing happens securely through our database infrastructure, ensuring your habits and progress
@@ -953,7 +953,7 @@ export function SettingsPage() {
           alt="HabitFlow Logo"
           className="h-20 w-auto mx-auto mb-4 object-contain drop-shadow-xl"
         />
-        <p className="text-sm font-bold text-white">HabitFlow v1.2</p>
+        <p className="text-sm font-bold text-[var(--tx-primary)]">HabitFlow v1.2</p>
         <p className="text-xs text-[var(--tx-muted)] mt-1">Built with precision for peak performance.</p>
         <div className="flex items-center justify-center gap-4 mt-4">
           <Link

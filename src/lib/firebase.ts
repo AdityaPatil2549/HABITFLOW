@@ -54,11 +54,15 @@ export async function getFirebaseApp(): Promise<FirebaseApp | null> {
       const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
       if (typeof window !== 'undefined' && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
-        const { initializeAppCheck, ReCaptchaV3Provider } = await import('firebase/app-check');
-        initializeAppCheck(app, {
-          provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
-          isTokenAutoRefreshEnabled: true,
-        });
+        try {
+          const { initializeAppCheck, ReCaptchaV3Provider } = await import('firebase/app-check');
+          initializeAppCheck(app, {
+            provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
+            isTokenAutoRefreshEnabled: true,
+          });
+        } catch {
+          // AppCheck optional / offline gracefully tolerated
+        }
       }
       return app;
     })();
