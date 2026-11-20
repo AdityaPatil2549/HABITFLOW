@@ -369,7 +369,7 @@ export function IconPicker({
                       />
                       {isSelected && (
                         <div
-                          className="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center text-white"
+                          className="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center text-[var(--accent-fg)]"
                           style={{ backgroundColor: activeTint }}
                         >
                           <Check size={8} strokeWidth={3} />
@@ -410,7 +410,7 @@ export function IconPicker({
                     <span>{item.name}</span>
                     {isSelected && (
                       <div
-                        className="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center text-white"
+                        className="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center text-[var(--accent-fg)]"
                         style={{ backgroundColor: activeTint }}
                       >
                         <Check size={8} strokeWidth={3} />

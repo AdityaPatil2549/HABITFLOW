@@ -5,37 +5,44 @@
 importScripts('https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/11.0.0/firebase-messaging-compat.js');
 
-// Initialize Firebase in the service worker
-// These values must match your firebase config
-firebase.initializeApp({
-  apiKey: 'AIzaSyDSsWuavPh1HEItdsrlxWoIhXli94fT5Tg',
-  authDomain: 'habitflow-1.firebaseapp.com',
-  projectId: 'habitflow-1',
-  storageBucket: 'habitflow-1.firebasestorage.app',
-  messagingSenderId: '115144174334',
-  appId: '1:115144174334:web:6f51e26058ad0ac6e913af',
-});
+// Initialize Firebase in the service worker dynamically from query params
+// to prevent hardcoding plaintext API credentials in static public assets.
+const swUrl = new URL(self.location.href);
+const configParam = swUrl.searchParams.get('config');
+let firebaseConfig = null;
 
-const messaging = firebase.messaging();
+if (configParam) {
+  try {
+    firebaseConfig = JSON.parse(decodeURIComponent(configParam));
+  } catch (e) {
+    console.warn('[FCM SW] Failed to parse config query param:', e);
+  }
+}
+
+if (firebaseConfig && !firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const messaging = typeof firebase !== 'undefined' && firebase.apps.length ? firebase.messaging() : null;
 
 // Handle background messages (when the app tab is NOT focused)
-messaging.onBackgroundMessage((payload) => {
-  console.log('[FCM SW] Received background message:', payload);
+if (messaging) {
+  messaging.onBackgroundMessage((payload) => {
+    const notificationTitle = payload.notification?.title || 'HabitFlow';
+    const notificationOptions = {
+      body: payload.notification?.body || 'You have a new notification.',
+      icon: '/logo.png',
+      badge: '/logo.png',
+      data: payload.data || {},
+      actions: [
+        { action: 'open', title: 'Open App' },
+        { action: 'dismiss', title: 'Dismiss' },
+      ],
+    };
 
-  const notificationTitle = payload.notification?.title || 'HabitFlow';
-  const notificationOptions = {
-    body: payload.notification?.body || 'You have a new notification.',
-    icon: '/logo.png',
-    badge: '/logo.png',
-    data: payload.data || {},
-    actions: [
-      { action: 'open', title: 'Open App' },
-      { action: 'dismiss', title: 'Dismiss' },
-    ],
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+    self.registration.showNotification(notificationTitle, notificationOptions);
+  });
+}
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {

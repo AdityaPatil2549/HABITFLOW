@@ -67,15 +67,9 @@ export function MomentumHorizon({
       aria-label="Momentum Horizon"
       className="card-raised p-4 sm:p-5 space-y-4 relative overflow-hidden"
     >
-      {/* Ambient background glow */}
-      <div
-        className="pointer-events-none absolute -right-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-20 bg-[var(--accent)]"
-        aria-hidden="true"
-      />
-
       <div className="flex items-center justify-between gap-2 relative">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-[var(--accent-subtle)] border border-[var(--accent)] flex items-center justify-center text-[var(--accent-ink)]">
+          <div className="w-6 h-6 rounded-md bg-[var(--accent-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--accent-ink)]">
             <TrendingUp size={13} />
           </div>
           <span className="font-label-caps">Momentum Horizon</span>
@@ -85,7 +79,7 @@ export function MomentumHorizon({
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${statusMeta.bg} ${statusMeta.color} border ${statusMeta.border} inline-flex items-center gap-1.5 shadow-sm`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dot} animate-pulse`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dot}`} />
             <StatusIcon size={10} />
             <span>{statusMeta.label}</span>
           </span>
@@ -107,7 +101,7 @@ export function MomentumHorizon({
         aria-label="Global habit momentum percentage"
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-[var(--accent)] to-[var(--accent-ink)] transition-all duration-300 shadow-[0_0_8px_rgba(var(--brand-500-rgb),0.4)]"
+          className="h-full rounded-full bg-[var(--accent)] transition-all duration-300"
           style={{ width: `${Math.min(100, Math.max(0, globalMomentum))}%` }}
         />
       </div>
@@ -145,9 +139,8 @@ export function MomentumHorizon({
           <circle
             cx={lastCoord.x}
             cy={lastCoord.y}
-            r="3.5"
+            r="3"
             fill="var(--accent)"
-            className="animate-pulse"
           />
           <circle
             cx={lastCoord.x}

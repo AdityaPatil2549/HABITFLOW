@@ -7,6 +7,7 @@ import { db } from '../db';
 import { cn } from '../lib/utils';
 import { soundService } from '../services/soundService';
 import { ExportReportButton } from '../components/ui/ExportReportButton';
+import type { HabitLog } from '../types';
 
 const AnalyticsOverviewTab = lazy(() =>
   import('../components/analytics/AnalyticsOverviewTab').then(m => ({ default: m.AnalyticsOverviewTab }))
@@ -35,7 +36,7 @@ export function AnalyticsPage() {
   const { tasks, loadTasks } = useTaskStore();
   const { moods, loadMoods } = useMoodStore();
   const [tab, setTab] = useState<TabType>('Overview');
-  const [logs30Days, setLogs30Days] = useState<Map<string, any[]>>(new Map());
+  const [logs30Days, setLogs30Days] = useState<Map<string, HabitLog[]>>(new Map());
 
   useEffect(() => {
     document.title = 'Analytics — HabitFlow';

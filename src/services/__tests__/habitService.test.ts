@@ -19,6 +19,23 @@ vi.mock('../../lib/firebase', () => ({
 import { habitService } from '../habitService';
 import { syncService } from '../syncService';
 import { db } from '../../db';
+import type { Habit } from '../../types';
+
+function makeMockHabit(overrides: Partial<Omit<Habit, 'id' | 'createdAt' | 'order'>> = {}): Omit<Habit, 'id' | 'createdAt' | 'order'> {
+  return {
+    name: 'Test',
+    icon: 'Target',
+    color: '#22c55e',
+    category: 'General',
+    type: 'boolean',
+    frequency: 'daily',
+    targetValue: 1,
+    startDate: '2026-01-01',
+    graceDayEnabled: false,
+    archived: false,
+    ...overrides,
+  };
+}
 
 describe('Habit Service - getStreakInfo', () => {
   beforeEach(async () => {
@@ -29,24 +46,14 @@ describe('Habit Service - getStreakInfo', () => {
   });
 
   it('should return 0 streak for empty logs', async () => {
-    const habit = await habitService.create({
-      name: 'Test',
-      frequency: 'daily',
-      type: 'boolean',
-      targetValue: 1,
-    } as any);
+    const habit = await habitService.create(makeMockHabit());
     const streak = await habitService.getStreakInfo(habit);
     expect(streak.current).toBe(0);
     expect(streak.best).toBe(0);
   });
 
   it('should calculate a simple daily streak correctly', async () => {
-    const habit = await habitService.create({
-      name: 'Test',
-      frequency: 'daily',
-      type: 'boolean',
-      targetValue: 1,
-    } as any);
+    const habit = await habitService.create(makeMockHabit());
 
     // Generate dates relative to today to avoid fake timers breaking IndexedDB
     const today = new Date();
@@ -67,17 +74,17 @@ describe('Habit Service - getStreakInfo', () => {
   });
 
   it('isScheduledForDate should identify daily habits', () => {
-    const habit = { frequency: 'daily' } as any;
+    const habit = {
+      ...makeMockHabit({ frequency: 'daily', startDate: '2020-01-01' }),
+      id: 'test',
+      createdAt: '',
+      order: 0,
+    };
     expect(habitService.isScheduledForDate(habit, '2023-10-01')).toBe(true);
   });
 
   it('should log completion and then unlog completion correctly', async () => {
-    const habit = await habitService.create({
-      name: 'Unlog Test Habit',
-      frequency: 'daily',
-      type: 'boolean',
-      targetValue: 1,
-    } as any);
+    const habit = await habitService.create(makeMockHabit({ name: 'Unlog Test Habit' }));
 
     const dateStr = '2026-11-04';
     await habitService.logCompletion(habit.id, dateStr, 1);
@@ -91,13 +98,7 @@ describe('Habit Service - getStreakInfo', () => {
   });
 
   it('should update habit properties accurately', async () => {
-    const habit = await habitService.create({
-      name: 'Initial Name',
-      frequency: 'daily',
-      type: 'boolean',
-      targetValue: 1,
-      color: '#10B981',
-    } as any);
+    const habit = await habitService.create(makeMockHabit({ name: 'Initial Name', color: '#10B981' }));
 
     await habitService.update(habit.id, { name: 'Updated Name', color: '#6366F1' });
     const fetched = await habitService.getById(habit.id);
@@ -106,13 +107,7 @@ describe('Habit Service - getStreakInfo', () => {
   });
 
   it('should archive and unarchive habit correctly', async () => {
-    const habit = await habitService.create({
-      name: 'Archive Test',
-      frequency: 'daily',
-      type: 'boolean',
-      targetValue: 1,
-      archived: false,
-    } as any);
+    const habit = await habitService.create(makeMockHabit({ name: 'Archive Test', archived: false }));
 
     await habitService.archive(habit.id);
     let fetched = await habitService.getById(habit.id);
@@ -124,12 +119,7 @@ describe('Habit Service - getStreakInfo', () => {
   });
 
   it('should delete habit and its associated logs', async () => {
-    const habit = await habitService.create({
-      name: 'Delete Test',
-      frequency: 'daily',
-      type: 'boolean',
-      targetValue: 1,
-    } as any);
+    const habit = await habitService.create(makeMockHabit({ name: 'Delete Test' }));
 
     await habitService.logCompletion(habit.id, '2026-11-04', 1);
     await habitService.delete(habit.id);
@@ -143,7 +133,12 @@ describe('Habit Service - getStreakInfo', () => {
 
   it('isScheduledForDate should correctly filter weekly scheduled days', () => {
     // 2026-11-04 is Wednesday (day 3)
-    const habit = { frequency: 'weekly', frequencyDays: [1, 3, 5] } as any; // Mon, Wed, Fri
+    const habit = {
+      ...makeMockHabit({ frequency: 'weekly', frequencyDays: [1, 3, 5] }),
+      id: 'test-weekly',
+      createdAt: '',
+      order: 0,
+    }; // Mon, Wed, Fri
     expect(habitService.isScheduledForDate(habit, '2026-11-04')).toBe(true);
 
     // 2026-11-06 is Friday (day 5)
@@ -154,12 +149,7 @@ describe('Habit Service - getStreakInfo', () => {
   });
 
   it('removeLog should queue a delete tombstone in syncService with real log ID', async () => {
-    const habit = await habitService.create({
-      name: 'Tombstone Test',
-      frequency: 'daily',
-      type: 'boolean',
-      targetValue: 1,
-    } as any);
+    const habit = await habitService.create(makeMockHabit({ name: 'Tombstone Test' }));
 
     const dateStr = '2026-11-04';
     const createdLog = await habitService.logCompletion(habit.id, dateStr, 1);
@@ -187,12 +177,13 @@ describe('Habit Service - getStreakInfo', () => {
   });
 
   it('incrementLog should add delta without resetting count habits and preserve primary log ID', async () => {
-    const habit = await habitService.create({
-      name: 'Drink 8 glasses',
-      frequency: 'daily',
-      type: 'count',
-      targetValue: 8,
-    } as any);
+    const habit = await habitService.create(
+      makeMockHabit({
+        name: 'Drink 8 glasses',
+        type: 'count',
+        targetValue: 8,
+      })
+    );
 
     const dateStr = '2026-11-04';
     const log1 = await habitService.incrementLog(habit.id, dateStr, 1);

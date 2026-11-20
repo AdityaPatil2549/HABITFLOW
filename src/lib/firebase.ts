@@ -8,7 +8,7 @@ import type { Analytics } from 'firebase/analytics';
 import type { Messaging } from 'firebase/messaging';
 import type { FirebasePerformance } from 'firebase/performance';
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'placeholder',
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'placeholder',
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'placeholder',

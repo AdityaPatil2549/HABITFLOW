@@ -44,7 +44,7 @@ export function HabitStepper({
             className={cn(
               'w-7 h-7 rounded-lg font-mono text-xs font-semibold transition-transform duration-100 cursor-pointer tabular-nums active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed',
               todayValue >= score
-                ? 'text-white'
+                ? 'text-[var(--accent-fg)]'
                 : 'text-[var(--tx-secondary)] hover:bg-[var(--sf-raised)] hover:text-[var(--tx-primary)]'
             )}
             style={
@@ -104,7 +104,7 @@ export function HabitStepper({
         className={cn(
           'w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all duration-100 active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
           isDone
-            ? 'text-white'
+            ? 'text-[var(--accent-fg)]'
             : 'bg-[var(--sf-raised)] text-[var(--tx-primary)] border border-[var(--border-default)] hover:border-[var(--accent)] hover:scale-105'
         )}
         style={

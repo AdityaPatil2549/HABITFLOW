@@ -13,12 +13,12 @@ import { habitSchema } from '../../lib/validations';
 import { DatePicker } from '../ui/date-picker';
 
 const CATEGORIES = [
-  { name: 'Health', icon: '🍎' },
-  { name: 'Learning', icon: '📚' },
-  { name: 'Work', icon: '💼' },
-  { name: 'Personal', icon: '✨' },
-  { name: 'Finance', icon: '💰' },
-  { name: 'Other', icon: '🌈' },
+  { name: 'Health', icon: 'HeartPulse' },
+  { name: 'Learning', icon: 'BookOpen' },
+  { name: 'Work', icon: 'Briefcase' },
+  { name: 'Personal', icon: 'Smile' },
+  { name: 'Finance', icon: 'Wallet' },
+  { name: 'Other', icon: 'Layers' },
 ];
 
 type TimeOfDay = NonNullable<Habit['timeOfDay']>;
@@ -227,7 +227,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                             : 'bg-[var(--sf-overlay)] border-[var(--border-default)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
                         )}
                       >
-                        <span>{c.icon}</span>
+                        <IconRenderer name={c.icon} size={13} />
                         <span>{c.name}</span>
                       </button>
                     );
@@ -348,10 +348,10 @@ export function QuickAddModalFixed({ onClose }: Props) {
                 <div className="grid grid-cols-4 gap-2">
                   {(
                     [
-                      { id: 'morning', label: 'Morning', icon: '🌅' },
-                      { id: 'afternoon', label: 'Midday', icon: '☀️' },
-                      { id: 'evening', label: 'Evening', icon: '🌙' },
-                      { id: 'anytime', label: 'Anytime', icon: '📌' },
+                      { id: 'morning', label: 'Morning', icon: 'Sunrise' },
+                      { id: 'afternoon', label: 'Midday', icon: 'Sun' },
+                      { id: 'evening', label: 'Evening', icon: 'Moon' },
+                      { id: 'anytime', label: 'Anytime', icon: 'Clock' },
                     ] as const
                   ).map(slot => (
                     <button
@@ -359,13 +359,13 @@ export function QuickAddModalFixed({ onClose }: Props) {
                       type="button"
                       onClick={() => setHabitTimeOfDay(slot.id)}
                       className={cn(
-                        'py-2 px-1.5 rounded-xl border flex flex-col items-center gap-1 text-center transition-colors cursor-pointer',
+                        'py-2 px-1.5 rounded-xl border flex flex-col items-center gap-1.5 text-center transition-colors cursor-pointer',
                         habitTimeOfDay === slot.id
                           ? 'bg-[var(--accent-subtle)] border-[var(--accent)] text-[var(--tx-primary)]'
                           : 'bg-[var(--sf-overlay)] border-[var(--border-default)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
                       )}
                     >
-                      <span className="text-sm">{slot.icon}</span>
+                      <IconRenderer name={slot.icon} size={16} />
                       <span className="text-[11px] font-semibold">{slot.label}</span>
                     </button>
                   ))}

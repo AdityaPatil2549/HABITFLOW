@@ -25,6 +25,11 @@ class PushNotificationService {
       return;
     }
     try {
+      if (isFirebaseConfigured()) {
+        const { firebaseConfig } = await import('@/lib/firebase');
+        const swUrl = `/firebase-messaging-sw.js?config=${encodeURIComponent(JSON.stringify(firebaseConfig))}`;
+        await navigator.serviceWorker.register(swUrl);
+      }
       this.swRegistration = await navigator.serviceWorker.ready;
       // Check if already subscribed via local state
       this.isSubscribed = !!localStorage.getItem('fcm_token');

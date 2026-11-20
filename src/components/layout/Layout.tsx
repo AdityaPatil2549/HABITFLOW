@@ -407,7 +407,7 @@ export function Layout() {
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[var(--accent)] shadow-[0_0_8px_rgba(var(--brand-500-rgb),0.6)]" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[var(--accent)]" />
                     )}
                     <Icon
                       size={17}
@@ -597,7 +597,7 @@ export function Layout() {
                     {item.label}
                   </span>
                   {isActive && (
-                    <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2.5px] rounded-full bg-[var(--accent)] shadow-[0_0_8px_rgba(var(--brand-500-rgb),0.7)]" />
+                    <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-[var(--accent)]" />
                   )}
                 </>
               )}

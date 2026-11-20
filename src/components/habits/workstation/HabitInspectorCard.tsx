@@ -5,7 +5,6 @@ import {
   Check,
   Calendar,
   Target,
-  Zap,
   TrendingUp,
   Clock,
   Layers,
@@ -84,14 +83,16 @@ export function HabitInspectorCard({
           <button
             onClick={() => onEdit(habit)}
             title="Edit Protocol"
-            className="p-1.5 rounded-lg text-[var(--tx-muted)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] transition-colors cursor-pointer"
+            aria-label="Edit Protocol"
+            className="p-1.5 rounded-lg text-[var(--tx-muted)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer"
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onArchive(habit.id)}
             title={habit.archived ? 'Restore Habit' : 'Archive Habit'}
-            className="p-1.5 rounded-lg text-[var(--tx-muted)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] transition-colors cursor-pointer"
+            aria-label={habit.archived ? 'Restore Habit' : 'Archive Habit'}
+            className="p-1.5 rounded-lg text-[var(--tx-muted)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] transition-colors cursor-pointer"
           >
             <Archive className="w-3.5 h-3.5" />
           </button>
@@ -227,13 +228,15 @@ export function HabitInspectorCard({
             <button
               onClick={() => onIncrement?.(habit, -1)}
               disabled={todayValue <= 0}
-              className="p-3 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              aria-label="Decrease habit progress"
+              className="p-3 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             >
               <Minus className="w-4 h-4" />
             </button>
             <button
               onClick={() => onIncrement?.(habit, 1)}
-              className="btn-primary flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold"
+              aria-label={`Log step for ${habit.name}`}
+              className="btn-primary flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Log Step ({todayValue}/{target})</span>
@@ -246,7 +249,8 @@ export function HabitInspectorCard({
               else soundService.playUncheck();
               onToggle(habit);
             }}
-            className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+            aria-label={isDone ? `Mark ${habit.name} incomplete` : `Complete ${habit.name}`}
+            className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
               isDone
                 ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)] shadow-sm'
                 : 'btn-primary'

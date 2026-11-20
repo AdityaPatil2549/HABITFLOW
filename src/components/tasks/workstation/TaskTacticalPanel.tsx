@@ -1,14 +1,8 @@
 import React from 'react';
 import {
   CheckCircle2,
-  Calendar,
-  AlertCircle,
-  Clock,
   Zap,
-  Target,
-  ArrowRight,
   Plus,
-  Flame,
   Check,
 } from 'lucide-react';
 import type { Task, Priority } from '../../../types';
