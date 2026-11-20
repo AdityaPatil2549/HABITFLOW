@@ -166,7 +166,7 @@ export const habitService = {
 
     // Transactional cascade: clear dependent child habit pointers so they are not orphaned
     await db.transaction('rw', [db.habits, db.habitLogs], async () => {
-      const dependentHabits = await db.habits.where('stackAfterHabitId').equals(id).toArray();
+      const dependentHabits = await db.habits.filter(h => h.stackAfterHabitId === id).toArray();
       for (const child of dependentHabits) {
         await db.habits.update(child.id, {
           stackAfterHabitId: undefined,
