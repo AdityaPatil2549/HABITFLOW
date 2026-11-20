@@ -5,6 +5,7 @@ import type { Task, Priority } from '../types';
 import { TaskRow } from '../components/tasks/workstation/TaskRow';
 import { TaskFilterBar, type TaskViewTab } from '../components/tasks/workstation/TaskFilterBar';
 import { TaskEditorModal } from '../components/tasks/workstation/TaskEditorModal';
+import { TaskTacticalPanel } from '../components/tasks/workstation/TaskTacticalPanel';
 import { isToday, isPast, parseISO, isFuture, endOfDay } from 'date-fns';
 import { soundService } from '../services/soundService';
 
@@ -179,7 +180,7 @@ export function TasksPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-transparent text-[var(--tx-primary)] pb-28 pt-2 sm:pt-4 px-2 sm:px-4 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-transparent text-[var(--tx-primary)] pb-28 pt-2 sm:pt-4 px-2 sm:px-6 max-w-7xl mx-auto">
       {/* ── Page Header ─────────────────────────────────────────── */}
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[var(--border-default)]">
         <div>
@@ -194,8 +195,10 @@ export function TasksPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline-flex text-[11px] font-mono text-[var(--tx-muted)]">
-            Press <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">C</kbd> to add
+          <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-mono text-[var(--tx-muted)]">
+            <span>Press</span>
+            <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)] font-semibold">C</kbd>
+            <span>to add</span>
           </span>
 
           <button
@@ -211,67 +214,84 @@ export function TasksPage() {
         </div>
       </header>
 
-      {/* ── Filter Bar ──────────────────────────────────────────── */}
-      <div className="my-6">
-        <TaskFilterBar
-          currentTab={currentTab}
-          onSelectTab={setCurrentTab}
-          selectedPriority={selectedPriority}
-          onSelectPriority={setSelectedPriority}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          counts={tabCounts}
-          searchInputRef={searchInputRef}
-        />
-      </div>
+      {/* ── Main Workstation Dual-Pane Grid ──────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 my-6 items-start">
+        {/* Left Column: Task Filter Bar & Task List (7 cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          <TaskFilterBar
+            currentTab={currentTab}
+            onSelectTab={setCurrentTab}
+            selectedPriority={selectedPriority}
+            onSelectPriority={setSelectedPriority}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            counts={tabCounts}
+            searchInputRef={searchInputRef}
+          />
 
-      {/* ── Task List ───────────────────────────────────────────── */}
-      <main className="space-y-2">
-        {loading && tasks.length === 0 ? (
-          <div className="space-y-3 py-6">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-12 rounded-xl bg-[var(--sf-raised)] border border-[var(--border-default)] animate-pulse" />
-            ))}
-          </div>
-        ) : filteredTasks.length === 0 ? (
-          <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--sf-raised)] my-4">
-            <div className="w-12 h-12 rounded-xl bg-[var(--sf-overlay)] flex items-center justify-center mx-auto mb-3 text-2xl">
-              ✅
-            </div>
-            <h3 className="text-base font-semibold text-[var(--tx-primary)] mb-1">
-              {currentTab === 'completed' ? 'No completed tasks yet' : 'No tasks in this view'}
-            </h3>
-            <p className="text-xs text-[var(--tx-secondary)] max-w-xs mx-auto mb-4">
-              {searchQuery
-                ? `No tasks match "${searchQuery}".`
-                : 'All caught up! Create a new action item to stay ahead.'}
-            </p>
-            {currentTab !== 'completed' && (
-              <button
-                onClick={() => {
-                  setEditingTask(null);
-                  setIsModalOpen(true);
-                }}
-                className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Add Task</span>
-              </button>
+          <main className="space-y-2">
+            {loading && tasks.length === 0 ? (
+              <div className="space-y-3 py-6">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-12 rounded-xl bg-[var(--sf-raised)] border border-[var(--border-default)] animate-pulse" />
+                ))}
+              </div>
+            ) : filteredTasks.length === 0 ? (
+              <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--sf-raised)] my-4">
+                <div className="w-12 h-12 rounded-xl bg-[var(--sf-overlay)] flex items-center justify-center mx-auto mb-3 text-2xl">
+                  ✅
+                </div>
+                <h3 className="text-base font-semibold text-[var(--tx-primary)] mb-1">
+                  {currentTab === 'completed' ? 'No completed tasks yet' : 'No tasks in this view'}
+                </h3>
+                <p className="text-xs text-[var(--tx-secondary)] max-w-xs mx-auto mb-4">
+                  {searchQuery
+                    ? `No tasks match "${searchQuery}".`
+                    : 'All caught up! Create a new action item to stay ahead.'}
+                </p>
+                {currentTab !== 'completed' && (
+                  <button
+                    onClick={() => {
+                      setEditingTask(null);
+                      setIsModalOpen(true);
+                    }}
+                    className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Add Task</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              filteredTasks.map(task => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  projectName={task.projectId ? projectMap.get(task.projectId) : undefined}
+                  onToggle={handleToggle}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))
             )}
-          </div>
-        ) : (
-          filteredTasks.map(task => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              projectName={task.projectId ? projectMap.get(task.projectId) : undefined}
-              onToggle={handleToggle}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))
-        )}
-      </main>
+          </main>
+        </div>
+
+        {/* Right Column: Tactical Matrix & Focus Spotlight (5 cols) */}
+        <aside className="hidden lg:block lg:col-span-5">
+          <TaskTacticalPanel
+            tasks={tasks}
+            selectedPriority={selectedPriority}
+            onSelectPriority={setSelectedPriority}
+            onOpenNewTask={() => {
+              setEditingTask(null);
+              setIsModalOpen(true);
+            }}
+            onToggleTask={handleToggle}
+            onEditTask={handleEdit}
+          />
+        </aside>
+      </div>
 
       {/* ── Task Editor Modal ───────────────────────────────────── */}
       <TaskEditorModal

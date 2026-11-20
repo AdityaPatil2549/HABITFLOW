@@ -82,44 +82,30 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-32 relative">
-      {/* Header */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-[var(--ok)] bg-[var(--ok-subtle)] border border-[var(--ok)]/25 mb-2">
-            <span className="w-2 h-2 rounded-full bg-[var(--ok)]" />
-            <span>Telemetry &amp; Insights</span>
-          </div>
-          <h1 className="text-3xl font-black text-[var(--tx-primary)] tracking-tight">
-            Your Progress Report
-          </h1>
-          <p className="text-[var(--tx-secondary)] text-sm mt-1">
-            Track, analyze, and compound your habit consistency over time.
-          </p>
+      {/* Modern Tactile Segmented Tabs & Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-1.5 p-1.5 bg-[var(--sf-raised)] rounded-xl border border-[var(--border-default)]">
+          {TABS.map(t => (
+            <button
+              key={t}
+              onClick={() => {
+                setTab(t);
+                soundService.playTick();
+              }}
+              className={cn(
+                'px-4 py-2 sm:px-5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-150 whitespace-nowrap flex-grow sm:flex-grow-0 text-center cursor-pointer',
+                tab === t
+                  ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/30'
+                  : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] border border-transparent'
+              )}
+            >
+              {t}
+            </button>
+          ))}
         </div>
-        <div className="self-start sm:self-auto">
+        <div className="self-end sm:self-auto">
           <ExportReportButton />
         </div>
-      </div>
-
-      {/* Modern Tactile Segmented Tabs */}
-      <div className="flex flex-wrap gap-1.5 p-1.5 bg-[var(--sf-raised)] rounded-xl border border-[var(--border-default)]">
-        {TABS.map(t => (
-          <button
-            key={t}
-            onClick={() => {
-              setTab(t);
-              soundService.playTick();
-            }}
-            className={cn(
-              'px-4 py-2 sm:px-5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-150 whitespace-nowrap flex-grow sm:flex-grow-0 text-center cursor-pointer',
-              tab === t
-                ? 'bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/30'
-                : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] border border-transparent'
-            )}
-          >
-            {t}
-          </button>
-        ))}
       </div>
 
       {/* Tab Content Panes */}

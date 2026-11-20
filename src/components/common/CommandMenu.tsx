@@ -109,7 +109,7 @@ export function CommandMenu() {
             </div>
 
             {/* Scrollable Command List */}
-            <Command.List className="max-h-[380px] sm:max-h-[460px] overflow-y-auto p-3 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            <Command.List className="max-h-[360px] sm:max-h-[440px] overflow-y-auto p-3 pb-8 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
               <Command.Empty className="py-12 text-center text-sm text-[var(--tx-muted)]">
                 <span className="block text-2xl mb-2">🔭</span>
                 No matching rituals, tasks, or commands found.

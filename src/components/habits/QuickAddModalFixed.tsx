@@ -135,7 +135,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
         className="relative w-full max-w-[512px] md:mx-4 bg-[var(--sf-raised)] border-t md:border border-[var(--border-strong)] rounded-t-2xl md:rounded-2xl overflow-hidden pb-[env(safe-area-inset-bottom)]"
       >
         {/* Header */}
-        <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 flex items-center justify-between border-b border-[var(--border-default)]">
+        <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 flex items-center justify-between border-b border-[var(--border-default)] shrink-0 bg-[var(--sf-raised)]">
           <div>
             <p className="font-label-caps">Quick Entry</p>
             <h2 className="font-h2 text-[var(--tx-primary)] mt-0.5">Create New</h2>
@@ -151,7 +151,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
         </div>
 
         {/* Mode Tabs */}
-        <div className="px-4 sm:px-6 pt-4">
+        <div className="px-4 sm:px-6 pt-4 shrink-0 bg-[var(--sf-raised)]">
           <div className="grid grid-cols-2 p-1 bg-[var(--sf-overlay)] rounded-xl border border-[var(--border-default)]">
             {(['habit', 'task'] as const).map(t => {
               const isActive = tab === t;
@@ -163,7 +163,7 @@ export function QuickAddModalFixed({ onClose }: Props) {
                   className={cn(
                     'py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer',
                     isActive
-                      ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
+                      ? 'bg-[var(--accent)] text-[var(--accent-fg)] shadow-sm'
                       : 'text-[var(--tx-secondary)] hover:text-[var(--tx-primary)]'
                   )}
                 >
@@ -176,9 +176,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
         </div>
 
         {/* Forms Container */}
-        <div className="px-4 sm:px-6 py-4 sm:py-5 max-h-[70vh] sm:max-h-[65vh] overflow-y-auto">
+        <div className="px-4 sm:px-6 py-4 max-h-[calc(75vh-150px)] sm:max-h-[calc(70vh-150px)] overflow-y-auto space-y-4 sm:space-y-5">
           {tab === 'habit' ? (
-            <form onSubmit={handleHabitSubmit} className="space-y-4 sm:space-y-5">
+            <form id="quick-add-habit-form" onSubmit={handleHabitSubmit} className="space-y-4 sm:space-y-5">
               {/* Icon Gallery Picker */}
               <IconPicker
                 value={habitIcon}
@@ -239,11 +239,11 @@ export function QuickAddModalFixed({ onClose }: Props) {
               <div>
                 <label className="font-label-caps mb-2 block">Habit Name</label>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center z-10">
                     <IconRenderer name={habitIcon} color={habitColor} size={18} />
                   </div>
                   <input
-                    className="input w-full pl-12 pr-4 py-3 text-sm font-medium"
+                    className="input w-full pl-11 pr-4 py-3 text-sm font-medium"
                     placeholder="e.g. Read 20 pages"
                     value={habitName}
                     onChange={e => setHabitName(e.target.value)}
@@ -396,17 +396,9 @@ export function QuickAddModalFixed({ onClose }: Props) {
                     ))}
                 </select>
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl btn-primary text-sm flex items-center justify-center gap-2"
-              >
-                <Flame size={15} />
-                <span>Create Habit</span>
-              </button>
             </form>
           ) : (
-            <form onSubmit={handleTaskSubmit} className="space-y-5">
+            <form id="quick-add-task-form" onSubmit={handleTaskSubmit} className="space-y-5">
               <div>
                 <label className="font-label-caps mb-2 block">Task Title</label>
                 <input
@@ -442,16 +434,27 @@ export function QuickAddModalFixed({ onClose }: Props) {
                   </select>
                 </div>
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl btn-primary text-sm flex items-center justify-center gap-2"
-              >
-                <Plus size={16} />
-                <span>Add Task</span>
-              </button>
             </form>
           )}
+        </div>
+
+        {/* Sticky Action Footer - 100% Guaranteed Visible */}
+        <div className="px-4 sm:px-6 py-3.5 border-t border-[var(--border-default)] bg-[var(--sf-overlay)]/95 backdrop-blur-md shrink-0 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => dialogRef.current?.close()}
+            className="btn-secondary px-4 py-2.5 text-xs font-semibold cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form={tab === 'habit' ? 'quick-add-habit-form' : 'quick-add-task-form'}
+            className="flex-1 btn-primary py-2.5 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[var(--accent)]/20"
+          >
+            {tab === 'habit' ? <Flame size={14} /> : <Plus size={14} />}
+            <span>{tab === 'habit' ? 'Create Habit' : 'Add Task'}</span>
+          </button>
         </div>
       </motion.div>
     </dialog>

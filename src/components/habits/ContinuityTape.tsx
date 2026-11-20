@@ -1,6 +1,7 @@
 import type { Habit, HabitLog } from '@/types';
 import { cn } from '@/lib/utils';
 import { STATE_SYMBOL, buildContinuityTapeDays } from './continuityUtils';
+import { Check, Flame, Shield, Minus } from 'lucide-react';
 
 interface ContinuityTapeProps {
   habit: Pick<Habit, 'id' | 'name' | 'targetValue' | 'graceDayEnabled' | 'color'>;
@@ -10,6 +11,7 @@ interface ContinuityTapeProps {
 
 export function ContinuityTape({ habit, logs, todayStr }: ContinuityTapeProps) {
   const cells = buildContinuityTapeDays(habit, logs, todayStr);
+  const color = habit.color || 'var(--accent)';
 
   return (
     <div
@@ -24,24 +26,37 @@ export function ContinuityTape({ habit, logs, todayStr }: ContinuityTapeProps) {
           key={cell.date}
           title={cell.label}
           className={cn(
-            'inline-flex items-center justify-center w-4 h-4 text-[11px] leading-none font-mono select-none rounded-[4px] transition-all duration-100',
-            cell.state === 'done' && !habit.color && 'text-[var(--accent-ink)] bg-[var(--accent-subtle)]',
-            cell.state === 'comeback' && 'text-amber-400 bg-amber-500/20 font-bold border border-amber-500/30',
-            cell.state === 'freeze' && 'text-cyan-300 bg-cyan-500/20 border border-cyan-500/30',
-            cell.state === 'grace' && 'text-[var(--tx-secondary)] bg-[var(--sf-overlay)] border border-[var(--border-default)]',
-            cell.state === 'pending' && 'text-[var(--tx-muted)] bg-[var(--sf-dim)] opacity-40'
+            'inline-flex items-center justify-center w-3.5 h-3.5 rounded-[4px] select-none transition-all duration-150',
+            cell.state === 'done' && 'shadow-sm',
+            cell.state === 'comeback' && 'bg-amber-500/20 text-amber-400 border border-amber-500/35 shadow-[0_0_8px_rgba(245,158,11,0.25)]',
+            cell.state === 'freeze' && 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35 shadow-[0_0_8px_rgba(6,182,212,0.25)]',
+            cell.state === 'grace' && 'bg-white/5 border border-white/10 text-[var(--tx-muted)]',
+            cell.state === 'pending' && 'bg-white/[0.03] border border-white/10 text-transparent'
           )}
           style={
-            cell.state === 'done' && habit.color
+            cell.state === 'done'
               ? {
-                  color: habit.color,
-                  backgroundColor: `${habit.color}22`,
-                  border: `1px solid ${habit.color}40`,
+                  backgroundColor: color,
+                  boxShadow: `0 0 8px 1px ${color}40`,
                 }
               : undefined
           }
         >
-          {STATE_SYMBOL[cell.state]}
+          {cell.state === 'done' && (
+            <Check size={9} className="text-black stroke-[3.5]" />
+          )}
+          {cell.state === 'comeback' && (
+            <Flame size={9} className="fill-amber-400" />
+          )}
+          {cell.state === 'freeze' && (
+            <Shield size={9} className="fill-cyan-400" />
+          )}
+          {cell.state === 'grace' && (
+            <Minus size={9} className="stroke-[2.5]" />
+          )}
+          {cell.state === 'pending' && (
+            <span className="w-1 h-1 rounded-full bg-white/15" />
+          )}
         </span>
       ))}
     </div>

@@ -416,7 +416,7 @@ export function SettingsPage() {
               <Palette size={12} /> Armory Inks
             </Link>
           </label>
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
+          <div className="grid grid-cols-3 sm:grid-cols-9 gap-2">
             {ACCENT_CARTRIDGES.map(t => {
               const unlockedSet = normalizeUnlockedThemes(userXP?.unlockedThemes);
               const isUnlocked = unlockedSet.includes(t.id);

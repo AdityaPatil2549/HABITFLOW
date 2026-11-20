@@ -10,6 +10,7 @@ import {
   Layers,
   Zap,
   Play,
+  Flame,
 } from 'lucide-react';
 import { useToast } from '@/components/common/toastStore';
 import { soundService, type AcousticPackId } from '@/services/soundService';
@@ -230,9 +231,10 @@ export function ShopPage() {
                 <div className="flex items-start justify-between gap-2">
                   {cartridge ? (
                     <span
-                      className="w-10 h-10 rounded-xl border border-[var(--border-strong)] flex items-center justify-center shrink-0"
+                      className="w-9 h-9 rounded-xl border border-[var(--border-strong)] flex items-center justify-center shrink-0 shadow-sm"
                       style={{
                         backgroundColor: cartridge.swatchDark,
+                        boxShadow: `0 0 14px -2px ${cartridge.swatchDark}60`,
                         outline:
                           hoveredTheme === cartridge.swatchDark
                             ? `2px solid ${cartridge.swatchDark}`
@@ -240,10 +242,36 @@ export function ShopPage() {
                         outlineOffset: '2px',
                       }}
                     >
-                      <Palette size={16} className="text-white" />
+                      <Palette size={15} className="text-white" />
                     </span>
+                  ) : item.id === 'streak_freeze' ? (
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 shadow-sm">
+                      <Shield size={18} className="stroke-[2.2]" />
+                    </div>
+                  ) : item.id === 'frame_emerald' ? (
+                    <div className="w-9 h-9 rounded-full border-2 border-emerald-400 p-0.5 shadow-[0_0_12px_rgba(52,211,153,0.35)] shrink-0">
+                      <div className="w-full h-full rounded-full border border-dashed border-emerald-300/80 bg-emerald-950/40 flex items-center justify-center text-[9px] font-mono font-bold text-emerald-300">
+                        OP
+                      </div>
+                    </div>
+                  ) : item.id === 'frame_gold' ? (
+                    <div className="w-9 h-9 rounded-full border-2 border-amber-400 p-0.5 shadow-[0_0_12px_rgba(251,191,36,0.35)] shrink-0">
+                      <div className="w-full h-full rounded-full border border-amber-300/60 bg-amber-950/40 flex items-center justify-center text-[9px] font-mono font-bold text-amber-300">
+                        CHR
+                      </div>
+                    </div>
+                  ) : item.id === 'frame_fire' ? (
+                    <div className="w-9 h-9 rounded-full border-2 border-orange-500 p-0.5 shadow-[0_0_12px_rgba(249,115,22,0.4)] shrink-0">
+                      <div className="w-full h-full rounded-full bg-orange-950/40 flex items-center justify-center text-[9px] font-mono font-bold text-orange-400">
+                        <Flame size={13} className="fill-orange-400" />
+                      </div>
+                    </div>
+                  ) : item.category === 'acoustic_pack' ? (
+                    <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0 shadow-sm">
+                      <Volume2 size={18} />
+                    </div>
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-xl shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-lg shrink-0">
                       <span aria-hidden="true">{item.icon}</span>
                     </div>
                   )}
@@ -259,6 +287,48 @@ export function ShopPage() {
                     {item.description}
                   </p>
                 </div>
+
+                {/* Live Miniature Swatch Preview for Inks */}
+                {cartridge && (
+                  <div
+                    className="p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-all mt-2"
+                    style={{
+                      backgroundColor: 'var(--sf-overlay)',
+                      borderLeftWidth: '3.5px',
+                      borderLeftColor: cartridge.swatchDark,
+                      borderColor:
+                        hoveredTheme === cartridge.swatchDark
+                          ? cartridge.swatchDark
+                          : 'var(--border-default)',
+                      boxShadow: `0 4px 16px -4px ${cartridge.swatchDark}35`,
+                    }}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
+                        style={{
+                          backgroundColor: `${cartridge.swatchDark}25`,
+                          color: cartridge.swatchDark,
+                        }}
+                      >
+                        <Check size={11} strokeWidth={3} />
+                      </span>
+                      <span className="text-[11px] font-semibold text-[var(--tx-primary)] truncate">
+                        {cartridge.label} Preview
+                      </span>
+                    </div>
+                    <div
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0"
+                      style={{
+                        backgroundColor: `${cartridge.swatchDark}18`,
+                        color: cartridge.swatchDark,
+                      }}
+                    >
+                      <Zap size={9} />
+                      <span>Live Ink</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between gap-2 pt-3 border-t border-[var(--border-default)]">

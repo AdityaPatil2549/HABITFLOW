@@ -48,10 +48,23 @@ export function InsightsPage() {
       {/* Unified Insights Mode Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[var(--border-default)]">
         <div>
-          <p className="font-label-caps">Workspace / Insights</p>
-          <h1 className="font-h1 text-[var(--tx-primary)] mt-1">
-            {view === 'review' ? 'Weekly Review' : 'Behavioral Telemetry'}
+          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--tx-secondary)] mb-1">
+            <span className="px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent-ink)] border border-[var(--accent)]/25 font-bold">
+              Workspace / Telemetry
+            </span>
+            <span>•</span>
+            <span className="text-[var(--tx-muted)]">
+              {view === 'review' ? 'Algorithmic Synthesis' : 'Behavioral Kinetics'}
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--tx-primary)] mt-0.5">
+            {view === 'review' ? 'Weekly Retrospective' : 'Behavioral Telemetry'}
           </h1>
+          <p className="text-xs text-[var(--tx-secondary)] mt-1">
+            {view === 'review'
+              ? 'Offline algorithmic synthesis of your habits, mood vectors, and task throughput.'
+              : 'Track, analyze, and compound your habit consistency over time.'}
+          </p>
         </div>
 
         <div

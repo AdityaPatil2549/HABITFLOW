@@ -124,26 +124,26 @@ function HabitEditorDrawerInner({
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ duration: 0.16, ease: 'easeOut' }}
-        className="relative w-full max-w-md h-full bg-[var(--sf-raised)] border-l border-[var(--border-strong)] shadow-2xl p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] flex flex-col justify-between overflow-y-auto z-10"
+        className="relative w-full max-w-md h-full bg-[var(--sf-raised)] border-l border-[var(--border-strong)] shadow-2xl flex flex-col justify-between overflow-hidden z-10"
       >
-        <div>
-          {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-[var(--border-default)]">
-            <h2 className="text-base font-semibold text-[var(--tx-primary)]">
-              {initialHabit ? 'Edit Habit' : 'New Habit'}
-            </h2>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close habit editor"
-              className="p-1 rounded-lg text-[var(--tx-muted)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[var(--border-default)] shrink-0 bg-[var(--sf-raised)]">
+          <h2 className="text-base font-semibold text-[var(--tx-primary)]">
+            {initialHabit ? 'Edit Habit' : 'New Habit'}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close habit editor"
+            className="p-1 rounded-lg text-[var(--tx-muted)] hover:text-[var(--tx-primary)] hover:bg-[var(--sf-overlay)] transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-          {/* Form */}
-          <form id="habit-form" onSubmit={handleSubmit} className="space-y-5 mt-5">
+        {/* Scrollable Form Body */}
+        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5">
+          <form id="habit-form" onSubmit={handleSubmit} className="space-y-5">
             {/* Habit Name */}
             <div>
               <label className="block text-[11px] font-medium uppercase tracking-wider text-[var(--tx-secondary)] mb-1.5">
@@ -156,7 +156,7 @@ function HabitEditorDrawerInner({
                 onChange={e => setName(e.target.value)}
                 placeholder="e.g. Read 20 pages, Morning meditation..."
                 required
-                className="input"
+                className="input w-full"
               />
             </div>
 
@@ -348,12 +348,12 @@ function HabitEditorDrawerInner({
           </form>
         </div>
 
-        {/* Footer Actions */}
-        <div className="pt-4 border-t border-[var(--border-default)] flex items-center justify-end gap-3 mt-8">
+        {/* Sticky Footer Actions */}
+        <div className="px-5 sm:px-6 py-3.5 border-t border-[var(--border-default)] bg-[var(--sf-overlay)]/95 backdrop-blur-md shrink-0 flex items-center justify-between gap-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={onClose}
-            className="btn-secondary px-4 py-2 text-xs font-medium"
+            className="btn-secondary px-4 py-2 text-xs font-semibold cursor-pointer"
           >
             Cancel
           </button>
@@ -361,7 +361,7 @@ function HabitEditorDrawerInner({
             type="submit"
             form="habit-form"
             disabled={isSubmitting || !name.trim()}
-            className="btn-primary px-5 py-2 text-xs font-semibold disabled:opacity-50"
+            className="btn-primary px-5 py-2 text-xs font-semibold disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[var(--accent)]/20"
           >
             {initialHabit ? 'Save Changes' : 'Create Habit'}
           </button>

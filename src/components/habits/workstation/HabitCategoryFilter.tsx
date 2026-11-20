@@ -58,14 +58,14 @@ export function HabitCategoryFilter({
       {/* Search Input & Status Toggle */}
       <div className="flex items-center gap-2.5">
         <div className="relative flex-1 sm:w-60">
-          <Search className="w-4 h-4 text-[var(--tx-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-[var(--tx-muted)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
             placeholder="Search habits... (/)"
-            className="input pl-9 pr-8 py-2 text-xs"
+            className="input w-full pl-10 pr-8 py-2 text-xs font-medium"
           />
           {searchQuery && (
             <button

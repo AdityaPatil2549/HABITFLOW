@@ -5,6 +5,7 @@ import type { HabitWithStreak, Habit } from '../types';
 import { HabitRow } from '../components/habits/workstation/HabitRow';
 import { HabitCategoryFilter } from '../components/habits/workstation/HabitCategoryFilter';
 import { HabitEditorDrawer } from '../components/habits/workstation/HabitEditorDrawer';
+import { HabitInspectorCard } from '../components/habits/workstation/HabitInspectorCard';
 import { soundService } from '../services/soundService';
 
 export function HabitsPage() {
@@ -24,6 +25,7 @@ export function HabitsPage() {
   const [showArchived, setShowArchived] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [editingHabit, setEditingHabit] = useState<HabitWithStreak | null>(null);
+  const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -152,8 +154,17 @@ export function HabitsPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Active selected habit for Inspector Card
+  const selectedHabit = useMemo(() => {
+    if (selectedHabitId) {
+      const match = habits.find(h => h.id === selectedHabitId);
+      if (match) return match;
+    }
+    return filteredHabits[0] || habits[0] || null;
+  }, [habits, filteredHabits, selectedHabitId]);
+
   return (
-    <div className="min-h-screen bg-transparent text-[var(--tx-primary)] pb-28 pt-2 sm:pt-4 px-2 sm:px-4 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-transparent text-[var(--tx-primary)] pb-28 pt-2 sm:pt-4 px-2 sm:px-6 max-w-7xl mx-auto">
       {/* ── Page Header ─────────────────────────────────────────── */}
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[var(--border-default)]">
         <div>
@@ -168,8 +179,10 @@ export function HabitsPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline-flex text-[11px] font-mono text-[var(--tx-muted)]">
-            Press <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)]">C</kbd> to create
+          <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-mono text-[var(--tx-muted)]">
+            <span>Press</span>
+            <kbd className="px-1.5 py-0.5 rounded-md bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)] font-semibold">C</kbd>
+            <span>to create</span>
           </span>
 
           <button
@@ -185,81 +198,96 @@ export function HabitsPage() {
         </div>
       </header>
 
-      {/* ── Filter Bar ──────────────────────────────────────────── */}
-      <div className="my-6">
-        <HabitCategoryFilter
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          showArchived={showArchived}
-          onToggleArchived={() => setShowArchived(prev => !prev)}
-          searchInputRef={searchInputRef}
-        />
-      </div>
+      {/* ── Main Workstation Dual-Pane Grid ──────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 my-6 items-start">
+        {/* Left Column: Filter Bar & Habits List (7 cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          <HabitCategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            showArchived={showArchived}
+            onToggleArchived={() => setShowArchived(prev => !prev)}
+            searchInputRef={searchInputRef}
+          />
 
-      {/* ── Habits Workstation List ─────────────────────────────── */}
-      <main className="space-y-2">
-        {loading && habits.length === 0 ? (
-          <div className="space-y-2 py-2">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div
-                key={i}
-                className="h-14 rounded-xl bg-[var(--sf-raised)] border border-[var(--border-default)] px-4 flex items-center justify-between animate-pulse"
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-8 h-8 rounded-lg bg-[var(--sf-overlay)] flex-shrink-0" />
-                  <div className="h-4 w-36 bg-[var(--sf-overlay)] rounded" />
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-3 w-16 bg-[var(--sf-overlay)] rounded hidden sm:block" />
-                  <div className="w-7 h-7 rounded-lg bg-[var(--sf-overlay)]" />
-                </div>
+          <main className="space-y-2">
+            {loading && habits.length === 0 ? (
+              <div className="space-y-2 py-2">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div
+                    key={i}
+                    className="h-14 rounded-xl bg-[var(--sf-raised)] border border-[var(--border-default)] px-4 flex items-center justify-between animate-pulse"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-8 h-8 rounded-lg bg-[var(--sf-overlay)] flex-shrink-0" />
+                      <div className="h-4 w-36 bg-[var(--sf-overlay)] rounded" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="h-3 w-16 bg-[var(--sf-overlay)] rounded hidden sm:block" />
+                      <div className="w-7 h-7 rounded-lg bg-[var(--sf-overlay)]" />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : filteredHabits.length === 0 ? (
-          <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--sf-raised)] my-4">
-            <div className="w-12 h-12 rounded-xl bg-[var(--sf-overlay)] flex items-center justify-center mx-auto mb-3 text-2xl">
-              🎯
-            </div>
-            <h3 className="text-base font-semibold text-[var(--tx-primary)] mb-1">
-              {showArchived ? 'No archived habits' : 'No habits found'}
-            </h3>
-            <p className="text-xs text-[var(--tx-secondary)] max-w-xs mx-auto mb-4">
-              {searchQuery
-                ? `No habits match "${searchQuery}". Try clearing filters.`
-                : 'Get started by creating your first atomic habit.'}
-            </p>
-            {!showArchived && (
-              <button
-                onClick={() => {
-                  setEditingHabit(null);
-                  setIsDrawerOpen(true);
-                }}
-                className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Create Habit</span>
-              </button>
+            ) : filteredHabits.length === 0 ? (
+              <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--sf-raised)] my-4">
+                <div className="w-12 h-12 rounded-xl bg-[var(--sf-overlay)] flex items-center justify-center mx-auto mb-3 text-2xl">
+                  🎯
+                </div>
+                <h3 className="text-base font-semibold text-[var(--tx-primary)] mb-1">
+                  {showArchived ? 'No archived habits' : 'No habits found'}
+                </h3>
+                <p className="text-xs text-[var(--tx-secondary)] max-w-xs mx-auto mb-4">
+                  {searchQuery
+                    ? `No habits match "${searchQuery}". Try clearing filters.`
+                    : 'Get started by creating your first atomic habit.'}
+                </p>
+                {!showArchived && (
+                  <button
+                    onClick={() => {
+                      setEditingHabit(null);
+                      setIsDrawerOpen(true);
+                    }}
+                    className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Create Habit</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              filteredHabits.map((habit, idx) => (
+                <HabitRow
+                  key={habit.id}
+                  habit={habit}
+                  isSelected={selectedHabit?.id === habit.id}
+                  onSelect={h => setSelectedHabitId(h.id)}
+                  onToggle={handleToggle}
+                  onIncrement={handleIncrement}
+                  onEdit={handleEdit}
+                  onArchive={handleArchive}
+                  onDelete={handleDelete}
+                  index={idx}
+                />
+              ))
             )}
-          </div>
-        ) : (
-          filteredHabits.map((habit, idx) => (
-            <HabitRow
-              key={habit.id}
-              habit={habit}
-              onToggle={handleToggle}
-              onIncrement={handleIncrement}
-              onEdit={handleEdit}
-              onArchive={handleArchive}
-              onDelete={handleDelete}
-              index={idx}
-            />
-          ))
-        )}
-      </main>
+          </main>
+        </div>
+
+        {/* Right Column: Selected Habit Tactical Inspector (5 cols) */}
+        <aside className="hidden lg:block lg:col-span-5">
+          <HabitInspectorCard
+            habit={selectedHabit}
+            onEdit={handleEdit}
+            onToggle={handleToggle}
+            onIncrement={handleIncrement}
+            onArchive={handleArchive}
+          />
+        </aside>
+      </div>
 
       {/* ── Habit Editor Slide-Over Drawer ──────────────────────── */}
       <HabitEditorDrawer

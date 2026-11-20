@@ -145,33 +145,22 @@ export function WeeklyReviewPage() {
   }, [activeHabits]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-default)]">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-[var(--tx-primary)] tracking-tight">
-              Weekly Retrospective
-            </h1>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[var(--sf-overlay)] text-[var(--tx-muted)] border border-[var(--border-default)]">
-              {weekLabel}
-            </span>
-          </div>
-          <p className="text-xs text-[var(--tx-secondary)] mt-1">
-            Offline algorithmic synthesis of your habits, mood vectors, and task throughput.
-          </p>
-        </div>
-
-        {/* Share / Export Action */}
+    <div className="w-full max-w-5xl mx-auto py-2 pb-24 space-y-6">
+      {/* Week Cycle & Export Action */}
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-xs font-mono px-3 py-1 rounded-full bg-[var(--sf-overlay)] text-[var(--tx-secondary)] border border-[var(--border-default)] font-semibold">
+          Cycle: {weekLabel}
+        </span>
         <button
           onClick={() => {
             setShareModalOpen(true);
             soundService.playTick();
           }}
-          className="btn-secondary px-4 py-2 text-xs font-mono flex items-center gap-2 self-start sm:self-auto"
+          className="btn-secondary px-3.5 py-1.5 text-xs font-mono flex items-center gap-2 cursor-pointer"
         >
-          <Share2 size={14} className="text-[var(--accent-ink)]" />
-          Export Artifact <span className="text-xs text-[var(--tx-muted)] font-mono">[E]</span>
+          <Share2 size={13} className="text-[var(--accent-ink)]" />
+          <span>Export Artifact</span>
+          <kbd className="text-[10px] text-[var(--tx-muted)] font-mono bg-[var(--sf-raised)] px-1.5 py-0.5 rounded border border-[var(--border-default)]">E</kbd>
         </button>
       </div>
 

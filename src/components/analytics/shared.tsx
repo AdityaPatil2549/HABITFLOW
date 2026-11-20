@@ -10,7 +10,7 @@ export function StatCard({
   value,
   sub,
 }: {
-  icon: string;
+  icon: React.ReactNode | string;
   label: string;
   value: string | number;
   sub?: string;
@@ -18,21 +18,25 @@ export function StatCard({
 }) {
   return (
     <div className="h-full w-full block">
-      <div className="card-raised rounded-xl p-5 text-center relative overflow-hidden h-full">
-        <span className="absolute right-3 bottom-3 text-5xl opacity-10 rotate-12 pointer-events-none select-none">
-          {icon}
-        </span>
-        <p className="text-[10px] font-black font-mono uppercase tracking-[0.2em] text-[var(--tx-muted)] mb-2">
-          {label}
-        </p>
-        <p className="text-3xl font-black font-mono tabular-nums text-[var(--tx-primary)] tracking-tight mb-1">
-          {value}
-        </p>
-        {sub && (
-          <p className="text-[10px] font-bold text-[var(--tx-muted)] uppercase tracking-wider">
-            {sub}
+      <div className="card-raised rounded-2xl p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden h-full border border-[var(--border-default)] bg-[var(--sf-raised)] hover:border-[var(--border-strong)] transition-colors">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[10px] font-mono font-bold uppercase tracking-[0.16em] text-[var(--tx-muted)]">
+            {label}
           </p>
-        )}
+          <span className="w-6 h-6 rounded-lg bg-[var(--sf-overlay)] border border-[var(--border-default)] flex items-center justify-center text-xs shrink-0 select-none">
+            {icon}
+          </span>
+        </div>
+        <div>
+          <p className="text-2xl sm:text-3xl font-black font-data tabular-nums text-[var(--tx-primary)] tracking-tight mb-0.5">
+            {value}
+          </p>
+          {sub && (
+            <p className="text-[10px] font-mono font-medium text-[var(--tx-muted)] uppercase tracking-wider">
+              {sub}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

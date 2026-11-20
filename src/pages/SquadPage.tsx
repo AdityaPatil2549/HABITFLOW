@@ -173,20 +173,124 @@ export function SquadPage() {
 
   if (cloudRequiresAuth) {
     return (
-      <div className="space-y-6 pb-10 max-w-xl mx-auto pt-8">
-        <div className="card-raised p-8 text-center space-y-4">
-          <div className="w-14 h-14 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center mx-auto text-2xl">
-            👥
+      <div className="space-y-8 pb-16 max-w-4xl mx-auto pt-4">
+        {/* ── Page Header ── */}
+        <div className="border-b border-[var(--border-default)] pb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-[var(--accent-ink)] bg-[var(--accent-subtle)] border border-[var(--accent)]/25 mb-3">
+            <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
+            <span>Multiplayer Momentum • Social Accountability Engine</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Accountability Squads</h1>
-          <p className="text-sm text-[var(--tx-secondary)] leading-relaxed">
-            Sign in to your HabitFlow account to create or join a private accountability squad synced in real time.
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-[var(--tx-primary)] tracking-tight">
+            Accountability Squads
+          </h1>
+          <p className="text-sm text-[var(--tx-secondary)] mt-1.5 max-w-2xl leading-relaxed">
+            Consistency compounds 65% faster when verified by peers. Form private circles of up to 5 performers to lock in unbroken discipline and shared momentum.
           </p>
-          <div className="pt-2">
-            <Link to="/login" className="btn-primary inline-flex items-center gap-2">
-              <LogIn size={16} />
-              Sign in to join Squads
-            </Link>
+        </div>
+
+        {/* ── Value Proposition & Science Cards ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="card-raised p-5 rounded-2xl border border-[var(--border-default)] space-y-2">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 font-bold font-mono text-xs">
+              +65%
+            </div>
+            <h3 className="text-sm font-bold text-[var(--tx-primary)]">Higher Adherence</h3>
+            <p className="text-xs text-[var(--tx-secondary)] leading-relaxed">
+              Clinical studies from ASTD show a 65% increase in habit completion when committed to peer accountability partners.
+            </p>
+          </div>
+
+          <div className="card-raised p-5 rounded-2xl border border-[var(--border-default)] space-y-2">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400">
+              <Flame size={18} className="fill-amber-400" />
+            </div>
+            <h3 className="text-sm font-bold text-[var(--tx-primary)]">Shared Streak Heat</h3>
+            <p className="text-xs text-[var(--tx-secondary)] leading-relaxed">
+              Maintain an unbroken squad chain. When all members execute their daily habits, the squad unlocks collective multiplier bonuses.
+            </p>
+          </div>
+
+          <div className="card-raised p-5 rounded-2xl border border-[var(--border-default)] space-y-2">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center text-blue-400 font-mono text-xs font-bold">
+              SYNC
+            </div>
+            <h3 className="text-sm font-bold text-[var(--tx-primary)]">Zero-Guilt Comebacks</h3>
+            <p className="text-xs text-[var(--tx-secondary)] leading-relaxed">
+              Continuity shields and grace protocols ensure one tough day doesn't shatter team morale or momentum.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Demo Squad Leaderboard Roster ── */}
+        <div className="card-raised p-6 rounded-2xl border border-[var(--border-default)] space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border-default)] pb-4">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--accent-ink)] font-bold">
+                Live Squad Protocol Preview
+              </span>
+              <h2 className="text-base font-bold text-[var(--tx-primary)] mt-0.5">
+                Apex Squad Roster (4 / 5 Operators Active)
+              </h2>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-semibold self-start sm:self-auto">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Realtime Synced
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {[
+              { rank: '1', name: 'Alex Vance (Lead)', streak: 42, completion: '100%', badge: '🥇', tag: 'Unbroken' },
+              { rank: '2', name: 'Elena Rostova', streak: 28, completion: '86%', badge: '🥈', tag: 'High Velocity' },
+              { rank: '3', name: 'Marcus Kane', streak: 19, completion: '71%', badge: '🥉', tag: 'Consistent' },
+              { rank: '4', name: 'You (Operator)', streak: 0, completion: 'Pending', badge: '⚡', tag: 'Ready to Deploy' },
+            ].map(m => (
+              <div
+                key={m.name}
+                className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--sf-overlay)] border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-lg bg-[var(--sf-base)] border border-[var(--border-default)] flex items-center justify-center font-mono text-xs font-bold text-[var(--tx-primary)]">
+                    {m.badge}
+                  </span>
+                  <div>
+                    <h4 className="text-xs font-bold text-[var(--tx-primary)]">{m.name}</h4>
+                    <span className="text-[10px] font-mono text-[var(--tx-muted)]">{m.tag}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <span className="font-data text-xs font-bold text-[var(--tx-primary)] flex items-center justify-end gap-1">
+                      <Flame size={12} className="text-amber-500 fill-amber-500" />
+                      {m.streak}d
+                    </span>
+                    <span className="text-[10px] font-mono text-[var(--tx-muted)]">
+                      {m.completion} today
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Call to Action */}
+          <div className="p-5 rounded-xl bg-[var(--sf-base)] border border-[var(--border-strong)] text-center space-y-3">
+            <h3 className="text-sm font-bold text-[var(--tx-primary)]">
+              Ready to verify your habits with your inner circle?
+            </h3>
+            <p className="text-xs text-[var(--tx-secondary)] max-w-md mx-auto leading-relaxed">
+              Sign in with your HabitFlow account to instantly create your private circle, invite up to 4 trusted peers, and sync progress.
+            </p>
+            <div className="pt-1">
+              <Link
+                to="/login"
+                className="btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-xs font-bold shadow-md"
+              >
+                <LogIn size={15} />
+                <span>Sign in to Launch or Join a Squad</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

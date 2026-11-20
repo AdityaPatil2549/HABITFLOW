@@ -23,6 +23,8 @@ export interface HabitRowProps {
   onArchive: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   index?: number;
+  isSelected?: boolean;
+  onSelect?: (habit: HabitWithStreak) => void;
 }
 
 export function HabitRow({
@@ -32,6 +34,8 @@ export function HabitRow({
   onEdit,
   onArchive,
   onDelete,
+  isSelected,
+  onSelect,
 }: HabitRowProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
@@ -76,9 +80,16 @@ export function HabitRow({
 
   return (
     <div
-      onClick={() => onEdit(habit)}
+      onClick={() => {
+        if (onSelect) {
+          onSelect(habit);
+        } else {
+          onEdit(habit);
+        }
+      }}
       className={cn(
         'group relative flex items-center justify-between gap-3.5 sm:gap-4 px-4 py-3.5 rounded-xl border transition-all duration-200 cursor-pointer select-none',
+        isSelected && 'ring-1 ring-[var(--accent)] border-[var(--accent)] bg-[var(--accent-subtle)]/30',
         isDone
           ? 'bg-[var(--sf-raised)] text-[var(--tx-secondary)] border-l-[3.5px]'
           : 'bg-[var(--sf-raised)] border-[var(--border-default)] hover:border-[var(--border-strong)] hover:shadow-lg hover:shadow-black/20 hover:-translate-y-[1px] text-[var(--tx-primary)]'

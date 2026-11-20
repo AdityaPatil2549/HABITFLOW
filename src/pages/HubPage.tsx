@@ -57,8 +57,14 @@ const HUB_DESTINATIONS = [
   {
     to: '/hub/settings',
     title: 'System Preferences',
-    description: 'Surface polarity, Telemetry discipline mode, calendars, backups & sync.',
+    description: 'Surface polarity, Telemetry discipline mode, calendars, and audio triggers.',
     icon: Settings,
+  },
+  {
+    to: '/hub/settings',
+    title: 'Data Vault & Backups',
+    description: 'Export JSON/CSV archives, inspect local IndexedDB storage, and manage cloud sync.',
+    icon: Shield,
   },
 ];
 
@@ -84,7 +90,7 @@ export function HubPage() {
     ACCENT_CARTRIDGES[0];
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-16">
+    <div className="space-y-6 max-w-6xl mx-auto pb-16">
       <div className="pb-4 border-b border-[var(--border-default)]">
         <p className="font-label-caps">Workspace / Hub</p>
         <h1 className="font-h1 text-[var(--tx-primary)] mt-1">Command Hub</h1>
@@ -174,7 +180,7 @@ export function HubPage() {
       )}
 
       {/* Hub Destinations Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
         {HUB_DESTINATIONS.map(dest => {
           const Icon = dest.icon;
           return (
